@@ -17,7 +17,7 @@
  
  2. Import as Eclipse project mvn eclipse:eclipse and import as generic project. 
  
- ## LICENSE 
+## LICENSE 
  
  Copyright 2012 HTWG Konstanz and Seitenbau
 
