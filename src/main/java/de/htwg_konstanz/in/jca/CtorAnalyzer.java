@@ -1,10 +1,11 @@
 package de.htwg_konstanz.in.jca;
 
+import java.util.Stack;
+
 import org.apache.bcel.classfile.LocalVariable;
 import org.apache.bcel.classfile.Method;
 import org.apache.bcel.generic.Instruction;
 import org.apache.bcel.generic.InstructionList;
-import org.apache.bcel.generic.Type;
 
 
 public class CtorAnalyzer {    
@@ -20,9 +21,7 @@ public class CtorAnalyzer {
 
     
     public ThreeValueBoolean doesThisReferenceEscape() {
-	Type[] argTypes = ctor.getArgumentTypes();
-	
-	Stack callerStack = new Stack(argTypes.length +1);
+	Stack<Entry> callerStack = new Stack<Entry>();
 	
 	// push this + args onto the stack
 	callerStack.push(Entry.thisReference);
@@ -37,13 +36,13 @@ public class CtorAnalyzer {
     }
 	
     
-    public ThreeValueBoolean doesThisReferenceEscape(Stack callerStack) {	
+    public ThreeValueBoolean doesThisReferenceEscape(Stack<Entry> callerStack) {	
 	LocalVars localVars = 
 			new LocalVars(ctor.getCode().getLocalVariableTable().getLocalVariableTable());
 
 	localVars.initWithArgs(callerStack, ctor.getArgumentTypes().length +1);
 
-	Stack stack = new Stack(ctor.getCode().getMaxStack());
+	Stack<Entry> stack = new Stack<Entry>();
 	
 	CtorAnalysisVisitor visitor = new CtorAnalysisVisitor(localVars, stack, ctor.getCode().getConstantPool());
 	Instruction[] instructions = new InstructionList(ctor.getCode().getCode()).getInstructions();

@@ -1,5 +1,7 @@
 package de.htwg_konstanz.in.jca;
 
+import java.util.Stack;
+
 import org.apache.bcel.classfile.LocalVariable;
 
 public class LocalVars {
@@ -24,7 +26,7 @@ public class LocalVars {
 	
     }
     
-    public void initWithArgs(Stack callerStack, int numArgs) {
+    public void initWithArgs(Stack<Entry> callerStack, int numArgs) {
 	    for ( int i = numArgs -1; i >= 0; i-- ) 
 		entries[i] = callerStack.pop();
     }

@@ -1,5 +1,7 @@
 package de.htwg_konstanz.in.jca;
 
+import java.util.Stack;
+
 import org.apache.bcel.Repository;
 import org.apache.bcel.classfile.ConstantPool;
 import org.apache.bcel.classfile.JavaClass;
@@ -9,13 +11,13 @@ import org.apache.bcel.generic.*;
 
 public class CtorAnalysisVisitor extends EmptyVisitor {    
     private final LocalVars localVars;
-    private final Stack stack;
+    private final Stack<Entry> stack;
     private final ConstantPoolGen constantPoolGen;
     
     private volatile ThreeValueBoolean doesEscape = ThreeValueBoolean.no;
     private volatile Entry result = null;
     
-    CtorAnalysisVisitor(LocalVars localVars, Stack stack, ConstantPool constantPool) {
+    CtorAnalysisVisitor(LocalVars localVars, Stack<Entry> stack, ConstantPool constantPool) {
 	this.localVars = localVars;
 	this.stack = stack;
 	this.constantPoolGen = new ConstantPoolGen(constantPool);
