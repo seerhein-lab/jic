@@ -9,21 +9,14 @@ public class LocalVars {
     private int[] indexes;
     
     LocalVars(LocalVariable[] localVarTable) {
-	if ( localVarTable == null ) {
-	    entries = new Entry[0];
-	    indexes = new int[0];
-	}
-	else {
-	    entries = new Entry[localVarTable.length];
-	    indexes = new int[localVarTable.length];
-		
-	    for ( int i = 0; i < entries.length; i++ ) 
-		entries[i] = Entry.getInstance(localVarTable[i].getSignature()); 
-	
-	    for ( int i = 0 ; i < indexes.length; i++ )
-		indexes[i] = localVarTable[i].getIndex();
-	}
-	
+	entries = new Entry[localVarTable.length];
+	indexes = new int[localVarTable.length];
+
+	for (int i = 0; i < entries.length; i++)
+	    entries[i] = Entry.getInstance(localVarTable[i].getSignature());
+
+	for (int i = 0; i < indexes.length; i++)
+	    indexes[i] = localVarTable[i].getIndex();
     }
     
     public void initWithArgs(Stack<Entry> callerStack, int numArgs) {
