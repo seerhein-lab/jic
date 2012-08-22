@@ -4,7 +4,7 @@ import java.util.Arrays;
 
 import de.htwg_konstanz.in.jca.Entry;
 
-public class Stack {
+public class Stack { 
 
     private final Entry[] stack;
     private int index;
