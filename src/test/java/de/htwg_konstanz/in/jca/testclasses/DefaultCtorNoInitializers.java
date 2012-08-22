@@ -8,7 +8,7 @@ package de.htwg_konstanz.in.jca.testclasses;
  *  	Entry[] entry1 = { Entry.thisReference, Entry.someDouble };
  *		EXPECTED_ENTRIES.add(entry1);
  *		int[] indexes1 = { 0, 1 };
- *		EXPECTED:INDEXES.add(indexes1);
+ *		EXPECTED_INDEXES.add(indexes1);
  *	}
  */
 
