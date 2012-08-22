@@ -48,5 +48,6 @@ public class LocalVars {
     public int getIndex(int i) { return indexes[i]; }
     public Entry getEntry(int i) { return entries[i]; }
     public int getEntriesLength() { return entries.length; }
+    public int getIndexesLength(){return indexes.length;}
 
 }
