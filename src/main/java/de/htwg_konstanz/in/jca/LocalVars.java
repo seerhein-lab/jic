@@ -6,7 +6,7 @@ public class LocalVars {
     private Entry[] entries;
     private int[] indexes;
     
-    LocalVars(LocalVariable[] localVarTable, int numArgs, Stack callerStack) {
+    LocalVars(LocalVariable[] localVarTable) {
 	if ( localVarTable == null ) {
 	    entries = new Entry[0];
 	    indexes = new int[0];
@@ -14,17 +14,19 @@ public class LocalVars {
 	else {
 	    entries = new Entry[localVarTable.length];
 	    indexes = new int[localVarTable.length];
-	
-	    for ( int i = numArgs -1; i >= 0; i-- ) 
-		entries[i] = callerStack.pop();
-	
-	    for ( int i = numArgs; i < entries.length; i++ ) 
+		
+	    for ( int i = 0; i < entries.length; i++ ) 
 		entries[i] = Entry.getInstance(localVarTable[i].getSignature()); 
 	
 	    for ( int i = 0 ; i < indexes.length; i++ )
 		indexes[i] = localVarTable[i].getIndex();
 	}
 	
+    }
+    
+    public void initWithArgs(Stack callerStack, int numArgs) {
+	    for ( int i = numArgs -1; i >= 0; i-- ) 
+		entries[i] = callerStack.pop();
     }
     
     private int index2i(int index) {
@@ -43,7 +45,8 @@ public class LocalVars {
 	entries[index2i(index)] = entry;
     }
     
-//    void set(int i, Entry entry) { entries[i] = entry; }
-//    Entry get(int i) { return entries[i]; }
+    public int getIndex(int i) { return indexes[i]; }
+    public Entry getEntry(int i) { return entries[i]; }
+    public int getEntriesLength() { return entries.length; }
 
 }

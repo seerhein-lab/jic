@@ -38,10 +38,11 @@ public class CtorAnalyzer {
 	
     
     public ThreeValueBoolean doesThisReferenceEscape(Stack callerStack) {	
-	LocalVars localVars = new LocalVars(
-		ctor.getCode().getLocalVariableTable().getLocalVariableTable(), 
-		ctor.getArgumentTypes().length +1, callerStack);
-	
+	LocalVars localVars = 
+			new LocalVars(ctor.getCode().getLocalVariableTable().getLocalVariableTable());
+
+	localVars.initWithArgs(callerStack, ctor.getArgumentTypes().length +1);
+
 	Stack stack = new Stack(ctor.getCode().getMaxStack());
 	
 	CtorAnalysisVisitor visitor = new CtorAnalysisVisitor(localVars, stack, ctor.getCode().getConstantPool());
