@@ -1,5 +1,7 @@
 package de.htwg_konstanz.in.jca;
 
+import java.util.Stack;
+
 import org.apache.bcel.Repository;
 import org.apache.bcel.classfile.ConstantPool;
 import org.apache.bcel.classfile.JavaClass;
@@ -9,13 +11,13 @@ import org.apache.bcel.generic.*;
 
 public class CtorAnalysisVisitor extends EmptyVisitor {    
     private final LocalVars localVars;
-    private final Stack stack;
+    private final Stack<Entry> stack;
     private final ConstantPoolGen constantPoolGen;
     
     private volatile ThreeValueBoolean doesEscape = ThreeValueBoolean.no;
     private volatile Entry result = null;
     
-    CtorAnalysisVisitor(LocalVars localVars, Stack stack, ConstantPool constantPool) {
+    CtorAnalysisVisitor(LocalVars localVars, Stack<Entry> stack, ConstantPool constantPool) {
 	this.localVars = localVars;
 	this.stack = stack;
 	this.constantPoolGen = new ConstantPoolGen(constantPool);
@@ -164,43 +166,38 @@ public class CtorAnalysisVisitor extends EmptyVisitor {
     }
     
     @Override public void visitLDC(LDC obj) {
-	notImplementedYet(obj);
-/*
 	System.out.println(obj.toString(false));
 	doesEscape = ThreeValueBoolean.no;	
 	
 	if ( obj.getType(constantPoolGen).equals(Type.INT) ) {
-	    frame.pushStack(Entry.someInt);
+	    stack.push(Entry.someInt);
 	    return;
 	}
 	
 	if ( obj.getType(constantPoolGen).equals(Type.FLOAT) ) {
-	    frame.pushStack(Entry.someFloat);
+	    stack.push(Entry.someFloat);
 	    return;
 	}
 	
-	frame.pushStack(Entry.someReference);
-	*/
+	stack.push(Entry.someReference);
     }
     
     @Override public void visitLDC2_W(LDC2_W obj) {
-	notImplementedYet(obj);
-/*
 	System.out.println(obj.toString(false));
 	doesEscape = ThreeValueBoolean.no;	
 	
 	if ( obj.getType(constantPoolGen).equals(Type.LONG) ) {
-	    frame.pushStack(Entry.someLong);
+	    stack.push(Entry.someLong);
 	    return;
 	}
 	
 	if ( obj.getType(constantPoolGen).equals(Type.DOUBLE) ) {
-	    frame.pushStack(Entry.someDouble);
+	    stack.push(Entry.someDouble);
 	    return;
 	}
 	
 	throw new AssertionError("LDC2_W loads wrongly typed value");	
-	*/
+	
     }
     
     @Override public void visitMULTIANEWARRAY(MULTIANEWARRAY obj) {
@@ -332,14 +329,11 @@ public class CtorAnalysisVisitor extends EmptyVisitor {
     
     //---StackInstruction----------------------------------------------
     @Override public void visitDUP(DUP obj)  {
-	notImplementedYet(obj);
-/*
 	System.out.println(obj.toString(false));
-	Entry entry = frame.popStack();
-	frame.pushStack(entry);
-	frame.pushStack(entry);
+	Entry entry = stack.pop();
+	stack.push(entry);
+	stack.push(entry);
 	doesEscape = ThreeValueBoolean.no;
-	*/
     }
     
     @Override public void visitDUP_X1(DUP_X1 obj)  {

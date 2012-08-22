@@ -1,5 +1,7 @@
 package de.htwg_konstanz.in.jca;
 
+import java.util.Stack;
+
 import org.apache.bcel.classfile.LocalVariable;
 
 public class LocalVars {
@@ -7,24 +9,18 @@ public class LocalVars {
     private int[] indexes;
     
     LocalVars(LocalVariable[] localVarTable) {
-	if ( localVarTable == null ) {
-	    entries = new Entry[0];
-	    indexes = new int[0];
-	}
-	else {
-	    entries = new Entry[localVarTable.length];
-	    indexes = new int[localVarTable.length];
-		
-	    for ( int i = 0; i < entries.length; i++ ) 
-		entries[i] = Entry.getInstance(localVarTable[i].getSignature()); 
-	
-	    for ( int i = 0 ; i < indexes.length; i++ )
-		indexes[i] = localVarTable[i].getIndex();
-	}
-	
+	entries = new Entry[localVarTable.length];
+	indexes = new int[localVarTable.length];
+
+	for (int i = 0; i < entries.length; i++)
+	    entries[i] = Entry.getInstance(localVarTable[i].getSignature());
+
+	for (int i = 0; i < indexes.length; i++)
+	    indexes[i] = localVarTable[i].getIndex();
     }
     
-    public void initWithArgs(Stack callerStack, int numArgs) {
+    public void initWithArgs(Stack<Entry> callerStack, int numArgs) {
+	if ( entries.length > 0 ) 
 	    for ( int i = numArgs -1; i >= 0; i-- ) 
 		entries[i] = callerStack.pop();
     }
