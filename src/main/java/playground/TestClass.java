@@ -12,4 +12,6 @@ public class TestClass extends TestSuper {
 	return 47;
     }
     
+    void g() {}
+    
 }

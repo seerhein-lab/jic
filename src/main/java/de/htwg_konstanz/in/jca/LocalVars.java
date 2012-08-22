@@ -27,6 +27,7 @@ public class LocalVars {
     }
     
     public void initWithArgs(Stack<Entry> callerStack, int numArgs) {
+	if ( entries.length > 0 ) 
 	    for ( int i = numArgs -1; i >= 0; i-- ) 
 		entries[i] = callerStack.pop();
     }

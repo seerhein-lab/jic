@@ -3,6 +3,7 @@ package de.htwg_konstanz.in.jca;
 import java.util.Stack;
 
 import org.apache.bcel.classfile.LocalVariable;
+import org.apache.bcel.classfile.LocalVariableTable;
 import org.apache.bcel.classfile.Method;
 import org.apache.bcel.generic.Instruction;
 import org.apache.bcel.generic.InstructionList;
@@ -37,8 +38,8 @@ public class CtorAnalyzer {
 	
     
     public ThreeValueBoolean doesThisReferenceEscape(Stack<Entry> callerStack) {	
-	LocalVars localVars = 
-			new LocalVars(ctor.getCode().getLocalVariableTable().getLocalVariableTable());
+	LocalVars localVars = new LocalVars((ctor.getLocalVariableTable() == null ) ? 
+		null : ctor.getLocalVariableTable().getLocalVariableTable());
 
 	localVars.initWithArgs(callerStack, ctor.getArgumentTypes().length +1);
 
