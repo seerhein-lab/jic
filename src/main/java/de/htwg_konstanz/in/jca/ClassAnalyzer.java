@@ -1,5 +1,7 @@
 package de.htwg_konstanz.in.jca;
 
+import static org.apache.bcel.Constants.CONSTRUCTOR_NAME;
+
 import java.util.List;
 import java.util.Vector;
 import org.apache.bcel.classfile.Field;
@@ -19,7 +21,7 @@ public class ClassAnalyzer {
 	List<Method> ctors = new Vector<Method>();
 	Method[] methods = clazz.getMethods();
 	for ( Method method : methods ) 
-	    if ( method.getName().equals("<init>") ) 
+	    if ( method.getName().equals(CONSTRUCTOR_NAME) ) 
 		ctors.add(method);
 	return ctors;	
     }
