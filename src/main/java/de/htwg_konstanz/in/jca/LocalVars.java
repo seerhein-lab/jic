@@ -9,6 +9,9 @@ public class LocalVars {
 	private int[] indexes;
 
 	LocalVars(LocalVariable[] localVarTable) {
+		if (localVarTable == null) {
+			throw new IllegalArgumentException("localVarTable must not be null");
+		}
 		entries = new Entry[localVarTable.length];
 		indexes = new int[localVarTable.length];
 
