@@ -10,10 +10,7 @@ import org.apache.bcel.classfile.JavaClass;
 import org.apache.bcel.classfile.LocalVariable;
 import org.apache.bcel.classfile.LocalVariableTable;
 import org.apache.bcel.classfile.Method;
-import org.junit.After;
-import org.junit.AfterClass;
 import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Test;
 
 import de.htwg_konstanz.in.jca.testclasses.ClassWithMethodArg;
@@ -40,22 +37,10 @@ public abstract class TestLocalVars {
 	protected Entry[] usedCallerStackEntries;
 	protected Stack<Entry> usedStack;
 
-	@BeforeClass
-	public static void setUpBeforeClass() throws Exception {
-	}
-
-	@AfterClass
-	public static void tearDownAfterClass() throws Exception {
-	}
-
 	@Before
 	public void setUp() throws Exception {
 		JavaClass clazz = Repository.lookupClass(USED_CLASS);
 		methods = clazz.getMethods();
-	}
-
-	@After
-	public void tearDown() throws Exception {
 	}
 
 	@Test(expected = IllegalArgumentException.class)
@@ -103,6 +88,15 @@ public abstract class TestLocalVars {
 						entriesBefore[i], localVars.getEntry(i));
 			}
 		}
+	}
+
+	@Test
+	public void testInitWithArgsZeroLength() {
+		Stack<Entry> callerStack = new Stack<Entry>();
+		callerStack.add(Entry.someReference);
+		LocalVars localVars = new LocalVars(new LocalVariable[0]);
+		localVars.initWithArgs(callerStack, callerStack.size());
+		assertTrue("CallerStack should now be empty.", callerStack.isEmpty());
 	}
 
 	@Test(expected = AssertionError.class)
