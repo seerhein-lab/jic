@@ -53,7 +53,8 @@ public abstract class TestLocalVars {
 	}
 
 	@After
-	public abstract void tearDown() throws Exception;
+	public void tearDown() throws Exception {
+	}
 
 	@Test(expected = IllegalArgumentException.class)
 	public void testLocalVarsNull() {

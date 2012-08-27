@@ -2,21 +2,10 @@ package de.htwg_konstanz.in.jca;
 
 import org.apache.bcel.classfile.LocalVariable;
 import org.apache.bcel.classfile.Method;
-import org.junit.After;
-import org.junit.AfterClass;
 import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Test;
 
 public class TestLocalVarsCtor extends TestLocalVars {
-
-	@BeforeClass
-	public static void setUpBeforeClass() throws Exception {
-	}
-
-	@AfterClass
-	public static void tearDownAfterClass() throws Exception {
-	}
 
 	@Before
 	public void setUp() throws Exception {
@@ -32,10 +21,6 @@ public class TestLocalVarsCtor extends TestLocalVars {
 				.getLocalVariableTable().getLocalVariableTable()
 				: new LocalVariable[0];
 		super.localVars = new LocalVars(localVariables);
-	}
-
-	@After
-	public void tearDown() throws Exception {
 	}
 
 	@Test
