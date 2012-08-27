@@ -17,6 +17,8 @@
 
     <menu name="Documentation">
       <item name="Useful links" href="links.html"/>
+      <item name="Eclipse settings" href="eclipse-settings.html"/>
+      <item name="Findbugs integration" href="findbugs-integration.html"/>
     </menu>
 
     <menu ref="reports"/>

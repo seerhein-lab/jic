@@ -1,2 +1,5 @@
 Useful eclipse settings
+
   * in the java ee view : project explorer -> small triangle on top bar -> Customize View -> untick "Java Output Folders"
+  
+  * Window -> Preferences -> Java -> Editor -> Save Actions -> tick "format source code", "format all lines"
