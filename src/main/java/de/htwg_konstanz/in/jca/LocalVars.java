@@ -26,6 +26,10 @@ public class LocalVars {
 		if (entries.length > 0)
 			for (int i = numArgs - 1; i >= 0; i--)
 				entries[i] = callerStack.pop();
+		else
+			for (int i = numArgs - 1; i >= 0; i--)
+				callerStack.pop();
+
 	}
 
 	private int index2i(int index) {
