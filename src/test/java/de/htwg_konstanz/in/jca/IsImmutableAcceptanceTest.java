@@ -4,6 +4,8 @@ import net.jcip.annotations.Immutable;
 
 import org.junit.runner.RunWith;
 
+import de.htwg_konstanz.in.jca.ImmutableClassTestRunner.Mutable;
+
 /**
  * Functional acceptance tests for the method isImmutable of the class ClassAnalyzer.
  * 
@@ -59,6 +61,7 @@ public class IsImmutableAcceptanceTest {
 	/**
 	 * Not Immutable class because the field value could be changed.
 	 */
+	@Mutable
 	public static class Story05_ClassWithNonFinalField {
 		Object value = 01;
 	}
@@ -92,6 +95,7 @@ public class IsImmutableAcceptanceTest {
 	 * Not Immutable class because the reference to the mutable state could be
 	 * access.
 	 */
+	@Mutable
 	public static class Story08_ClassWithAccessToMutableState {
 		
 		public static final class StringHolder {
@@ -106,6 +110,7 @@ public class IsImmutableAcceptanceTest {
 	 * Not Immutable class because the reference to the mutable state could be
 	 * access.
 	 */
+	@Mutable
 	public static class Story09_ClassWithAccessByGetterToMutableState {
 		
 		public static final class StringHolder {
