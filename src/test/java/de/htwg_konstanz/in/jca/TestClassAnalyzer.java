@@ -7,71 +7,92 @@ import org.apache.bcel.Repository;
 import org.apache.bcel.classfile.JavaClass;
 import org.junit.Test;
 
+import de.htwg_konstanz.in.jca.testclasses.DefaultCtorInitializersByte;
+import de.htwg_konstanz.in.jca.testclasses.DefaultCtorInitializersChar;
+import de.htwg_konstanz.in.jca.testclasses.DefaultCtorInitializersLong;
+import de.htwg_konstanz.in.jca.testclasses.DefaultCtorInitializersLongObject;
+import de.htwg_konstanz.in.jca.testclasses.DefaultCtorInitializersObject;
+import de.htwg_konstanz.in.jca.testclasses.DefaultCtorNoInitializers;
+
 public class TestClassAnalyzer {
 
-	// @Test
-	// public void testProperlyConstructedDefaultCtorNoInitializers() {
-	// JavaClass clazz = null;
-	// try {
-	// clazz = Repository
-	// .lookupClass("de.htwg_konstanz.in.jca.testclasses.DefaultCtorNoInitializers");
-	// } catch (ClassNotFoundException e) {
-	// fail("class not found");
-	// }
-	// assertEquals(new ClassAnalyzer(clazz).properlyConstructed(),
-	// ThreeValueBoolean.yes);
-	// }
+	@Test
+	public void testProperlyConstructedDefaultCtorNoInitializers() {
+		JavaClass clazz = null;
+		try {
+			clazz = Repository.lookupClass(DefaultCtorNoInitializers.class
+					.getCanonicalName());
+		} catch (ClassNotFoundException e) {
+			fail("class not found");
+		}
+		assertEquals(ClassAnalyzer.bugCollection2successfull(new ClassAnalyzer(
+				clazz).properlyConstructed()), ThreeValueBoolean.yes);
+	}
 
-	// @Test
-	// public void testProperlyConstructedDefaultCtorInitializersByte() {
-	// JavaClass clazz = null;
-	// try {
-	// clazz = Repository
-	// .lookupClass("de.htwg_konstanz.in.jca.testclasses.DefaultCtorInitializersByte");
-	// } catch (ClassNotFoundException e) {
-	// fail("class not found");
-	// }
-	// assertEquals(new ClassAnalyzer(clazz).properlyConstructed(),
-	// ThreeValueBoolean.yes);
-	// }
+	@Test
+	public void testProperlyConstructedDefaultCtorInitializersByte() {
+		JavaClass clazz = null;
+		try {
+			clazz = Repository.lookupClass(DefaultCtorInitializersByte.class
+					.getCanonicalName());
+		} catch (ClassNotFoundException e) {
+			fail("class not found");
+		}
+		assertEquals(ClassAnalyzer.bugCollection2successfull(new ClassAnalyzer(
+				clazz).properlyConstructed()), ThreeValueBoolean.yes);
+	}
 
-	// @Test
-	// public void testProperlyConstructedDefaultCtorInitializersChar() {
-	// JavaClass clazz = null;
-	// try {
-	// clazz = Repository
-	// .lookupClass("de.htwg_konstanz.in.jca.testclasses.DefaultCtorInitializersChar");
-	// } catch (ClassNotFoundException e) {
-	// fail("class not found");
-	// }
-	// assertEquals(new ClassAnalyzer(clazz).properlyConstructed(),
-	// ThreeValueBoolean.yes);
-	// }
+	@Test
+	public void testProperlyConstructedDefaultCtorInitializersChar() {
+		JavaClass clazz = null;
+		try {
+			clazz = Repository.lookupClass(DefaultCtorInitializersChar.class
+					.getCanonicalName());
+		} catch (ClassNotFoundException e) {
+			fail("class not found");
+		}
+		assertEquals(ClassAnalyzer.bugCollection2successfull(new ClassAnalyzer(
+				clazz).properlyConstructed()), ThreeValueBoolean.yes);
+	}
 
-	// @Test
-	// public void testProperlyConstructedDefaultCtorInitializersLong() {
-	// JavaClass clazz = null;
-	// try {
-	// clazz = Repository
-	// .lookupClass("de.htwg_konstanz.in.jca.testclasses.DefaultCtorInitializersLong");
-	// } catch (ClassNotFoundException e) {
-	// fail("class not found");
-	// }
-	// assertEquals(new ClassAnalyzer(clazz).properlyConstructed(),
-	// ThreeValueBoolean.yes);
-	// }
+	@Test
+	public void testProperlyConstructedDefaultCtorInitializersLong() {
+		JavaClass clazz = null;
+		try {
+			clazz = Repository.lookupClass(DefaultCtorInitializersLong.class
+					.getCanonicalName());
+		} catch (ClassNotFoundException e) {
+			fail("class not found");
+		}
+		assertEquals(ClassAnalyzer.bugCollection2successfull(new ClassAnalyzer(
+				clazz).properlyConstructed()), ThreeValueBoolean.yes);
+	}
 
 	@Test
 	public void testProperlyConstructedDefaultCtorInitializersObject() {
 		JavaClass clazz = null;
 		try {
-			clazz = Repository
-					.lookupClass("de.htwg_konstanz.in.jca.testclasses.DefaultCtorInitializersObject");
+			clazz = Repository.lookupClass(DefaultCtorInitializersObject.class
+					.getCanonicalName());
 		} catch (ClassNotFoundException e) {
 			fail("class not found");
 		}
-		assertEquals(new ClassAnalyzer(clazz).properlyConstructed(),
-				ThreeValueBoolean.yes);
+		assertEquals(ClassAnalyzer.bugCollection2successfull(new ClassAnalyzer(
+				clazz).properlyConstructed()), ThreeValueBoolean.yes);
+	}
+
+	@Test
+	public void testProperlyConstructedDefaultCtorInitializersLongObject() {
+		JavaClass clazz = null;
+		try {
+			clazz = Repository
+					.lookupClass(DefaultCtorInitializersLongObject.class
+							.getCanonicalName());
+		} catch (ClassNotFoundException e) {
+			fail("class not found");
+		}
+		assertEquals(ClassAnalyzer.bugCollection2successfull(new ClassAnalyzer(
+				clazz).properlyConstructed()), ThreeValueBoolean.yes);
 	}
 
 	// ClassPath cp = new
