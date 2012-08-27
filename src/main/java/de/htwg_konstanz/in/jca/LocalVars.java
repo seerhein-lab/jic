@@ -9,6 +9,9 @@ public class LocalVars {
 	private int[] indexes;
 
 	LocalVars(LocalVariable[] localVarTable) {
+		if (localVarTable == null) {
+			throw new IllegalArgumentException("localVarTable must not be null");
+		}
 		entries = new Entry[localVarTable.length];
 		indexes = new int[localVarTable.length];
 
@@ -23,6 +26,10 @@ public class LocalVars {
 		if (entries.length > 0)
 			for (int i = numArgs - 1; i >= 0; i--)
 				entries[i] = callerStack.pop();
+		else
+			for (int i = numArgs - 1; i >= 0; i--)
+				callerStack.pop();
+
 	}
 
 	private int index2i(int index) {

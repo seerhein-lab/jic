@@ -6,7 +6,64 @@ import org.apache.bcel.Repository;
 import org.apache.bcel.classfile.ConstantPool;
 import org.apache.bcel.classfile.JavaClass;
 import org.apache.bcel.classfile.Method;
-import org.apache.bcel.generic.*;
+import org.apache.bcel.generic.ACONST_NULL;
+import org.apache.bcel.generic.ANEWARRAY;
+import org.apache.bcel.generic.ARRAYLENGTH;
+import org.apache.bcel.generic.ATHROW;
+import org.apache.bcel.generic.ArithmeticInstruction;
+import org.apache.bcel.generic.ArrayInstruction;
+import org.apache.bcel.generic.BIPUSH;
+import org.apache.bcel.generic.BREAKPOINT;
+import org.apache.bcel.generic.BasicType;
+import org.apache.bcel.generic.BranchInstruction;
+import org.apache.bcel.generic.CHECKCAST;
+import org.apache.bcel.generic.ConstantPoolGen;
+import org.apache.bcel.generic.ConversionInstruction;
+import org.apache.bcel.generic.DCMPG;
+import org.apache.bcel.generic.DCMPL;
+import org.apache.bcel.generic.DCONST;
+import org.apache.bcel.generic.DUP;
+import org.apache.bcel.generic.DUP2;
+import org.apache.bcel.generic.DUP2_X1;
+import org.apache.bcel.generic.DUP2_X2;
+import org.apache.bcel.generic.DUP_X1;
+import org.apache.bcel.generic.DUP_X2;
+import org.apache.bcel.generic.EmptyVisitor;
+import org.apache.bcel.generic.FCMPG;
+import org.apache.bcel.generic.FCMPL;
+import org.apache.bcel.generic.FCONST;
+import org.apache.bcel.generic.GETFIELD;
+import org.apache.bcel.generic.GETSTATIC;
+import org.apache.bcel.generic.ICONST;
+import org.apache.bcel.generic.IINC;
+import org.apache.bcel.generic.IMPDEP1;
+import org.apache.bcel.generic.IMPDEP2;
+import org.apache.bcel.generic.INSTANCEOF;
+import org.apache.bcel.generic.INVOKEINTERFACE;
+import org.apache.bcel.generic.INVOKESPECIAL;
+import org.apache.bcel.generic.INVOKESTATIC;
+import org.apache.bcel.generic.INVOKEVIRTUAL;
+import org.apache.bcel.generic.LCMP;
+import org.apache.bcel.generic.LCONST;
+import org.apache.bcel.generic.LDC;
+import org.apache.bcel.generic.LDC2_W;
+import org.apache.bcel.generic.LoadInstruction;
+import org.apache.bcel.generic.MONITORENTER;
+import org.apache.bcel.generic.MONITOREXIT;
+import org.apache.bcel.generic.MULTIANEWARRAY;
+import org.apache.bcel.generic.NEW;
+import org.apache.bcel.generic.NEWARRAY;
+import org.apache.bcel.generic.NOP;
+import org.apache.bcel.generic.POP;
+import org.apache.bcel.generic.POP2;
+import org.apache.bcel.generic.PUTFIELD;
+import org.apache.bcel.generic.PUTSTATIC;
+import org.apache.bcel.generic.RET;
+import org.apache.bcel.generic.ReturnInstruction;
+import org.apache.bcel.generic.SIPUSH;
+import org.apache.bcel.generic.SWAP;
+import org.apache.bcel.generic.StoreInstruction;
+import org.apache.bcel.generic.Type;
 
 public class CtorAnalysisVisitor extends EmptyVisitor {
 	private final LocalVars localVars;
@@ -38,14 +95,14 @@ public class CtorAnalysisVisitor extends EmptyVisitor {
 		System.out.println();
 	}
 
-	//******************************************************************//
-	//						Visit section								//
-	//	For more details on bytecode instructions see:					//
-	//	http://en.wikipedia.org/wiki/Java_bytecode_instruction_listings	//
-	//	For details on enumeration see:									//
-	//	https://docs.google.com/open?id=0B4RYegfkX-vPUnlRUm56S1YtMG8	//
-	//******************************************************************//
-	
+	// ******************************************************************//
+	// Visit section //
+	// For more details on bytecode instructions see: //
+	// http://en.wikipedia.org/wiki/Java_bytecode_instruction_listings //
+	// For details on enumeration see: //
+	// https://docs.google.com/open?id=0B4RYegfkX-vPUnlRUm56S1YtMG8 //
+	// ******************************************************************//
+
 	// -----------------------------------------------------------------
 	/**
 	 * 1. ACONST_NULL:
@@ -313,6 +370,7 @@ public class CtorAnalysisVisitor extends EmptyVisitor {
 	@Override
 	public void visitINVOKESPECIAL(INVOKESPECIAL obj) {
 		System.out.println("INVOKESPECIAL: "
+				+ obj.getReturnType(constantPoolGen) + " "
 				+ obj.getReferenceType(constantPoolGen) + "."
 				+ obj.getMethodName(constantPoolGen));
 
