@@ -16,18 +16,20 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import de.htwg_konstanz.in.jca.testclasses.DefaultCtorNoInitializers;
+import de.htwg_konstanz.in.jca.testclasses.ClassWithMethodArg;
 
 public abstract class TestLocalVars {
 	/* Edit finals below for use */
-	private final String USED_CLASS = DefaultCtorNoInitializers.class.getName();
-	protected final boolean HAS_METHODS = false;
+	private final String USED_CLASS = ClassWithMethodArg.class.getName();
+	protected final boolean HAS_METHODS = true;
 	protected final Entry[] EXPECTED_ENTRIES_CTOR = { Entry.someReference };
 	protected final int[] EXPECTED_INDEXES_CTOR = { 0 };
 	protected final Entry[] ENTRIES_CALLER_STACK_CTOR = { Entry.thisReference };
-	protected final Entry[] EXPECTED_ENTRIES_METHOD = {};
-	protected final int[] EXPECTED_INDEXES_METHOD = {};
-	protected final Entry[] ENTRIES_CALLER_STACK_METHOD = {};
+	protected final Entry[] EXPECTED_ENTRIES_METHOD = { Entry.someReference,
+			Entry.someInt };
+	protected final int[] EXPECTED_INDEXES_METHOD = { 0, 1 };
+	protected final Entry[] ENTRIES_CALLER_STACK_METHOD = {
+			Entry.thisReference, Entry.someInt };
 	/* end final section for setup */
 
 	protected Method[] methods;
@@ -92,7 +94,7 @@ public abstract class TestLocalVars {
 		for (int i = 0; i < localVars.getEntriesLength(); i++) {
 			assertEquals(
 					"LocalVars' entries should match expected callerStack.",
-					usedCallerStackEntries[i], localVars.getEntry(0));
+					usedCallerStackEntries[i], localVars.getEntry(i));
 			if (i == 0) {
 				assertTrue("First entry should be changed.", !localVars
 						.getEntry(i).equals(entriesBefore[i]));

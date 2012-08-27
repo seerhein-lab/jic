@@ -70,7 +70,7 @@ public class TestLocalVarsMethod extends TestLocalVars {
 		}
 	}
 
-	@Test
+	@Test(expected = AssertionError.class)
 	public void testGetForIndexFail() {
 		if (super.HAS_METHODS) {
 			super.testGetForIndexFail();
@@ -79,7 +79,7 @@ public class TestLocalVarsMethod extends TestLocalVars {
 		}
 	}
 
-	@Test
+	@Test(expected = AssertionError.class)
 	public void testSetForIndexFail() {
 		if (super.HAS_METHODS) {
 			super.testSetForIndexFail();
