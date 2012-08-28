@@ -1,5 +1,6 @@
 package de.htwg_konstanz.in.jca;
 
+import java.util.Iterator;
 import java.util.Stack;
 
 import org.apache.bcel.Repository;
@@ -64,6 +65,9 @@ import org.apache.bcel.generic.SIPUSH;
 import org.apache.bcel.generic.SWAP;
 import org.apache.bcel.generic.StoreInstruction;
 import org.apache.bcel.generic.Type;
+
+import edu.umd.cs.findbugs.BugCollection;
+import edu.umd.cs.findbugs.BugInstance;
 
 public class CtorAnalysisVisitor extends EmptyVisitor {
 	private final LocalVars localVars;
@@ -388,7 +392,19 @@ public class CtorAnalysisVisitor extends EmptyVisitor {
 				.getArgumentTypes(constantPoolGen));
 
 		CtorAnalyzer superCtorAnalyzer = new CtorAnalyzer(superCtor);
-		doesEscape = superCtorAnalyzer.doesThisReferenceEscape(stack);
+		BugCollection bugs = superCtorAnalyzer.doesThisReferenceEscape(stack);
+
+		Iterator<BugInstance> bugIterator = bugs.iterator();
+
+		if (!bugIterator.hasNext()) {
+			doesEscape = ThreeValueBoolean.no;
+		} else {
+			if (bugIterator.next().getPriority() == 1) {
+				doesEscape = ThreeValueBoolean.unknown;
+			} else {
+				doesEscape = ThreeValueBoolean.yes;
+			}
+		}
 
 		if (!obj.getReturnType(constantPoolGen).equals(BasicType.VOID)) {
 			stack.push(superCtorAnalyzer.getResult());

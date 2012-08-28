@@ -8,6 +8,10 @@ import org.apache.bcel.classfile.Method;
 import org.apache.bcel.generic.Instruction;
 import org.apache.bcel.generic.InstructionList;
 
+import edu.umd.cs.findbugs.BugCollection;
+import edu.umd.cs.findbugs.BugInstance;
+import edu.umd.cs.findbugs.SortedBugCollection;
+
 /**
  * Analyzes constructors.
  */
@@ -43,9 +47,9 @@ public class CtorAnalyzer {
 	 * Checks whether the reference of the checked object is passed to another
 	 * object in the constructor.
 	 * 
-	 * @return whether the reference of the checked object escapes.
+	 * @return BugCollection containing potential error messages
 	 */
-	public ThreeValueBoolean doesThisReferenceEscape() {
+	public BugCollection doesThisReferenceEscape() {
 		Stack<Entry> callerStack = new Stack<Entry>();
 
 		// push this + args onto the stack
@@ -69,9 +73,11 @@ public class CtorAnalyzer {
 	 * @param callerStack
 	 *            the content of the local variable table of the constructor.
 	 * 
-	 * @return whether the reference of the checked object escapes.
+	 * @return BugCollection containing potential error messages
 	 */
-	public ThreeValueBoolean doesThisReferenceEscape(Stack<Entry> callerStack) {
+	public BugCollection doesThisReferenceEscape(Stack<Entry> callerStack) {
+		BugCollection bugs = new SortedBugCollection();
+
 		LocalVariableTable lvt = ctor.getLocalVariableTable();
 		LocalVariable[] lva = null;
 
@@ -105,6 +111,12 @@ public class CtorAnalyzer {
 
 		System.out.println("^^^^^^^^^^^^^^^^^^^^^^^^^^^");
 
-		return doesEscape;
+		if (doesEscape.equals(ThreeValueBoolean.yes))
+			bugs.add(new BugInstance("Error: this reference escapes!", 2));
+
+		if (doesEscape.equals(ThreeValueBoolean.unknown))
+			bugs.add(new BugInstance("Warning: this reference might escape!", 1));
+
+		return bugs;
 	}
 }
