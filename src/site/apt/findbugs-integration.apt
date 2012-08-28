@@ -1,0 +1,14 @@
+Findbugs integration
+
+  Findbugs integration is described in the 
+  {{{http://code.google.com/p/findbugs/wiki/DetectorPluginTutorial}Findbugs plugin tutorial}}.
+  All detectors must implement the interface edu.umd.cs.findbugs.Detector.
+  They have a constructor which take as a single argument a edu.umd.cs.findbugs.BugReporter.
+  Findbugs first calls the visitClassContext method, passing a edu.umd.cs.findbugs.ba.ClassContext object. This classContext contains the bcel class descriptor org.apache.bcel.classfile.JavaClass of the class to analyze.
+  We can ignore the report() method as it is only for reports which need to aggregate info over several visited classes.
+  The rest is described in the above tutorial.
+  
+  There is also a new interface, edu.umd.cs.findbugs.Detector2, whether this should be better used I have not yet found out.
+  
+  Exampe of how to implement a Findbug bug detector:
+  http://www.ibm.com/developerworks/library/j-findbug2/
