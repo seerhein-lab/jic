@@ -1,6 +1,6 @@
 package de.htwg_konstanz.in.jca;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.fail;
 
 import java.lang.reflect.Constructor;
 
@@ -14,84 +14,83 @@ import org.junit.Test;
 
 public class TestFrame {
 
-    @BeforeClass
-    public static void setUpBeforeClass() throws Exception {
-    }
-
-    @AfterClass
-    public static void tearDownAfterClass() throws Exception {
-    }
-
-    @Before
-    public void setUp() throws Exception {
-    }
-
-    @After
-    public void tearDown() throws Exception {
-    }
-
-    @Test
-    public void testFrame() {
-	JavaClass clazz = null;
-	try {
-	    clazz = Repository.lookupClass("de.htwg_konstanz.in.jca.testclasses.ClassWithDiverseCtors");
+	@BeforeClass
+	public static void setUpBeforeClass() throws Exception {
 	}
-	catch ( ClassNotFoundException e) {
-	    fail("class not found");
+
+	@AfterClass
+	public static void tearDownAfterClass() throws Exception {
 	}
-	
-	Constructor[] ctors = 
-	    de.htwg_konstanz.in.jca.testclasses.ClassWithDiverseCtors.class.getConstructors();
-	
-	for ( Constructor ctor : ctors ) {
-//	    ctor.get;
+
+	@Before
+	public void setUp() throws Exception {
 	}
-	
-//	new ClassAnalyzer(clazz).getConstructor()
-	
-	
-	fail("Not yet implemented");
-    }
 
-    @Test
-    public void testPrintLocalVariables() {
-	fail("Not yet implemented");
-    }
+	@After
+	public void tearDown() throws Exception {
+	}
 
-    @Test
-    public void testGetLocalForOffset() {
-	fail("Not yet implemented");
-    }
+	@Test
+	public void testFrame() {
+		JavaClass clazz = null;
+		try {
+			clazz = Repository
+					.lookupClass("de.htwg_konstanz.in.jca.testclasses.ClassWithDiverseCtors");
+		} catch (ClassNotFoundException e) {
+			fail("class not found");
+		}
 
-    @Test
-    public void testSetLocalForOffset() {
-	fail("Not yet implemented");
-    }
+		Constructor[] ctors = de.htwg_konstanz.in.jca.testclasses.ClassWithDiverseCtors.class
+				.getConstructors();
 
-    @Test
-    public void testPushStackLocalVariable() {
-	fail("Not yet implemented");
-    }
+		for (Constructor ctor : ctors) {
+			// ctor.get;
+		}
 
-    @Test
-    public void testPushStackEntry() {
-	fail("Not yet implemented");
-    }
+		// new ClassAnalyzer(clazz).getConstructor()
 
-    @Test
-    public void testPopStack() {
-	fail("Not yet implemented");
-    }
+		fail("Not yet implemented");
+	}
 
-    @Test
-    public void testGetStack() {
-	fail("Not yet implemented");
-    }
+	@Test
+	public void testPrintLocalVariables() {
+		fail("Not yet implemented");
+	}
 
-    // TODO have equals and hashCode method generated if  
-    // logical equality other than reference equality exist. 
-    // Often the case for value objects.
+	@Test
+	public void testGetLocalForOffset() {
+		fail("Not yet implemented");
+	}
 
-    // TODO have toString method generated
+	@Test
+	public void testSetLocalForOffset() {
+		fail("Not yet implemented");
+	}
+
+	@Test
+	public void testPushStackLocalVariable() {
+		fail("Not yet implemented");
+	}
+
+	@Test
+	public void testPushStackEntry() {
+		fail("Not yet implemented");
+	}
+
+	@Test
+	public void testPopStack() {
+		fail("Not yet implemented");
+	}
+
+	@Test
+	public void testGetStack() {
+		fail("Not yet implemented");
+	}
+
+	// TODO have equals and hashCode method generated if
+	// logical equality other than reference equality exist.
+	// Often the case for value objects.
+
+	// TODO have toString method generated
 
 }
