@@ -2,6 +2,7 @@ package de.htwg_konstanz.in.jca;
 
 import static org.apache.bcel.Constants.CONSTRUCTOR_NAME;
 
+import java.util.Iterator;
 import java.util.List;
 import java.util.Vector;
 
@@ -9,6 +10,10 @@ import org.apache.bcel.classfile.Field;
 import org.apache.bcel.classfile.JavaClass;
 import org.apache.bcel.classfile.Method;
 import org.apache.bcel.generic.Type;
+
+import edu.umd.cs.findbugs.BugCollection;
+import edu.umd.cs.findbugs.BugInstance;
+import edu.umd.cs.findbugs.SortedBugCollection;
 
 public class ClassAnalyzer {
 	private final JavaClass clazz;
@@ -41,34 +46,50 @@ public class ClassAnalyzer {
 		return null;
 	}
 
-	private boolean allFieldsFinal() {
+	private BugCollection allFieldsFinal() {
+		BugCollection bugs = new SortedBugCollection();
 		Field[] fields = clazz.getFields();
 		for (Field field : fields)
 			if (!field.isFinal())
-				return false;
-		return true;
+				bugs.add(new BugInstance("Error: field must be final", 2));
+		return bugs;
 	}
 
-	public ThreeValueBoolean properlyConstructed() {
+	public BugCollection properlyConstructed() {
+		SortedBugCollection bugs = new SortedBugCollection();
 		List<Method> ctors = getConstructors();
-
-		ThreeValueBoolean thisReferenceEscapes = ThreeValueBoolean.no;
 
 		for (Method ctor : ctors) {
 			CtorAnalyzer ctorAnalyzer = new CtorAnalyzer(ctor);
-			thisReferenceEscapes = thisReferenceEscapes.or(ctorAnalyzer
-					.doesThisReferenceEscape());
+			bugs.addAll(ctorAnalyzer.doesThisReferenceEscape().getCollection());
 		}
-		return thisReferenceEscapes.not();
+		return bugs;
 	}
 
-	private ThreeValueBoolean stateUnmodifiable() {
+	private BugCollection stateUnmodifiable() {
+		BugCollection bugs = new SortedBugCollection();
+		bugs.add(new BugInstance("Warning: state might be modifiable", 1));
+		return bugs;
+	}
+
+	public BugCollection isImmutable() {
+		SortedBugCollection bugs = new SortedBugCollection();
+		bugs.addAll(allFieldsFinal().getCollection());
+		bugs.addAll(properlyConstructed().getCollection());
+		bugs.addAll(stateUnmodifiable().getCollection());
+		return bugs;
+	}
+
+	public static ThreeValueBoolean indicatesSuccess(BugCollection bugs) {
+		if (bugs.getCollection().isEmpty())
+			return ThreeValueBoolean.yes;
+
+		Iterator<BugInstance> iterator = bugs.getCollection().iterator();
+		while (iterator.hasNext())
+			if (iterator.next().getPriority() == 2)
+				return ThreeValueBoolean.no;
+
 		return ThreeValueBoolean.unknown;
-	}
-
-	public ThreeValueBoolean isImmutable() {
-		return properlyConstructed().and(stateUnmodifiable()).and(
-				allFieldsFinal());
 	}
 
 }
