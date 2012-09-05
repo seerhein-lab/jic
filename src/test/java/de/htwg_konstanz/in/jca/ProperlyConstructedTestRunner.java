@@ -10,7 +10,7 @@ public class ProperlyConstructedTestRunner extends AbstractTestRunner {
 
 	@Override
 	protected BugCollection runCheckMethod(ClassAnalyzer analyzer) {
-		return analyzer.isImmutable();
+		return analyzer.properlyConstructed();
 	}
 
 }

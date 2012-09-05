@@ -7,8 +7,6 @@ import java.lang.annotation.Target;
 import java.util.ArrayList;
 import java.util.List;
 
-import net.jcip.annotations.Immutable;
-
 import org.apache.bcel.Repository;
 import org.apache.bcel.classfile.JavaClass;
 import org.junit.Assert;
@@ -98,15 +96,14 @@ public abstract class AbstractTestRunner extends Runner {
 		ArrayList<Class<?>> testClassesList = new ArrayList<Class<?>>();
 		Class<?>[] classes = testCaseClass.getClasses();
 		for (Class<?> klass : classes) {
-			boolean isImmutableAnnotationPresent = klass
-					.isAnnotationPresent(Immutable.class);
-			boolean isMutableAnnotationPresent = klass
-					.isAnnotationPresent(Mutable.class);
-			if (isImmutableAnnotationPresent || isMutableAnnotationPresent) {
+
+			if (klass.isAnnotationPresent(Yes.class)
+					|| klass.isAnnotationPresent(No.class)
+					|| klass.isAnnotationPresent(UnKnown.class)) {
 				testClassesList.add(klass);
 			}
+
 		}
 		return testClassesList;
 	}
-
 }
