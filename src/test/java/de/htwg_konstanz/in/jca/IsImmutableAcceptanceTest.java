@@ -129,4 +129,125 @@ public class IsImmutableAcceptanceTest {
 
 	}
 
+	// new classes form ClassAnalyzer
+	// TODO: compare with cases above.
+
+	public static class Story000_ClassWithDefaultCtorEmpty {
+	}
+
+	public static class Story001_ClassWithNoArgsCtorEmpty {
+		public Story001_ClassWithNoArgsCtorEmpty() {
+		}
+	}
+
+	public static class Story002_ClassWithNoArgsCtorByte {
+		public Story002_ClassWithNoArgsCtorByte() {
+			byte b = 5;
+		}
+	}
+
+	public static class Story003_ClassWithNoArgsCtorInt {
+		public Story003_ClassWithNoArgsCtorInt() {
+			int i = 20;
+		}
+	}
+
+	public static class Story004_ClassWithNoArgsCtorChar {
+		public Story004_ClassWithNoArgsCtorChar() {
+			char c = 'c';
+		}
+	}
+
+	public static class Story005_ClassWithNoArgsCtorLong {
+		public Story005_ClassWithNoArgsCtorLong() {
+			long l = 25l;
+		}
+	}
+
+	public static class Story006_ClassWithNoArgsCtorObject {
+		public Story006_ClassWithNoArgsCtorObject() {
+			Object o = new Object();
+		}
+	}
+
+	public static class Story007_ClassWithNoArgsLongObject {
+		public Story007_ClassWithNoArgsLongObject() {
+			long l = 1l;
+			Object o = new Object();
+		}
+	}
+
+	public static class Story008_ClassWithNoArgsCtorAllTypes {
+		public Story008_ClassWithNoArgsCtorAllTypes() {
+			byte b = 7;
+			short s = 14;
+			int i = 815;
+			long l = 4711L;
+			float f = 3.14f;
+			double d = 2.18;
+			char c = 'x';
+			boolean bool = true;
+			Object o = new Object();
+		}
+	}
+
+	public static class Story009_ClassWithDefaultCtorInizialyzerByte {
+		final byte b = 7;
+	}
+
+	public static class Story010_ClassWithDefaultCtorInitialyzerChar {
+		final char c = 'x';
+	}
+
+	public static class Story011_ClassWithDefaultCtorInitialyzerLong {
+		final long l = 4711L;
+	}
+
+	public static class Story012_ClassWithDefaultCtorInitialyzerObject {
+		final Object o = new Object();
+	}
+
+	public static class Story013_ClassWithDefaultCtorInitialyzerLongObject {
+		final long l = 4711L;
+		final Object o = new Object();
+	}
+
+	public static class Story014_ClassWithDefaultCtorInitialyzerAllTypes {
+		final byte b = 7;
+		final short s = 14;
+		final int i = 815;
+		final long l = 4711L;
+		final float f = 3.14f;
+		final double d = 2.18;
+		final char c = 'x';
+		final boolean bool = true;
+		final Object o = new Object();
+	}
+
+	public static class Story015_ClassWithOneArgCtorConstByte {
+		final Class item = new Class((byte) 1);
+
+		public static final class Class {
+
+			private byte b;
+
+			public Class(byte b) {
+				this.b = b;
+			}
+		}
+	}
+
+	public static class Story016_ClassWithOneArgCtorByte {
+		final Class item = new Class((byte) 15);
+
+		public static final class Class {
+
+			private byte b;
+
+			public Class(byte b) {
+				this.b = b;
+			}
+		}
+	}
+
 }
