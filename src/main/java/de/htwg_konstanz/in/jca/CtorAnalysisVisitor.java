@@ -686,7 +686,8 @@ public class CtorAnalysisVisitor extends EmptyVisitor {
 	 */
 	@Override
 	public void visitLCONST(LCONST obj) {
-		notImplementedYet(obj);
+		System.out.println(obj.toString(false));
+		stack.push(Entry.someLong);
 	}
 
 	// ---LocalVariableInstruction--------------------------------------
