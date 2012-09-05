@@ -4,7 +4,7 @@ import net.jcip.annotations.Immutable;
 
 import org.junit.runner.RunWith;
 
-import de.htwg_konstanz.in.jca.ImmutableClassTestRunner.Mutable;
+import de.htwg_konstanz.in.jca.AbstractTestRunner.Mutable;
 
 /**
  * Functional acceptance tests for the method isImmutable of the class
@@ -16,16 +16,16 @@ import de.htwg_konstanz.in.jca.ImmutableClassTestRunner.Mutable;
  * this annotation are not immutable.
  * 
  * <li>The test logic and binding is implemented in a project specific JUnit
- * runner {@link ImmutableClassTestRunner}.
+ * runner {@link AbstractTestRunner}.
  * 
  * <li>The definition of a immutable class see JavaDoc of annotation
  * {@link Immutable}.
  * </ul>
  * 
  * @see Immutable
- * @see ImmutableClassTestRunner
+ * @see AbstractTestRunner
  */
-@RunWith(ImmutableClassTestRunner.class)
+@RunWith(ProperlyConstructedClassTestRunner.class)
 public class IsImmutableAcceptanceTest {
 
 	/**
