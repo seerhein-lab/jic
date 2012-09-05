@@ -74,24 +74,21 @@ public abstract class AbstractTestRunner extends Runner {
 		JavaClass javaClass = Repository.lookupClass(classToTest);
 		ClassAnalyzer analyzer = new ClassAnalyzer(javaClass);
 
-		// BugCollection bugs = analyzer.isImmutable();
 		BugCollection bugs = runCheckMethod(analyzer);
 
-		if (ClassAnalyzer.indicatesSuccess(bugs).equals(
-				ThreeValueBoolean.unknown)) {
-			notifier.fireTestIgnored(testDescription);
-		} else {
-			boolean expectedImmutableType = classToTest
-					.isAnnotationPresent(Immutable.class);
-			if (expectedImmutableType) {
-				Assert.assertEquals("Class should be immutable.",
-						ThreeValueBoolean.yes,
-						ClassAnalyzer.indicatesSuccess(bugs));
-			} else {
-				Assert.assertEquals("Class should is not immutable.",
-						ThreeValueBoolean.no,
-						ClassAnalyzer.indicatesSuccess(bugs));
-			}
+		if (classToTest.isAnnotationPresent(Yes.class)) {
+			Assert.assertEquals(ThreeValueBoolean.yes,
+					ClassAnalyzer.indicatesSuccess(bugs));
+		}
+
+		if (classToTest.isAnnotationPresent(No.class)) {
+			Assert.assertEquals(ThreeValueBoolean.no,
+					ClassAnalyzer.indicatesSuccess(bugs));
+		}
+
+		if (classToTest.isAnnotationPresent(UnKnown.class)) {
+			Assert.assertEquals(ThreeValueBoolean.unknown,
+					ClassAnalyzer.indicatesSuccess(bugs));
 		}
 	}
 
