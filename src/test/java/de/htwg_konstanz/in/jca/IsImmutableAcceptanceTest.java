@@ -25,7 +25,7 @@ import de.htwg_konstanz.in.jca.AbstractTestRunner.Mutable;
  * @see Immutable
  * @see AbstractTestRunner
  */
-@RunWith(ProperlyConstructedClassTestRunner.class)
+@RunWith(ProperlyConstructedTestRunner.class)
 public class IsImmutableAcceptanceTest {
 
 	/**
