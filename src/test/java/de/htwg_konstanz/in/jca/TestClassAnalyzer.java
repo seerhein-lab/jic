@@ -7,6 +7,11 @@ import org.apache.bcel.Repository;
 import org.apache.bcel.classfile.JavaClass;
 import org.junit.Test;
 
+import de.htwg_konstanz.in.jca.testclasses.DefaultCtorInitializersByte;
+import de.htwg_konstanz.in.jca.testclasses.DefaultCtorInitializersChar;
+import de.htwg_konstanz.in.jca.testclasses.DefaultCtorInitializersLong;
+import de.htwg_konstanz.in.jca.testclasses.DefaultCtorInitializersLongObject;
+import de.htwg_konstanz.in.jca.testclasses.DefaultCtorInitializersObject;
 import de.htwg_konstanz.in.jca.testclasses.DefaultCtorNoInitializers;
 
 public class TestClassAnalyzer {
@@ -20,8 +25,8 @@ public class TestClassAnalyzer {
 		} catch (ClassNotFoundException e) {
 			fail("class not found");
 		}
-		assertEquals(ClassAnalyzer.bugCollection2successfull(new ClassAnalyzer(
-				clazz).properlyConstructed()), ThreeValueBoolean.yes);
+		assertEquals(ClassAnalyzer.indicatesSuccess(new ClassAnalyzer(clazz)
+				.properlyConstructed()), ThreeValueBoolean.yes);
 	}
 
 	@Test
@@ -33,8 +38,8 @@ public class TestClassAnalyzer {
 		} catch (ClassNotFoundException e) {
 			fail("class not found");
 		}
-		assertEquals(ClassAnalyzer.bugCollection2successfull(new ClassAnalyzer(
-				clazz).properlyConstructed()), ThreeValueBoolean.yes);
+		assertEquals(ClassAnalyzer.indicatesSuccess(new ClassAnalyzer(clazz)
+				.properlyConstructed()), ThreeValueBoolean.yes);
 	}
 
 	@Test
@@ -46,8 +51,8 @@ public class TestClassAnalyzer {
 		} catch (ClassNotFoundException e) {
 			fail("class not found");
 		}
-		assertEquals(ClassAnalyzer.bugCollection2successfull(new ClassAnalyzer(
-				clazz).properlyConstructed()), ThreeValueBoolean.yes);
+		assertEquals(ClassAnalyzer.indicatesSuccess(new ClassAnalyzer(clazz)
+				.properlyConstructed()), ThreeValueBoolean.yes);
 	}
 
 	@Test
@@ -59,8 +64,8 @@ public class TestClassAnalyzer {
 		} catch (ClassNotFoundException e) {
 			fail("class not found");
 		}
-		assertEquals(ClassAnalyzer.bugCollection2successfull(new ClassAnalyzer(
-				clazz).properlyConstructed()), ThreeValueBoolean.yes);
+		assertEquals(ClassAnalyzer.indicatesSuccess(new ClassAnalyzer(clazz)
+				.properlyConstructed()), ThreeValueBoolean.yes);
 	}
 
 	@Test
@@ -72,8 +77,8 @@ public class TestClassAnalyzer {
 		} catch (ClassNotFoundException e) {
 			fail("class not found");
 		}
-		assertEquals(ClassAnalyzer.bugCollection2successfull(new ClassAnalyzer(
-				clazz).properlyConstructed()), ThreeValueBoolean.yes);
+		assertEquals(ClassAnalyzer.indicatesSuccess(new ClassAnalyzer(clazz)
+				.properlyConstructed()), ThreeValueBoolean.yes);
 	}
 
 	@Test
@@ -86,8 +91,8 @@ public class TestClassAnalyzer {
 		} catch (ClassNotFoundException e) {
 			fail("class not found");
 		}
-		assertEquals(ClassAnalyzer.bugCollection2successfull(new ClassAnalyzer(
-				clazz).properlyConstructed()), ThreeValueBoolean.yes);
+		assertEquals(ClassAnalyzer.indicatesSuccess(new ClassAnalyzer(clazz)
+				.properlyConstructed()), ThreeValueBoolean.yes);
 	}
 
 	// ClassPath cp = new
