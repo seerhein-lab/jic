@@ -31,6 +31,13 @@ public class ClassAnalyzer {
 		return ctors;
 	}
 
+	/**
+	 * return the constructor that is specified by its arguments.
+	 * 
+	 * @param types
+	 *            arguments of the constructor to be returned
+	 * @return
+	 */
 	public Method getConstructor(Type[] types) {
 		Method[] methods = clazz.getMethods();
 
