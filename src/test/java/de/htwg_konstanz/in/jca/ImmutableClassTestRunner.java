@@ -75,7 +75,7 @@ public class ImmutableClassTestRunner extends Runner {
 		ClassAnalyzer analyzer = new ClassAnalyzer(javaClass);
 		BugCollection bugs = analyzer.isImmutable();
 
-		if (ClassAnalyzer.bugCollection2successfull(bugs).equals(
+		if (ClassAnalyzer.indicatesSuccess(bugs).equals(
 				ThreeValueBoolean.unknown)) {
 			notifier.fireTestIgnored(testDescription);
 		} else {
@@ -84,11 +84,11 @@ public class ImmutableClassTestRunner extends Runner {
 			if (expectedImmutableType) {
 				Assert.assertEquals("Class should be immutable.",
 						ThreeValueBoolean.yes,
-						ClassAnalyzer.bugCollection2successfull(bugs));
+						ClassAnalyzer.indicatesSuccess(bugs));
 			} else {
 				Assert.assertEquals("Class should is not immutable.",
 						ThreeValueBoolean.no,
-						ClassAnalyzer.bugCollection2successfull(bugs));
+						ClassAnalyzer.indicatesSuccess(bugs));
 			}
 		}
 	}
