@@ -3,13 +3,11 @@ package de.htwg_konstanz.in.jca;
 import java.util.Stack;
 
 import org.apache.bcel.classfile.LocalVariable;
-import org.apache.bcel.classfile.LocalVariableTable;
 import org.apache.bcel.classfile.Method;
 import org.apache.bcel.generic.Instruction;
 import org.apache.bcel.generic.InstructionList;
 
 import edu.umd.cs.findbugs.BugCollection;
-import edu.umd.cs.findbugs.BugInstance;
 import edu.umd.cs.findbugs.SortedBugCollection;
 
 /**
@@ -76,15 +74,7 @@ public class CtorAnalyzer {
 	 * @return BugCollection containing potential error messages
 	 */
 	public BugCollection doesThisReferenceEscape(Stack<Entry> callerStack) {
-		BugCollection bugs = new SortedBugCollection();
-
-		LocalVariableTable lvt = ctor.getLocalVariableTable();
-		LocalVariable[] lva = null;
-
-		if (lvt == null) {
-			lva = new LocalVariable[1];
-
-		}
+		SortedBugCollection bugs = new SortedBugCollection();
 
 		LocalVars localVars = new LocalVars(
 				(ctor.getLocalVariableTable() == null) ? new LocalVariable[0]
@@ -98,24 +88,17 @@ public class CtorAnalyzer {
 				ctor.getCode().getConstantPool());
 		Instruction[] instructions = new InstructionList(ctor.getCode()
 				.getCode()).getInstructions();
-		ThreeValueBoolean doesEscape = ThreeValueBoolean.no;
 
 		System.out.println("vvvvvvvvvvvvvvvvvvvvvvvvvv");
 
 		for (Instruction instruction : instructions) {
 			instruction.accept(visitor);
-			doesEscape = doesEscape.or(visitor.doesEscape());
+			bugs.addAll(visitor.doesEscape().getCollection());
 		}
 
 		result = visitor.getResult();
 
 		System.out.println("^^^^^^^^^^^^^^^^^^^^^^^^^^^");
-
-		if (doesEscape.equals(ThreeValueBoolean.yes))
-			bugs.add(new BugInstance("Error: this reference escapes!", 2));
-
-		if (doesEscape.equals(ThreeValueBoolean.unknown))
-			bugs.add(new BugInstance("Warning: this reference might escape!", 1));
 
 		return bugs;
 	}

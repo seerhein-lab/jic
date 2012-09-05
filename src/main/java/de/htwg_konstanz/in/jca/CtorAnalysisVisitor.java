@@ -68,13 +68,14 @@ import org.apache.bcel.generic.Type;
 
 import edu.umd.cs.findbugs.BugCollection;
 import edu.umd.cs.findbugs.BugInstance;
+import edu.umd.cs.findbugs.SortedBugCollection;
 
 public class CtorAnalysisVisitor extends EmptyVisitor {
 	private final LocalVars localVars;
 	private final Stack<Entry> stack;
 	private final ConstantPoolGen constantPoolGen;
 
-	private volatile ThreeValueBoolean doesEscape = ThreeValueBoolean.no;
+	private volatile BugCollection bugs = new SortedBugCollection();
 	private volatile Entry result = null;
 
 	CtorAnalysisVisitor(LocalVars localVars, Stack<Entry> stack,
@@ -84,8 +85,8 @@ public class CtorAnalysisVisitor extends EmptyVisitor {
 		this.constantPoolGen = new ConstantPoolGen(constantPool);
 	}
 
-	public ThreeValueBoolean doesEscape() {
-		return doesEscape;
+	public BugCollection doesEscape() {
+		return bugs;
 	}
 
 	public Entry getResult() {
