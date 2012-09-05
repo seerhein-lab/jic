@@ -1,6 +1,5 @@
 package de.htwg_konstanz.in.jca;
 
-import java.util.Iterator;
 import java.util.Stack;
 
 import org.apache.bcel.Repository;
@@ -75,7 +74,7 @@ public class CtorAnalysisVisitor extends EmptyVisitor {
 	private final Stack<Entry> stack;
 	private final ConstantPoolGen constantPoolGen;
 
-	private volatile BugCollection bugs = new SortedBugCollection();
+	private volatile SortedBugCollection bugs = new SortedBugCollection();
 	private volatile Entry result = null;
 
 	CtorAnalysisVisitor(LocalVars localVars, Stack<Entry> stack,
@@ -96,7 +95,7 @@ public class CtorAnalysisVisitor extends EmptyVisitor {
 	private void notImplementedYet(Object instruction) {
 		System.out.println(instruction.toString());
 		System.out.println("NOT IMPLEMENTED YET");
-		doesEscape = ThreeValueBoolean.unknown;
+		bugs.add(new BugInstance("Warning: 'this' reference might escape", 1));
 		System.out.println();
 	}
 
@@ -189,7 +188,6 @@ public class CtorAnalysisVisitor extends EmptyVisitor {
 	public void visitBIPUSH(BIPUSH obj) {
 		System.out.println(obj.toString(false));
 		stack.push(Entry.someInt);
-		doesEscape = ThreeValueBoolean.no;
 	}
 
 	// -----------------------------------------------------------------
@@ -313,12 +311,14 @@ public class CtorAnalysisVisitor extends EmptyVisitor {
 		// right side of assignment
 		Entry right = stack.pop();
 
-		doesEscape = ThreeValueBoolean.fromBoolean(right
-				.equals(Entry.thisReference));
-
-		if (right.equals(Entry.thisReference))
+		if (right.equals(Entry.thisReference)) {
 			System.out
-					.println("'this' reference is assigned to some object's field --> ESCAPE!");
+					.println("Error: 'this' reference ist assigned to some object's field and escapes.");
+			bugs.add(new BugInstance(
+					"Error: 'this' reference ist assigned to some object's field and escapes.",
+					2));
+
+		}
 
 		// pop left side of assignment off the stack, too
 		Entry left = stack.pop();
@@ -393,19 +393,9 @@ public class CtorAnalysisVisitor extends EmptyVisitor {
 				.getArgumentTypes(constantPoolGen));
 
 		CtorAnalyzer superCtorAnalyzer = new CtorAnalyzer(superCtor);
-		BugCollection bugs = superCtorAnalyzer.doesThisReferenceEscape(stack);
 
-		Iterator<BugInstance> bugIterator = bugs.iterator();
-
-		if (!bugIterator.hasNext()) {
-			doesEscape = ThreeValueBoolean.no;
-		} else {
-			if (bugIterator.next().getPriority() == 1) {
-				doesEscape = ThreeValueBoolean.unknown;
-			} else {
-				doesEscape = ThreeValueBoolean.yes;
-			}
-		}
+		bugs.addAll(superCtorAnalyzer.doesThisReferenceEscape(stack)
+				.getCollection());
 
 		if (!obj.getReturnType(constantPoolGen).equals(BasicType.VOID)) {
 			stack.push(superCtorAnalyzer.getResult());
@@ -474,7 +464,6 @@ public class CtorAnalysisVisitor extends EmptyVisitor {
 	@Override
 	public void visitLDC(LDC obj) {
 		System.out.println(obj.toString(false));
-		doesEscape = ThreeValueBoolean.no;
 
 		if (obj.getType(constantPoolGen).equals(Type.INT)) {
 			stack.push(Entry.someInt);
@@ -504,7 +493,6 @@ public class CtorAnalysisVisitor extends EmptyVisitor {
 	@Override
 	public void visitLDC2_W(LDC2_W obj) {
 		System.out.println(obj.toString(false));
-		doesEscape = ThreeValueBoolean.no;
 
 		if (obj.getType(constantPoolGen).equals(Type.LONG)) {
 			stack.push(Entry.someLong);
@@ -553,7 +541,6 @@ public class CtorAnalysisVisitor extends EmptyVisitor {
 	public void visitNEW(NEW obj) {
 		System.out.println(obj.toString(false));
 		stack.push(Entry.someReference);
-		doesEscape = ThreeValueBoolean.no;
 	}
 
 	// -----------------------------------------------------------------
@@ -650,7 +637,6 @@ public class CtorAnalysisVisitor extends EmptyVisitor {
 	public void visitICONST(ICONST obj) {
 		System.out.println(obj.toString(false));
 		stack.push(Entry.someInt);
-		doesEscape = ThreeValueBoolean.no;
 	}
 
 	// -----------------------------------------------------------------
@@ -731,7 +717,6 @@ public class CtorAnalysisVisitor extends EmptyVisitor {
 	public void visitLoadInstruction(LoadInstruction obj) {
 		System.out.println(obj.toString(false));
 		stack.push(localVars.getForIndex(obj.getIndex()));
-		doesEscape = ThreeValueBoolean.no;
 	}
 
 	/**
@@ -746,7 +731,6 @@ public class CtorAnalysisVisitor extends EmptyVisitor {
 	public void visitStoreInstruction(StoreInstruction obj) {
 		System.out.println(obj.toString(false));
 		localVars.setForIndex(obj.getIndex(), stack.pop());
-		doesEscape = ThreeValueBoolean.no;
 	}
 
 	// -----------------------------------------------------------------
@@ -764,7 +748,6 @@ public class CtorAnalysisVisitor extends EmptyVisitor {
 	public void visitMONITORENTER(MONITORENTER obj) {
 		System.out.println("MONITORENTER " + ": No Escape");
 		stack.pop();
-		doesEscape = ThreeValueBoolean.no;
 	}
 
 	// -----------------------------------------------------------------
@@ -782,7 +765,6 @@ public class CtorAnalysisVisitor extends EmptyVisitor {
 	public void visitMONITOREXIT(MONITOREXIT obj) {
 		System.out.println("MONITOREXIT " + ": No Escape");
 		stack.pop();
-		doesEscape = ThreeValueBoolean.no;
 	}
 
 	// -----------------------------------------------------------------
@@ -838,7 +820,6 @@ public class CtorAnalysisVisitor extends EmptyVisitor {
 	@Override
 	public void visitReturnInstruction(ReturnInstruction obj) {
 		System.out.println("ReturnInstruction");
-		doesEscape = ThreeValueBoolean.no;
 	}
 
 	// -----------------------------------------------------------------
@@ -854,7 +835,6 @@ public class CtorAnalysisVisitor extends EmptyVisitor {
 	public void visitSIPUSH(SIPUSH obj) {
 		System.out.println("sipush " + obj.getValue());
 		stack.push(Entry.someShort);
-		doesEscape = ThreeValueBoolean.no;
 	}
 
 	// ---StackInstruction----------------------------------------------
@@ -872,7 +852,6 @@ public class CtorAnalysisVisitor extends EmptyVisitor {
 		Entry entry = stack.pop();
 		stack.push(entry);
 		stack.push(entry);
-		doesEscape = ThreeValueBoolean.no;
 	}
 
 	/**
