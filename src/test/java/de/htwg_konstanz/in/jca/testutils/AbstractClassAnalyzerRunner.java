@@ -1,4 +1,4 @@
-package de.htwg_konstanz.in.jca;
+package de.htwg_konstanz.in.jca.testutils;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -16,9 +16,12 @@ import org.junit.runner.Runner;
 import org.junit.runner.notification.Failure;
 import org.junit.runner.notification.RunNotifier;
 
+import de.htwg_konstanz.in.jca.ClassAnalyzer;
+import de.htwg_konstanz.in.jca.ThreeValueBoolean;
+
 import edu.umd.cs.findbugs.BugCollection;
 
-public abstract class AbstractTestRunner extends Runner {
+public abstract class AbstractClassAnalyzerRunner extends Runner {
 
 	@Target(value = { ElementType.TYPE })
 	@Retention(value = RetentionPolicy.RUNTIME)
@@ -27,7 +30,7 @@ public abstract class AbstractTestRunner extends Runner {
 
 	private final Class<?> testClass;
 
-	public AbstractTestRunner(Class<?> testClass) {
+	public AbstractClassAnalyzerRunner(Class<?> testClass) {
 		this.testClass = testClass;
 	}
 

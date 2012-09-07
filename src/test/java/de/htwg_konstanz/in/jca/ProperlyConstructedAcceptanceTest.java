@@ -2,6 +2,10 @@ package de.htwg_konstanz.in.jca;
 
 import org.junit.runner.RunWith;
 
+import de.htwg_konstanz.in.jca.testutils.AbstractClassAnalyzerRunner;
+import de.htwg_konstanz.in.jca.testutils.Yes;
+import edu.umd.cs.findbugs.BugCollection;
+
 /**
  * Functional acceptance tests for the method properlyConstructed of the class
  * ClassAnalyzer.
@@ -10,9 +14,26 @@ import org.junit.runner.RunWith;
  *
  * @see ProperlyConstructedTestRunner
  */
-@RunWith(ProperlyConstructedTestRunner.class)
+@RunWith(ProperlyConstructedAcceptanceTest.ProperlyConstructedTestRunner.class)
 public class ProperlyConstructedAcceptanceTest {
+	
+	/**
+	 * Test Binding.
+	 * TODO: JavaDoc
+	 */
+	public static class ProperlyConstructedTestRunner extends AbstractClassAnalyzerRunner {
 
+		public ProperlyConstructedTestRunner(Class<?> testClass) {
+			super(testClass);
+		}
+
+		@Override
+		protected BugCollection runCheckMethod(ClassAnalyzer analyzer) {
+			return analyzer.properlyConstructed();
+		}
+
+	}
+	
 	/**
 	 * Simple class without fields and with the default constructor.
 	 */
