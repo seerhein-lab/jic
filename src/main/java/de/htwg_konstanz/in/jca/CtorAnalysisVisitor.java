@@ -69,6 +69,25 @@ import edu.umd.cs.findbugs.BugCollection;
 import edu.umd.cs.findbugs.BugInstance;
 import edu.umd.cs.findbugs.SortedBugCollection;
 
+/**
+ * Analyzes constructors whether the this-reference escapes or not. Therefore a
+ * virtual machine is simulated and all occurring bytecode operations are
+ * performed in the corresponding visit-method.
+ * <p>
+ * This class does:
+ * <ul>
+ * <li>Check if the this reference escapes or not
+ * <li>Provide a bug collection with the found errors
+ * </ul>
+ * </p>
+ * <p>
+ * This class does not:
+ * <ul>
+ * <li>Check if the entries have the expected type
+ * <li>Check if 64 bit values are set/read atomic
+ * </ul>
+ * </p>
+ */
 public class CtorAnalysisVisitor extends EmptyVisitor {
 	private final LocalVars localVars;
 	private final Stack<Entry> stack;
@@ -92,6 +111,9 @@ public class CtorAnalysisVisitor extends EmptyVisitor {
 		return result;
 	}
 
+	/**
+	 * Called if a visit method is not yet implemented.
+	 */
 	private void notImplementedYet(Object instruction) {
 		System.out.println(instruction.toString());
 		System.out.println("NOT IMPLEMENTED YET");
@@ -109,24 +131,21 @@ public class CtorAnalysisVisitor extends EmptyVisitor {
 
 	// -----------------------------------------------------------------
 	/**
-	 * 1. ACONST_NULL:
-	 * <p>
-	 * Pushes a null reference onto the stack
-	 * <p>
-	 * Stack: → null
+	 * 1. ACONST_NULL<br>
+	 * Called when an ACONST_NULL operation occurs. Pushes a null reference onto
+	 * the simulated stack.
 	 */
 	@Override
 	public void visitACONST_NULL(ACONST_NULL obj) {
-		notImplementedYet(obj);
+		// TODO check if NULL reference is someReference
+		System.out.println(obj.toString(false));
+		stack.push(Entry.someReference);
 	}
 
 	// -----------------------------------------------------------------
 	/**
-	 * 2. ArithmeticInstruction
-	 * <p>
-	 * ToDo: Add description
-	 * <p>
-	 * ToDo: Add Stack
+	 * 2. ArithmeticInstruction <br>
+	 * Called when an ArithmeticInstruction occurs. TODO: Add subInstructions
 	 */
 	@Override
 	public void visitArithmeticInstruction(ArithmeticInstruction obj) {
@@ -136,11 +155,9 @@ public class CtorAnalysisVisitor extends EmptyVisitor {
 	// -----------------------------------------------------------------
 
 	/**
-	 * 3. ArrayInstruction
-	 * <p>
-	 * ToDo: Add description
-	 * <p>
-	 * ToDo: Add Stack
+	 * 3. ArrayInstruction<br>
+	 * Called when an ArrayInstruction operation occurs. TODO: Add
+	 * subInstructions
 	 */
 	@Override
 	public void visitArrayInstruction(ArrayInstruction obj) {
@@ -149,40 +166,39 @@ public class CtorAnalysisVisitor extends EmptyVisitor {
 
 	// -----------------------------------------------------------------
 	/**
-	 * 4. ARRAYLENGTH
-	 * <p>
-	 * Gets the length of an array.
-	 * <p>
-	 * Stack: arrayref → length
+	 * 4. ARRAYLENGTH<br>
+	 * Called when an ARRAYLENGTH operation occurs. Gets the length of an array.
+	 * Pops an array reference from the stack and pushes the array length as an
+	 * integer value.
 	 */
 	@Override
 	public void visitARRAYLENGTH(ARRAYLENGTH obj) {
-		notImplementedYet(obj);
+		System.out.println(obj.toString(false));
+		stack.pop();
+		stack.push(Entry.someInt);
 	}
 
 	// -----------------------------------------------------------------
 	/**
-	 * 5. ATHROW
-	 * <p>
-	 * Throws an error or exception (notice that the rest of the stack is
-	 * cleared, leaving only a reference to the Throwable).
-	 * <p>
-	 * Stack: objectref → [empty], objectref
+	 * 5. ATHROW<br>
+	 * Called when an ATHROW operation occurs. Clears the stack and pushes a
+	 * reference to the thrown error or exception.
 	 */
 	@Override
 	public void visitATHROW(ATHROW obj) {
 		notImplementedYet(obj);
+		// TODO Exceptionhandeling??
+		/*
+		 * System.out.println(obj.toString(false)); stack.clear();
+		 * stack.push(Entry.someReference);
+		 */
 	}
 
 	// -----------------------------------------------------------------
 	/**
-	 * 5. BIPUSH
-	 * <p>
-	 * Pushes a byte onto the stack as an integer value.
-	 * <p>
-	 * Stack: → value
-	 * <p>
-	 * DoesEscape: no, only 32 bit operation.
+	 * 5. BIPUSH<br>
+	 * Called when a BIPUSH operation occurs. Pushes a byte onto the stack as an
+	 * integer value.
 	 */
 	@Override
 	public void visitBIPUSH(BIPUSH obj) {
@@ -192,11 +208,9 @@ public class CtorAnalysisVisitor extends EmptyVisitor {
 
 	// -----------------------------------------------------------------
 	/**
-	 * 6. BranchInstruction
-	 * <p>
-	 * ToDo: add description
-	 * <p>
-	 * ToDo: add Stack
+	 * 6. BranchInstruction<br>
+	 * Called when a BranchInstruction operation occurs. TODO: add description
+	 * TODO: look up stack
 	 */
 	@Override
 	public void visitBranchInstruction(BranchInstruction obj) {
@@ -205,10 +219,9 @@ public class CtorAnalysisVisitor extends EmptyVisitor {
 
 	// -----------------------------------------------------------------
 	/**
-	 * 8. BREAKPOINT
-	 * <p>
-	 * Reserved for breakpoints in Java debuggers; should not appear in any
-	 * class file.
+	 * 8. BREAKPOINT<br>
+	 * Called when a BREAKPOINT operation occurs. The BREAKPOINT operation is
+	 * reserved for Java debuggers and should not appear in any class file.
 	 */
 	@Override
 	public void visitBREAKPOINT(BREAKPOINT obj) {
@@ -217,11 +230,9 @@ public class CtorAnalysisVisitor extends EmptyVisitor {
 
 	// -----------------------------------------------------------------
 	/**
-	 * 9. ConversionInstruction
-	 * <p>
-	 * ToDo: add description
-	 * <p>
-	 * ToDo: add stack
+	 * 9. ConversionInstruction <br>
+	 * Called when a ConversionInstruction operation occurs.TODO: add
+	 * description TODO: lookup stack
 	 */
 	@Override
 	public void visitConversionInstruction(ConversionInstruction obj) {
@@ -231,46 +242,41 @@ public class CtorAnalysisVisitor extends EmptyVisitor {
 	// ---CPInstruction-------------------------------------------------
 	/**
 	 * 10. ConversionInstruction <br>
-	 * 10.1. ANEWARRAY
-	 * <p>
-	 * Creates a new array of references of length count and component type
-	 * identified by the class reference index (indexbyte1 << 8 + indexbyte2) in
-	 * the constant pool.
-	 * <p>
-	 * Stack: count → arrayref <br>
-	 * Note: 2 other bytes (indexbyte1, indexbyte2)
+	 * 10.1. ANEWARRAY<br>
+	 * Called when an ANEWARRAY operation occurs. Pops an integer value from the
+	 * stack and pushes a new array reference.
 	 */
 	@Override
 	public void visitANEWARRAY(ANEWARRAY obj) {
-		notImplementedYet(obj);
+		System.out.println(obj.toString(false));
+		stack.pop();
+		stack.push(Entry.someReference);
 	}
 
 	/**
 	 * 10. ConversionInstruction <br>
-	 * 10.2. CHECKCAST
-	 * <p>
-	 * Checks whether an objectref is of a certain type, the class reference of
-	 * which is in the constant pool at index (indexbyte1 << 8 + indexbyte2).
-	 * <p>
-	 * Stack: objectref → objectref <br>
-	 * Note: 2 other bytes (indexbyte1, indexbyte2)
+	 * 10.2. CHECKCAST<<br>
+	 * Called when a CHECKCAST operation occurs. Pops a object reference from
+	 * the stack, checks if it is of a certain type and pushes the reference
+	 * back onto the stack or throws an exception if not.
 	 */
 	@Override
 	public void visitCHECKCAST(CHECKCAST obj) {
 		notImplementedYet(obj);
+		// TODO Exceptionhandeling???
+		/*
+		 * System.out.println(obj.toString(false)); //TODO: find out if stack
+		 * should be changed or not Entry temp = stack.pop(); stack.push(temp);
+		 */
 	}
 
 	/**
 	 * 10. ConversionInstruction <br>
 	 * 10.3. FieldOrMethod <br>
-	 * 10.3.2. GETFIELD
-	 * <p>
-	 * Gets a field value of an object objectref, where the field is identified
-	 * by field reference in the constant pool index (index1 << 8 + index2).
-	 * <p>
-	 * Stack: objectref → value <br>
-	 * Note: 2 other bytes (index1, index2)
-	 */
+	 * 10.3.2. GETFIELD <br>
+	 * Called when a GETFIELD operation occurs. Pops an object reference from
+	 * the stack and pushes the corresponding field value onto the stack.
+	 * */
 	@Override
 	public void visitGETFIELD(GETFIELD obj) {
 		notImplementedYet(obj);
@@ -279,13 +285,9 @@ public class CtorAnalysisVisitor extends EmptyVisitor {
 	/**
 	 * 10. ConversionInstruction <br>
 	 * 10.3. FieldOrMethod <br>
-	 * 10.3.3. GETSTATIC
-	 * <p>
-	 * Gets a static field value of a class, where the field is identified by
-	 * field reference in the constant pool index (index1 << 8 + index2).
-	 * <p>
-	 * Stack: → value <br>
-	 * Note: 2 other bytes (index1, index2)
+	 * 10.3.3. GETSTATIC <br>
+	 * Called when a GETSTATIC operation occurs. Pushes a static field value of
+	 * a class onto the stack.
 	 */
 	@Override
 	public void visitGETSTATIC(GETSTATIC obj) {
@@ -295,15 +297,11 @@ public class CtorAnalysisVisitor extends EmptyVisitor {
 	/**
 	 * 10. ConversionInstruction <br>
 	 * 10.3. FieldOrMethod <br>
-	 * 10.3.4. PUTFIELD
-	 * <p>
-	 * Sets field to value in an object objectref, where the field is identified
-	 * by a field reference index in constant pool (indexbyte1 << 8 +
-	 * indexbyte2).
-	 * <p>
-	 * Stack: objectref, value → <br>
-	 * Note: 2 other bytes (indexbyte1, indexbyte2)
-	 */
+	 * 10.3.4. PUTFIELD <br>
+	 * Called when a PUTFIELD operation occurs. Pops a value and an object
+	 * reference from the stack. The field in the object reference is set to the
+	 * value.
+	 * */
 	@Override
 	public void visitPUTFIELD(PUTFIELD obj) {
 		System.out.print(obj.toString(false) + ": ");
@@ -330,13 +328,9 @@ public class CtorAnalysisVisitor extends EmptyVisitor {
 	/**
 	 * 10. ConversionInstruction <br>
 	 * 10.3. FieldOrMethod <br>
-	 * 10.3.4. PUTSTATIC
-	 * <p>
-	 * Sets static field to value in a class, where the field is identified by a
-	 * field reference index in constant pool (indexbyte1 << 8 + indexbyte2).
-	 * <p>
-	 * Stack: value → <br>
-	 * Note: 2 other bytes (indexbyte1, indexbyte2)
+	 * 10.3.4. PUTSTATIC <br>
+	 * Called when a PUTSTATIC operation occurs. Pops a value from the stack and
+	 * sets a static field in a class to the popped value.
 	 */
 	@Override
 	public void visitPUTSTATIC(PUTSTATIC obj) {
@@ -344,7 +338,7 @@ public class CtorAnalysisVisitor extends EmptyVisitor {
 	}
 
 	/**
-	 * 10. ConversionInstruction <br>
+	 * TODO: ReWrite 10. ConversionInstruction <br>
 	 * 10.4. InvokeInstruction <br>
 	 * 10.4.1. INVOKEINTERFACE
 	 * <p>
@@ -361,7 +355,7 @@ public class CtorAnalysisVisitor extends EmptyVisitor {
 	}
 
 	/**
-	 * 10. ConversionInstruction <br>
+	 * TODO ReWrite 10. ConversionInstruction <br>
 	 * 10.4. InvokeInstruction <br>
 	 * 10.4.2. INVOKESPECIAL
 	 * <p>
@@ -404,7 +398,7 @@ public class CtorAnalysisVisitor extends EmptyVisitor {
 	}
 
 	/**
-	 * 10. ConversionInstruction <br>
+	 * TODO ReWrite 10. ConversionInstruction <br>
 	 * 10.4. InvokeInstruction <br>
 	 * 10.4.3. INVOKESTATIC
 	 * <p>
@@ -420,7 +414,7 @@ public class CtorAnalysisVisitor extends EmptyVisitor {
 	}
 
 	/**
-	 * 10. ConversionInstruction <br>
+	 * TODO ReWrite 10. ConversionInstruction <br>
 	 * 10.4. InvokeInstruction <br>
 	 * 10.4.4. INVOKEVIRTUAL
 	 * <p>
@@ -437,7 +431,7 @@ public class CtorAnalysisVisitor extends EmptyVisitor {
 	}
 
 	/**
-	 * 10. ConversionInstruction <br>
+	 * TODO ReWrite 10. ConversionInstruction <br>
 	 * 10.5. INSTANCEOF
 	 * <p>
 	 * Determines if an object objectref is of a given type, identified by class
@@ -452,7 +446,7 @@ public class CtorAnalysisVisitor extends EmptyVisitor {
 	}
 
 	/**
-	 * 10. ConversionInstruction <br>
+	 * TODO ReWrite 10. ConversionInstruction <br>
 	 * 10.6. LDC
 	 * <p>
 	 * Pushes a constant #index from a constant pool (String, int or float) onto
@@ -479,7 +473,7 @@ public class CtorAnalysisVisitor extends EmptyVisitor {
 	}
 
 	/**
-	 * 10. ConversionInstruction <br>
+	 * TODO ReWrite 10. ConversionInstruction <br>
 	 * 10.7. LDC2_W
 	 * <p>
 	 * Pushes a constant #index from a constant pool (double or long) onto the
@@ -534,8 +528,6 @@ public class CtorAnalysisVisitor extends EmptyVisitor {
 	 * <p>
 	 * Stack: → objectref <br>
 	 * Note: 2 other bytes (indexbyte1, indexbyte2)
-	 * <p>
-	 * DoesEscape: NO, new object with 32 bit reference.
 	 */
 	@Override
 	public void visitNEW(NEW obj) {
@@ -545,106 +537,127 @@ public class CtorAnalysisVisitor extends EmptyVisitor {
 
 	// -----------------------------------------------------------------
 	/**
-	 * 11. DCMPG
-	 * <p>
-	 * Compares two doubles.
-	 * <p>
-	 * Stack: value1, value2 → result
-	 * <p>
+	 * 11. DCMPG <br>
+	 * Called when a DCMPG operation occurs. Pops two double values from the
+	 * stack, compares them and pushes the integer result onto the stack. If
+	 * value1 is greater than value2 the result is 1, if value1 is equal to
+	 * value2 the result is 0 and if value1 is smaller than value2 the result is
+	 * -1. If value1 or value2 is NaN the result is 1.
 	 */
 	@Override
 	public void visitDCMPG(DCMPG obj) {
-		notImplementedYet(obj);
-	}
-
-	// -----------------------------------------------------------------
-	/**
-	 * 12. DCMPL
-	 * <p>
-	 * Compares two doubles.
-	 * <p>
-	 * Stack: value1, value2 → result
-	 * <p>
-	 */
-	@Override
-	public void visitDCMPL(DCMPL obj) {
-		notImplementedYet(obj);
-	}
-
-	// -----------------------------------------------------------------
-	/**
-	 * 13. DECONST
-	 * <p>
-	 * Pushes the constant 0.0 | 1.0 onto the stack.
-	 * <p>
-	 * Stack: → 0.0 | 1.0
-	 */
-	@Override
-	public void visitDCONST(DCONST obj) {
-		notImplementedYet(obj);
-	}
-
-	// -----------------------------------------------------------------
-
-	/**
-	 * 14. FCMPG
-	 * <p>
-	 * Compares two floats.
-	 * <p>
-	 * Stack: value1, value2 → result
-	 */
-	@Override
-	public void visitFCMPG(FCMPG obj) {
-		notImplementedYet(obj);
-	}
-
-	// -----------------------------------------------------------------
-
-	/**
-	 * 15. FCMPL
-	 * <p>
-	 * Compares two floats.
-	 * <p>
-	 * Stack: value1, value2 → result
-	 */
-	@Override
-	public void visitFCMPL(FCMPL obj) {
-		notImplementedYet(obj);
-	}
-
-	// -----------------------------------------------------------------
-	/**
-	 * 16. FCONST
-	 * <p>
-	 * Pushes 0.0f | 1.0f | 2.0f on the stack.
-	 * <p>
-	 * Stack: → 0.0f | 1.0f | 2.0f
-	 */
-	@Override
-	public void visitFCONST(FCONST obj) {
-		notImplementedYet(obj);
-	}
-
-	// -----------------------------------------------------------------
-	/**
-	 * 17. ICONST
-	 * <p>
-	 * Loads the int value -1 | 0 | 1 | 2 | 3 | 4 | 5 onto the stack.
-	 * <p>
-	 * Stack: → -1 | 0 | 1 | 2 | 3 | 4 | 5
-	 */
-	@Override
-	public void visitICONST(ICONST obj) {
 		System.out.println(obj.toString(false));
+		Entry value2 = stack.pop();
+		Entry value1 = stack.pop();
+		// check if value1 or value2 is NaN then push 1 and return
+		// compare them and get result
 		stack.push(Entry.someInt);
 	}
 
 	// -----------------------------------------------------------------
 	/**
-	 * 18. IMPDEP1
-	 * <p>
-	 * Reserved for implementation-dependent operations within debuggers; should
-	 * not appear in any class file.
+	 * 12. DCMPL <br>
+	 * Called when a DCMPG operation occurs. Pops two double values from the
+	 * stack, compares them and pushes the integer result onto the stack. If
+	 * value1 is greater than value2 the result is 1, if value1 is equal to
+	 * value2 the result is 0 and if value1 is smaller than value2 the result is
+	 * -1. If value1 or value2 is NaN the result is -1.
+	 */
+	@Override
+	public void visitDCMPL(DCMPL obj) {
+		System.out.println(obj.toString(false));
+		Entry value2 = stack.pop();
+		Entry value1 = stack.pop();
+		// check if value1 or value2 is NaN then push -1 and return
+		// compare them and get result
+		stack.push(Entry.someInt);
+	}
+
+	// -----------------------------------------------------------------
+	/**
+	 * 13. DECONST <br>
+	 * Called when a DECONST operation occurs. Pushes the constant 0.0 or 1.0
+	 * onto the stack.
+	 * */
+	@Override
+	public void visitDCONST(DCONST obj) {
+		System.out.println(obj.toString(false));
+		// TODO find out how to choose constants
+		stack.push(Entry.someInt);
+	}
+
+	// -----------------------------------------------------------------
+
+	/**
+	 * 14. FCMPG <br>
+	 * Called when a FCMPG operation occurs. Pops two float values from the
+	 * stack, compares them and pushes the integer result onto the stack. If
+	 * value1 is greater than value2 the result is 1, if value1 is equal to
+	 * value2 the result is 0 and if value1 is smaller than value2 the result is
+	 * -1. If value1 or value2 is NaN the result is 1.
+	 */
+	@Override
+	public void visitFCMPG(FCMPG obj) {
+		System.out.println(obj.toString(false));
+		Entry value2 = stack.pop();
+		Entry value1 = stack.pop();
+		// check if value1 or value2 is NaN then push 1 and return
+		// compare them and get result
+		stack.push(Entry.someInt);
+	}
+
+	// -----------------------------------------------------------------
+
+	/**
+	 * 15. FCMPL <br>
+	 * Called when a DCMPG operation occurs. Pops two float values from the
+	 * stack, compares them and pushes the integer result onto the stack. If
+	 * value1 is greater than value2 the result is 1, if value1 is equal to
+	 * value2 the result is 0 and if value1 is smaller than value2 the result is
+	 * -1. If value1 or value2 is NaN the result is -1.
+	 */
+	@Override
+	public void visitFCMPL(FCMPL obj) {
+		System.out.println(obj.toString(false));
+		Entry value2 = stack.pop();
+		Entry value1 = stack.pop();
+		// check if value1 or value2 is NaN then push -1 and return
+		// compare them and get result
+		stack.push(Entry.someInt);
+	}
+
+	// -----------------------------------------------------------------
+	/**
+	 * 16. FCONST <br>
+	 * Called when a FCONST operation occurs. Pushes 0.0f, 1.0f or 2.0f on the
+	 * stack.
+	 */
+	@Override
+	public void visitFCONST(FCONST obj) {
+		System.out.println(obj.toString(false));
+		// TODO find out how to choose constants
+		stack.push(Entry.someFloat);
+	}
+
+	// -----------------------------------------------------------------
+	/**
+	 * 17. ICONST <br>
+	 * Called when an ICONST operation occurs. Loads the int value -1, 0, 1, 2,
+	 * 3, 4 or 5 onto the stack.
+	 */
+	@Override
+	public void visitICONST(ICONST obj) {
+		System.out.println(obj.toString(false));
+		// TODO find out how to choose constants
+		stack.push(Entry.someInt);
+	}
+
+	// -----------------------------------------------------------------
+	/**
+	 * 18. IMPDEP1 <br>
+	 * Called when an IMPDEP1 operation occurs. This method is reserved for
+	 * implementation-dependent operations within debuggers and should not
+	 * appear in any class file.
 	 */
 	@Override
 	public void visitIMPDEP1(IMPDEP1 obj) {
@@ -653,10 +666,10 @@ public class CtorAnalysisVisitor extends EmptyVisitor {
 
 	// -----------------------------------------------------------------
 	/**
-	 * 19. IMPDEP2
-	 * <p>
-	 * Reserved for implementation-dependent operations within debuggers; should
-	 * not appear in any class file.
+	 * 19. IMPDEP2 <br>
+	 * Called when an IMPDEP2 operation occurs. This method is reserved for
+	 * implementation-dependent operations within debuggers and should not
+	 * appear in any class file.
 	 */
 	@Override
 	public void visitIMPDEP2(IMPDEP2 obj) {
@@ -665,28 +678,29 @@ public class CtorAnalysisVisitor extends EmptyVisitor {
 
 	// -----------------------------------------------------------------
 	/**
-	 * 20. LCMP
-	 * <p>
-	 * Compares two long values.
-	 * <p>
-	 * Stack: value1, value2 → result
+	 * 20. LCMP <br>
+	 * Called when a LCMP operation occurs. Pops two long values from the stack,
+	 * compares them and pushes the integer result onto the stack.
 	 */
 	@Override
 	public void visitLCMP(LCMP obj) {
-		notImplementedYet(obj);
+		System.out.println(obj.toString(false));
+		Entry value2 = stack.pop();
+		Entry value1 = stack.pop();
+		// compare them
+		stack.push(Entry.someInt);
 	}
 
 	// -----------------------------------------------------------------
 	/**
-	 * 21. LCONST
-	 * <p>
-	 * Pushes the long 0 | 1 onto the stack.
-	 * <p>
-	 * Stack: → 0L | 1L
+	 * 21. LCONST <br>
+	 * Called when a LCONST operation occurs. Pushes the long 0L or 1L onto the
+	 * stack.
 	 */
 	@Override
 	public void visitLCONST(LCONST obj) {
 		System.out.println(obj.toString(false));
+		// TODO find out how to choose constant
 		stack.push(Entry.someLong);
 	}
 
@@ -785,15 +799,12 @@ public class CtorAnalysisVisitor extends EmptyVisitor {
 
 	// -----------------------------------------------------------------
 	/**
-	 * 26. NOP
-	 * <p>
-	 * Performs no operation.
-	 * <p>
-	 * Stack: No change.
+	 * 26. NOP <br>
+	 * Called when a NOP operation occurs. Performs no operation.
 	 */
 	@Override
 	public void visitNOP(NOP obj) {
-		notImplementedYet(obj);
+		System.out.println(obj.toString(false));
 	}
 
 	// -----------------------------------------------------------------
@@ -841,11 +852,9 @@ public class CtorAnalysisVisitor extends EmptyVisitor {
 	// ---StackInstruction----------------------------------------------
 	/**
 	 * 30. StackInstructions <br>
-	 * 30.1. DUP
-	 * <p>
-	 * Duplicates the value on top of the stack.
-	 * <p>
-	 * Stack: value → value, value
+	 * 30.1. DUP <br>
+	 * Called when a DUP operation occurs. Duplicates the value on top of the
+	 * stack.
 	 */
 	@Override
 	public void visitDUP(DUP obj) {
@@ -857,116 +866,238 @@ public class CtorAnalysisVisitor extends EmptyVisitor {
 
 	/**
 	 * 30. StackInstructions <br>
-	 * 30.2. DUP_X1
-	 * <p>
-	 * Inserts a copy of the top value into the stack two values from the top.
-	 * value1 and value2 must not be of the type double or long.
-	 * <p>
-	 * Stack: value2, value1 → value1, value2, value1
+	 * 30.2. DUP_X1 <br>
+	 * Called when a DUP_X1 operation occurs. Inserts a copy of the top value
+	 * into the stack two values from the top. value1 and value2 must not be of
+	 * the type double or long.
 	 */
 	@Override
 	public void visitDUP_X1(DUP_X1 obj) {
-		notImplementedYet(obj);
+		System.out.println(obj.toString(false));
+		Entry value1 = stack.pop();
+		Entry value2 = stack.pop();
+		if (value1.equals(Entry.someLong) || value2.equals(Entry.someLong)) {
+			throw new AssertionError("One value is of type long.");
+		}
+		if (value1.equals(Entry.someDouble) || value2.equals(Entry.someDouble)) {
+			throw new AssertionError("One value is of type double.");
+		}
+		stack.push(value1);
+		stack.push(value2);
+		stack.push(value1);
 	}
 
 	/**
 	 * 30. StackInstructions <br>
-	 * 30.3. DUP_X2
-	 * <p>
-	 * Inserts a copy of the top value into the stack two (if value2 is double
-	 * or long it takes up the entry of value3, too) or three values (if value2
-	 * is neither double nor long) from the top.
-	 * <p>
-	 * Stack: value3, value2, value1 → value1, value3, value2, value1
+	 * 30.3. DUP_X2 <br>
+	 * Called when a DUP_X2 operation occurs. Inserts a copy of the top value
+	 * into the stack two (if value2 is double or long it takes up the entry of
+	 * value3, too) or three values (if value2 is neither double nor long) from
+	 * the top.
 	 */
 	@Override
 	public void visitDUP_X2(DUP_X2 obj) {
-		notImplementedYet(obj);
+		System.out.println(obj.toString(false));
+		Entry value1 = stack.pop();
+		Entry value2 = stack.pop();
+		if (value2.equals(Entry.someLong) || value2.equals(Entry.someDouble)) {
+			stack.push(value1);
+			stack.push(value2);
+			stack.push(value1);
+		} else {
+			Entry value3 = stack.pop();
+			stack.push(value1);
+			stack.push(value3);
+			stack.push(value2);
+			stack.push(value1);
+		}
 	}
 
 	/**
 	 * 30. StackInstructions <br>
-	 * 30.4. DUP2
-	 * <p>
-	 * Duplicates top two stack words (two values, if value1 is not double nor
-	 * long; a single value, if value1 is double or long).
-	 * <p>
-	 * Stack: {value2, value1} → {value2, value1}, {value2, value1}
+	 * 30.4. DUP2 <br>
+	 * Called when a DUP2 operation occurs. Duplicates top two stack words (two
+	 * values, if value1 is not double nor long; a single value, if value1 is
+	 * double or long).
 	 */
 	@Override
 	public void visitDUP2(DUP2 obj) {
-		notImplementedYet(obj);
+		System.out.println(obj.toString(false));
+		Entry value1 = stack.pop();
+		if (value1.equals(Entry.someLong) || value1.equals(Entry.someDouble)) {
+			stack.push(value1);
+			stack.push(value1);
+		} else {
+			Entry value2 = stack.pop();
+			if (value2.equals(Entry.someLong)
+					|| value2.equals(Entry.someDouble)) {
+				throw new AssertionError("Value2 is of type long or double.");
+			}
+			stack.push(value2);
+			stack.push(value1);
+			stack.push(value2);
+			stack.push(value1);
+		}
 	}
 
 	/**
 	 * 30. StackInstructions <br>
-	 * 30.5. DUP2_X1
-	 * <p>
-	 * Duplicates two words and insert beneath third word (see explanation
-	 * 30.4.).
-	 * <p>
-	 * Stack: value3, {value2, value1} → {value2, value1}, value3, {value2,
-	 * value1}
+	 * 30.5. DUP2_X1 <br>
+	 * Called when a DUP2_X1 operation occurs. Duplicates top two words and
+	 * insert beneath third word (see explanation 30.4.).
 	 */
 	@Override
 	public void visitDUP2_X1(DUP2_X1 obj) {
-		notImplementedYet(obj);
+		System.out.println(obj.toString(false));
+		Entry value1, value2, value3;
+		value1 = stack.pop();
+		value2 = stack.pop();
+		if (value1.equals(Entry.someLong) || value1.equals(Entry.someDouble)) {
+			if (value2.equals(Entry.someLong)
+					|| value2.equals(Entry.someDouble)) {
+				throw new AssertionError(
+						"value1 and value2 are of type long or double.");
+			} else {
+				stack.push(value1);
+				stack.push(value2);
+				stack.push(value1);
+			}
+		} else {
+			if (value2.equals(Entry.someLong)
+					|| value2.equals(Entry.someDouble)) {
+				throw new AssertionError(
+						"value2 is of type long or double and value1 is not.");
+			} else {
+				value3 = stack.pop();
+				if (value3.equals(Entry.someLong)
+						|| value3.equals(Entry.someDouble)) {
+					throw new AssertionError(
+							"value3 is of type long or double.");
+				} else {
+					stack.push(value2);
+					stack.push(value1);
+					stack.push(value3);
+					stack.push(value2);
+					stack.push(value1);
+				}
+			}
+		}
 	}
 
 	/**
 	 * 30. StackInstructions <br>
-	 * 30.5. DUP2_X2
-	 * <p>
-	 * Duplicates two words and insert beneath fourth word (see explanation
-	 * 30.4.).
-	 * <p>
-	 * Stack: {value4, value3}, {value2, value1} → {value2, value1}, {value4,
-	 * value3}, {value2, value1}
+	 * 30.5. DUP2_X2 <br>
+	 * Called when a DUP2_X2 operation occurs. Duplicates two words and insert
+	 * beneath fourth word (see explanation 30.4.).
 	 */
 	@Override
 	public void visitDUP2_X2(DUP2_X2 obj) {
-		notImplementedYet(obj);
+		System.out.println(obj.toString(false));
+		Entry value1, value2, value3, value4;
+		value1 = stack.pop();
+		value2 = stack.pop();
+		if (value1.equals(Entry.someLong) || value1.equals(Entry.someDouble)) {
+			if (value2.equals(Entry.someLong)
+					|| value2.equals(Entry.someDouble)) {
+				stack.push(value1);
+				stack.push(value2);
+				stack.push(value1);
+			} else {
+				value3 = stack.pop();
+				if (value3.equals(Entry.someLong)
+						|| value3.equals(Entry.someDouble)) {
+					throw new AssertionError(
+							"value1 and value3 are of type long or double and value2 is not.");
+				} else {
+					stack.push(value1);
+					stack.push(value3);
+					stack.push(value2);
+					stack.push(value1);
+				}
+			}
+		} else {
+			if (value2.equals(Entry.someLong)
+					|| value2.equals(Entry.someDouble)) {
+				throw new AssertionError(
+						"value2 is of type long or double and value1 is not.");
+			} else {
+				value3 = stack.pop();
+				if (value3.equals(Entry.someLong)
+						|| value3.equals(Entry.someDouble)) {
+					stack.push(value2);
+					stack.push(value1);
+					stack.push(value3);
+					stack.push(value2);
+					stack.push(value1);
+				} else {
+					value4 = stack.pop();
+					if (value4.equals(Entry.someLong)
+							|| value4.equals(Entry.someDouble)) {
+						throw new AssertionError(
+								"value4 is of type long or double and value1, value2 and value3 are not.");
+					} else {
+						stack.push(value2);
+						stack.push(value1);
+						stack.push(value4);
+						stack.push(value3);
+						stack.push(value2);
+						stack.push(value1);
+					}
+				}
+			}
+		}
 	}
 
 	/**
 	 * 30. StackInstuructions <br>
-	 * 30.6. POP
-	 * <p>
-	 * Discards the top value on the stack.
-	 * <p>
-	 * Stack: value →
+	 * 30.6. POP <br>
+	 * Called when a POP operation occurs. Discards the top value/word on the
+	 * stack.
 	 */
 	@Override
 	public void visitPOP(POP obj) {
-		notImplementedYet(obj);
+		System.out.println(obj.toString(false));
+		stack.pop();
 	}
 
 	/**
 	 * 30. StackInstructions <br>
-	 * 30.7. POP2
-	 * <p>
-	 * Discards the top two values on the stack (or one value, if it is a double
-	 * or long).
-	 * <p>
-	 * Stack: {value2, value1} →
+	 * 30.7. POP2 <br>
+	 * Called when a POP2 operation occurs. Discards the top two values on the
+	 * stack (or one value, if it is a double or long).
 	 */
 	@Override
 	public void visitPOP2(POP2 obj) {
-		notImplementedYet(obj);
+		System.out.println(obj.toString(false));
+		Entry entry = stack.pop();
+		if (entry.equals(Entry.someLong) || entry.equals(Entry.someDouble)) {
+			return;
+		} else {
+			stack.pop();
+		}
 	}
 
 	/**
 	 * 30. StackInstructions <br>
-	 * 30.8. SWAP
-	 * <p>
-	 * Swaps two top words on the stack (note that value1 and value2 must not be
-	 * double or long).
+	 * 30.8. SWAP <br>
+	 * Called when a SWAP operation occurs. Swaps two top words on the stack
+	 * (note that value1 and value2 must not be double or long).
 	 * <p>
 	 * Stack: value2, value1 → value1, value2
 	 */
 	@Override
 	public void visitSWAP(SWAP obj) {
-		notImplementedYet(obj);
+		Entry value1 = stack.pop();
+		Entry value2 = stack.pop();
+		if (value1.equals(Entry.someLong) || value1.equals(Entry.someDouble)
+				|| value2.equals(Entry.someLong)
+				|| value2.equals(Entry.someDouble)) {
+			throw new AssertionError(
+					"value1 and/or value2 are/is of type long or double.");
+		} else {
+			stack.push(value1);
+			stack.push(value2);
+		}
 	}
 	// -----------------------------------------------------------------
 
