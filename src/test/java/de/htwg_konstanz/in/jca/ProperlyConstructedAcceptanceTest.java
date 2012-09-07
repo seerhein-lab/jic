@@ -56,6 +56,7 @@ public class ProperlyConstructedAcceptanceTest {
 	@Yes
 	public static class Story002_ClassWithNoArgsCtorByte {
 		public Story002_ClassWithNoArgsCtorByte() {
+			@SuppressWarnings("unused")
 			byte b = 5;
 		}
 	}
@@ -66,6 +67,7 @@ public class ProperlyConstructedAcceptanceTest {
 	@Yes
 	public static class Story003_ClassWithNoArgsCtorInt {
 		public Story003_ClassWithNoArgsCtorInt() {
+			@SuppressWarnings("unused")
 			int i = 20;
 		}
 	}
@@ -77,6 +79,7 @@ public class ProperlyConstructedAcceptanceTest {
 	@Yes
 	public static class Story004_ClassWithNoArgsCtorChar {
 		public Story004_ClassWithNoArgsCtorChar() {
+			@SuppressWarnings("unused")
 			char c = 'c';
 		}
 	}
@@ -87,6 +90,7 @@ public class ProperlyConstructedAcceptanceTest {
 	@Yes
 	public static class Story005_ClassWithNoArgsCtorLong {
 		public Story005_ClassWithNoArgsCtorLong() {
+			@SuppressWarnings("unused")
 			long l = 25l;
 		}
 	}
@@ -97,6 +101,7 @@ public class ProperlyConstructedAcceptanceTest {
 	@Yes
 	public static class Story006_ClassWithNoArgsCtorObject {
 		public Story006_ClassWithNoArgsCtorObject() {
+			@SuppressWarnings("unused")
 			Object o = new Object();
 		}
 	}
@@ -108,7 +113,9 @@ public class ProperlyConstructedAcceptanceTest {
 	@Yes
 	public static class Story007_ClassWithNoArgsLongObject {
 		public Story007_ClassWithNoArgsLongObject() {
+			@SuppressWarnings("unused")
 			long l = 1l;
+			@SuppressWarnings("unused")
 			Object o = new Object();
 		}
 	}
@@ -119,6 +126,7 @@ public class ProperlyConstructedAcceptanceTest {
 	 */
 	@Yes
 	public static class Story008_ClassWithNoArgsCtorAllTypes {
+		@SuppressWarnings("unused")
 		public Story008_ClassWithNoArgsCtorAllTypes() {
 			byte b = 7;
 			short s = 14;
@@ -201,6 +209,7 @@ public class ProperlyConstructedAcceptanceTest {
 
 		public static final class Class {
 
+			@SuppressWarnings("unused")
 			private byte b;
 
 			public Class(byte b) {

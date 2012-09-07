@@ -64,6 +64,7 @@ public class IsImmutableAcceptanceTest {
 	 */
 	@Yes
 	public static class Story04_ImmutableClassWithPrivateField {
+		@SuppressWarnings("unused")
 		private String value = "01";
 	}
 
@@ -97,6 +98,7 @@ public class IsImmutableAcceptanceTest {
 			String value = "default";
 		}
 
+		@SuppressWarnings("unused")
 		private final StringHolder value = new StringHolder();
 
 	}
