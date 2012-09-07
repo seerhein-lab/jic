@@ -4,7 +4,7 @@ import static org.junit.Assert.assertEquals;
 
 import org.junit.Test;
 
-public class TestThreeValueBoolean {
+public class ThreeValueBooleanTest {
 
 	@Test
 	public void testAndThreeValueBoolean() {

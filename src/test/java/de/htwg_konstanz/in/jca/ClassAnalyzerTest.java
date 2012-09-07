@@ -13,7 +13,7 @@ import de.htwg_konstanz.in.jca.testclasses.DefaultCtorInitializersLongObject;
 import de.htwg_konstanz.in.jca.testclasses.DefaultCtorInitializersObject;
 import de.htwg_konstanz.in.jca.testclasses.DefaultCtorNoInitializers;
 
-public class TestClassAnalyzer {
+public class ClassAnalyzerTest {
 
 	@Test
 	public void testProperlyConstructedDefaultCtorNoInitializers()

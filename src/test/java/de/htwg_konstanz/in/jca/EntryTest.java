@@ -4,7 +4,7 @@ import static org.junit.Assert.assertEquals;
 
 import org.junit.Test;
 
-public class TestEntry {
+public class EntryTest {
 
 	@Test
 	public void testGetInstance() {

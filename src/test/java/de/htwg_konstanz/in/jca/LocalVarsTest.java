@@ -16,7 +16,7 @@ import de.htwg_konstanz.in.jca.testclasses.ClassWithAllTypes;
 /**
  * JUnit test class for LocalVars.
  */
-public class TestLocalVars {
+public class LocalVarsTest {
 
 	private LocalVariable[] localVariableTableExample;
 
