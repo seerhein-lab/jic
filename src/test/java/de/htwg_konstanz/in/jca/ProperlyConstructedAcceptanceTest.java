@@ -1,27 +1,14 @@
 package de.htwg_konstanz.in.jca;
 
-import net.jcip.annotations.Immutable;
-
 import org.junit.runner.RunWith;
 
 /**
- * Functional acceptance tests for the method isImmutable of the class
+ * Functional acceptance tests for the method properlyConstructed of the class
  * ClassAnalyzer.
- * 
- * <ul>
- * <li>The class which should be analyzed as immutable by the ClassAnalyzer are
- * marked with the annotation {@link Immutable}. Classes which are not marked by
- * this annotation are not immutable.
- * 
- * <li>The test logic and binding is implemented in a project specific JUnit
- * runner {@link AbstractTestRunner}.
- * 
- * <li>The definition of a immutable class see JavaDoc of annotation
- * {@link Immutable}.
- * </ul>
- * 
- * @see Immutable
- * @see AbstractTestRunner
+ *
+ *  TODO: JavaDoc
+ *
+ * @see ProperlyConstructedTestRunner
  */
 @RunWith(ProperlyConstructedTestRunner.class)
 public class ProperlyConstructedAcceptanceTest {
