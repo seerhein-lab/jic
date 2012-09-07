@@ -1,5 +1,6 @@
 package de.htwg_konstanz.in.jca;
 
+import org.junit.Ignore;
 import org.junit.runner.RunWith;
 
 import de.htwg_konstanz.in.jca.testutils.AbstractClassAnalyzerRunner;
@@ -15,6 +16,7 @@ import edu.umd.cs.findbugs.BugCollection;
  *
  * @see IsImmutableTestRunner
  */
+@Ignore("activate this test class when the method IsImmutable will be implemented.")
 @RunWith(ProperlyConstructedAcceptanceTest.ProperlyConstructedTestRunner.class)
 public class IsImmutableAcceptanceTest {
 
