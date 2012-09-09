@@ -11,7 +11,7 @@ import org.apache.bcel.classfile.Method;
 import org.junit.Before;
 import org.junit.Test;
 
-import de.htwg_konstanz.in.jca.testclasses.ClassWithAllTypes;
+import de.htwg_konstanz.in.jca.testutils.ClassForLocalVariableTable;
 
 /**
  * JUnit test class for LocalVars.
@@ -29,7 +29,7 @@ public class LocalVarsTest {
 	 */
 	@Before
 	public void setUp() throws ClassNotFoundException {
-		String usedClass = ClassWithAllTypes.class.getName();
+		String usedClass = ClassForLocalVariableTable.class.getName();
 		Method[] methods = Repository.lookupClass(usedClass).getMethods();
 		localVariableTableExample = methods[0].getLocalVariableTable()
 				.getLocalVariableTable();
