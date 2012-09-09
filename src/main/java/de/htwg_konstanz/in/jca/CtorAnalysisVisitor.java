@@ -137,7 +137,7 @@ public class CtorAnalysisVisitor extends EmptyVisitor {
 	 */
 	@Override
 	public void visitACONST_NULL(ACONST_NULL obj) {
-		// TODO check if NULL reference is someReference
+		// TODO add NULL-value to someReference/Entry
 		System.out.println(obj.toString(false));
 		stack.push(Entry.someReference);
 	}
@@ -145,7 +145,8 @@ public class CtorAnalysisVisitor extends EmptyVisitor {
 	// -----------------------------------------------------------------
 	/**
 	 * 2. ArithmeticInstruction <br>
-	 * Called when an ArithmeticInstruction occurs. TODO: Add subInstructions
+	 * Called when an ArithmeticInstruction occurs. TODO: Implement
+	 * subInstructions
 	 */
 	@Override
 	public void visitArithmeticInstruction(ArithmeticInstruction obj) {
@@ -156,7 +157,7 @@ public class CtorAnalysisVisitor extends EmptyVisitor {
 
 	/**
 	 * 3. ArrayInstruction<br>
-	 * Called when an ArrayInstruction operation occurs. TODO: Add
+	 * Called when an ArrayInstruction operation occurs. TODO: Implement
 	 * subInstructions
 	 */
 	@Override
