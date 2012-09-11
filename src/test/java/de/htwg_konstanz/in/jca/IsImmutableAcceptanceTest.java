@@ -3,7 +3,8 @@ package de.htwg_konstanz.in.jca;
 import org.junit.Ignore;
 import org.junit.runner.RunWith;
 
-import de.htwg_konstanz.in.jca.testutils.AbstractClassAnalyzerRunner;
+import de.htwg_konstanz.in.jca.testutils.ClassAnalyzerRunner;
+import de.htwg_konstanz.in.jca.testutils.ClassAnalyzerRunner.BindAnalyzerMethod;
 import de.htwg_konstanz.in.jca.testutils.No;
 import de.htwg_konstanz.in.jca.testutils.Yes;
 import edu.umd.cs.findbugs.BugCollection;
@@ -17,24 +18,12 @@ import edu.umd.cs.findbugs.BugCollection;
  * @see IsImmutableTestRunner
  */
 @Ignore("activate this test class when the method IsImmutable will be implemented.")
-@RunWith(ProperlyConstructedAcceptanceTest.ProperlyConstructedTestRunner.class)
+@RunWith(ClassAnalyzerRunner.class)
 public class IsImmutableAcceptanceTest {
 
-	/**
-	 * Test Binding.
-	 * TODO: JavaDoc
-	 */
-	public static class IsImmutableTestRunner extends AbstractClassAnalyzerRunner {
-
-		public IsImmutableTestRunner(Class<?> testClass) {
-			super(testClass);
-		}
-
-		@Override
-		protected BugCollection runCheckMethod(ClassAnalyzer analyzer) {
-			return analyzer.isImmutable();
-		}
-
+	@BindAnalyzerMethod
+	public static BugCollection bindIsImmutable(ClassAnalyzer analyzer) {
+		return analyzer.isImmutable();
 	}
 	
 	/**
