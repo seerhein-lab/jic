@@ -2,8 +2,9 @@ package de.htwg_konstanz.in.jca;
 
 import org.junit.runner.RunWith;
 
-import de.htwg_konstanz.in.jca.testutils.AbstractClassAnalyzerRunner;
+import de.htwg_konstanz.in.jca.testutils.ClassAnalyzerRunner;
 import de.htwg_konstanz.in.jca.testutils.Yes;
+import de.htwg_konstanz.in.jca.testutils.ClassAnalyzerRunner.BindAnalyzerMethod;
 import edu.umd.cs.findbugs.BugCollection;
 
 /**
@@ -14,24 +15,12 @@ import edu.umd.cs.findbugs.BugCollection;
  *
  * @see ProperlyConstructedTestRunner
  */
-@RunWith(ProperlyConstructedAcceptanceTest.ProperlyConstructedTestRunner.class)
+@RunWith(ClassAnalyzerRunner.class)
 public class ProperlyConstructedAcceptanceTest {
 	
-	/**
-	 * Test Binding.
-	 * TODO: JavaDoc
-	 */
-	public static class ProperlyConstructedTestRunner extends AbstractClassAnalyzerRunner {
-
-		public ProperlyConstructedTestRunner(Class<?> testClass) {
-			super(testClass);
-		}
-
-		@Override
-		protected BugCollection runCheckMethod(ClassAnalyzer analyzer) {
-			return analyzer.properlyConstructed();
-		}
-
+	@BindAnalyzerMethod
+	public static BugCollection bindClassAnalyzerToProperlyConstructed(ClassAnalyzer analyzer) {
+		return analyzer.properlyConstructed();
 	}
 	
 	/**
