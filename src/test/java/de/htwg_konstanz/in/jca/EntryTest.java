@@ -16,7 +16,7 @@ public class EntryTest {
 		assertEquals(Entry.getInstance("S"), Entry.someShort);
 		assertEquals(Entry.getInstance("F"), Entry.someFloat);
 		assertEquals(Entry.getInstance("D"), Entry.someDouble);
-		assertEquals(Entry.getInstance("O"), Entry.someReference);
+		assertEquals(Entry.getInstance("O"), Entry.notThisReference);
 	}
 
 }

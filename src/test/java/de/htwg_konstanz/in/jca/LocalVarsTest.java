@@ -66,10 +66,10 @@ public class LocalVarsTest {
 		assertEquals(10, localVars.getIndexesLength());
 		assertEquals(localVars.getEntriesLength(), localVars.getIndexesLength());
 		// checks entries
-		assertEquals(Entry.someReference, localVars.getEntry(0));
+		assertEquals(Entry.notThisReference, localVars.getEntry(0));
 		assertEquals(Entry.someByte, localVars.getEntry(1));
 		assertEquals(Entry.someShort, localVars.getEntry(2));
-		assertEquals(Entry.someReference, localVars.getEntry(3));
+		assertEquals(Entry.notThisReference, localVars.getEntry(3));
 		assertEquals(Entry.someInt, localVars.getEntry(4));
 		assertEquals(Entry.someLong, localVars.getEntry(5));
 		assertEquals(Entry.someFloat, localVars.getEntry(6));
@@ -97,7 +97,7 @@ public class LocalVarsTest {
 	public void testInitWithArgsOnZeroLengthEntries() {
 		LocalVars localVars = new LocalVars(new LocalVariable[0]);
 		Stack<Entry> callerStack = new Stack<Entry>();
-		callerStack.add(Entry.someReference);
+		callerStack.add(Entry.notThisReference);
 		localVars.initWithArgs(callerStack, 1);
 		assertEquals(true, callerStack.isEmpty());
 	}
@@ -126,10 +126,10 @@ public class LocalVarsTest {
 		callerStack.add(Entry.someFloat);
 		localVars.initWithArgs(callerStack, 0);
 		assertEquals(true, !callerStack.isEmpty());
-		assertEquals(Entry.someReference, localVars.getEntry(0));
+		assertEquals(Entry.notThisReference, localVars.getEntry(0));
 		assertEquals(Entry.someByte, localVars.getEntry(1));
 		assertEquals(Entry.someShort, localVars.getEntry(2));
-		assertEquals(Entry.someReference, localVars.getEntry(3));
+		assertEquals(Entry.notThisReference, localVars.getEntry(3));
 		assertEquals(Entry.someInt, localVars.getEntry(4));
 		assertEquals(Entry.someLong, localVars.getEntry(5));
 		assertEquals(Entry.someFloat, localVars.getEntry(6));
@@ -221,10 +221,10 @@ public class LocalVarsTest {
 	public void testGetForIndex() {
 		// creates example LocalVars with 10 entries
 		LocalVars localVars = new LocalVars(localVariableTableExample);
-		assertEquals(Entry.someReference, localVars.getForIndex(0));
+		assertEquals(Entry.notThisReference, localVars.getForIndex(0));
 		assertEquals(Entry.someByte, localVars.getForIndex(1));
 		assertEquals(Entry.someShort, localVars.getForIndex(2));
-		assertEquals(Entry.someReference, localVars.getForIndex(3));
+		assertEquals(Entry.notThisReference, localVars.getForIndex(3));
 		assertEquals(Entry.someInt, localVars.getForIndex(4));
 		assertEquals(Entry.someLong, localVars.getForIndex(5));
 		assertEquals(Entry.someFloat, localVars.getForIndex(7));
@@ -240,7 +240,7 @@ public class LocalVarsTest {
 	public void testSetForIndexOutOfBoundsError() {
 		// creates example LocalVars with 10 entries
 		LocalVars localVars = new LocalVars(localVariableTableExample);
-		localVars.setForIndex(-1, Entry.someReference);
+		localVars.setForIndex(-1, Entry.notThisReference);
 	}
 
 	/**
@@ -251,7 +251,7 @@ public class LocalVarsTest {
 		// creates example LocalVars with 10 entries
 		LocalVars localVars = new LocalVars(localVariableTableExample);
 		// tries to access index 9 (the double starts at 8)
-		localVars.setForIndex(9, Entry.someReference);
+		localVars.setForIndex(9, Entry.notThisReference);
 	}
 
 	/**
@@ -267,7 +267,7 @@ public class LocalVarsTest {
 		localVars.setForIndex(3, Entry.someFloat);
 		localVars.setForIndex(4, Entry.someLong);
 		localVars.setForIndex(5, Entry.someInt);
-		localVars.setForIndex(7, Entry.someReference);
+		localVars.setForIndex(7, Entry.notThisReference);
 		localVars.setForIndex(8, Entry.someShort);
 		localVars.setForIndex(10, Entry.someByte);
 		localVars.setForIndex(11, Entry.thisReference);
@@ -277,7 +277,7 @@ public class LocalVarsTest {
 		assertEquals(Entry.someFloat, localVars.getEntry(3));
 		assertEquals(Entry.someLong, localVars.getEntry(4));
 		assertEquals(Entry.someInt, localVars.getEntry(5));
-		assertEquals(Entry.someReference, localVars.getEntry(6));
+		assertEquals(Entry.notThisReference, localVars.getEntry(6));
 		assertEquals(Entry.someShort, localVars.getEntry(7));
 		assertEquals(Entry.someByte, localVars.getEntry(8));
 		assertEquals(Entry.thisReference, localVars.getEntry(9));

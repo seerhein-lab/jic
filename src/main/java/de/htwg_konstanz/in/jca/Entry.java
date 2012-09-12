@@ -29,10 +29,13 @@ public enum Entry {
 	/** A boolean with an arbitrary value. */
 	someBoolean,
 
-	/** A reference to an arbitrary object, but not to the object to check. */
-	someReference,
+	/** A reference that certainly is not the 'this' reference */
+	notThisReference,
 
-	/** A reference to the object to check. */
+	/** A reference that might or might be the 'this' reference */
+	maybeThisReference,
+
+	/** The 'this reference */
 	thisReference,
 
 	/** An unknown value. */
@@ -55,7 +58,7 @@ public enum Entry {
 			return someFloat;
 		if (signature.equals("D"))
 			return someDouble;
-		return someReference;
+		return notThisReference;
 	}
 
 }
