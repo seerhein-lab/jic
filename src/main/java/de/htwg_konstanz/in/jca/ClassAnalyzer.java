@@ -73,8 +73,27 @@ public class ClassAnalyzer {
 		return bugs;
 	}
 
-	private BugCollection stateUnmodifiable() {
-		BugCollection bugs = new SortedBugCollection();
+	private Field[] getMutableFields() {
+		return clazz.getFields();
+	}
+
+	private BugCollection ctorParamIsCopied(Field field) {
+		return new SortedBugCollection();
+	}
+
+	private BugCollection fieldIsNotPublished(Field field) {
+		return new SortedBugCollection();
+	}
+
+	public BugCollection stateUnmodifiable() {
+		SortedBugCollection bugs = new SortedBugCollection();
+
+		Field[] mutableFields = getMutableFields();
+		for (Field mutableField : mutableFields) {
+			bugs.addAll(ctorParamIsCopied(mutableField).getCollection());
+			bugs.addAll(fieldIsNotPublished(mutableField).getCollection());
+		}
+
 		bugs.add(new BugInstance("Warning: state might be modifiable", 1));
 		return bugs;
 	}
