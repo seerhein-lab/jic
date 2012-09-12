@@ -96,6 +96,15 @@ public class CtorAnalysisVisitor extends EmptyVisitor {
 	private volatile SortedBugCollection bugs = new SortedBugCollection();
 	private volatile Entry result = null;
 
+	private final short AALOAD_OPCODE = 0x32;
+	private final short BALOAD_OPCODE = 0x33;
+	private final short CALOAD_OPCODE = 0x34;
+	private final short DALOAD_OPCODE = 0x31;
+	private final short FALOAD_OPCODE = 0x30;
+	private final short IALOAD_OPCODE = 0x2E;
+	private final short LALOAD_OPCODE = 0x2F;
+	private final short SALOAD_OPCODE = 0x35;
+
 	CtorAnalysisVisitor(LocalVars localVars, Stack<Entry> stack,
 			ConstantPool constantPool) {
 		this.localVars = localVars;
@@ -133,36 +142,87 @@ public class CtorAnalysisVisitor extends EmptyVisitor {
 	/**
 	 * 1. ACONST_NULL<br>
 	 * Called when an ACONST_NULL operation occurs. Pushes a null reference onto
-	 * the simulated stack.
+	 * the stack.
 	 */
 	@Override
 	public void visitACONST_NULL(ACONST_NULL obj) {
-		// TODO add NULL-value to someReference/Entry
 		System.out.println(obj.toString(false));
-		stack.push(Entry.someReference);
+		stack.push(Entry.notThisReference);
 	}
 
 	// -----------------------------------------------------------------
 	/**
-	 * 2. ArithmeticInstruction <br>
-	 * Called when an ArithmeticInstruction occurs. TODO: Implement
-	 * subInstructions
+	 * TODO JAVADOC 2. ArithmeticInstruction <br>
+	 * Called when an ArithmeticInstruction occurs and handles all
+	 * ArithmeticInstructions. The type and the number of consumed and produced
+	 * words are taken from
 	 */
 	@Override
 	public void visitArithmeticInstruction(ArithmeticInstruction obj) {
-		notImplementedYet(obj);
+		System.out.print(obj.toString(false) + ": (");
+		Type type = obj.getType(constantPoolGen);
+		int consumed;
+		int produced;
+		if (type.equals(Type.DOUBLE) || type.equals(Type.LONG)) {
+			consumed = obj.consumeStack(constantPoolGen) / 2;
+			produced = obj.produceStack(constantPoolGen) / 2;
+		} else {
+			consumed = obj.consumeStack(constantPoolGen);
+			produced = obj.produceStack(constantPoolGen);
+		}
+		Entry entry = null;
+
+		for (int i = 0; i < consumed; i++) {
+			entry = stack.pop();
+			System.out.print((i == 0) ? entry : ", " + entry);
+		}
+		System.out.print(") -> (");
+		for (int i = 0; i < produced; i++) {
+			stack.push(entry);
+			System.out.print((i == 0) ? entry : ", " + entry);
+		}
+		System.out.println(")");
 	}
 
 	// -----------------------------------------------------------------
 
 	/**
 	 * 3. ArrayInstruction<br>
-	 * Called when an ArrayInstruction operation occurs. TODO: Implement
-	 * subInstructions
+	 * Called when an ArrayInstruction operation occurs. TODO: JAVADOC
 	 */
 	@Override
 	public void visitArrayInstruction(ArrayInstruction obj) {
-		notImplementedYet(obj);
+		System.out.println(obj.toString(false));
+		stack.pop();
+		stack.pop();
+		switch (obj.getOpcode()) {
+		case AALOAD_OPCODE:
+			stack.push(Entry.maybeThisReference);
+			break;
+		case BALOAD_OPCODE:
+			stack.push(Entry.someByte);
+			break;
+		case CALOAD_OPCODE:
+			stack.push(Entry.someChar);
+			break;
+		case DALOAD_OPCODE:
+			stack.push(Entry.someDouble);
+			break;
+		case FALOAD_OPCODE:
+			stack.push(Entry.someFloat);
+			break;
+		case IALOAD_OPCODE:
+			stack.push(Entry.someInt);
+			break;
+		case LALOAD_OPCODE:
+			stack.push(Entry.someLong);
+			break;
+		case SALOAD_OPCODE:
+			stack.push(Entry.someShort);
+			break;
+		default: // all ASTORE opcodes
+			stack.pop();
+		}
 	}
 
 	// -----------------------------------------------------------------
@@ -187,12 +247,16 @@ public class CtorAnalysisVisitor extends EmptyVisitor {
 	 */
 	@Override
 	public void visitATHROW(ATHROW obj) {
-		notImplementedYet(obj);
-		// TODO Exceptionhandeling??
-		/*
-		 * System.out.println(obj.toString(false)); stack.clear();
-		 * stack.push(Entry.someReference);
-		 */
+
+		System.out.println(obj.toString(false));
+		Class<?>[] exceptions = obj.getExceptions();
+		for (Class<?> exception : exceptions) {
+			System.out.println(exception);
+		}
+
+		stack.clear();
+		stack.push(Entry.notThisReference);
+
 	}
 
 	// -----------------------------------------------------------------
@@ -237,12 +301,14 @@ public class CtorAnalysisVisitor extends EmptyVisitor {
 	 */
 	@Override
 	public void visitConversionInstruction(ConversionInstruction obj) {
+		System.out.println(obj.toString(false));
+		System.out.println(obj.getType(constantPoolGen));
 		notImplementedYet(obj);
 	}
 
 	// ---CPInstruction-------------------------------------------------
 	/**
-	 * 10. ConversionInstruction <br>
+	 * 10. CPInstruction <br>
 	 * 10.1. ANEWARRAY<br>
 	 * Called when an ANEWARRAY operation occurs. Pops an integer value from the
 	 * stack and pushes a new array reference.
@@ -251,11 +317,11 @@ public class CtorAnalysisVisitor extends EmptyVisitor {
 	public void visitANEWARRAY(ANEWARRAY obj) {
 		System.out.println(obj.toString(false));
 		stack.pop();
-		stack.push(Entry.someReference);
+		stack.push(Entry.notThisReference);
 	}
 
 	/**
-	 * 10. ConversionInstruction <br>
+	 * 10. CPInstruction <br>
 	 * 10.2. CHECKCAST<<br>
 	 * Called when a CHECKCAST operation occurs. Pops a object reference from
 	 * the stack, checks if it is of a certain type and pushes the reference
@@ -272,7 +338,7 @@ public class CtorAnalysisVisitor extends EmptyVisitor {
 	}
 
 	/**
-	 * 10. ConversionInstruction <br>
+	 * 10. CPInstruction <br>
 	 * 10.3. FieldOrMethod <br>
 	 * 10.3.2. GETFIELD <br>
 	 * Called when a GETFIELD operation occurs. Pops an object reference from
@@ -280,11 +346,20 @@ public class CtorAnalysisVisitor extends EmptyVisitor {
 	 * */
 	@Override
 	public void visitGETFIELD(GETFIELD obj) {
-		notImplementedYet(obj);
+		System.out.print(obj.toString(false) + ": ");
+
+		Entry ref = stack.pop();
+		System.out.println(ref + "." + obj.getFieldName(constantPoolGen));
+
+		Entry entry = Entry.getInstance(obj.getSignature(constantPoolGen));
+		if (entry.equals(Entry.notThisReference)) {
+			entry = Entry.maybeThisReference;
+		}
+		stack.push(entry);
 	}
 
 	/**
-	 * 10. ConversionInstruction <br>
+	 * 10. CPInstruction <br>
 	 * 10.3. FieldOrMethod <br>
 	 * 10.3.3. GETSTATIC <br>
 	 * Called when a GETSTATIC operation occurs. Pushes a static field value of
@@ -296,7 +371,7 @@ public class CtorAnalysisVisitor extends EmptyVisitor {
 	}
 
 	/**
-	 * 10. ConversionInstruction <br>
+	 * 10. CPInstruction <br>
 	 * 10.3. FieldOrMethod <br>
 	 * 10.3.4. PUTFIELD <br>
 	 * Called when a PUTFIELD operation occurs. Pops a value and an object
@@ -312,10 +387,18 @@ public class CtorAnalysisVisitor extends EmptyVisitor {
 
 		if (right.equals(Entry.thisReference)) {
 			System.out
-					.println("Error: 'this' reference ist assigned to some object's field and escapes.");
+					.println("Error: 'this' reference is assigned to some object's field and escapes.");
 			bugs.add(new BugInstance(
-					"Error: 'this' reference ist assigned to some object's field and escapes.",
+					"Error: 'this' reference is assigned to some object's field and escapes.",
 					2));
+
+		}
+		if (right.equals(Entry.maybeThisReference)) {
+			System.out
+					.println("Warning: 'this' reference might be assigned to some object's field and might escape.");
+			bugs.add(new BugInstance(
+					"Warning: 'this' reference might be assigned to some object's field and might escape.",
+					1));
 
 		}
 
@@ -327,7 +410,7 @@ public class CtorAnalysisVisitor extends EmptyVisitor {
 	}
 
 	/**
-	 * 10. ConversionInstruction <br>
+	 * 10. CPInstruction <br>
 	 * 10.3. FieldOrMethod <br>
 	 * 10.3.4. PUTSTATIC <br>
 	 * Called when a PUTSTATIC operation occurs. Pops a value from the stack and
@@ -339,7 +422,7 @@ public class CtorAnalysisVisitor extends EmptyVisitor {
 	}
 
 	/**
-	 * TODO: ReWrite 10. ConversionInstruction <br>
+	 * TODO: ReWrite 10. CPInstruction <br>
 	 * 10.4. InvokeInstruction <br>
 	 * 10.4.1. INVOKEINTERFACE
 	 * <p>
@@ -356,7 +439,7 @@ public class CtorAnalysisVisitor extends EmptyVisitor {
 	}
 
 	/**
-	 * TODO ReWrite 10. ConversionInstruction <br>
+	 * TODO ReWrite 10. CPInstruction <br>
 	 * 10.4. InvokeInstruction <br>
 	 * 10.4.2. INVOKESPECIAL
 	 * <p>
@@ -399,7 +482,7 @@ public class CtorAnalysisVisitor extends EmptyVisitor {
 	}
 
 	/**
-	 * TODO ReWrite 10. ConversionInstruction <br>
+	 * TODO ReWrite 10. CPInstruction <br>
 	 * 10.4. InvokeInstruction <br>
 	 * 10.4.3. INVOKESTATIC
 	 * <p>
@@ -415,7 +498,7 @@ public class CtorAnalysisVisitor extends EmptyVisitor {
 	}
 
 	/**
-	 * TODO ReWrite 10. ConversionInstruction <br>
+	 * TODO ReWrite 10. CPInstruction <br>
 	 * 10.4. InvokeInstruction <br>
 	 * 10.4.4. INVOKEVIRTUAL
 	 * <p>
@@ -432,7 +515,7 @@ public class CtorAnalysisVisitor extends EmptyVisitor {
 	}
 
 	/**
-	 * TODO ReWrite 10. ConversionInstruction <br>
+	 * TODO ReWrite 10. CPInstruction <br>
 	 * 10.5. INSTANCEOF
 	 * <p>
 	 * Determines if an object objectref is of a given type, identified by class
@@ -447,7 +530,7 @@ public class CtorAnalysisVisitor extends EmptyVisitor {
 	}
 
 	/**
-	 * TODO ReWrite 10. ConversionInstruction <br>
+	 * TODO ReWrite 10. CPInstruction <br>
 	 * 10.6. LDC
 	 * <p>
 	 * Pushes a constant #index from a constant pool (String, int or float) onto
@@ -470,11 +553,11 @@ public class CtorAnalysisVisitor extends EmptyVisitor {
 			return;
 		}
 
-		stack.push(Entry.someReference);
+		stack.push(Entry.notThisReference);
 	}
 
 	/**
-	 * TODO ReWrite 10. ConversionInstruction <br>
+	 * TODO ReWrite 10. CPInstruction <br>
 	 * 10.7. LDC2_W
 	 * <p>
 	 * Pushes a constant #index from a constant pool (double or long) onto the
@@ -504,7 +587,7 @@ public class CtorAnalysisVisitor extends EmptyVisitor {
 	}
 
 	/**
-	 * 10. ConversionInstruction <br>
+	 * 10. CPInstruction <br>
 	 * 10.8. MULTIANEWARRAY
 	 * <p>
 	 * Creates a new array of dimensions dimensions with elements of type
@@ -521,7 +604,7 @@ public class CtorAnalysisVisitor extends EmptyVisitor {
 	}
 
 	/**
-	 * 10. ConversionInstruction <br>
+	 * 10. CPInstruction <br>
 	 * 10.9. NEW
 	 * <p>
 	 * Creates new object of type identified by class reference in constant pool
@@ -533,7 +616,7 @@ public class CtorAnalysisVisitor extends EmptyVisitor {
 	@Override
 	public void visitNEW(NEW obj) {
 		System.out.println(obj.toString(false));
-		stack.push(Entry.someReference);
+		stack.push(Entry.notThisReference);
 	}
 
 	// -----------------------------------------------------------------
@@ -583,7 +666,6 @@ public class CtorAnalysisVisitor extends EmptyVisitor {
 	@Override
 	public void visitDCONST(DCONST obj) {
 		System.out.println(obj.toString(false));
-		// TODO find out how to choose constants
 		stack.push(Entry.someInt);
 	}
 
@@ -636,7 +718,6 @@ public class CtorAnalysisVisitor extends EmptyVisitor {
 	@Override
 	public void visitFCONST(FCONST obj) {
 		System.out.println(obj.toString(false));
-		// TODO find out how to choose constants
 		stack.push(Entry.someFloat);
 	}
 
@@ -649,7 +730,6 @@ public class CtorAnalysisVisitor extends EmptyVisitor {
 	@Override
 	public void visitICONST(ICONST obj) {
 		System.out.println(obj.toString(false));
-		// TODO find out how to choose constants
 		stack.push(Entry.someInt);
 	}
 
@@ -701,7 +781,6 @@ public class CtorAnalysisVisitor extends EmptyVisitor {
 	@Override
 	public void visitLCONST(LCONST obj) {
 		System.out.println(obj.toString(false));
-		// TODO find out how to choose constant
 		stack.push(Entry.someLong);
 	}
 
@@ -877,12 +956,6 @@ public class CtorAnalysisVisitor extends EmptyVisitor {
 		System.out.println(obj.toString(false));
 		Entry value1 = stack.pop();
 		Entry value2 = stack.pop();
-		if (value1.equals(Entry.someLong) || value2.equals(Entry.someLong)) {
-			throw new AssertionError("One value is of type long.");
-		}
-		if (value1.equals(Entry.someDouble) || value2.equals(Entry.someDouble)) {
-			throw new AssertionError("One value is of type double.");
-		}
 		stack.push(value1);
 		stack.push(value2);
 		stack.push(value1);
@@ -930,10 +1003,6 @@ public class CtorAnalysisVisitor extends EmptyVisitor {
 			stack.push(value1);
 		} else {
 			Entry value2 = stack.pop();
-			if (value2.equals(Entry.someLong)
-					|| value2.equals(Entry.someDouble)) {
-				throw new AssertionError("Value2 is of type long or double.");
-			}
 			stack.push(value2);
 			stack.push(value1);
 			stack.push(value2);
@@ -954,34 +1023,16 @@ public class CtorAnalysisVisitor extends EmptyVisitor {
 		value1 = stack.pop();
 		value2 = stack.pop();
 		if (value1.equals(Entry.someLong) || value1.equals(Entry.someDouble)) {
-			if (value2.equals(Entry.someLong)
-					|| value2.equals(Entry.someDouble)) {
-				throw new AssertionError(
-						"value1 and value2 are of type long or double.");
-			} else {
-				stack.push(value1);
-				stack.push(value2);
-				stack.push(value1);
-			}
+			stack.push(value1);
+			stack.push(value2);
+			stack.push(value1);
 		} else {
-			if (value2.equals(Entry.someLong)
-					|| value2.equals(Entry.someDouble)) {
-				throw new AssertionError(
-						"value2 is of type long or double and value1 is not.");
-			} else {
-				value3 = stack.pop();
-				if (value3.equals(Entry.someLong)
-						|| value3.equals(Entry.someDouble)) {
-					throw new AssertionError(
-							"value3 is of type long or double.");
-				} else {
-					stack.push(value2);
-					stack.push(value1);
-					stack.push(value3);
-					stack.push(value2);
-					stack.push(value1);
-				}
-			}
+			value3 = stack.pop();
+			stack.push(value2);
+			stack.push(value1);
+			stack.push(value3);
+			stack.push(value2);
+			stack.push(value1);
 		}
 	}
 
@@ -1000,51 +1051,37 @@ public class CtorAnalysisVisitor extends EmptyVisitor {
 		if (value1.equals(Entry.someLong) || value1.equals(Entry.someDouble)) {
 			if (value2.equals(Entry.someLong)
 					|| value2.equals(Entry.someDouble)) {
+				// form 4 in the JVM spec
 				stack.push(value1);
 				stack.push(value2);
 				stack.push(value1);
 			} else {
+				// form 2 in the JVM spec
 				value3 = stack.pop();
-				if (value3.equals(Entry.someLong)
-						|| value3.equals(Entry.someDouble)) {
-					throw new AssertionError(
-							"value1 and value3 are of type long or double and value2 is not.");
-				} else {
-					stack.push(value1);
-					stack.push(value3);
-					stack.push(value2);
-					stack.push(value1);
-				}
+				stack.push(value1);
+				stack.push(value3);
+				stack.push(value2);
+				stack.push(value1);
 			}
 		} else {
-			if (value2.equals(Entry.someLong)
-					|| value2.equals(Entry.someDouble)) {
-				throw new AssertionError(
-						"value2 is of type long or double and value1 is not.");
+			value3 = stack.pop();
+			if (value3.equals(Entry.someLong)
+					|| value3.equals(Entry.someDouble)) {
+				// form 3 in the JVM spec
+				stack.push(value2);
+				stack.push(value1);
+				stack.push(value3);
+				stack.push(value2);
+				stack.push(value1);
 			} else {
-				value3 = stack.pop();
-				if (value3.equals(Entry.someLong)
-						|| value3.equals(Entry.someDouble)) {
-					stack.push(value2);
-					stack.push(value1);
-					stack.push(value3);
-					stack.push(value2);
-					stack.push(value1);
-				} else {
-					value4 = stack.pop();
-					if (value4.equals(Entry.someLong)
-							|| value4.equals(Entry.someDouble)) {
-						throw new AssertionError(
-								"value4 is of type long or double and value1, value2 and value3 are not.");
-					} else {
-						stack.push(value2);
-						stack.push(value1);
-						stack.push(value4);
-						stack.push(value3);
-						stack.push(value2);
-						stack.push(value1);
-					}
-				}
+				// form 1 in the JVM spec
+				value4 = stack.pop();
+				stack.push(value2);
+				stack.push(value1);
+				stack.push(value4);
+				stack.push(value3);
+				stack.push(value2);
+				stack.push(value1);
 			}
 		}
 	}
@@ -1071,9 +1108,7 @@ public class CtorAnalysisVisitor extends EmptyVisitor {
 	public void visitPOP2(POP2 obj) {
 		System.out.println(obj.toString(false));
 		Entry entry = stack.pop();
-		if (entry.equals(Entry.someLong) || entry.equals(Entry.someDouble)) {
-			return;
-		} else {
+		if (!entry.equals(Entry.someLong) && !entry.equals(Entry.someDouble)) {
 			stack.pop();
 		}
 	}
@@ -1090,15 +1125,8 @@ public class CtorAnalysisVisitor extends EmptyVisitor {
 	public void visitSWAP(SWAP obj) {
 		Entry value1 = stack.pop();
 		Entry value2 = stack.pop();
-		if (value1.equals(Entry.someLong) || value1.equals(Entry.someDouble)
-				|| value2.equals(Entry.someLong)
-				|| value2.equals(Entry.someDouble)) {
-			throw new AssertionError(
-					"value1 and/or value2 are/is of type long or double.");
-		} else {
-			stack.push(value1);
-			stack.push(value2);
-		}
+		stack.push(value1);
+		stack.push(value2);
 	}
 	// -----------------------------------------------------------------
 
