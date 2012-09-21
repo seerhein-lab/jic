@@ -153,8 +153,6 @@ public class CtorAnalysisVisitor extends EmptyVisitor {
 	 */
 	@Override
 	public void visitArithmeticInstruction(ArithmeticInstruction obj) {
-		// XXX
-		System.out.print(obj.toString(false) + ": (");
 		Type type = obj.getType(constantPoolGen);
 		int consumed;
 		int produced;
@@ -188,7 +186,6 @@ public class CtorAnalysisVisitor extends EmptyVisitor {
 	 */
 	@Override
 	public void visitArrayInstruction(ArrayInstruction obj) {
-		// XXX
 		System.out.println(obj.toString(false));
 		short opcode = obj.getOpcode();
 		if (opcode >= 0x2E && opcode <= 0x35) {
@@ -296,7 +293,6 @@ public class CtorAnalysisVisitor extends EmptyVisitor {
 	 */
 	@Override
 	public void visitConversionInstruction(ConversionInstruction obj) {
-		// XXX
 		System.out.print(obj.toString(false) + ": (");
 		// pops the value
 		Entry entry = stack.pop();
@@ -335,12 +331,13 @@ public class CtorAnalysisVisitor extends EmptyVisitor {
 	@Override
 	public void visitCHECKCAST(CHECKCAST obj) {
 		notImplementedYet(obj);
-		// XXX
+		// TODO
 		// first try
 		System.out.print(obj.toString(false) + ": (");
 		Entry entry = stack.pop();
 		System.out.println(entry + ") ?= ("
 				+ obj.getLoadClassType(constantPoolGen));
+
 		if (entry.equals(Entry.getInstance(obj
 				.getLoadClassType(constantPoolGen).getSignature()))) {
 			// push entry back onto stack
