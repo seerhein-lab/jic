@@ -78,6 +78,7 @@ import edu.umd.cs.findbugs.SortedBugCollection;
  * <ul>
  * <li>Check if the this reference escapes or not
  * <li>Provide a bug collection with the found errors
+ * <li>Handle the type of values
  * </ul>
  * </p>
  * <p>
@@ -85,6 +86,7 @@ import edu.umd.cs.findbugs.SortedBugCollection;
  * <ul>
  * <li>Check if the entries have the expected type
  * <li>Check if 64 bit values are set/read atomic
+ * <li>Consider exact values
  * </ul>
  * </p>
  */
@@ -95,15 +97,6 @@ public class CtorAnalysisVisitor extends EmptyVisitor {
 
 	private volatile SortedBugCollection bugs = new SortedBugCollection();
 	private volatile Entry result = null;
-
-	private final short AALOAD_OPCODE = 0x32;
-	private final short BALOAD_OPCODE = 0x33;
-	private final short CALOAD_OPCODE = 0x34;
-	private final short DALOAD_OPCODE = 0x31;
-	private final short FALOAD_OPCODE = 0x30;
-	private final short IALOAD_OPCODE = 0x2E;
-	private final short LALOAD_OPCODE = 0x2F;
-	private final short SALOAD_OPCODE = 0x35;
 
 	CtorAnalysisVisitor(LocalVars localVars, Stack<Entry> stack,
 			ConstantPool constantPool) {
@@ -147,18 +140,20 @@ public class CtorAnalysisVisitor extends EmptyVisitor {
 	@Override
 	public void visitACONST_NULL(ACONST_NULL obj) {
 		System.out.println(obj.toString(false));
+		// push NULL onto stack
 		stack.push(Entry.notThisReference);
 	}
 
 	// -----------------------------------------------------------------
 	/**
-	 * TODO JAVADOC 2. ArithmeticInstruction <br>
+	 * 2. ArithmeticInstruction <br>
 	 * Called when an ArithmeticInstruction occurs and handles all
 	 * ArithmeticInstructions. The type and the number of consumed and produced
-	 * words are taken from
+	 * words are taken from the ArithmeticInstruction object.
 	 */
 	@Override
 	public void visitArithmeticInstruction(ArithmeticInstruction obj) {
+		// XXX
 		System.out.print(obj.toString(false) + ": (");
 		Type type = obj.getType(constantPoolGen);
 		int consumed;
@@ -170,13 +165,13 @@ public class CtorAnalysisVisitor extends EmptyVisitor {
 			consumed = obj.consumeStack(constantPoolGen);
 			produced = obj.produceStack(constantPoolGen);
 		}
-		Entry entry = null;
-
+		Entry entry;
 		for (int i = 0; i < consumed; i++) {
 			entry = stack.pop();
 			System.out.print((i == 0) ? entry : ", " + entry);
 		}
 		System.out.print(") -> (");
+		entry = Entry.getInstance(type.getSignature());
 		for (int i = 0; i < produced; i++) {
 			stack.push(entry);
 			System.out.print((i == 0) ? entry : ", " + entry);
@@ -188,39 +183,35 @@ public class CtorAnalysisVisitor extends EmptyVisitor {
 
 	/**
 	 * 3. ArrayInstruction<br>
-	 * Called when an ArrayInstruction operation occurs. TODO: JAVADOC
+	 * Called when an ArrayInstruction operation occurs. This visitor handles
+	 * all ALOAD and ASTORE instructions distinguished by the opcode.
 	 */
 	@Override
 	public void visitArrayInstruction(ArrayInstruction obj) {
+		// XXX
 		System.out.println(obj.toString(false));
-		stack.pop();
-		stack.pop();
-		switch (obj.getOpcode()) {
-		case AALOAD_OPCODE:
-			stack.push(Entry.maybeThisReference);
-			break;
-		case BALOAD_OPCODE:
-			stack.push(Entry.someByte);
-			break;
-		case CALOAD_OPCODE:
-			stack.push(Entry.someChar);
-			break;
-		case DALOAD_OPCODE:
-			stack.push(Entry.someDouble);
-			break;
-		case FALOAD_OPCODE:
-			stack.push(Entry.someFloat);
-			break;
-		case IALOAD_OPCODE:
-			stack.push(Entry.someInt);
-			break;
-		case LALOAD_OPCODE:
-			stack.push(Entry.someLong);
-			break;
-		case SALOAD_OPCODE:
-			stack.push(Entry.someShort);
-			break;
-		default: // all ASTORE opcodes
+		short opcode = obj.getOpcode();
+		if (opcode >= 0x2E && opcode <= 0x35) {
+			// all ALOAD instructions
+			// pop index
+			stack.pop();
+			// pop reference
+			stack.pop();
+			if (opcode == 0x32) {
+				// AALOAD
+				stack.push(Entry.maybeThisReference);
+			} else {
+				// all other ALOAD instructions
+				stack.push(Entry.getInstance(obj.getType(constantPoolGen)
+						.getSignature()));
+			}
+		} else {
+			// all ASTORE instructions
+			// pop value
+			stack.pop();
+			// pop index
+			stack.pop();
+			// pop reference
 			stack.pop();
 		}
 	}
@@ -235,7 +226,9 @@ public class CtorAnalysisVisitor extends EmptyVisitor {
 	@Override
 	public void visitARRAYLENGTH(ARRAYLENGTH obj) {
 		System.out.println(obj.toString(false));
+		// pops array reference
 		stack.pop();
+		// pushes length
 		stack.push(Entry.someInt);
 	}
 
@@ -247,16 +240,15 @@ public class CtorAnalysisVisitor extends EmptyVisitor {
 	 */
 	@Override
 	public void visitATHROW(ATHROW obj) {
-
-		System.out.println(obj.toString(false));
-		Class<?>[] exceptions = obj.getExceptions();
-		for (Class<?> exception : exceptions) {
-			System.out.println(exception);
-		}
-
-		stack.clear();
-		stack.push(Entry.notThisReference);
-
+		notImplementedYet(obj);
+		// TODO
+		// first try
+		/*
+		 * System.out.println(obj.toString(false)); Class<?>[] exceptions =
+		 * obj.getExceptions(); for (Class<?> exception : exceptions) {
+		 * System.out.println(exception); } stack.clear();
+		 * stack.push(Entry.notThisReference);
+		 */
 	}
 
 	// -----------------------------------------------------------------
@@ -268,17 +260,18 @@ public class CtorAnalysisVisitor extends EmptyVisitor {
 	@Override
 	public void visitBIPUSH(BIPUSH obj) {
 		System.out.println(obj.toString(false));
+		// pushes the integer value onto the stack
 		stack.push(Entry.someInt);
 	}
 
 	// -----------------------------------------------------------------
 	/**
 	 * 6. BranchInstruction<br>
-	 * Called when a BranchInstruction operation occurs. TODO: add description
-	 * TODO: look up stack
+	 * Called when a BranchInstruction operation occurs. TODO: JAVADOC
 	 */
 	@Override
 	public void visitBranchInstruction(BranchInstruction obj) {
+		// TODO Can we all handle them the same way?
 		notImplementedYet(obj);
 	}
 
@@ -290,33 +283,45 @@ public class CtorAnalysisVisitor extends EmptyVisitor {
 	 */
 	@Override
 	public void visitBREAKPOINT(BREAKPOINT obj) {
+		// no need to implement this one
 		notImplementedYet(obj);
 	}
 
 	// -----------------------------------------------------------------
 	/**
 	 * 9. ConversionInstruction <br>
-	 * Called when a ConversionInstruction operation occurs.TODO: add
-	 * description TODO: lookup stack
+	 * Called when a ConversionInstruction operation occurs.Converts the type of
+	 * a value to another one. Therefore a value is popped, converted and the
+	 * new one pushed back onto the stack.
 	 */
 	@Override
 	public void visitConversionInstruction(ConversionInstruction obj) {
-		System.out.println(obj.toString(false));
-		System.out.println(obj.getType(constantPoolGen));
-		notImplementedYet(obj);
+		// XXX
+		System.out.print(obj.toString(false) + ": (");
+		// pops the value
+		Entry entry = stack.pop();
+		System.out.print(entry + ") -> (");
+		Entry convertedEntry = Entry.getInstance(obj.getType(constantPoolGen)
+				.getSignature());
+		// pushes the converted value
+		stack.push(convertedEntry);
+		System.out.println(convertedEntry + ")");
 	}
 
 	// ---CPInstruction-------------------------------------------------
 	/**
 	 * 10. CPInstruction <br>
 	 * 10.1. ANEWARRAY<br>
-	 * Called when an ANEWARRAY operation occurs. Pops an integer value from the
-	 * stack and pushes a new array reference.
+	 * Called when an ANEWARRAY operation occurs. An ANEWARRAY operation creates
+	 * a new array. Therefore the length as an integer value is popped and the
+	 * new array reference is pushed onto the stack.
 	 */
 	@Override
 	public void visitANEWARRAY(ANEWARRAY obj) {
 		System.out.println(obj.toString(false));
+		// pops the length
 		stack.pop();
+		// pushes the array reference
 		stack.push(Entry.notThisReference);
 	}
 
@@ -330,11 +335,20 @@ public class CtorAnalysisVisitor extends EmptyVisitor {
 	@Override
 	public void visitCHECKCAST(CHECKCAST obj) {
 		notImplementedYet(obj);
-		// TODO Exceptionhandeling???
-		/*
-		 * System.out.println(obj.toString(false)); //TODO: find out if stack
-		 * should be changed or not Entry temp = stack.pop(); stack.push(temp);
-		 */
+		// XXX
+		// first try
+		System.out.print(obj.toString(false) + ": (");
+		Entry entry = stack.pop();
+		System.out.println(entry + ") ?= ("
+				+ obj.getLoadClassType(constantPoolGen));
+		if (entry.equals(Entry.getInstance(obj
+				.getLoadClassType(constantPoolGen).getSignature()))) {
+			// push entry back onto stack
+			stack.push(entry);
+		} else {
+			// throw exception
+			// TODO Exception-handling???
+		}
 	}
 
 	/**
@@ -367,7 +381,16 @@ public class CtorAnalysisVisitor extends EmptyVisitor {
 	 */
 	@Override
 	public void visitGETSTATIC(GETSTATIC obj) {
-		notImplementedYet(obj);
+		// XXX
+		// throws IncompatibleClassException if field is not static
+		// TODO error handling
+		System.err.println("FieldName " + obj.getFieldName(constantPoolGen));
+		System.err.println("Signature " + obj.getSignature(constantPoolGen));
+		System.err.println("FieldType " + obj.getFieldType(constantPoolGen));
+		System.err.println("ReferencedType "
+				+ obj.getReferenceType(constantPoolGen));
+		System.err.println("Type " + obj.getType(constantPoolGen));
+		// FIXME
 	}
 
 	/**
@@ -494,6 +517,14 @@ public class CtorAnalysisVisitor extends EmptyVisitor {
 	 */
 	@Override
 	public void visitINVOKESTATIC(INVOKESTATIC obj) {
+		// TODO
+		Type[] types = obj.getArgumentTypes(constantPoolGen);
+		for (Type type : types) {
+			System.err.println("argType: " + type);
+		}
+		System.err.println("Signature " + obj.getSignature(constantPoolGen));
+		System.err.println("RetType: " + obj.getReturnType(constantPoolGen));
+		System.err.println("Type: " + obj.getType(constantPoolGen));
 		notImplementedYet(obj);
 	}
 
@@ -511,7 +542,15 @@ public class CtorAnalysisVisitor extends EmptyVisitor {
 	 */
 	@Override
 	public void visitINVOKEVIRTUAL(INVOKEVIRTUAL obj) {
-		notImplementedYet(obj);
+		Type[] types = obj.getArgumentTypes(constantPoolGen);
+		for (Type type : types) {
+			System.out.println("argType: " + type);
+		}
+		System.out.println("Signature " + obj.getSignature(constantPoolGen));
+		System.out.println("RetType: " + obj.getReturnType(constantPoolGen));
+		System.out.println("Type: " + obj.getType(constantPoolGen));
+
+		// notImplementedYet(obj);
 	}
 
 	/**
