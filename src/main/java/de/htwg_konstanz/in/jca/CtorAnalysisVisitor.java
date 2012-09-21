@@ -153,6 +153,7 @@ public class CtorAnalysisVisitor extends EmptyVisitor {
 	 */
 	@Override
 	public void visitArithmeticInstruction(ArithmeticInstruction obj) {
+		System.out.print(obj.toString(false) + ": (");
 		Type type = obj.getType(constantPoolGen);
 		int consumed;
 		int produced;
