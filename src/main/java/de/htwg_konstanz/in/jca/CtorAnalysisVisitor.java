@@ -3,7 +3,6 @@ package de.htwg_konstanz.in.jca;
 import java.util.Stack;
 
 import org.apache.bcel.Repository;
-import org.apache.bcel.classfile.ConstantPool;
 import org.apache.bcel.classfile.JavaClass;
 import org.apache.bcel.classfile.Method;
 import org.apache.bcel.generic.ACONST_NULL;
@@ -43,6 +42,8 @@ import org.apache.bcel.generic.INVOKEINTERFACE;
 import org.apache.bcel.generic.INVOKESPECIAL;
 import org.apache.bcel.generic.INVOKESTATIC;
 import org.apache.bcel.generic.INVOKEVIRTUAL;
+import org.apache.bcel.generic.InstructionHandle;
+import org.apache.bcel.generic.InstructionList;
 import org.apache.bcel.generic.LCMP;
 import org.apache.bcel.generic.LCONST;
 import org.apache.bcel.generic.LDC;
@@ -93,23 +94,29 @@ import edu.umd.cs.findbugs.SortedBugCollection;
 public class CtorAnalysisVisitor extends EmptyVisitor {
 	private final LocalVars localVars;
 	private final Stack<Entry> stack;
+	private final Method ctor;
 	private final ConstantPoolGen constantPoolGen;
+	private InstructionHandle instructionHandle;
 
 	private volatile SortedBugCollection bugs = new SortedBugCollection();
 	private volatile Entry result = null;
 
-	CtorAnalysisVisitor(LocalVars localVars, Stack<Entry> stack,
-			ConstantPool constantPool) {
+	CtorAnalysisVisitor(LocalVars localVars, Stack<Entry> stack, Method ctor) {
 		this.localVars = localVars;
 		this.stack = stack;
-		this.constantPoolGen = new ConstantPoolGen(constantPool);
+		this.ctor = ctor;
+		this.constantPoolGen = new ConstantPoolGen(ctor.getConstantPool());
 	}
 
 	public BugCollection doesEscape() {
 		return bugs;
 	}
 
-	public Entry getResult() {
+	public Entry analyze() {
+		InstructionHandle[] instructionHandles = new InstructionList(ctor
+				.getCode().getCode()).getInstructionHandles();
+		instructionHandle = instructionHandles[0];
+		instructionHandle.accept(this);
 		return result;
 	}
 
@@ -142,6 +149,8 @@ public class CtorAnalysisVisitor extends EmptyVisitor {
 		System.out.println(obj.toString(false));
 		// push NULL onto stack
 		stack.push(Entry.notThisReference);
+		instructionHandle = instructionHandle.getNext();
+		instructionHandle.accept(this);
 	}
 
 	// -----------------------------------------------------------------
@@ -176,6 +185,8 @@ public class CtorAnalysisVisitor extends EmptyVisitor {
 			System.out.print((i == 0) ? entry : ", " + entry);
 		}
 		System.out.println(")");
+		instructionHandle = instructionHandle.getNext();
+		instructionHandle.accept(this);
 	}
 
 	// -----------------------------------------------------------------
@@ -212,6 +223,8 @@ public class CtorAnalysisVisitor extends EmptyVisitor {
 			// pop reference
 			stack.pop();
 		}
+		instructionHandle = instructionHandle.getNext();
+		instructionHandle.accept(this);
 	}
 
 	// -----------------------------------------------------------------
@@ -228,6 +241,8 @@ public class CtorAnalysisVisitor extends EmptyVisitor {
 		stack.pop();
 		// pushes length
 		stack.push(Entry.someInt);
+		instructionHandle = instructionHandle.getNext();
+		instructionHandle.accept(this);
 	}
 
 	// -----------------------------------------------------------------
@@ -260,6 +275,8 @@ public class CtorAnalysisVisitor extends EmptyVisitor {
 		System.out.println(obj.toString(false));
 		// pushes the integer value onto the stack
 		stack.push(Entry.someInt);
+		instructionHandle = instructionHandle.getNext();
+		instructionHandle.accept(this);
 	}
 
 	// -----------------------------------------------------------------
@@ -303,6 +320,8 @@ public class CtorAnalysisVisitor extends EmptyVisitor {
 		// pushes the converted value
 		stack.push(convertedEntry);
 		System.out.println(convertedEntry + ")");
+		instructionHandle = instructionHandle.getNext();
+		instructionHandle.accept(this);
 	}
 
 	// ---CPInstruction-------------------------------------------------
@@ -320,6 +339,8 @@ public class CtorAnalysisVisitor extends EmptyVisitor {
 		stack.pop();
 		// pushes the array reference
 		stack.push(Entry.notThisReference);
+		instructionHandle = instructionHandle.getNext();
+		instructionHandle.accept(this);
 	}
 
 	/**
@@ -347,6 +368,8 @@ public class CtorAnalysisVisitor extends EmptyVisitor {
 			// throw exception
 			// TODO Exception-handling???
 		}
+		instructionHandle = instructionHandle.getNext();
+		instructionHandle.accept(this);
 	}
 
 	/**
@@ -368,6 +391,8 @@ public class CtorAnalysisVisitor extends EmptyVisitor {
 			entry = Entry.maybeThisReference;
 		}
 		stack.push(entry);
+		instructionHandle = instructionHandle.getNext();
+		instructionHandle.accept(this);
 	}
 
 	/**
@@ -388,6 +413,8 @@ public class CtorAnalysisVisitor extends EmptyVisitor {
 		System.err.println("ReferencedType "
 				+ obj.getReferenceType(constantPoolGen));
 		System.err.println("Type " + obj.getType(constantPoolGen));
+		instructionHandle = instructionHandle.getNext();
+		instructionHandle.accept(this);
 		// FIXME
 	}
 
@@ -427,7 +454,8 @@ public class CtorAnalysisVisitor extends EmptyVisitor {
 		Entry left = stack.pop();
 		System.out.println(left + "." + obj.getFieldName(constantPoolGen)
 				+ " <--" + right);
-
+		instructionHandle = instructionHandle.getNext();
+		instructionHandle.accept(this);
 	}
 
 	/**
@@ -499,7 +527,8 @@ public class CtorAnalysisVisitor extends EmptyVisitor {
 		if (!obj.getReturnType(constantPoolGen).equals(BasicType.VOID)) {
 			stack.push(superCtorAnalyzer.getResult());
 		}
-
+		instructionHandle = instructionHandle.getNext();
+		instructionHandle.accept(this);
 	}
 
 	/**
@@ -582,15 +611,21 @@ public class CtorAnalysisVisitor extends EmptyVisitor {
 
 		if (obj.getType(constantPoolGen).equals(Type.INT)) {
 			stack.push(Entry.someInt);
+			instructionHandle = instructionHandle.getNext();
+			instructionHandle.accept(this);
 			return;
 		}
 
 		if (obj.getType(constantPoolGen).equals(Type.FLOAT)) {
 			stack.push(Entry.someFloat);
+			instructionHandle = instructionHandle.getNext();
+			instructionHandle.accept(this);
 			return;
 		}
 
 		stack.push(Entry.notThisReference);
+		instructionHandle = instructionHandle.getNext();
+		instructionHandle.accept(this);
 	}
 
 	/**
@@ -611,16 +646,17 @@ public class CtorAnalysisVisitor extends EmptyVisitor {
 
 		if (obj.getType(constantPoolGen).equals(Type.LONG)) {
 			stack.push(Entry.someLong);
+			instructionHandle = instructionHandle.getNext();
+			instructionHandle.accept(this);
 			return;
 		}
 
 		if (obj.getType(constantPoolGen).equals(Type.DOUBLE)) {
 			stack.push(Entry.someDouble);
+			instructionHandle = instructionHandle.getNext();
+			instructionHandle.accept(this);
 			return;
 		}
-
-		throw new AssertionError("LDC2_W loads wrongly typed value");
-
 	}
 
 	/**
@@ -654,6 +690,8 @@ public class CtorAnalysisVisitor extends EmptyVisitor {
 	public void visitNEW(NEW obj) {
 		System.out.println(obj.toString(false));
 		stack.push(Entry.notThisReference);
+		instructionHandle = instructionHandle.getNext();
+		instructionHandle.accept(this);
 	}
 
 	// -----------------------------------------------------------------
@@ -673,6 +711,8 @@ public class CtorAnalysisVisitor extends EmptyVisitor {
 		// check if value1 or value2 is NaN then push 1 and return
 		// compare them and get result
 		stack.push(Entry.someInt);
+		instructionHandle = instructionHandle.getNext();
+		instructionHandle.accept(this);
 	}
 
 	// -----------------------------------------------------------------
@@ -692,6 +732,8 @@ public class CtorAnalysisVisitor extends EmptyVisitor {
 		// check if value1 or value2 is NaN then push -1 and return
 		// compare them and get result
 		stack.push(Entry.someInt);
+		instructionHandle = instructionHandle.getNext();
+		instructionHandle.accept(this);
 	}
 
 	// -----------------------------------------------------------------
@@ -704,6 +746,8 @@ public class CtorAnalysisVisitor extends EmptyVisitor {
 	public void visitDCONST(DCONST obj) {
 		System.out.println(obj.toString(false));
 		stack.push(Entry.someInt);
+		instructionHandle = instructionHandle.getNext();
+		instructionHandle.accept(this);
 	}
 
 	// -----------------------------------------------------------------
@@ -724,6 +768,8 @@ public class CtorAnalysisVisitor extends EmptyVisitor {
 		// check if value1 or value2 is NaN then push 1 and return
 		// compare them and get result
 		stack.push(Entry.someInt);
+		instructionHandle = instructionHandle.getNext();
+		instructionHandle.accept(this);
 	}
 
 	// -----------------------------------------------------------------
@@ -744,6 +790,8 @@ public class CtorAnalysisVisitor extends EmptyVisitor {
 		// check if value1 or value2 is NaN then push -1 and return
 		// compare them and get result
 		stack.push(Entry.someInt);
+		instructionHandle = instructionHandle.getNext();
+		instructionHandle.accept(this);
 	}
 
 	// -----------------------------------------------------------------
@@ -756,6 +804,8 @@ public class CtorAnalysisVisitor extends EmptyVisitor {
 	public void visitFCONST(FCONST obj) {
 		System.out.println(obj.toString(false));
 		stack.push(Entry.someFloat);
+		instructionHandle = instructionHandle.getNext();
+		instructionHandle.accept(this);
 	}
 
 	// -----------------------------------------------------------------
@@ -768,6 +818,8 @@ public class CtorAnalysisVisitor extends EmptyVisitor {
 	public void visitICONST(ICONST obj) {
 		System.out.println(obj.toString(false));
 		stack.push(Entry.someInt);
+		instructionHandle = instructionHandle.getNext();
+		instructionHandle.accept(this);
 	}
 
 	// -----------------------------------------------------------------
@@ -807,6 +859,8 @@ public class CtorAnalysisVisitor extends EmptyVisitor {
 		Entry value1 = stack.pop();
 		// compare them
 		stack.push(Entry.someInt);
+		instructionHandle = instructionHandle.getNext();
+		instructionHandle.accept(this);
 	}
 
 	// -----------------------------------------------------------------
@@ -819,6 +873,8 @@ public class CtorAnalysisVisitor extends EmptyVisitor {
 	public void visitLCONST(LCONST obj) {
 		System.out.println(obj.toString(false));
 		stack.push(Entry.someLong);
+		instructionHandle = instructionHandle.getNext();
+		instructionHandle.accept(this);
 	}
 
 	// ---LocalVariableInstruction--------------------------------------
@@ -849,6 +905,8 @@ public class CtorAnalysisVisitor extends EmptyVisitor {
 	public void visitLoadInstruction(LoadInstruction obj) {
 		System.out.println(obj.toString(false));
 		stack.push(localVars.getForIndex(obj.getIndex()));
+		instructionHandle = instructionHandle.getNext();
+		instructionHandle.accept(this);
 	}
 
 	/**
@@ -863,6 +921,8 @@ public class CtorAnalysisVisitor extends EmptyVisitor {
 	public void visitStoreInstruction(StoreInstruction obj) {
 		System.out.println(obj.toString(false));
 		localVars.setForIndex(obj.getIndex(), stack.pop());
+		instructionHandle = instructionHandle.getNext();
+		instructionHandle.accept(this);
 	}
 
 	// -----------------------------------------------------------------
@@ -880,6 +940,8 @@ public class CtorAnalysisVisitor extends EmptyVisitor {
 	public void visitMONITORENTER(MONITORENTER obj) {
 		System.out.println("MONITORENTER " + ": No Escape");
 		stack.pop();
+		instructionHandle = instructionHandle.getNext();
+		instructionHandle.accept(this);
 	}
 
 	// -----------------------------------------------------------------
@@ -897,6 +959,8 @@ public class CtorAnalysisVisitor extends EmptyVisitor {
 	public void visitMONITOREXIT(MONITOREXIT obj) {
 		System.out.println("MONITOREXIT " + ": No Escape");
 		stack.pop();
+		instructionHandle = instructionHandle.getNext();
+		instructionHandle.accept(this);
 	}
 
 	// -----------------------------------------------------------------
@@ -922,6 +986,8 @@ public class CtorAnalysisVisitor extends EmptyVisitor {
 	@Override
 	public void visitNOP(NOP obj) {
 		System.out.println(obj.toString(false));
+		instructionHandle = instructionHandle.getNext();
+		instructionHandle.accept(this);
 	}
 
 	// -----------------------------------------------------------------
@@ -964,6 +1030,8 @@ public class CtorAnalysisVisitor extends EmptyVisitor {
 	public void visitSIPUSH(SIPUSH obj) {
 		System.out.println("sipush " + obj.getValue());
 		stack.push(Entry.someShort);
+		instructionHandle = instructionHandle.getNext();
+		instructionHandle.accept(this);
 	}
 
 	// ---StackInstruction----------------------------------------------
@@ -979,6 +1047,8 @@ public class CtorAnalysisVisitor extends EmptyVisitor {
 		Entry entry = stack.pop();
 		stack.push(entry);
 		stack.push(entry);
+		instructionHandle = instructionHandle.getNext();
+		instructionHandle.accept(this);
 	}
 
 	/**
@@ -996,6 +1066,8 @@ public class CtorAnalysisVisitor extends EmptyVisitor {
 		stack.push(value1);
 		stack.push(value2);
 		stack.push(value1);
+		instructionHandle = instructionHandle.getNext();
+		instructionHandle.accept(this);
 	}
 
 	/**
@@ -1022,6 +1094,8 @@ public class CtorAnalysisVisitor extends EmptyVisitor {
 			stack.push(value2);
 			stack.push(value1);
 		}
+		instructionHandle = instructionHandle.getNext();
+		instructionHandle.accept(this);
 	}
 
 	/**
@@ -1045,6 +1119,8 @@ public class CtorAnalysisVisitor extends EmptyVisitor {
 			stack.push(value2);
 			stack.push(value1);
 		}
+		instructionHandle = instructionHandle.getNext();
+		instructionHandle.accept(this);
 	}
 
 	/**
@@ -1071,6 +1147,8 @@ public class CtorAnalysisVisitor extends EmptyVisitor {
 			stack.push(value2);
 			stack.push(value1);
 		}
+		instructionHandle = instructionHandle.getNext();
+		instructionHandle.accept(this);
 	}
 
 	/**
@@ -1121,6 +1199,8 @@ public class CtorAnalysisVisitor extends EmptyVisitor {
 				stack.push(value1);
 			}
 		}
+		instructionHandle = instructionHandle.getNext();
+		instructionHandle.accept(this);
 	}
 
 	/**
@@ -1133,6 +1213,8 @@ public class CtorAnalysisVisitor extends EmptyVisitor {
 	public void visitPOP(POP obj) {
 		System.out.println(obj.toString(false));
 		stack.pop();
+		instructionHandle = instructionHandle.getNext();
+		instructionHandle.accept(this);
 	}
 
 	/**
@@ -1148,6 +1230,8 @@ public class CtorAnalysisVisitor extends EmptyVisitor {
 		if (!entry.equals(Entry.someLong) && !entry.equals(Entry.someDouble)) {
 			stack.pop();
 		}
+		instructionHandle = instructionHandle.getNext();
+		instructionHandle.accept(this);
 	}
 
 	/**
@@ -1164,6 +1248,8 @@ public class CtorAnalysisVisitor extends EmptyVisitor {
 		Entry value2 = stack.pop();
 		stack.push(value1);
 		stack.push(value2);
+		instructionHandle = instructionHandle.getNext();
+		instructionHandle.accept(this);
 	}
 	// -----------------------------------------------------------------
 

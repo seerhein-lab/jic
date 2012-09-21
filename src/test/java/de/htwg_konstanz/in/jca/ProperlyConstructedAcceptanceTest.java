@@ -3,26 +3,27 @@ package de.htwg_konstanz.in.jca;
 import org.junit.runner.RunWith;
 
 import de.htwg_konstanz.in.jca.testutils.ClassAnalyzerRunner;
-import de.htwg_konstanz.in.jca.testutils.Yes;
 import de.htwg_konstanz.in.jca.testutils.ClassAnalyzerRunner.BindAnalyzerMethod;
+import de.htwg_konstanz.in.jca.testutils.Yes;
 import edu.umd.cs.findbugs.BugCollection;
 
 /**
  * Functional acceptance tests for the method properlyConstructed of the class
  * ClassAnalyzer.
- *
- *  TODO: JavaDoc
- *
+ * 
+ * TODO: JavaDoc
+ * 
  * @see ProperlyConstructedTestRunner
  */
 @RunWith(ClassAnalyzerRunner.class)
 public class ProperlyConstructedAcceptanceTest {
-	
+
 	@BindAnalyzerMethod
-	public static BugCollection bindClassAnalyzerToProperlyConstructed(ClassAnalyzer analyzer) {
+	public static BugCollection bindClassAnalyzerToProperlyConstructed(
+			ClassAnalyzer analyzer) {
 		return analyzer.properlyConstructed();
 	}
-	
+
 	/**
 	 * Simple class without fields and with the default constructor.
 	 */

@@ -4,8 +4,6 @@ import java.util.Stack;
 
 import org.apache.bcel.classfile.LocalVariable;
 import org.apache.bcel.classfile.Method;
-import org.apache.bcel.generic.Instruction;
-import org.apache.bcel.generic.InstructionList;
 
 import edu.umd.cs.findbugs.BugCollection;
 import edu.umd.cs.findbugs.SortedBugCollection;
@@ -85,18 +83,25 @@ public class CtorAnalyzer {
 		Stack<Entry> stack = new Stack<Entry>();
 
 		CtorAnalysisVisitor visitor = new CtorAnalysisVisitor(localVars, stack,
-				ctor.getCode().getConstantPool());
-		Instruction[] instructions = new InstructionList(ctor.getCode()
-				.getCode()).getInstructions();
+				ctor);
 
 		System.out.println("vvvvvvvvvvvvvvvvvvvvvvvvvv");
 
-		for (Instruction instruction : instructions) {
-			instruction.accept(visitor);
-			bugs.addAll(visitor.doesEscape().getCollection());
-		}
+		result = visitor.analyze();
 
-		result = visitor.getResult();
+		// Instruction[] instructions = new InstructionList(ctor.getCode()
+		// .getCode()).getInstructions();
+
+		// instructions[0].accept(visitor);
+
+		// System.out.println("vvvvvvvvvvvvvvvvvvvvvvvvvv");
+		//
+		// for (Instruction instruction : instructions) {
+		// instruction.accept(visitor);
+		// bugs.addAll(visitor.doesEscape().getCollection());
+		// }
+
+		// result = visitor.getResult();
 
 		System.out.println("^^^^^^^^^^^^^^^^^^^^^^^^^^^");
 
