@@ -34,6 +34,22 @@ public class LocalVars {
 	}
 
 	/**
+	 * Copy-constructor. Deep-copy of the Entry- and Indexes-array of an
+	 * existing localVars object.
+	 * 
+	 * @param localVars
+	 *            The localVars object which values are to be copied.
+	 */
+	public LocalVars(LocalVars localVars) {
+		this.entries = new Entry[localVars.getEntriesLength()];
+		this.indexes = new int[localVars.getIndexesLength()];
+		for (int i = 0; i < entries.length; i++) {
+			entries[i] = localVars.getEntry(i);
+			indexes[i] = localVars.getIndex(i);
+		}
+	}
+
+	/**
 	 * Writes numArgs arguments from callerStack to entries.
 	 * 
 	 * @param callerStack

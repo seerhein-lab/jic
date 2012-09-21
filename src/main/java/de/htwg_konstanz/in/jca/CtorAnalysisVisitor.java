@@ -14,7 +14,6 @@ import org.apache.bcel.generic.ArrayInstruction;
 import org.apache.bcel.generic.BIPUSH;
 import org.apache.bcel.generic.BREAKPOINT;
 import org.apache.bcel.generic.BasicType;
-import org.apache.bcel.generic.BranchInstruction;
 import org.apache.bcel.generic.CHECKCAST;
 import org.apache.bcel.generic.ConstantPoolGen;
 import org.apache.bcel.generic.ConversionInstruction;
@@ -33,6 +32,7 @@ import org.apache.bcel.generic.FCMPL;
 import org.apache.bcel.generic.FCONST;
 import org.apache.bcel.generic.GETFIELD;
 import org.apache.bcel.generic.GETSTATIC;
+import org.apache.bcel.generic.GotoInstruction;
 import org.apache.bcel.generic.ICONST;
 import org.apache.bcel.generic.IINC;
 import org.apache.bcel.generic.IMPDEP1;
@@ -42,8 +42,10 @@ import org.apache.bcel.generic.INVOKEINTERFACE;
 import org.apache.bcel.generic.INVOKESPECIAL;
 import org.apache.bcel.generic.INVOKESTATIC;
 import org.apache.bcel.generic.INVOKEVIRTUAL;
+import org.apache.bcel.generic.IfInstruction;
 import org.apache.bcel.generic.InstructionHandle;
 import org.apache.bcel.generic.InstructionList;
+import org.apache.bcel.generic.JsrInstruction;
 import org.apache.bcel.generic.LCMP;
 import org.apache.bcel.generic.LCONST;
 import org.apache.bcel.generic.LDC;
@@ -63,6 +65,7 @@ import org.apache.bcel.generic.RET;
 import org.apache.bcel.generic.ReturnInstruction;
 import org.apache.bcel.generic.SIPUSH;
 import org.apache.bcel.generic.SWAP;
+import org.apache.bcel.generic.Select;
 import org.apache.bcel.generic.StoreInstruction;
 import org.apache.bcel.generic.Type;
 
@@ -106,17 +109,33 @@ public class CtorAnalysisVisitor extends EmptyVisitor {
 		this.stack = stack;
 		this.ctor = ctor;
 		this.constantPoolGen = new ConstantPoolGen(ctor.getConstantPool());
+		InstructionHandle[] instructionHandles = new InstructionList(ctor
+				.getCode().getCode()).getInstructionHandles();
+		instructionHandle = instructionHandles[0];
+	}
+
+	// TODO add JavaDoc
+	@SuppressWarnings("unchecked")
+	private CtorAnalysisVisitor(LocalVars localVars, Stack<Entry> stack,
+			Method ctor, ConstantPoolGen constantPoolGen,
+			InstructionHandle firstInstruction) {
+		this.localVars = new LocalVars(localVars);
+		this.stack = (Stack<Entry>) stack.clone();
+		this.ctor = ctor;
+		this.constantPoolGen = constantPoolGen;
+		this.instructionHandle = firstInstruction;
 	}
 
 	public BugCollection doesEscape() {
 		return bugs;
 	}
 
-	public Entry analyze() {
-		InstructionHandle[] instructionHandles = new InstructionList(ctor
-				.getCode().getCode()).getInstructionHandles();
-		instructionHandle = instructionHandles[0];
+	public BugCollection analyze() {
 		instructionHandle.accept(this);
+		return bugs;
+	}
+
+	public Entry getResult() {
 		return result;
 	}
 
@@ -266,7 +285,7 @@ public class CtorAnalysisVisitor extends EmptyVisitor {
 
 	// -----------------------------------------------------------------
 	/**
-	 * 5. BIPUSH<br>
+	 * 6. BIPUSH<br>
 	 * Called when a BIPUSH operation occurs. Pushes a byte onto the stack as an
 	 * integer value.
 	 */
@@ -281,11 +300,58 @@ public class CtorAnalysisVisitor extends EmptyVisitor {
 
 	// -----------------------------------------------------------------
 	/**
-	 * 6. BranchInstruction<br>
+	 * 7. BranchInstruction<br>
+	 * 7.1. GotoInstruction<br>
+	 * Called when a GotoInstruction operation occurs. TODO: JAVADOC
+	 */
+	@Override
+	public void visitGotoInstruction(GotoInstruction obj) {
+		System.out.println(obj.toString(false));
+		instructionHandle = obj.getTarget();
+		instructionHandle.accept(this);
+	}
+
+	/**
+	 * 7. BranchInstruction<br>
+	 * 7.2. IfInstruction<br>
 	 * Called when a BranchInstruction operation occurs. TODO: JAVADOC
 	 */
 	@Override
-	public void visitBranchInstruction(BranchInstruction obj) {
+	public void visitIfInstruction(IfInstruction obj) {
+		System.out.println(obj.toString(false));
+		for (int i = 0; i < obj.consumeStack(constantPoolGen); i++) {
+			stack.pop();
+		}
+
+		System.out.println("------------------  A  ------------------");
+		CtorAnalysisVisitor branch1Visitor = new CtorAnalysisVisitor(localVars,
+				stack, ctor, constantPoolGen, instructionHandle.getNext());
+		bugs.addAll(branch1Visitor.analyze().getCollection());
+
+		System.out.println("------------------  B  ------------------");
+		CtorAnalysisVisitor branch2Visitor = new CtorAnalysisVisitor(localVars,
+				stack, ctor, constantPoolGen, obj.getTarget());
+		bugs.addAll(branch2Visitor.analyze().getCollection());
+	}
+
+	/**
+	 * 7. BranchInstruction<br>
+	 * 7.3. JsrInstruction<br>
+	 * Called when a BranchInstruction operation occurs. TODO: JAVADOC
+	 */
+	@Override
+	public void visitJsrInstruction(JsrInstruction obj) {
+		// TODO Can we all handle them the same way?
+		notImplementedYet(obj);
+	}
+
+	/**
+	 * 7. BranchInstruction<br>
+	 * 7.4. Select<br>
+	 * Called when a BranchInstruction operation occurs. TODO: JAVADOC
+	 */
+	@Override
+	public void visitSelect(Select obj) {
 		// TODO Can we all handle them the same way?
 		notImplementedYet(obj);
 	}
@@ -890,7 +956,10 @@ public class CtorAnalysisVisitor extends EmptyVisitor {
 	 */
 	@Override
 	public void visitIINC(IINC obj) {
-		notImplementedYet(obj);
+		System.out.println(obj.toString(false));
+		// no change on the stack, operates on the localVariables
+		instructionHandle = instructionHandle.getNext();
+		instructionHandle.accept(this);
 	}
 
 	/**

@@ -6,7 +6,6 @@ import org.apache.bcel.classfile.LocalVariable;
 import org.apache.bcel.classfile.Method;
 
 import edu.umd.cs.findbugs.BugCollection;
-import edu.umd.cs.findbugs.SortedBugCollection;
 
 /**
  * Analyzes constructors.
@@ -72,8 +71,6 @@ public class CtorAnalyzer {
 	 * @return BugCollection containing potential error messages
 	 */
 	public BugCollection doesThisReferenceEscape(Stack<Entry> callerStack) {
-		SortedBugCollection bugs = new SortedBugCollection();
-
 		LocalVars localVars = new LocalVars(
 				(ctor.getLocalVariableTable() == null) ? new LocalVariable[0]
 						: ctor.getLocalVariableTable().getLocalVariableTable());
@@ -86,24 +83,8 @@ public class CtorAnalyzer {
 				ctor);
 
 		System.out.println("vvvvvvvvvvvvvvvvvvvvvvvvvv");
-
-		result = visitor.analyze();
-
-		// Instruction[] instructions = new InstructionList(ctor.getCode()
-		// .getCode()).getInstructions();
-
-		// instructions[0].accept(visitor);
-
-		// System.out.println("vvvvvvvvvvvvvvvvvvvvvvvvvv");
-		//
-		// for (Instruction instruction : instructions) {
-		// instruction.accept(visitor);
-		// bugs.addAll(visitor.doesEscape().getCollection());
-		// }
-
-		// result = visitor.getResult();
-
-		System.out.println("^^^^^^^^^^^^^^^^^^^^^^^^^^^");
+		BugCollection bugs = visitor.analyze();
+		System.out.println("^^^^^^^^^^^^^^^^^^^^^^^^^^");
 
 		return bugs;
 	}
