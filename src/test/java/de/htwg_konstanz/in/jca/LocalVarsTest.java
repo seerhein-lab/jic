@@ -40,7 +40,7 @@ public class LocalVarsTest {
 	 */
 	@Test(expected = IllegalArgumentException.class)
 	public void testLocalVarsNull() {
-		new LocalVars(null);
+		new LocalVars((LocalVariable[]) null);
 	}
 
 	/**
