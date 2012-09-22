@@ -85,6 +85,8 @@ import edu.umd.cs.findbugs.SortedBugCollection;
  * <li>Provide a bug collection with the found errors
  * <li>Handle the type of values
  * <li>Handle if branches by static analysis
+ * <li>Detect loops
+ * <li>Handle switch cases
  * </ul>
  * </p>
  * <p>
@@ -382,7 +384,7 @@ public class CtorAnalysisVisitor extends EmptyVisitor {
 	/**
 	 * 7. BranchInstruction<br>
 	 * 7.3. JsrInstruction<br>
-	 * Called when a BranchInstruction operation occurs. TODO: JAVADOC
+	 * Called when a JsrInstruction operation occurs. TODO: JAVADOC
 	 */
 	@Override
 	public void visitJsrInstruction(JsrInstruction obj) {
@@ -393,12 +395,36 @@ public class CtorAnalysisVisitor extends EmptyVisitor {
 	/**
 	 * 7. BranchInstruction<br>
 	 * 7.4. Select<br>
-	 * Called when a BranchInstruction operation occurs. TODO: JAVADOC
+	 * Called when a Select operation occurs. Pops an integer index from the
+	 * stack and follows every possible case (including fall-trough) by creating
+	 * a new instance of CtorAnalysisVisitor for each case.
 	 */
 	@Override
 	public void visitSelect(Select obj) {
-		// TODO Can we all handle them the same way?
-		notImplementedYet(obj);
+		// XXX
+		System.out.println(obj.toString(false));
+		// pops integer index
+		stack.pop();
+		// gets all targets excluding the default case
+		InstructionHandle[] targets = obj.getTargets();
+		CtorAnalysisVisitor caseToFollow;
+		// follows all targets excluding the default case
+		for (int i = 0; i < targets.length; i++) {
+			System.out.println("--------------- Line "
+					+ targets[i].getPosition() + " ---------------");
+			caseToFollow = new CtorAnalysisVisitor(localVars, stack, ctor,
+					constantPoolGen, targets[i], alreadyVisited);
+			caseToFollow.analyze();
+		}
+		// handles the default case and follows it
+		// NOTE: If the keyword "Default:" is not in the switch the following
+		// target is the end of the switch without executing a case.
+		System.out.println("--------------- Line "
+				+ obj.getTarget().getPosition()
+				+ " (DefaultCase) ---------------");
+		caseToFollow = new CtorAnalysisVisitor(localVars, stack, ctor,
+				constantPoolGen, obj.getTarget(), alreadyVisited);
+		caseToFollow.analyze();
 	}
 
 	// -----------------------------------------------------------------
