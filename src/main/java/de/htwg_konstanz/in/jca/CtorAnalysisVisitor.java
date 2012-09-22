@@ -1,5 +1,6 @@
 package de.htwg_konstanz.in.jca;
 
+import java.util.ArrayList;
 import java.util.Stack;
 
 import org.apache.bcel.Repository;
@@ -75,7 +76,7 @@ import edu.umd.cs.findbugs.SortedBugCollection;
 
 /**
  * Analyzes constructors whether the this-reference escapes or not. Therefore a
- * virtual machine is simulated and all occurring bytecode operations are
+ * virtual machine is simulated and all occurring ByteCode operations are
  * performed in the corresponding visit-method.
  * <p>
  * This class does:
@@ -83,6 +84,7 @@ import edu.umd.cs.findbugs.SortedBugCollection;
  * <li>Check if the this reference escapes or not
  * <li>Provide a bug collection with the found errors
  * <li>Handle the type of values
+ * <li>Handle if branches by static analysis
  * </ul>
  * </p>
  * <p>
@@ -100,6 +102,7 @@ public class CtorAnalysisVisitor extends EmptyVisitor {
 	private final Method ctor;
 	private final ConstantPoolGen constantPoolGen;
 	private InstructionHandle instructionHandle;
+	private ArrayList<InstructionHandle> alreadyVisited;
 
 	private volatile SortedBugCollection bugs = new SortedBugCollection();
 	private volatile Entry result = null;
@@ -112,18 +115,40 @@ public class CtorAnalysisVisitor extends EmptyVisitor {
 		InstructionHandle[] instructionHandles = new InstructionList(ctor
 				.getCode().getCode()).getInstructionHandles();
 		instructionHandle = instructionHandles[0];
+		// XXX
+		alreadyVisited = new ArrayList<InstructionHandle>();
 	}
 
-	// TODO add JavaDoc
+	/**
+	 * Private constructor. Used for if branches occur. Copies the current state
+	 * of a CtorAnalysisVisitor and continues execution from a given point.
+	 * 
+	 * @param localVars
+	 *            The LocalVars to be copied.
+	 * @param stack
+	 *            The Stack to be copied.
+	 * @param ctor
+	 *            The Ctor to be copied.
+	 * @param constantPoolGen
+	 *            The ConstantPoolGen to be copied.
+	 * @param firstInstruction
+	 *            The InstructionHandle to start from.
+	 * @param alreadyVisited
+	 *            The BranchInstructions already visited.
+	 */
 	@SuppressWarnings("unchecked")
 	private CtorAnalysisVisitor(LocalVars localVars, Stack<Entry> stack,
 			Method ctor, ConstantPoolGen constantPoolGen,
-			InstructionHandle firstInstruction) {
+			InstructionHandle firstInstruction,
+			ArrayList<InstructionHandle> alreadyVisited) {
 		this.localVars = new LocalVars(localVars);
 		this.stack = (Stack<Entry>) stack.clone();
 		this.ctor = ctor;
 		this.constantPoolGen = constantPoolGen;
 		this.instructionHandle = firstInstruction;
+		// XXX
+		this.alreadyVisited = (ArrayList<InstructionHandle>) alreadyVisited
+				.clone();
 	}
 
 	public BugCollection doesEscape() {
@@ -140,7 +165,8 @@ public class CtorAnalysisVisitor extends EmptyVisitor {
 	}
 
 	/**
-	 * Called if a visit method is not yet implemented.
+	 * Called if a visit method is not yet implemented. Stops execution of the
+	 * InstructionHandles.
 	 */
 	private void notImplementedYet(Object instruction) {
 		System.out.println(instruction.toString());
@@ -151,7 +177,7 @@ public class CtorAnalysisVisitor extends EmptyVisitor {
 
 	// ******************************************************************//
 	// Visit section //
-	// For more details on bytecode instructions see: //
+	// For more details on ByteCode instructions see: //
 	// http://en.wikipedia.org/wiki/Java_bytecode_instruction_listings //
 	// For details on enumeration see: //
 	// https://docs.google.com/open?id=0B4RYegfkX-vPUnlRUm56S1YtMG8 //
@@ -302,7 +328,8 @@ public class CtorAnalysisVisitor extends EmptyVisitor {
 	/**
 	 * 7. BranchInstruction<br>
 	 * 7.1. GotoInstruction<br>
-	 * Called when a GotoInstruction operation occurs. TODO: JAVADOC
+	 * Called when a GotoInstruction operation occurs. Shifts the
+	 * InstructionHandle to the target instead of the next one.
 	 */
 	@Override
 	public void visitGotoInstruction(GotoInstruction obj) {
@@ -314,7 +341,11 @@ public class CtorAnalysisVisitor extends EmptyVisitor {
 	/**
 	 * 7. BranchInstruction<br>
 	 * 7.2. IfInstruction<br>
-	 * Called when a BranchInstruction operation occurs. TODO: JAVADOC
+	 * Called when a IfInstruction operation occurs. Handles all IfInstructions
+	 * the same way. It pops the consumed integer values from the stack and
+	 * checks if the IfInstruction already occurred. If true, this method will
+	 * execute the next instruction from the instructionHandle list, else it
+	 * will follow both possible branches.
 	 */
 	@Override
 	public void visitIfInstruction(IfInstruction obj) {
@@ -322,16 +353,30 @@ public class CtorAnalysisVisitor extends EmptyVisitor {
 		for (int i = 0; i < obj.consumeStack(constantPoolGen); i++) {
 			stack.pop();
 		}
+		// XXX
+		if (alreadyVisited.contains(instructionHandle)) {
+			System.out
+					.println("Loop detected, skipping positive execution of IfInstruction.");
+			System.out.println("Following negative path: ");
+			instructionHandle = instructionHandle.getNext();
+			instructionHandle.accept(this);
+		} else {
 
-		System.out.println("------------------  A  ------------------");
-		CtorAnalysisVisitor branch1Visitor = new CtorAnalysisVisitor(localVars,
-				stack, ctor, constantPoolGen, instructionHandle.getNext());
-		bugs.addAll(branch1Visitor.analyze().getCollection());
+			alreadyVisited.add(instructionHandle);
+			System.out.println("------------------  " + alreadyVisited.size()
+					+ ".A  ------------------");
+			CtorAnalysisVisitor branch1Visitor = new CtorAnalysisVisitor(
+					localVars, stack, ctor, constantPoolGen,
+					instructionHandle.getNext(), alreadyVisited);
+			bugs.addAll(branch1Visitor.analyze().getCollection());
 
-		System.out.println("------------------  B  ------------------");
-		CtorAnalysisVisitor branch2Visitor = new CtorAnalysisVisitor(localVars,
-				stack, ctor, constantPoolGen, obj.getTarget());
-		bugs.addAll(branch2Visitor.analyze().getCollection());
+			System.out.println("------------------  " + alreadyVisited.size()
+					+ ".B  ------------------");
+			CtorAnalysisVisitor branch2Visitor = new CtorAnalysisVisitor(
+					localVars, stack, ctor, constantPoolGen, obj.getTarget(),
+					alreadyVisited);
+			bugs.addAll(branch2Visitor.analyze().getCollection());
+		}
 	}
 
 	/**
@@ -662,17 +707,16 @@ public class CtorAnalysisVisitor extends EmptyVisitor {
 	}
 
 	/**
-	 * TODO ReWrite 10. CPInstruction <br>
-	 * 10.6. LDC
-	 * <p>
-	 * Pushes a constant #index from a constant pool (String, int or float) onto
-	 * the stack.
-	 * <p>
-	 * Stack: → value <br>
-	 * Note: 1 other byte (index)
+	 * 10. CPInstruction <br>
+	 * 10.6. LDC<br>
+	 * 
+	 * Called when a LDC instruction occurs. Pushes a constant of type String,
+	 * integer or float from the constant pool onto the stack.
 	 */
 	@Override
 	public void visitLDC(LDC obj) {
+		// FIXME This method is wrong!!! It should handle Strings as well and
+		// can also work with symbolic links to classes (this-escape?)
 		System.out.println(obj.toString(false));
 
 		if (obj.getType(constantPoolGen).equals(Type.INT)) {
@@ -695,33 +739,20 @@ public class CtorAnalysisVisitor extends EmptyVisitor {
 	}
 
 	/**
-	 * TODO ReWrite 10. CPInstruction <br>
-	 * 10.7. LDC2_W
-	 * <p>
-	 * Pushes a constant #index from a constant pool (double or long) onto the
-	 * stack (wide index is constructed as indexbyte1 << 8 + indexbyte2).
-	 * <p>
-	 * Stack: → value <br>
-	 * Note: 2 other bytes (indexbyte1, indexbyte2)
-	 * <p>
-	 * DoesEscape: No, but why?
-	 */
+	 * 10. CPInstruction <br>
+	 * 10.7. LDC2_W <br>
+	 * Called when a LDC2_W instruction occurs. Pushes a constant of type double
+	 * or long from the constant pool onto the stack.
+	 * */
 	@Override
 	public void visitLDC2_W(LDC2_W obj) {
 		System.out.println(obj.toString(false));
-
-		if (obj.getType(constantPoolGen).equals(Type.LONG)) {
-			stack.push(Entry.someLong);
+		// XXX
+		Type type = obj.getType(constantPoolGen);
+		if (type.equals(Type.LONG) || type.equals(Type.DOUBLE)) {
+			stack.push(Entry.getInstance(type.getSignature()));
 			instructionHandle = instructionHandle.getNext();
 			instructionHandle.accept(this);
-			return;
-		}
-
-		if (obj.getType(constantPoolGen).equals(Type.DOUBLE)) {
-			stack.push(Entry.someDouble);
-			instructionHandle = instructionHandle.getNext();
-			instructionHandle.accept(this);
-			return;
 		}
 	}
 
@@ -771,9 +802,12 @@ public class CtorAnalysisVisitor extends EmptyVisitor {
 	 */
 	@Override
 	public void visitDCMPG(DCMPG obj) {
+		// XXX
 		System.out.println(obj.toString(false));
-		Entry value2 = stack.pop();
-		Entry value1 = stack.pop();
+		// pop value2
+		stack.pop();
+		// pop value1
+		stack.pop();
 		// check if value1 or value2 is NaN then push 1 and return
 		// compare them and get result
 		stack.push(Entry.someInt);
@@ -792,9 +826,12 @@ public class CtorAnalysisVisitor extends EmptyVisitor {
 	 */
 	@Override
 	public void visitDCMPL(DCMPL obj) {
+		// XXX
 		System.out.println(obj.toString(false));
-		Entry value2 = stack.pop();
-		Entry value1 = stack.pop();
+		// pop value2
+		stack.pop();
+		// pop value1
+		stack.pop();
 		// check if value1 or value2 is NaN then push -1 and return
 		// compare them and get result
 		stack.push(Entry.someInt);
@@ -828,9 +865,12 @@ public class CtorAnalysisVisitor extends EmptyVisitor {
 	 */
 	@Override
 	public void visitFCMPG(FCMPG obj) {
+		// XXX
 		System.out.println(obj.toString(false));
-		Entry value2 = stack.pop();
-		Entry value1 = stack.pop();
+		// pop value2
+		stack.pop();
+		// pop value1
+		stack.pop();
 		// check if value1 or value2 is NaN then push 1 and return
 		// compare them and get result
 		stack.push(Entry.someInt);
@@ -850,9 +890,12 @@ public class CtorAnalysisVisitor extends EmptyVisitor {
 	 */
 	@Override
 	public void visitFCMPL(FCMPL obj) {
+		// XXX
 		System.out.println(obj.toString(false));
-		Entry value2 = stack.pop();
-		Entry value1 = stack.pop();
+		// pop value2
+		stack.pop();
+		// pop value1
+		stack.pop();
 		// check if value1 or value2 is NaN then push -1 and return
 		// compare them and get result
 		stack.push(Entry.someInt);
@@ -920,9 +963,12 @@ public class CtorAnalysisVisitor extends EmptyVisitor {
 	 */
 	@Override
 	public void visitLCMP(LCMP obj) {
+		// XXX
 		System.out.println(obj.toString(false));
-		Entry value2 = stack.pop();
-		Entry value1 = stack.pop();
+		// pop value2
+		stack.pop();
+		// pop value1
+		stack.pop();
 		// compare them
 		stack.push(Entry.someInt);
 		instructionHandle = instructionHandle.getNext();
