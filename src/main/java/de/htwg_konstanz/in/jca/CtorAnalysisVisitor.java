@@ -117,7 +117,7 @@ public class CtorAnalysisVisitor extends EmptyVisitor {
 		InstructionHandle[] instructionHandles = new InstructionList(ctor
 				.getCode().getCode()).getInstructionHandles();
 		instructionHandle = instructionHandles[0];
-		// XXX
+		// XXX added for loop control
 		alreadyVisited = new ArrayList<InstructionHandle>();
 	}
 
@@ -148,7 +148,7 @@ public class CtorAnalysisVisitor extends EmptyVisitor {
 		this.ctor = ctor;
 		this.constantPoolGen = constantPoolGen;
 		this.instructionHandle = firstInstruction;
-		// XXX
+		// XXX added for loop control
 		this.alreadyVisited = (ArrayList<InstructionHandle>) alreadyVisited
 				.clone();
 	}
@@ -355,7 +355,7 @@ public class CtorAnalysisVisitor extends EmptyVisitor {
 		for (int i = 0; i < obj.consumeStack(constantPoolGen); i++) {
 			stack.pop();
 		}
-		// XXX
+		// XXX added if statement for loop detection
 		if (alreadyVisited.contains(instructionHandle)) {
 			System.out
 					.println("Loop detected, skipping positive execution of IfInstruction.");
@@ -384,11 +384,11 @@ public class CtorAnalysisVisitor extends EmptyVisitor {
 	/**
 	 * 7. BranchInstruction<br>
 	 * 7.3. JsrInstruction<br>
-	 * Called when a JsrInstruction operation occurs. TODO: JAVADOC
+	 * Called when a JsrInstruction operation occurs.
 	 */
 	@Override
 	public void visitJsrInstruction(JsrInstruction obj) {
-		// TODO Can we all handle them the same way?
+		// XXX when is this called? try-finally doesn't.
 		notImplementedYet(obj);
 	}
 
@@ -401,7 +401,7 @@ public class CtorAnalysisVisitor extends EmptyVisitor {
 	 */
 	@Override
 	public void visitSelect(Select obj) {
-		// XXX
+		// XXX implemented method
 		System.out.println(obj.toString(false));
 		// pops integer index
 		stack.pop();
@@ -417,11 +417,11 @@ public class CtorAnalysisVisitor extends EmptyVisitor {
 			caseToFollow.analyze();
 		}
 		// handles the default case and follows it
-		// NOTE: If the keyword "Default:" is not in the switch the following
-		// target is the end of the switch without executing a case.
 		System.out.println("--------------- Line "
 				+ obj.getTarget().getPosition()
 				+ " (DefaultCase) ---------------");
+		// NOTE: If the keyword "Default:" is not in the switch the following
+		// target is the end of the switch without executing a case.
 		caseToFollow = new CtorAnalysisVisitor(localVars, stack, ctor,
 				constantPoolGen, obj.getTarget(), alreadyVisited);
 		caseToFollow.analyze();
@@ -544,12 +544,12 @@ public class CtorAnalysisVisitor extends EmptyVisitor {
 		// XXX
 		// throws IncompatibleClassException if field is not static
 		// TODO error handling
-		System.err.println("FieldName " + obj.getFieldName(constantPoolGen));
-		System.err.println("Signature " + obj.getSignature(constantPoolGen));
-		System.err.println("FieldType " + obj.getFieldType(constantPoolGen));
-		System.err.println("ReferencedType "
+		System.out.println("FieldName " + obj.getFieldName(constantPoolGen));
+		System.out.println("Signature " + obj.getSignature(constantPoolGen));
+		System.out.println("FieldType " + obj.getFieldType(constantPoolGen));
+		System.out.println("ReferencedType "
 				+ obj.getReferenceType(constantPoolGen));
-		System.err.println("Type " + obj.getType(constantPoolGen));
+		System.out.println("Type " + obj.getType(constantPoolGen));
 		instructionHandle = instructionHandle.getNext();
 		instructionHandle.accept(this);
 		// FIXME
@@ -566,17 +566,14 @@ public class CtorAnalysisVisitor extends EmptyVisitor {
 	@Override
 	public void visitPUTFIELD(PUTFIELD obj) {
 		System.out.print(obj.toString(false) + ": ");
-
 		// right side of assignment
 		Entry right = stack.pop();
-
 		if (right.equals(Entry.thisReference)) {
 			System.out
 					.println("Error: 'this' reference is assigned to some object's field and escapes.");
 			bugs.add(new BugInstance(
 					"Error: 'this' reference is assigned to some object's field and escapes.",
 					2));
-
 		}
 		if (right.equals(Entry.maybeThisReference)) {
 			System.out
@@ -584,9 +581,7 @@ public class CtorAnalysisVisitor extends EmptyVisitor {
 			bugs.add(new BugInstance(
 					"Warning: 'this' reference might be assigned to some object's field and might escape.",
 					1));
-
 		}
-
 		// pop left side of assignment off the stack, too
 		Entry left = stack.pop();
 		System.out.println(left + "." + obj.getFieldName(constantPoolGen)
@@ -605,10 +600,11 @@ public class CtorAnalysisVisitor extends EmptyVisitor {
 	@Override
 	public void visitPUTSTATIC(PUTSTATIC obj) {
 		notImplementedYet(obj);
+		// TODO
 	}
 
 	/**
-	 * TODO: ReWrite 10. CPInstruction <br>
+	 * 10. CPInstruction <br>
 	 * 10.4. InvokeInstruction <br>
 	 * 10.4.1. INVOKEINTERFACE
 	 * <p>
@@ -622,19 +618,16 @@ public class CtorAnalysisVisitor extends EmptyVisitor {
 	@Override
 	public void visitINVOKEINTERFACE(INVOKEINTERFACE obj) {
 		notImplementedYet(obj);
+		// TODO
 	}
 
 	/**
-	 * TODO ReWrite 10. CPInstruction <br>
+	 * 10. CPInstruction <br>
 	 * 10.4. InvokeInstruction <br>
-	 * 10.4.2. INVOKESPECIAL
-	 * <p>
-	 * Invokes instance method on object objectref, where the method is
-	 * identified by method reference index in constant pool (indexbyte1 << 8 +
-	 * indexbyte2).
-	 * <p>
-	 * Stack: objectref, [arg1, arg2, ...] → <br>
-	 * Note: 2 other bytes (indexbyte1, indexbyte2)
+	 * 10.4.2. INVOKESPECIAL<br>
+	 * Called when an INVOKESPECIAL operation occurs. Invokes instance method on
+	 * object object reference, where the method is identified by method
+	 * reference index in the constant pool.
 	 */
 	@Override
 	public void visitINVOKESPECIAL(INVOKESPECIAL obj) {
@@ -669,7 +662,7 @@ public class CtorAnalysisVisitor extends EmptyVisitor {
 	}
 
 	/**
-	 * TODO ReWrite 10. CPInstruction <br>
+	 * 10. CPInstruction <br>
 	 * 10.4. InvokeInstruction <br>
 	 * 10.4.3. INVOKESTATIC
 	 * <p>
@@ -693,7 +686,7 @@ public class CtorAnalysisVisitor extends EmptyVisitor {
 	}
 
 	/**
-	 * TODO ReWrite 10. CPInstruction <br>
+	 * 10. CPInstruction <br>
 	 * 10.4. InvokeInstruction <br>
 	 * 10.4.4. INVOKEVIRTUAL
 	 * <p>
@@ -706,6 +699,7 @@ public class CtorAnalysisVisitor extends EmptyVisitor {
 	 */
 	@Override
 	public void visitINVOKEVIRTUAL(INVOKEVIRTUAL obj) {
+		// TODO
 		Type[] types = obj.getArgumentTypes(constantPoolGen);
 		for (Type type : types) {
 			System.out.println("argType: " + type);
@@ -714,11 +708,11 @@ public class CtorAnalysisVisitor extends EmptyVisitor {
 		System.out.println("RetType: " + obj.getReturnType(constantPoolGen));
 		System.out.println("Type: " + obj.getType(constantPoolGen));
 
-		// notImplementedYet(obj);
+		notImplementedYet(obj);
 	}
 
 	/**
-	 * TODO ReWrite 10. CPInstruction <br>
+	 * 10. CPInstruction <br>
 	 * 10.5. INSTANCEOF
 	 * <p>
 	 * Determines if an object objectref is of a given type, identified by class
@@ -730,36 +724,27 @@ public class CtorAnalysisVisitor extends EmptyVisitor {
 	@Override
 	public void visitINSTANCEOF(INSTANCEOF obj) {
 		notImplementedYet(obj);
+		// TODO
 	}
 
 	/**
 	 * 10. CPInstruction <br>
 	 * 10.6. LDC<br>
-	 * 
 	 * Called when a LDC instruction occurs. Pushes a constant of type String,
 	 * integer or float from the constant pool onto the stack.
 	 */
 	@Override
 	public void visitLDC(LDC obj) {
-		// FIXME This method is wrong!!! It should handle Strings as well and
-		// can also work with symbolic links to classes (this-escape?)
+		// XXX removed return statements
 		System.out.println(obj.toString(false));
-
-		if (obj.getType(constantPoolGen).equals(Type.INT)) {
-			stack.push(Entry.someInt);
-			instructionHandle = instructionHandle.getNext();
-			instructionHandle.accept(this);
-			return;
+		Type type = obj.getType(constantPoolGen);
+		if (type.equals(Type.INT) || type.equals(Type.FLOAT)) {
+			// push integer or float
+			stack.push(Entry.getInstance(type.getSignature()));
+		} else {
+			// push a String reference
+			stack.push(Entry.notThisReference);
 		}
-
-		if (obj.getType(constantPoolGen).equals(Type.FLOAT)) {
-			stack.push(Entry.someFloat);
-			instructionHandle = instructionHandle.getNext();
-			instructionHandle.accept(this);
-			return;
-		}
-
-		stack.push(Entry.notThisReference);
 		instructionHandle = instructionHandle.getNext();
 		instructionHandle.accept(this);
 	}
@@ -784,30 +769,35 @@ public class CtorAnalysisVisitor extends EmptyVisitor {
 
 	/**
 	 * 10. CPInstruction <br>
-	 * 10.8. MULTIANEWARRAY
-	 * <p>
-	 * Creates a new array of dimensions dimensions with elements of type
-	 * identified by class reference in constant pool index (indexbyte1 << 8 +
-	 * indexbyte2); the sizes of each dimension is identified by count1,
-	 * [count2, etc.].
-	 * <p>
-	 * Stack: count1, [count2,...] → arrayref <br>
-	 * Note: 3 other bytes (indexbyte1, indexbyte2, dimensions)
+	 * 10.8. MULTIANEWARRAY<br>
+	 * Called when a MULTIANEWARRAY operation occurs. Creates a new array of
+	 * dimensions (index byte) with elements of type identified by class
+	 * reference in constant pool index. The sizes of each dimension is popped
+	 * from the stack as an integer value.
 	 */
 	@Override
 	public void visitMULTIANEWARRAY(MULTIANEWARRAY obj) {
-		notImplementedYet(obj);
+		// XXX implemented
+		System.out.print(obj.toString(false));
+		System.out.print(" " + obj.getLoadClassType(constantPoolGen));
+		System.out.println("[" + obj.getDimensions() + "][]");
+		int consumedStack = obj.consumeStack(constantPoolGen);
+		for (int i = 0; i < consumedStack; i++) {
+			// pop the 2nd dimension as integer value
+			stack.pop();
+		}
+		// push array reference to stack
+		stack.push(Entry.notThisReference);
+		instructionHandle = instructionHandle.getNext();
+		instructionHandle.accept(this);
 	}
 
 	/**
 	 * 10. CPInstruction <br>
-	 * 10.9. NEW
-	 * <p>
-	 * Creates new object of type identified by class reference in constant pool
-	 * index (indexbyte1 << 8 + indexbyte2).
-	 * <p>
-	 * Stack: → objectref <br>
-	 * Note: 2 other bytes (indexbyte1, indexbyte2)
+	 * 10.9. NEW <br>
+	 * Called when a NEW operation occurs. Creates a new object of type
+	 * identified by class reference in constant pool index an pushes the
+	 * reference onto the stack.
 	 */
 	@Override
 	public void visitNEW(NEW obj) {
@@ -828,7 +818,6 @@ public class CtorAnalysisVisitor extends EmptyVisitor {
 	 */
 	@Override
 	public void visitDCMPG(DCMPG obj) {
-		// XXX
 		System.out.println(obj.toString(false));
 		// pop value2
 		stack.pop();
@@ -852,7 +841,6 @@ public class CtorAnalysisVisitor extends EmptyVisitor {
 	 */
 	@Override
 	public void visitDCMPL(DCMPL obj) {
-		// XXX
 		System.out.println(obj.toString(false));
 		// pop value2
 		stack.pop();
@@ -891,7 +879,6 @@ public class CtorAnalysisVisitor extends EmptyVisitor {
 	 */
 	@Override
 	public void visitFCMPG(FCMPG obj) {
-		// XXX
 		System.out.println(obj.toString(false));
 		// pop value2
 		stack.pop();
@@ -916,7 +903,6 @@ public class CtorAnalysisVisitor extends EmptyVisitor {
 	 */
 	@Override
 	public void visitFCMPL(FCMPL obj) {
-		// XXX
 		System.out.println(obj.toString(false));
 		// pop value2
 		stack.pop();
@@ -946,8 +932,8 @@ public class CtorAnalysisVisitor extends EmptyVisitor {
 	// -----------------------------------------------------------------
 	/**
 	 * 17. ICONST <br>
-	 * Called when an ICONST operation occurs. Loads the int value -1, 0, 1, 2,
-	 * 3, 4 or 5 onto the stack.
+	 * Called when an ICONST operation occurs. Loads the integer value -1, 0, 1,
+	 * 2, 3, 4 or 5 onto the stack.
 	 */
 	@Override
 	public void visitICONST(ICONST obj) {
@@ -966,6 +952,7 @@ public class CtorAnalysisVisitor extends EmptyVisitor {
 	 */
 	@Override
 	public void visitIMPDEP1(IMPDEP1 obj) {
+		// no need to implement
 		notImplementedYet(obj);
 	}
 
@@ -978,6 +965,7 @@ public class CtorAnalysisVisitor extends EmptyVisitor {
 	 */
 	@Override
 	public void visitIMPDEP2(IMPDEP2 obj) {
+		// no need to implement
 		notImplementedYet(obj);
 	}
 
@@ -989,7 +977,6 @@ public class CtorAnalysisVisitor extends EmptyVisitor {
 	 */
 	@Override
 	public void visitLCMP(LCMP obj) {
-		// XXX
 		System.out.println(obj.toString(false));
 		// pop value2
 		stack.pop();
@@ -1019,12 +1006,9 @@ public class CtorAnalysisVisitor extends EmptyVisitor {
 
 	/**
 	 * 22. LocalVariableInstruction<br>
-	 * 22.1. IINC
-	 * <p>
-	 * Increments local variable #index by signed byte const.
-	 * <p>
-	 * Stack: No change. <br>
-	 * Note: 2 other bytes (index, const)
+	 * 22.1. IINC<br>
+	 * Called when a IINC operation occurs. Increments a local variable by
+	 * signed byte constant.
 	 */
 	@Override
 	public void visitIINC(IINC obj) {
@@ -1036,11 +1020,9 @@ public class CtorAnalysisVisitor extends EmptyVisitor {
 
 	/**
 	 * 22. LocalVariableInstruction <br>
-	 * 22.2. LoadInstruction
-	 * <p>
-	 * Loads a value from a local variable.
-	 * <p>
-	 * Stack: → value
+	 * 22.2. LoadInstruction <br>
+	 * Called when a LoadInstruction occurs. Loads a value from a local variable
+	 * and pushes it onto the stack.
 	 */
 	@Override
 	public void visitLoadInstruction(LoadInstruction obj) {
@@ -1052,11 +1034,9 @@ public class CtorAnalysisVisitor extends EmptyVisitor {
 
 	/**
 	 * 22. LocalVariableInstruction <br>
-	 * 22.3. StoreInstruction
-	 * <p>
-	 * Stores a value in a local variable.
-	 * <p>
-	 * Stack: value →
+	 * 22.3. StoreInstruction<br>
+	 * Called when a StoreInstruction occurs. Pops a value from the stack and
+	 * stores it in a local variable.
 	 */
 	@Override
 	public void visitStoreInstruction(StoreInstruction obj) {
@@ -1068,14 +1048,9 @@ public class CtorAnalysisVisitor extends EmptyVisitor {
 
 	// -----------------------------------------------------------------
 	/**
-	 * 23. MONITORENTER
-	 * <p>
-	 * Enters monitor for object ("grab the lock" - start of synchronized()
-	 * section).
-	 * <p>
-	 * Stack: objectref →
-	 * <p>
-	 * DoesEscape: No, enters synchronized section.
+	 * 23. MONITORENTER<br>
+	 * Called when a MONITORENTER occurs. Pops an object reference from the
+	 * stack and holds it as a lock for synchronization.
 	 */
 	@Override
 	public void visitMONITORENTER(MONITORENTER obj) {
@@ -1087,14 +1062,9 @@ public class CtorAnalysisVisitor extends EmptyVisitor {
 
 	// -----------------------------------------------------------------
 	/**
-	 * 24. MINITOREXIT
-	 * <p>
-	 * exit monitor for object ("release the lock" - end of synchronized()
-	 * section).
-	 * <p>
-	 * Stack: objectref →
-	 * <p>
-	 * DoesEscape: No, uses synchronization.
+	 * 24. MINITOREXIT<br>
+	 * Called when a MINITOREXIT operation occurs. Releases the lock from a
+	 * synchronized section for a popped object reference.
 	 */
 	@Override
 	public void visitMONITOREXIT(MONITOREXIT obj) {
@@ -1106,17 +1076,22 @@ public class CtorAnalysisVisitor extends EmptyVisitor {
 
 	// -----------------------------------------------------------------
 	/**
-	 * 25. NEWARRAY
-	 * <p>
-	 * Creates new array with count elements of primitive type identified by
-	 * atype.
-	 * <p>
-	 * Stack: count → arrayref <br>
-	 * Note: 1 other byte (atype)
+	 * 25. NEWARRAY<br>
+	 * Called when a NEWARRAY operation occurs. Creates a new array with
+	 * primitive types. The length is popped as an integer value from the stack
+	 * and the type is identified by a type byte.
 	 */
 	@Override
 	public void visitNEWARRAY(NEWARRAY obj) {
-		notImplementedYet(obj);
+		// XXX implemented
+		System.out.print(obj.toString(false));
+		System.out.println(" (Type: " + obj.getType() + ")");
+		// pop length of new array
+		stack.pop();
+		// push reference to new array onto the stack
+		stack.push(Entry.notThisReference);
+		instructionHandle = instructionHandle.getNext();
+		instructionHandle.accept(this);
 	}
 
 	// -----------------------------------------------------------------
@@ -1142,30 +1117,32 @@ public class CtorAnalysisVisitor extends EmptyVisitor {
 	 */
 	@Override
 	public void visitRET(RET obj) {
+		// TODO
 		notImplementedYet(obj);
 	}
 
 	// -----------------------------------------------------------------
 	/**
-	 * 28. ReturnInstruction
-	 * <p>
-	 * Returns a value (or nothing if void) from a method.
-	 * <p>
-	 * Stack: value → [empty] (or → [empty] if void)
+	 * 28. ReturnInstruction<br>
+	 * Called when a ReturnInstruction occurs. Returns a value (or nothing if
+	 * void) from a method.
 	 */
 	@Override
 	public void visitReturnInstruction(ReturnInstruction obj) {
+		// XXX added pop for non void returns (which occur when non void methods
+		// within the ctor are called.
 		System.out.println("ReturnInstruction");
+		if (!obj.getType(constantPoolGen).getSignature().equals(Type.VOID)) {
+			// pop the return value for all non void methods
+			stack.pop();
+		}
 	}
 
 	// -----------------------------------------------------------------
 	/**
-	 * 29. SIPUSH
-	 * <p>
-	 * Pushes a short onto the stack.
-	 * <p>
-	 * Stack: → value <br>
-	 * Note: 2 other bytes (byte1, byte2)
+	 * 29. SIPUSH<br>
+	 * Called when a SIPUSH operation occurs. Pushes a short identified by 2
+	 * index bytes onto the stack.
 	 */
 	@Override
 	public void visitSIPUSH(SIPUSH obj) {
@@ -1380,8 +1357,6 @@ public class CtorAnalysisVisitor extends EmptyVisitor {
 	 * 30.8. SWAP <br>
 	 * Called when a SWAP operation occurs. Swaps two top words on the stack
 	 * (note that value1 and value2 must not be double or long).
-	 * <p>
-	 * Stack: value2, value1 → value1, value2
 	 */
 	@Override
 	public void visitSWAP(SWAP obj) {
