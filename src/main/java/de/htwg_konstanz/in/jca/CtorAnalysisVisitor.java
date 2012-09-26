@@ -104,10 +104,49 @@ public class CtorAnalysisVisitor extends EmptyVisitor {
 	private final Method ctor;
 	private final ConstantPoolGen constantPoolGen;
 	private InstructionHandle instructionHandle;
-	private ArrayList<InstructionHandle> alreadyVisited;
+	private ArrayList<AlreadyVisitedIfInstruction> alreadyVisited;
 
 	private volatile SortedBugCollection bugs = new SortedBugCollection();
 	private volatile Entry result = null;
+
+	private static class AlreadyVisitedIfInstruction {
+		private final InstructionHandle ifInstruction;
+		private final boolean thenBranchVisited;
+
+		public AlreadyVisitedIfInstruction(InstructionHandle ifInstruction,
+				boolean thenBranchVisited) {
+			this.ifInstruction = ifInstruction;
+			this.thenBranchVisited = thenBranchVisited;
+		}
+
+		@Override
+		public int hashCode() {
+			final int prime = 31;
+			int result = 1;
+			result = prime * result
+					+ ((ifInstruction == null) ? 0 : ifInstruction.hashCode());
+			result = prime * result + (thenBranchVisited ? 1231 : 1237);
+			return result;
+		}
+
+		@Override
+		public boolean equals(Object obj) {
+			if (this == obj)
+				return true;
+			if (!(obj instanceof AlreadyVisitedIfInstruction))
+				return false;
+			AlreadyVisitedIfInstruction other = (AlreadyVisitedIfInstruction) obj;
+			if (ifInstruction == null) {
+				if (other.ifInstruction != null)
+					return false;
+			} else if (!ifInstruction.equals(other.ifInstruction))
+				return false;
+			if (thenBranchVisited != other.thenBranchVisited)
+				return false;
+			return true;
+		}
+
+	}
 
 	CtorAnalysisVisitor(LocalVars localVars, Stack<Entry> stack, Method ctor) {
 		this.localVars = localVars;
@@ -117,8 +156,7 @@ public class CtorAnalysisVisitor extends EmptyVisitor {
 		InstructionHandle[] instructionHandles = new InstructionList(ctor
 				.getCode().getCode()).getInstructionHandles();
 		instructionHandle = instructionHandles[0];
-		// XXX added for loop control
-		alreadyVisited = new ArrayList<InstructionHandle>();
+		alreadyVisited = new ArrayList<AlreadyVisitedIfInstruction>();
 	}
 
 	/**
@@ -142,15 +180,13 @@ public class CtorAnalysisVisitor extends EmptyVisitor {
 	private CtorAnalysisVisitor(LocalVars localVars, Stack<Entry> stack,
 			Method ctor, ConstantPoolGen constantPoolGen,
 			InstructionHandle firstInstruction,
-			ArrayList<InstructionHandle> alreadyVisited) {
+			ArrayList<AlreadyVisitedIfInstruction> alreadyVisited) {
 		this.localVars = new LocalVars(localVars);
 		this.stack = (Stack<Entry>) stack.clone();
 		this.ctor = ctor;
 		this.constantPoolGen = constantPoolGen;
 		this.instructionHandle = firstInstruction;
-		// XXX added for loop control
-		this.alreadyVisited = (ArrayList<InstructionHandle>) alreadyVisited
-				.clone();
+		this.alreadyVisited = alreadyVisited;
 	}
 
 	public BugCollection doesEscape() {
@@ -349,35 +385,42 @@ public class CtorAnalysisVisitor extends EmptyVisitor {
 	 * execute the next instruction from the instructionHandle list, else it
 	 * will follow both possible branches.
 	 */
+	@SuppressWarnings("unchecked")
 	@Override
 	public void visitIfInstruction(IfInstruction obj) {
 		System.out.println(obj.toString(false));
 		for (int i = 0; i < obj.consumeStack(constantPoolGen); i++) {
 			stack.pop();
 		}
-		// XXX added if statement for loop detection
-		if (alreadyVisited.contains(instructionHandle)) {
-			System.out
-					.println("Loop detected, skipping positive execution of IfInstruction.");
-			System.out.println("Following negative path: ");
-			instructionHandle = instructionHandle.getNext();
-			instructionHandle.accept(this);
-		} else {
-
-			alreadyVisited.add(instructionHandle);
-			System.out.println("------------------  " + alreadyVisited.size()
-					+ ".A  ------------------");
+		System.out.println("------------------  " + alreadyVisited.size()
+				+ ".else  ------------------");
+		AlreadyVisitedIfInstruction elseBranch = new AlreadyVisitedIfInstruction(
+				instructionHandle, false);
+		if (!alreadyVisited.contains(elseBranch)) {
+			ArrayList<AlreadyVisitedIfInstruction> newAlreadyVisited = (ArrayList<AlreadyVisitedIfInstruction>) alreadyVisited
+					.clone();
+			newAlreadyVisited.add(elseBranch);
 			CtorAnalysisVisitor branch1Visitor = new CtorAnalysisVisitor(
 					localVars, stack, ctor, constantPoolGen,
-					instructionHandle.getNext(), alreadyVisited);
+					instructionHandle.getNext(), newAlreadyVisited);
 			bugs.addAll(branch1Visitor.analyze().getCollection());
-
-			System.out.println("------------------  " + alreadyVisited.size()
-					+ ".B  ------------------");
+		} else {
+			System.out.println("Loop detected, do not re-enter.");
+		}
+		System.out.println("------------------  " + alreadyVisited.size()
+				+ ".then  ------------------");
+		AlreadyVisitedIfInstruction thenBranch = new AlreadyVisitedIfInstruction(
+				instructionHandle, true);
+		if (!alreadyVisited.contains(thenBranch)) {
+			ArrayList<AlreadyVisitedIfInstruction> newAlreadyVisited = (ArrayList<AlreadyVisitedIfInstruction>) alreadyVisited
+					.clone();
+			newAlreadyVisited.add(thenBranch);
 			CtorAnalysisVisitor branch2Visitor = new CtorAnalysisVisitor(
 					localVars, stack, ctor, constantPoolGen, obj.getTarget(),
-					alreadyVisited);
+					newAlreadyVisited);
 			bugs.addAll(branch2Visitor.analyze().getCollection());
+		} else {
+			System.out.println("Loop detected, do not re-enter.");
 		}
 	}
 
@@ -401,7 +444,6 @@ public class CtorAnalysisVisitor extends EmptyVisitor {
 	 */
 	@Override
 	public void visitSelect(Select obj) {
-		// XXX implemented method
 		System.out.println(obj.toString(false));
 		// pops integer index
 		stack.pop();
@@ -735,7 +777,6 @@ public class CtorAnalysisVisitor extends EmptyVisitor {
 	 */
 	@Override
 	public void visitLDC(LDC obj) {
-		// XXX removed return statements
 		System.out.println(obj.toString(false));
 		Type type = obj.getType(constantPoolGen);
 		if (type.equals(Type.INT) || type.equals(Type.FLOAT)) {
@@ -758,7 +799,6 @@ public class CtorAnalysisVisitor extends EmptyVisitor {
 	@Override
 	public void visitLDC2_W(LDC2_W obj) {
 		System.out.println(obj.toString(false));
-		// XXX
 		Type type = obj.getType(constantPoolGen);
 		if (type.equals(Type.LONG) || type.equals(Type.DOUBLE)) {
 			stack.push(Entry.getInstance(type.getSignature()));
@@ -777,7 +817,6 @@ public class CtorAnalysisVisitor extends EmptyVisitor {
 	 */
 	@Override
 	public void visitMULTIANEWARRAY(MULTIANEWARRAY obj) {
-		// XXX implemented
 		System.out.print(obj.toString(false));
 		System.out.print(" " + obj.getLoadClassType(constantPoolGen));
 		System.out.println("[" + obj.getDimensions() + "][]");
@@ -1083,7 +1122,6 @@ public class CtorAnalysisVisitor extends EmptyVisitor {
 	 */
 	@Override
 	public void visitNEWARRAY(NEWARRAY obj) {
-		// XXX implemented
 		System.out.print(obj.toString(false));
 		System.out.println(" (Type: " + obj.getType() + ")");
 		// pop length of new array
@@ -1132,10 +1170,10 @@ public class CtorAnalysisVisitor extends EmptyVisitor {
 		// XXX added pop for non void returns (which occur when non void methods
 		// within the ctor are called.
 		System.out.println("ReturnInstruction");
-		if (!obj.getType(constantPoolGen).getSignature().equals(Type.VOID)) {
-			// pop the return value for all non void methods
-			stack.pop();
-		}
+		// if (!obj.getType(constantPoolGen).getSignature().equals(Type.VOID)) {
+		// // pop the return value for all non void methods
+		// stack.pop();
+		// }
 	}
 
 	// -----------------------------------------------------------------
