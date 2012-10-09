@@ -112,4 +112,20 @@ public class LocalVars {
 	public int getIndexesLength() {
 		return indexes.length;
 	}
+
+	/**
+	 * Returns all values of entries and indexes as a String. The format is
+	 * [entry_0 (indexes_0), entry_1 (indexes_1), ... entry_n-1 (indexes_n-1)].
+	 */
+	public String toString() {
+		String string = "";
+		for (int i = 0; i < entries.length; i++) {
+			if (i == 0) {
+				string += "[";
+			}
+			string += (entries[i] + "(" + indexes[i] + ")");
+			string += (i == entries.length - 1) ? "]" : ", ";
+		}
+		return string;
+	}
 }
