@@ -659,6 +659,7 @@ public class CtorAnalysisVisitor extends EmptyVisitor {
 	 */
 	@Override
 	public void visitINVOKEINTERFACE(INVOKEINTERFACE obj) {
+
 		notImplementedYet(obj);
 		// TODO
 	}
@@ -730,27 +731,55 @@ public class CtorAnalysisVisitor extends EmptyVisitor {
 	/**
 	 * 10. CPInstruction <br>
 	 * 10.4. InvokeInstruction <br>
-	 * 10.4.4. INVOKEVIRTUAL
-	 * <p>
-	 * Invokes virtual method on object objectref, where the method is
-	 * identified by method reference index in constant pool (indexbyte1 << 8 +
-	 * indexbyte2).
-	 * <p>
-	 * Stack: objectref, [arg1, arg2, ...] → <br>
-	 * Note: 2 other bytes (indexbyte1, indexbyte2)
+	 * 10.4.4. INVOKEVIRTUAL <br>
+	 * Called when a INVOKEVIRTUAL instruction occurs. Due to static analysis
+	 * this instruction cannot check late binding. It pulls the arguments (and
+	 * the hidden reference) passed to the method to invoke and checks whether
+	 * they are of type "maybeThis"/"this" or not and pushes the return-type
+	 * onto the stack. If the arguments are of type "maybeThis" or "this" an
+	 * error is added and the result "maybeThis" is pushed.
 	 */
 	@Override
 	public void visitINVOKEVIRTUAL(INVOKEVIRTUAL obj) {
-		// TODO
+		System.out.println(obj.toString(false) + " "
+				+ obj.getSignature(constantPoolGen));
+		System.out.println(stack);
+		// the argument types passed to this method
 		Type[] types = obj.getArgumentTypes(constantPoolGen);
-		for (Type type : types) {
-			System.out.println("argType: " + type);
+		// the value to return from this method
+		Entry returnValue = Entry.getInstance(obj
+				.getReturnType(constantPoolGen).getSignature());
+		Entry argument;
+		for (int i = 0; i < types.length + 1; i++) {
+			// pop a value for each argument type and one for the hidden
+			// reference
+			argument = stack.pop();
+			System.out.println(argument);
+			if (argument.equals(Entry.maybeThisReference)) {
+				System.out
+						.println("Warning: 'maybeThis' reference is passed to a method and might escape.");
+				bugs.add(new BugInstance(
+						"Warning: 'maybeThis' reference is passed to a method and might escape.",
+						1));
+				if (returnValue.equals(Entry.notThisReference)) {
+					returnValue = Entry.maybeThisReference;
+				}
+			}
+			if (argument.equals(Entry.thisReference)) {
+				System.out
+						.println("Warning: 'this' reference is passed to a method and might escape.");
+				bugs.add(new BugInstance(
+						"Warning: 'this' reference is passed to a method and might escape.",
+						1));
+				if (returnValue.equals(Entry.notThisReference)) {
+					returnValue = Entry.maybeThisReference;
+				}
+			}
 		}
-		System.out.println("Signature " + obj.getSignature(constantPoolGen));
-		System.out.println("RetType: " + obj.getReturnType(constantPoolGen));
-		System.out.println("Type: " + obj.getType(constantPoolGen));
-
-		notImplementedYet(obj);
+		// push the return value onto the stack
+		stack.push(returnValue);
+		instructionHandle = instructionHandle.getNext();
+		instructionHandle.accept(this);
 	}
 
 	/**
@@ -1065,7 +1094,6 @@ public class CtorAnalysisVisitor extends EmptyVisitor {
 	 */
 	@Override
 	public void visitLoadInstruction(LoadInstruction obj) {
-		System.out.println(obj.toString(false));
 		stack.push(localVars.getForIndex(obj.getIndex()));
 		instructionHandle = instructionHandle.getNext();
 		instructionHandle.accept(this);
