@@ -54,7 +54,7 @@ public class CtorAnalyzer {
 				: ctor.getCode().getLocalVariableTable()
 						.getLocalVariableTable();
 
-		for (int i = 1; i < localVars.length; i++) {
+		for (int i = 1; i < ctor.getArgumentTypes().length + 1; i++) {
 			callerStack.push(Entry.getInstance(localVars[i].getSignature()));
 		}
 
@@ -74,9 +74,7 @@ public class CtorAnalyzer {
 		LocalVars localVars = new LocalVars(
 				(ctor.getLocalVariableTable() == null) ? new LocalVariable[0]
 						: ctor.getLocalVariableTable().getLocalVariableTable());
-
 		localVars.initWithArgs(callerStack, ctor.getArgumentTypes().length + 1);
-
 		Stack<Entry> stack = new Stack<Entry>();
 
 		CtorAnalysisVisitor visitor = new CtorAnalysisVisitor(localVars, stack,
