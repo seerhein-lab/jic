@@ -218,14 +218,36 @@ public class ProperlyConstructedAcceptanceTest {
 	/**
 	 * Class with a constructor with a single byte argument.
 	 */
+	// @Yes
+	// public static class Story016_ClassWithOneArgCtorByte {
+	// public Story016_ClassWithOneArgCtorByte() {
+	// int i = 15;
+	// while (i != 0) {
+	// i++;
+	// }
+	// i--;
+	// }
+	// }
+
+	// @Yes
+	// public static class JsrTest {
+	// public JsrTest() {
+	// int i = 0;
+	// try {
+	// i++;
+	// } finally {
+	// i--;
+	// }
+	// }
+	// }
+
 	@Yes
-	public static class Story016_ClassWithOneArgCtorByte {
-		public Story016_ClassWithOneArgCtorByte() {
-			int i = 15;
-			while (i != 0) {
-				i++;
-			}
-			i--;
+	public static class InvokeVirtualTest {
+		public void f() {
+		}
+
+		public InvokeVirtualTest() {
+			f();
 		}
 	}
 

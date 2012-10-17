@@ -781,6 +781,14 @@ public class CtorAnalysisVisitor extends EmptyVisitor {
 	public void visitINVOKEVIRTUAL(INVOKEVIRTUAL obj) {
 		System.out.println(obj.toString(false) + " "
 				+ obj.getSignature(constantPoolGen));
+
+		System.out
+				.println("method name: " + obj.getMethodName(constantPoolGen));
+		System.out.println("load class type: "
+				+ obj.getLoadClassType(constantPoolGen));
+		System.out.println("reference type: "
+				+ obj.getReferenceType(constantPoolGen));
+
 		// the argument types passed to this method
 		Type[] types = obj.getArgumentTypes(constantPoolGen);
 		// the value to return from this method
