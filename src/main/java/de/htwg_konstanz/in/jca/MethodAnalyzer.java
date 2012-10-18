@@ -8,12 +8,12 @@ import org.apache.bcel.classfile.Method;
 import edu.umd.cs.findbugs.BugCollection;
 
 /**
- * Analyzes constructors.
+ * Analyzes methods.
  */
-public class CtorAnalyzer {
+public class MethodAnalyzer {
 
-	/** The constructor to analyze. */
-	private final Method ctor;
+	/** The method to analyze. */
+	private final Method method;
 
 	/** The result of the constructor call. */
 	private Entry result;
@@ -21,18 +21,17 @@ public class CtorAnalyzer {
 	/**
 	 * Constructor.
 	 * 
-	 * @param ctor
-	 *            The constructor to analyze, not null.
+	 * @param method
+	 *            The method to analyze, not null.
 	 */
-	public CtorAnalyzer(Method ctor) {
-		this.ctor = ctor;
+	public MethodAnalyzer(Method method) {
+		this.method = method;
 	}
 
 	/**
-	 * Returns the result of the constructor call.
+	 * Returns the result of the method call.
 	 * 
-	 * @return the result of the constructor call, or null if not yet
-	 *         determined.
+	 * @return the result of the method call, or null if not yet determined.
 	 */
 	public Entry getResult() {
 		return result;
@@ -40,7 +39,7 @@ public class CtorAnalyzer {
 
 	/**
 	 * Checks whether the reference of the checked object is passed to another
-	 * object in the constructor.
+	 * object in the method.
 	 * 
 	 * @return BugCollection containing potential error messages
 	 */
@@ -50,11 +49,11 @@ public class CtorAnalyzer {
 		// push this + args onto the stack
 		callerStack.push(Entry.thisReference);
 
-		LocalVariable[] localVars = (ctor.getCode().getLocalVariableTable() == null) ? new LocalVariable[0]
-				: ctor.getCode().getLocalVariableTable()
+		LocalVariable[] localVars = (method.getCode().getLocalVariableTable() == null) ? new LocalVariable[0]
+				: method.getCode().getLocalVariableTable()
 						.getLocalVariableTable();
 
-		for (int i = 1; i < ctor.getArgumentTypes().length + 1; i++) {
+		for (int i = 1; i < method.getArgumentTypes().length + 1; i++) {
 			callerStack.push(Entry.getInstance(localVars[i].getSignature()));
 		}
 
@@ -63,7 +62,7 @@ public class CtorAnalyzer {
 
 	/**
 	 * Checks whether the reference of the checked object is passed to another
-	 * object in the constructor.
+	 * object in the method.
 	 * 
 	 * @param callerStack
 	 *            the content of the local variable table of the constructor.
@@ -72,13 +71,23 @@ public class CtorAnalyzer {
 	 */
 	public BugCollection doesThisReferenceEscape(Stack<Entry> callerStack) {
 		LocalVars localVars = new LocalVars(
-				(ctor.getLocalVariableTable() == null) ? new LocalVariable[0]
-						: ctor.getLocalVariableTable().getLocalVariableTable());
-		localVars.initWithArgs(callerStack, ctor.getArgumentTypes().length + 1);
+				(method.getLocalVariableTable() == null) ? new LocalVariable[0]
+						: method.getLocalVariableTable()
+								.getLocalVariableTable());
+		// if non static method +1 because of hidden this-reference
+		for (int i = 0; i < method.getArgumentTypes().length; i++) {
+			System.out.println(method.getArgumentTypes()[i]);
+		}
+		System.out.println(method.getName());
+		System.out.println(method.isStatic());
+		localVars.initWithArgs(
+				callerStack,
+				method.isStatic() ? method.getArgumentTypes().length : method
+						.getArgumentTypes().length + 1);
 		Stack<Entry> stack = new Stack<Entry>();
 
-		CtorAnalysisVisitor visitor = new CtorAnalysisVisitor(localVars, stack,
-				ctor);
+		MethodAnalysisVisitor visitor = new MethodAnalysisVisitor(localVars,
+				stack, callerStack, method);
 
 		System.out.println("vvvvvvvvvvvvvvvvvvvvvvvvvv");
 		BugCollection bugs = visitor.analyze();

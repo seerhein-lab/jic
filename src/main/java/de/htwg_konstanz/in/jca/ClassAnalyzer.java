@@ -67,7 +67,7 @@ public class ClassAnalyzer {
 		List<Method> ctors = getConstructors();
 
 		for (Method ctor : ctors) {
-			CtorAnalyzer ctorAnalyzer = new CtorAnalyzer(ctor);
+			MethodAnalyzer ctorAnalyzer = new MethodAnalyzer(ctor);
 			bugs.addAll(ctorAnalyzer.doesThisReferenceEscape().getCollection());
 		}
 		return bugs;

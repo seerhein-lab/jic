@@ -75,7 +75,7 @@ import edu.umd.cs.findbugs.BugInstance;
 import edu.umd.cs.findbugs.SortedBugCollection;
 
 /**
- * Analyzes constructors whether the this-reference escapes or not. Therefore a
+ * Analyzes methods whether the this-reference escapes or not. Therefore a
  * virtual machine is simulated and all occurring ByteCode operations are
  * performed in the corresponding visit-method.
  * <p>
@@ -98,10 +98,11 @@ import edu.umd.cs.findbugs.SortedBugCollection;
  * </ul>
  * </p>
  */
-public class CtorAnalysisVisitor extends EmptyVisitor {
+public class MethodAnalysisVisitor extends EmptyVisitor {
 	private final LocalVars localVars;
 	private final Stack<Entry> stack;
-	private final Method ctor;
+	private final Stack<Entry> callerStack;
+	private final Method method;
 	private final ConstantPoolGen constantPoolGen;
 	private InstructionHandle instructionHandle;
 	private ArrayList<AlreadyVisitedIfInstruction> alreadyVisited;
@@ -148,12 +149,14 @@ public class CtorAnalysisVisitor extends EmptyVisitor {
 
 	}
 
-	CtorAnalysisVisitor(LocalVars localVars, Stack<Entry> stack, Method ctor) {
+	MethodAnalysisVisitor(LocalVars localVars, Stack<Entry> stack,
+			Stack<Entry> callerStack, Method method) {
 		this.localVars = localVars;
 		this.stack = stack;
-		this.ctor = ctor;
-		this.constantPoolGen = new ConstantPoolGen(ctor.getConstantPool());
-		InstructionHandle[] instructionHandles = new InstructionList(ctor
+		this.callerStack = callerStack;
+		this.method = method;
+		this.constantPoolGen = new ConstantPoolGen(method.getConstantPool());
+		InstructionHandle[] instructionHandles = new InstructionList(method
 				.getCode().getCode()).getInstructionHandles();
 		instructionHandle = instructionHandles[0];
 		alreadyVisited = new ArrayList<AlreadyVisitedIfInstruction>();
@@ -161,14 +164,14 @@ public class CtorAnalysisVisitor extends EmptyVisitor {
 
 	/**
 	 * Private constructor. Used for if branches occur. Copies the current state
-	 * of a CtorAnalysisVisitor and continues execution from a given point.
+	 * of a MethodAnalysisVisitor and continues execution from a given point.
 	 * 
 	 * @param localVars
 	 *            The LocalVars to be copied.
 	 * @param stack
 	 *            The Stack to be copied.
-	 * @param ctor
-	 *            The Ctor to be copied.
+	 * @param method
+	 *            The method to be copied.
 	 * @param constantPoolGen
 	 *            The ConstantPoolGen to be copied.
 	 * @param firstInstruction
@@ -177,13 +180,15 @@ public class CtorAnalysisVisitor extends EmptyVisitor {
 	 *            The BranchInstructions already visited.
 	 */
 	@SuppressWarnings("unchecked")
-	private CtorAnalysisVisitor(LocalVars localVars, Stack<Entry> stack,
-			Method ctor, ConstantPoolGen constantPoolGen,
+	private MethodAnalysisVisitor(LocalVars localVars, Stack<Entry> stack,
+			Stack<Entry> callerStack, Method method,
+			ConstantPoolGen constantPoolGen,
 			InstructionHandle firstInstruction,
 			ArrayList<AlreadyVisitedIfInstruction> alreadyVisited) {
 		this.localVars = new LocalVars(localVars);
 		this.stack = (Stack<Entry>) stack.clone();
-		this.ctor = ctor;
+		this.callerStack = (Stack<Entry>) callerStack.clone();
+		this.method = method;
 		this.constantPoolGen = constantPoolGen;
 		this.instructionHandle = firstInstruction;
 		this.alreadyVisited = alreadyVisited;
@@ -400,8 +405,8 @@ public class CtorAnalysisVisitor extends EmptyVisitor {
 			ArrayList<AlreadyVisitedIfInstruction> newAlreadyVisited = (ArrayList<AlreadyVisitedIfInstruction>) alreadyVisited
 					.clone();
 			newAlreadyVisited.add(elseBranch);
-			CtorAnalysisVisitor branch1Visitor = new CtorAnalysisVisitor(
-					localVars, stack, ctor, constantPoolGen,
+			MethodAnalysisVisitor branch1Visitor = new MethodAnalysisVisitor(
+					localVars, stack, callerStack, method, constantPoolGen,
 					instructionHandle.getNext(), newAlreadyVisited);
 			bugs.addAll(branch1Visitor.analyze().getCollection());
 		} else {
@@ -415,9 +420,9 @@ public class CtorAnalysisVisitor extends EmptyVisitor {
 			ArrayList<AlreadyVisitedIfInstruction> newAlreadyVisited = (ArrayList<AlreadyVisitedIfInstruction>) alreadyVisited
 					.clone();
 			newAlreadyVisited.add(thenBranch);
-			CtorAnalysisVisitor branch2Visitor = new CtorAnalysisVisitor(
-					localVars, stack, ctor, constantPoolGen, obj.getTarget(),
-					newAlreadyVisited);
+			MethodAnalysisVisitor branch2Visitor = new MethodAnalysisVisitor(
+					localVars, stack, callerStack, method, constantPoolGen,
+					obj.getTarget(), newAlreadyVisited);
 			bugs.addAll(branch2Visitor.analyze().getCollection());
 		} else {
 			System.out.println("Loop detected, do not re-enter.");
@@ -440,7 +445,7 @@ public class CtorAnalysisVisitor extends EmptyVisitor {
 	 * 7.4. Select<br>
 	 * Called when a Select operation occurs. Pops an integer index from the
 	 * stack and follows every possible case (including fall-trough) by creating
-	 * a new instance of CtorAnalysisVisitor for each case.
+	 * a new instance of MethodAnalysisVisitor for each case.
 	 */
 	@Override
 	public void visitSelect(Select obj) {
@@ -449,13 +454,14 @@ public class CtorAnalysisVisitor extends EmptyVisitor {
 		stack.pop();
 		// gets all targets excluding the default case
 		InstructionHandle[] targets = obj.getTargets();
-		CtorAnalysisVisitor caseToFollow;
+		MethodAnalysisVisitor caseToFollow;
 		// follows all targets excluding the default case
 		for (int i = 0; i < targets.length; i++) {
 			System.out.println("--------------- Line "
 					+ targets[i].getPosition() + " ---------------");
-			caseToFollow = new CtorAnalysisVisitor(localVars, stack, ctor,
-					constantPoolGen, targets[i], alreadyVisited);
+			caseToFollow = new MethodAnalysisVisitor(localVars, stack,
+					callerStack, method, constantPoolGen, targets[i],
+					alreadyVisited);
 			caseToFollow.analyze();
 		}
 		// handles the default case and follows it
@@ -464,8 +470,8 @@ public class CtorAnalysisVisitor extends EmptyVisitor {
 				+ " (DefaultCase) ---------------");
 		// NOTE: If the keyword "Default:" is not in the switch the following
 		// target is the end of the switch without executing a case.
-		caseToFollow = new CtorAnalysisVisitor(localVars, stack, ctor,
-				constantPoolGen, obj.getTarget(), alreadyVisited);
+		caseToFollow = new MethodAnalysisVisitor(localVars, stack, callerStack,
+				method, constantPoolGen, obj.getTarget(), alreadyVisited);
 		caseToFollow.analyze();
 	}
 
@@ -729,7 +735,7 @@ public class CtorAnalysisVisitor extends EmptyVisitor {
 		Method superCtor = superclassAnalyzer.getConstructor(obj
 				.getArgumentTypes(constantPoolGen));
 
-		CtorAnalyzer superCtorAnalyzer = new CtorAnalyzer(superCtor);
+		MethodAnalyzer superCtorAnalyzer = new MethodAnalyzer(superCtor);
 
 		bugs.addAll(superCtorAnalyzer.doesThisReferenceEscape(stack)
 				.getCollection());
@@ -754,15 +760,31 @@ public class CtorAnalysisVisitor extends EmptyVisitor {
 	 */
 	@Override
 	public void visitINVOKESTATIC(INVOKESTATIC obj) {
-		// TODO
-		Type[] types = obj.getArgumentTypes(constantPoolGen);
-		for (Type type : types) {
-			System.err.println("argType: " + type);
+		System.out.println(obj.toString(false) + " "
+				+ obj.getLoadClassType(constantPoolGen) + "."
+				+ obj.getMethodName(constantPoolGen)
+				+ obj.getSignature(constantPoolGen));
+		JavaClass targetClass = null;
+		try {
+			targetClass = Repository.lookupClass(obj.getReferenceType(
+					constantPoolGen).toString());
+		} catch (ClassNotFoundException e) {
+			System.out.println("Could not load class!");
 		}
-		System.err.println("Signature " + obj.getSignature(constantPoolGen));
-		System.err.println("RetType: " + obj.getReturnType(constantPoolGen));
-		System.err.println("Type: " + obj.getType(constantPoolGen));
-		notImplementedYet(obj);
+		Method[] classMethods = targetClass.getMethods();
+		for (Method method : classMethods) {
+			if (method.isStatic()
+					&& method.getName().equals(
+							obj.getMethodName(constantPoolGen))
+					&& method.getSignature().equals(
+							obj.getSignature(constantPoolGen))) {
+				bugs.addAll(new MethodAnalyzer(method).doesThisReferenceEscape(
+						stack).getCollection());
+				break;
+			}
+			instructionHandle = instructionHandle.getNext();
+			instructionHandle.accept(this);
+		}
 	}
 
 	/**
@@ -1244,12 +1266,13 @@ public class CtorAnalysisVisitor extends EmptyVisitor {
 	@Override
 	public void visitReturnInstruction(ReturnInstruction obj) {
 		// XXX added pop for non void returns (which occur when non void methods
-		// within the ctor are called.
-		System.out.println("ReturnInstruction");
-		// if (!obj.getType(constantPoolGen).getSignature().equals(Type.VOID)) {
-		// // pop the return value for all non void methods
-		// stack.pop();
-		// }
+		// within the method are called.
+		System.out.println(obj.toString(false) + " "
+				+ obj.getType(constantPoolGen));
+		if (!obj.getType(constantPoolGen).equals(Type.VOID)) {
+			// pop the return value for all non void methods
+			callerStack.push(stack.pop());
+		}
 	}
 
 	// -----------------------------------------------------------------

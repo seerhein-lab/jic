@@ -2,21 +2,13 @@ package playground;
 
 public class PropConstTestClass {
 
-	public void f() {
+	PropConstTestClass() {
+		int i = f(4, false);
+		int j = i;
 	}
 
-	PropConstTestClass(PropConstTestClass pctc) {
-		pctc.f();
-	}
-}
-
-class PropConstSubClass extends PropConstTestClass {
-	PropConstSubClass(PropConstTestClass pctc) {
-		super(pctc);
-	}
-
-	@Override
-	public void f() {
-
+	private static int f(int i, boolean bo) {
+		i = i + 1;
+		return i;
 	}
 }
