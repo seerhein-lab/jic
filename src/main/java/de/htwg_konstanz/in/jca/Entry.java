@@ -36,10 +36,7 @@ public enum Entry {
 	maybeThisReference,
 
 	/** The 'this reference */
-	thisReference,
-
-	/** An unknown value. */
-	unknownValue;
+	thisReference;
 
 	public static Entry getInstance(String signature) {
 		if (signature.equals("I"))
@@ -61,4 +58,58 @@ public enum Entry {
 		return notThisReference;
 	}
 
+	public Entry combineWith(Entry other) {
+		if (other == null) {
+			return this;
+		}
+		switch (this) {
+		case someByte:
+		case someShort:
+		case someInt:
+		case someLong:
+		case someFloat:
+		case someDouble:
+		case someChar:
+		case someBoolean:
+			if (!this.equals(other)) {
+				throw new IllegalArgumentException(this
+						+ " cannot be combined with " + other);
+			}
+			return this;
+		case notThisReference:
+			switch (other) {
+			case notThisReference:
+				return notThisReference;
+			case maybeThisReference:
+			case thisReference:
+				return maybeThisReference;
+			default:
+				throw new IllegalArgumentException(this
+						+ " cannot be combined with " + other);
+			}
+		case maybeThisReference:
+			switch (other) {
+			case notThisReference:
+			case maybeThisReference:
+			case thisReference:
+				return maybeThisReference;
+			default:
+				throw new IllegalArgumentException(this
+						+ " cannot be combined with " + other);
+			}
+		case thisReference:
+			switch (other) {
+			case notThisReference:
+			case maybeThisReference:
+				return maybeThisReference;
+			case thisReference:
+				return thisReference;
+			default:
+				throw new IllegalArgumentException(this
+						+ " cannot be combined with " + other);
+			}
+		default:
+			throw new AssertionError("cannot happen");
+		}
+	}
 }
