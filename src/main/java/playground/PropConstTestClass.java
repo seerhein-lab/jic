@@ -2,13 +2,13 @@ package playground;
 
 public class PropConstTestClass {
 
-	PropConstTestClass() {
-		int i = f(4, false);
-		int j = i;
+	public static double f(int i, double d) {
+		return d;
 	}
 
-	private static int f(int i, boolean bo) {
-		i = i + 1;
-		return i;
+	public PropConstTestClass() {
+		int i = 4711;
+		double d = f(i, 3.14);
+
 	}
 }
