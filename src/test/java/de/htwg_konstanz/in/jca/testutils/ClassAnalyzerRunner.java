@@ -96,6 +96,7 @@ public class ClassAnalyzerRunner extends Runner {
 
 	BugCollection runCheckMethod(PropConClassAnalyzer analyzer) {
 		Method method = findAnalyzerBindingSutMethod();
+
 		return invokeBindMethod(method, analyzer);
 	}
 

@@ -78,11 +78,12 @@ public class PropConMethodAnalyzer {
 						.getArgumentTypes().length + 1);
 		Stack<Entry> stack = new Stack<Entry>();
 
-		visitor = new PropConInstructionsAnalysisVisitor(localVars, stack,
-				new ConstantPoolGen(method.getConstantPool()));
-
 		InstructionHandle[] instructionHandles = new InstructionList(method
 				.getCode().getCode()).getInstructionHandles();
+
+		visitor = new PropConInstructionsAnalysisVisitor(localVars, stack,
+				new ConstantPoolGen(method.getConstantPool()),
+				instructionHandles[0]);
 
 		System.out.println("vvvvvvvvvvvvvvvvvvvvvvvvvv");
 		instructionHandles[0].accept(visitor);

@@ -67,8 +67,7 @@ public class PropConClassAnalyzer {
 		List<Method> ctors = getConstructors();
 
 		for (Method ctor : ctors) {
-			PropConMethodAnalyzer ctorAnalyzer = new PropConMethodAnalyzer(
-					ctor);
+			PropConMethodAnalyzer ctorAnalyzer = new PropConMethodAnalyzer(ctor);
 			ctorAnalyzer.analyze();
 			bugs.addAll(ctorAnalyzer.getBugs().getCollection());
 		}

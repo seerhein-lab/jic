@@ -146,18 +146,21 @@ public class PropConInstructionsAnalysisVisitor extends EmptyVisitor {
 	}
 
 	public PropConInstructionsAnalysisVisitor(LocalVars localVars,
-			Stack<Entry> stack, ConstantPoolGen constantPoolGen) {
+			Stack<Entry> stack, ConstantPoolGen constantPoolGen,
+			InstructionHandle instructionHandle) {
 		this(localVars, stack, constantPoolGen,
-				new ArrayList<AlreadyVisitedIfInstruction>());
+				new ArrayList<AlreadyVisitedIfInstruction>(), instructionHandle);
 	}
 
 	private PropConInstructionsAnalysisVisitor(LocalVars localVars,
 			Stack<Entry> stack, ConstantPoolGen constantPoolGen,
-			ArrayList<AlreadyVisitedIfInstruction> alreadyVisited) {
+			ArrayList<AlreadyVisitedIfInstruction> alreadyVisited,
+			InstructionHandle instructionHandle) {
 		this.localVars = localVars;
 		this.stack = stack;
 		this.constantPoolGen = constantPoolGen;
 		this.alreadyVisited = alreadyVisited;
+		this.instructionHandle = instructionHandle;
 	}
 
 	public BugCollection getBugs() {
@@ -372,7 +375,8 @@ public class PropConInstructionsAnalysisVisitor extends EmptyVisitor {
 			newAlreadyVisited.add(elseBranch);
 			PropConInstructionsAnalysisVisitor elseBranchVisitor = new PropConInstructionsAnalysisVisitor(
 					new LocalVars(localVars), (Stack<Entry>) stack.clone(),
-					constantPoolGen, newAlreadyVisited);
+					constantPoolGen, newAlreadyVisited,
+					instructionHandle.getNext());
 			instructionHandle.getNext().accept(elseBranchVisitor);
 			bugs.addAll(elseBranchVisitor.getBugs().getCollection());
 			elseResult = elseBranchVisitor.getResult();
@@ -390,7 +394,7 @@ public class PropConInstructionsAnalysisVisitor extends EmptyVisitor {
 
 			PropConInstructionsAnalysisVisitor thenBranchVisitor = new PropConInstructionsAnalysisVisitor(
 					new LocalVars(localVars), (Stack<Entry>) stack.clone(),
-					constantPoolGen, newAlreadyVisited);
+					constantPoolGen, newAlreadyVisited, obj.getTarget());
 			obj.getTarget().accept(thenBranchVisitor);
 			bugs.addAll(thenBranchVisitor.getBugs().getCollection());
 			thenResult = thenBranchVisitor.getResult();
@@ -442,7 +446,7 @@ public class PropConInstructionsAnalysisVisitor extends EmptyVisitor {
 					+ targets[i].getPosition() + " ---------------");
 			caseToFollow = new PropConInstructionsAnalysisVisitor(
 					new LocalVars(localVars), (Stack<Entry>) stack.clone(),
-					constantPoolGen, alreadyVisited);
+					constantPoolGen, alreadyVisited, targets[i]);
 			targets[i].accept(caseToFollow);
 			// adding occurred bugs to bug-collection
 			bugs.addAll(caseToFollow.getBugs().getCollection());
@@ -457,7 +461,7 @@ public class PropConInstructionsAnalysisVisitor extends EmptyVisitor {
 		// target is the end of the switch without executing a case.
 		caseToFollow = new PropConInstructionsAnalysisVisitor(new LocalVars(
 				localVars), (Stack<Entry>) stack.clone(), constantPoolGen,
-				alreadyVisited);
+				alreadyVisited, obj.getTarget());
 		obj.getTarget().accept(caseToFollow);
 		// adding occurred bugs to bug-collection
 		bugs.addAll(caseToFollow.getBugs().getCollection());
@@ -1163,6 +1167,7 @@ public class PropConInstructionsAnalysisVisitor extends EmptyVisitor {
 	 */
 	@Override
 	public void visitLoadInstruction(LoadInstruction obj) {
+		System.out.println(obj.toString(false));
 		stack.push(localVars.getForIndex(obj.getIndex()));
 		instructionHandle = instructionHandle.getNext();
 		instructionHandle.accept(this);
