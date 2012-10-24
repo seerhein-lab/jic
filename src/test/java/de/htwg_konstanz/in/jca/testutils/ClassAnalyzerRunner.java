@@ -18,7 +18,7 @@ import org.junit.runner.Runner;
 import org.junit.runner.notification.Failure;
 import org.junit.runner.notification.RunNotifier;
 
-import de.htwg_konstanz.in.jca.ClassAnalyzer;
+import de.htwg_konstanz.in.jca.PropConClassAnalyzer;
 import de.htwg_konstanz.in.jca.ThreeValueBoolean;
 import edu.umd.cs.findbugs.BugCollection;
 
@@ -26,7 +26,8 @@ public class ClassAnalyzerRunner extends Runner {
 
 	@Target(value = { ElementType.METHOD })
 	@Retention(value = RetentionPolicy.RUNTIME)
-	public static @interface BindAnalyzerMethod {}
+	public static @interface BindAnalyzerMethod {
+	}
 
 	private final Class<?> testClass;
 
@@ -73,32 +74,32 @@ public class ClassAnalyzerRunner extends Runner {
 	void runTest(RunNotifier notifier, Description testDescription,
 			Class<?> classToTest) throws Exception {
 		JavaClass javaClass = Repository.lookupClass(classToTest);
-		ClassAnalyzer analyzer = new ClassAnalyzer(javaClass);
+		PropConClassAnalyzer analyzer = new PropConClassAnalyzer(javaClass);
 
 		BugCollection bugs = runCheckMethod(analyzer);
 
 		if (classToTest.isAnnotationPresent(Yes.class)) {
 			Assert.assertEquals(ThreeValueBoolean.yes,
-					ClassAnalyzer.indicatesSuccess(bugs));
+					PropConClassAnalyzer.indicatesSuccess(bugs));
 		}
 
 		if (classToTest.isAnnotationPresent(No.class)) {
 			Assert.assertEquals(ThreeValueBoolean.no,
-					ClassAnalyzer.indicatesSuccess(bugs));
+					PropConClassAnalyzer.indicatesSuccess(bugs));
 		}
 
 		if (classToTest.isAnnotationPresent(UnKnown.class)) {
 			Assert.assertEquals(ThreeValueBoolean.unknown,
-					ClassAnalyzer.indicatesSuccess(bugs));
+					PropConClassAnalyzer.indicatesSuccess(bugs));
 		}
 	}
 
-	BugCollection runCheckMethod(ClassAnalyzer analyzer) {
+	BugCollection runCheckMethod(PropConClassAnalyzer analyzer) {
 		Method method = findAnalyzerBindingSutMethod();
 		return invokeBindMethod(method, analyzer);
 	}
 
-	BugCollection invokeBindMethod(Method method, ClassAnalyzer analyzer) {
+	BugCollection invokeBindMethod(Method method, PropConClassAnalyzer analyzer) {
 		try {
 			return (BugCollection) method.invoke(null, analyzer);
 		} catch (Exception exp) {
@@ -109,28 +110,31 @@ public class ClassAnalyzerRunner extends Runner {
 	Method findAnalyzerBindingSutMethod() {
 		Method[] methods = testClass.getMethods();
 		for (Method method : methods) {
-			if(method.isAnnotationPresent(BindAnalyzerMethod.class)){
+			if (method.isAnnotationPresent(BindAnalyzerMethod.class)) {
 				if (!Modifier.isStatic(method.getModifiers())) {
-					throw new RuntimeException("The bind method must be static. " +
-							"Only static method should be marked with the Annotation: " + BindAnalyzerMethod.class);
-				}
-				else if(!method.getReturnType().equals(BugCollection.class)){
-					throw new RuntimeException("bind method has wrong return typ. " +
-							"The method should use BugCollection as return type.");
-				}
-				else if(!(method.getParameterTypes().length == 1)){
-					throw new RuntimeException("bind method has no parameter. " +
-							"The method should have a ClassAnaylzer as parameter.");
-				}
-				else if(!method.getParameterTypes()[0].equals(ClassAnalyzer.class)){
-					throw new RuntimeException("The parameter type of the bind method must be ClassAnaylzer.");
-				}
-				else {
+					throw new RuntimeException(
+							"The bind method must be static. "
+									+ "Only static method should be marked with the Annotation: "
+									+ BindAnalyzerMethod.class);
+				} else if (!method.getReturnType().equals(BugCollection.class)) {
+					throw new RuntimeException(
+							"bind method has wrong return typ. "
+									+ "The method should use BugCollection as return type.");
+				} else if (!(method.getParameterTypes().length == 1)) {
+					throw new RuntimeException(
+							"bind method has no parameter. "
+									+ "The method should have a ClassAnaylzer as parameter.");
+				} else if (!method.getParameterTypes()[0]
+						.equals(PropConClassAnalyzer.class)) {
+					throw new RuntimeException(
+							"The parameter type of the bind method must be ClassAnaylzer.");
+				} else {
 					return method;
 				}
 			}
 		}
-		throw new RuntimeException("No static metod in the test class is marked with AnalyzerBindingSutMethod annotation.");
+		throw new RuntimeException(
+				"No static metod in the test class is marked with AnalyzerBindingSutMethod annotation.");
 	}
 
 	List<Class<?>> getTestClasses(Class<?> testCaseClass) {

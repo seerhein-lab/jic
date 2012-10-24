@@ -71,7 +71,7 @@ public class PropConMethodAnalyzer {
 			System.out.println(method.getArgumentTypes()[i]);
 		}
 		System.out.println(method.getName());
-		System.out.println(method.isStatic());
+		System.out.println(method.isStatic() ? "static" : "non-static");
 		localVars.initWithArgs(
 				callerStack,
 				method.isStatic() ? method.getArgumentTypes().length : method

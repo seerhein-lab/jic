@@ -20,17 +20,17 @@ public class ProperlyConstructedAcceptanceTest {
 
 	@BindAnalyzerMethod
 	public static BugCollection bindClassAnalyzerToProperlyConstructed(
-			ClassAnalyzer analyzer) {
+			PropConClassAnalyzer analyzer) {
 		return analyzer.properlyConstructed();
 	}
 
-	// /**
-	// * Simple class without fields and with the default constructor.
-	// */
-	// @Yes
-	// public static class Story000_ClassWithDefaultCtorEmpty {
-	// }
-	//
+	/**
+	 * Simple class without fields and with the default constructor.
+	 */
+	@Yes
+	public static class Story000_ClassWithDefaultCtorEmpty {
+	}
+
 	// /**
 	// * Simple class without fields and with an empty constructor.
 	// */
@@ -241,15 +241,15 @@ public class ProperlyConstructedAcceptanceTest {
 	// }
 	// }
 
-	@Yes
-	public static class InvokeVirtualTest {
-		public void f() {
-		}
-
-		public InvokeVirtualTest() {
-			f();
-		}
-	}
+	// @Yes
+	// public static class InvokeVirtualTest {
+	// public void f() {
+	// }
+	//
+	// public InvokeVirtualTest() {
+	// f();
+	// }
+	// }
 
 	// /**
 	// * Class with a constructor with a single byte argument.

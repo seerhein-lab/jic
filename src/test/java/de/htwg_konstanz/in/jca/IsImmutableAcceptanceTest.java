@@ -12,9 +12,9 @@ import edu.umd.cs.findbugs.BugCollection;
 /**
  * Functional acceptance tests for the method properlyConstructed of the class
  * ClassAnalyzer.
- *
- *  TODO: JavaDoc
- *
+ * 
+ * TODO: JavaDoc
+ * 
  * @see IsImmutableTestRunner
  */
 @Ignore("activate this test class when the method IsImmutable will be implemented.")
@@ -22,10 +22,10 @@ import edu.umd.cs.findbugs.BugCollection;
 public class IsImmutableAcceptanceTest {
 
 	@BindAnalyzerMethod
-	public static BugCollection bindIsImmutable(ClassAnalyzer analyzer) {
+	public static BugCollection bindIsImmutable(PropConClassAnalyzer analyzer) {
 		return analyzer.isImmutable();
 	}
-	
+
 	/**
 	 * Simple class without fields and with no constructor.
 	 */
@@ -38,7 +38,8 @@ public class IsImmutableAcceptanceTest {
 	 */
 	@Yes
 	public static class Story02_SimpleImmutableClassWithConstructor {
-		public Story02_SimpleImmutableClassWithConstructor() {}
+		public Story02_SimpleImmutableClassWithConstructor() {
+		}
 	}
 
 	/**
@@ -50,8 +51,8 @@ public class IsImmutableAcceptanceTest {
 	}
 
 	/**
-	 * Class with a private field, the value of the private field could not
-	 * be changed.
+	 * Class with a private field, the value of the private field could not be
+	 * changed.
 	 */
 	@Yes
 	public static class Story04_ImmutableClassWithPrivateField {
@@ -68,18 +69,19 @@ public class IsImmutableAcceptanceTest {
 	}
 
 	/**
-	 *  Not Immutable class because access to the this pointer is possible.
+	 * Not Immutable class because access to the this pointer is possible.
 	 */
 	@No
 	public static class Story06_ClassWithAccessToThisPointer {
 		final Object thisValue;
+
 		public Story06_ClassWithAccessToThisPointer() {
 			thisValue = this;
 		}
 	}
 
 	/**
-	 * Immutable class because class with mutable state but the reference of to 
+	 * Immutable class because class with mutable state but the reference of to
 	 * the state is not access able.
 	 */
 	@No
@@ -127,5 +129,5 @@ public class IsImmutableAcceptanceTest {
 		}
 
 	}
-	
+
 }

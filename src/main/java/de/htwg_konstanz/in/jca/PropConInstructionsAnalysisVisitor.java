@@ -147,10 +147,8 @@ public class PropConInstructionsAnalysisVisitor extends EmptyVisitor {
 
 	public PropConInstructionsAnalysisVisitor(LocalVars localVars,
 			Stack<Entry> stack, ConstantPoolGen constantPoolGen) {
-		this.localVars = localVars;
-		this.stack = stack;
-		this.constantPoolGen = constantPoolGen;
-		this.alreadyVisited = new ArrayList<AlreadyVisitedIfInstruction>();
+		this(localVars, stack, constantPoolGen,
+				new ArrayList<AlreadyVisitedIfInstruction>());
 	}
 
 	private PropConInstructionsAnalysisVisitor(LocalVars localVars,
@@ -400,7 +398,7 @@ public class PropConInstructionsAnalysisVisitor extends EmptyVisitor {
 			System.out.println("Loop detected, do not re-enter.");
 		}
 		if (elseResult != null) {
-			result = elseResult.combineWith(thenResult);
+			result = elseResult.combineWithOther(thenResult);
 		} else {
 			result = thenResult;
 		}
@@ -433,6 +431,8 @@ public class PropConInstructionsAnalysisVisitor extends EmptyVisitor {
 		System.out.println(obj.toString(false));
 		// pops integer index
 		stack.pop();
+
+		ArrayList<Entry> resultsOfCases = new ArrayList<Entry>();
 		// gets all targets excluding the default case
 		InstructionHandle[] targets = obj.getTargets();
 		PropConInstructionsAnalysisVisitor caseToFollow;
@@ -444,6 +444,10 @@ public class PropConInstructionsAnalysisVisitor extends EmptyVisitor {
 					new LocalVars(localVars), (Stack<Entry>) stack.clone(),
 					constantPoolGen, alreadyVisited);
 			targets[i].accept(caseToFollow);
+			// adding occurred bugs to bug-collection
+			bugs.addAll(caseToFollow.getBugs().getCollection());
+			// adding result of the case to a result-list
+			resultsOfCases.add(caseToFollow.getResult());
 		}
 		// handles the default case and follows it
 		System.out.println("--------------- Line "
@@ -455,6 +459,16 @@ public class PropConInstructionsAnalysisVisitor extends EmptyVisitor {
 				localVars), (Stack<Entry>) stack.clone(), constantPoolGen,
 				alreadyVisited);
 		obj.getTarget().accept(caseToFollow);
+		// adding occurred bugs to bug-collection
+		bugs.addAll(caseToFollow.getBugs().getCollection());
+		// adding result of the case to a result-list
+		resultsOfCases.add(caseToFollow.getResult());
+
+		// combine results
+		if (resultsOfCases.get(0) != null) {
+			result = resultsOfCases.get(0).combineWithOthers(
+					resultsOfCases.subList(1, resultsOfCases.size()));
+		}
 	}
 
 	// -----------------------------------------------------------------
@@ -1250,12 +1264,10 @@ public class PropConInstructionsAnalysisVisitor extends EmptyVisitor {
 	 */
 	@Override
 	public void visitReturnInstruction(ReturnInstruction obj) {
-		// XXX added pop for non void returns (which occur when non void methods
-		// within the method are called.
 		System.out.println(obj.toString(false) + " "
 				+ obj.getType(constantPoolGen));
 		if (!obj.getType(constantPoolGen).equals(Type.VOID)) {
-			// pop the return value for all non void methods
+			// pop the return value for all non void methods an save in result
 			result = stack.pop();
 		}
 	}
