@@ -1,5 +1,7 @@
 package de.htwg_konstanz.in.jca;
 
+import java.util.List;
+
 /**
  * An entry in a frame stack.
  */
@@ -58,7 +60,15 @@ public enum Entry {
 		return notThisReference;
 	}
 
-	public Entry combineWith(Entry other) {
+	public Entry combineWithOthers(List<Entry> others) {
+		if (others.isEmpty()) {
+			return this;
+		}
+		return this.combineWithOther(others.get(0)).combineWithOthers(
+				others.subList(1, others.size()));
+	}
+
+	public Entry combineWithOther(Entry other) {
 		if (other == null) {
 			return this;
 		}
