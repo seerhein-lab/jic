@@ -783,11 +783,14 @@ public class PropConInstructionsAnalysisVisitor extends EmptyVisitor {
 						method);
 				methodAnalyzer.analyze(stack);
 				bugs.addAll(methodAnalyzer.getBugs().getCollection());
+				if (!(method.getReturnType().equals(Type.VOID))) {
+					stack.push(methodAnalyzer.getResult());
+				}
 				break;
 			}
-			instructionHandle = instructionHandle.getNext();
-			instructionHandle.accept(this);
 		}
+		instructionHandle = instructionHandle.getNext();
+		instructionHandle.accept(this);
 	}
 
 	/**
