@@ -430,7 +430,6 @@ public class PropConInstructionsAnalysisVisitor extends EmptyVisitor {
 	@SuppressWarnings("unchecked")
 	@Override
 	public void visitSelect(Select obj) {
-		// TODO: propagate bugs and result
 
 		System.out.println(obj.toString(false));
 		// pops integer index
@@ -589,18 +588,19 @@ public class PropConInstructionsAnalysisVisitor extends EmptyVisitor {
 	 */
 	@Override
 	public void visitGETSTATIC(GETSTATIC obj) {
-		// XXX
-		// throws IncompatibleClassException if field is not static
-		// TODO error handling
-		System.out.println("FieldName " + obj.getFieldName(constantPoolGen));
-		System.out.println("Signature " + obj.getSignature(constantPoolGen));
-		System.out.println("FieldType " + obj.getFieldType(constantPoolGen));
-		System.out.println("ReferencedType "
-				+ obj.getReferenceType(constantPoolGen));
-		System.out.println("Type " + obj.getType(constantPoolGen));
+		System.out.print(obj.toString(false));
+		Entry toGet = Entry.getInstance(obj.getFieldType(constantPoolGen)
+				.getSignature());
+		// might be this, we do not know
+		if (toGet.equals(Entry.notThisReference)) {
+			toGet = Entry.maybeThisReference;
+		}
+		stack.push(toGet);
+		System.out.println(" " + obj.getLoadClassType(constantPoolGen) + "."
+				+ obj.getFieldName(constantPoolGen) + " (" + toGet + ")");
+
 		instructionHandle = instructionHandle.getNext();
 		instructionHandle.accept(this);
-		// FIXME
 	}
 
 	/**
@@ -647,8 +647,30 @@ public class PropConInstructionsAnalysisVisitor extends EmptyVisitor {
 	 */
 	@Override
 	public void visitPUTSTATIC(PUTSTATIC obj) {
-		notImplementedYet(obj);
-		// TODO
+		System.out.print(obj.toString(false));
+		// popping value from stack
+		Entry toPut = stack.pop();
+		// writing output
+		System.out.print(" " + obj.getReferenceType(constantPoolGen) + ".");
+		System.out.print(obj.getName(constantPoolGen));
+		System.out.println(" <-- " + toPut);
+
+		if (toPut.equals(Entry.thisReference)) {
+			System.out
+					.println("Error: 'this' reference is assigned to a static field and escapes.");
+			bugs.add(new BugInstance(
+					"Error: 'this' reference is assigned to a static field and escapes.",
+					2));
+		}
+		if (toPut.equals(Entry.maybeThisReference)) {
+			System.out
+					.println("Warning: 'this' reference might be assigned to a static field and might escape.");
+			bugs.add(new BugInstance(
+					"Warning: 'this' reference might be assigned to a static field and might escape.",
+					1));
+		}
+		instructionHandle = instructionHandle.getNext();
+		instructionHandle.accept(this);
 	}
 
 	/**
