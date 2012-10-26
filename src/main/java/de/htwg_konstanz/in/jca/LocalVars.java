@@ -58,8 +58,6 @@ public class LocalVars {
 	 *            The number of arguments to be copied from the callerStack.
 	 */
 	public void initWithArgs(Stack<Entry> callerStack, int numArgs) {
-		System.out.println("init " + callerStack);
-		System.out.println("numArgs: " + numArgs);
 		if (entries.length > 0)
 			for (int i = numArgs - 1; i >= 0; i--)
 				entries[i] = callerStack.pop();

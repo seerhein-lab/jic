@@ -67,11 +67,6 @@ public class PropConMethodAnalyzer {
 						: method.getLocalVariableTable()
 								.getLocalVariableTable());
 		// if non static method +1 because of hidden this-reference
-		for (int i = 0; i < method.getArgumentTypes().length; i++) {
-			System.out.println(method.getArgumentTypes()[i]);
-		}
-		System.out.println(method.getName());
-		System.out.println(method.isStatic() ? "static" : "non-static");
 		localVars.initWithArgs(
 				callerStack,
 				method.isStatic() ? method.getArgumentTypes().length : method
