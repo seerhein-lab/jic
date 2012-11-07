@@ -53,6 +53,21 @@ public class PropConClassAnalyzer {
 		return null;
 	}
 
+	public Method getMethod(String name, Type[] types) {
+		Method[] methods = clazz.getMethods();
+
+		for (Method method : methods) {
+			Type[] methodTypes = method.getArgumentTypes();
+			if (method.getName().equals(name)
+					&& methodTypes.length == types.length)
+				for (int i = 0; i < types.length; i++)
+					if (!types[i].equals(methodTypes[i]))
+						break;
+			return method;
+		}
+		return null;
+	}
+
 	private BugCollection allFieldsFinal() {
 		BugCollection bugs = new SortedBugCollection();
 		Field[] fields = clazz.getFields();

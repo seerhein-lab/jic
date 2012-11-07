@@ -60,6 +60,11 @@ public enum Entry {
 		return notThisReference;
 	}
 
+	public boolean isReference() {
+		return this.equals(maybeThisReference) || this.equals(thisReference)
+				|| this.equals(notThisReference);
+	}
+
 	public Entry combineWithOthers(List<Entry> others) {
 		if (others.isEmpty()) {
 			return this;

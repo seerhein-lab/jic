@@ -45,6 +45,7 @@ import org.apache.bcel.generic.INVOKESTATIC;
 import org.apache.bcel.generic.INVOKEVIRTUAL;
 import org.apache.bcel.generic.IfInstruction;
 import org.apache.bcel.generic.InstructionHandle;
+import org.apache.bcel.generic.InvokeInstruction;
 import org.apache.bcel.generic.JsrInstruction;
 import org.apache.bcel.generic.LCMP;
 import org.apache.bcel.generic.LCONST;
@@ -163,14 +164,6 @@ public class PropConInstructionsAnalysisVisitor extends EmptyVisitor {
 		this.instructionHandle = instructionHandle;
 	}
 
-	public BugCollection getBugs() {
-		return bugs;
-	}
-
-	public Entry getResult() {
-		return result;
-	}
-
 	/**
 	 * Called if a visit method is not yet implemented. Stops execution of the
 	 * InstructionHandles.
@@ -189,6 +182,63 @@ public class PropConInstructionsAnalysisVisitor extends EmptyVisitor {
 	// For details on enumeration see: //
 	// https://docs.google.com/open?id=0B4RYegfkX-vPUnlRUm56S1YtMG8 //
 	// ******************************************************************//
+
+	/**
+	 * used by visitINVOKEINTERFACE and visitINVOKEVIRTUAL
+	 * 
+	 * @param obj
+	 *            node to be visited
+	 */
+	private void handleMethodThatIsNotAnalyzed(InvokeInstruction obj) {
+		System.out.println(obj.toString(false) + " "
+				+ obj.getSignature(constantPoolGen));
+		// get number of args
+		Type[] type = obj.getArgumentTypes(constantPoolGen);
+		// get return value
+		Entry returnValue = Entry.getInstance(obj
+				.getReturnType(constantPoolGen).getSignature());
+		Entry argument;
+		// pop a value for each arg and 1 for the hidden reference
+		for (int i = 0; i < type.length + 1; i++) {
+			argument = stack.pop();
+			if (argument.equals(Entry.maybeThisReference)) {
+				System.out
+						.println("Warning: 'maybeThis' reference is passed into an alien method and might escape.");
+				bugs.add(new BugInstance(
+						"Warning: 'maybeThis' reference is passed into an alien method and might escape.",
+						1));
+				if (returnValue.isReference()) {
+					returnValue = Entry.maybeThisReference;
+				}
+			}
+			if (argument.equals(Entry.thisReference)) {
+				System.out
+						.println("Warning: 'this' reference is passed into an alien method and might escape.");
+				bugs.add(new BugInstance(
+						"Warning: 'this' reference is passed into an alien method and might escape.",
+						1));
+				if (returnValue.isReference()) {
+					returnValue = Entry.maybeThisReference;
+				}
+			}
+		}
+		// if not void
+		if (!obj.getReturnType(constantPoolGen).getSignature()
+				.equals(Type.VOID.getSignature())) {
+			// push the return value onto the stack
+			stack.push(returnValue);
+		}
+		instructionHandle = instructionHandle.getNext();
+		instructionHandle.accept(this);
+	}
+
+	public BugCollection getBugs() {
+		return bugs;
+	}
+
+	public Entry getResult() {
+		return result;
+	}
 
 	// -----------------------------------------------------------------
 	/**
@@ -571,7 +621,7 @@ public class PropConInstructionsAnalysisVisitor extends EmptyVisitor {
 		System.out.println(ref + "." + obj.getFieldName(constantPoolGen));
 
 		Entry entry = Entry.getInstance(obj.getSignature(constantPoolGen));
-		if (entry.equals(Entry.notThisReference)) {
+		if (entry.isReference()) {
 			entry = Entry.maybeThisReference;
 		}
 		stack.push(entry);
@@ -592,7 +642,7 @@ public class PropConInstructionsAnalysisVisitor extends EmptyVisitor {
 		Entry toGet = Entry.getInstance(obj.getFieldType(constantPoolGen)
 				.getSignature());
 		// might be this, we do not know
-		if (toGet.equals(Entry.notThisReference)) {
+		if (toGet.isReference()) {
 			toGet = Entry.maybeThisReference;
 		}
 		stack.push(toGet);
@@ -687,46 +737,7 @@ public class PropConInstructionsAnalysisVisitor extends EmptyVisitor {
 	 */
 	@Override
 	public void visitINVOKEINTERFACE(INVOKEINTERFACE obj) {
-		System.out.println(obj.toString(false) + " "
-				+ obj.getSignature(constantPoolGen));
-		// get number of args
-		Type[] type = obj.getArgumentTypes(constantPoolGen);
-		// get return value
-		Entry returnValue = Entry.getInstance(obj
-				.getReturnType(constantPoolGen).getSignature());
-		Entry argument;
-		// pop a value for each arg and 1 for the hidden reference
-		for (int i = 0; i < type.length + 1; i++) {
-			argument = stack.pop();
-			if (argument.equals(Entry.maybeThisReference)) {
-				System.out
-						.println("Warning: 'maybeThis' reference is passed to an interface method and might escape.");
-				bugs.add(new BugInstance(
-						"Warning: 'maybeThis' reference is passed to an interface method and might escape.",
-						1));
-				if (returnValue.equals(Entry.notThisReference)) {
-					returnValue = Entry.maybeThisReference;
-				}
-			}
-			if (argument.equals(Entry.thisReference)) {
-				System.out
-						.println("Warning: 'this' reference is passed to an interface method and might escape.");
-				bugs.add(new BugInstance(
-						"Warning: 'this' reference is passed to an interface method and might escape.",
-						1));
-				if (returnValue.equals(Entry.notThisReference)) {
-					returnValue = Entry.maybeThisReference;
-				}
-			}
-		}
-		// if not void
-		if (!obj.getReturnType(constantPoolGen).getSignature()
-				.equals(Type.VOID.getSignature())) {
-			// push the return value onto the stack
-			stack.push(returnValue);
-		}
-		instructionHandle = instructionHandle.getNext();
-		instructionHandle.accept(this);
+		handleMethodThatIsNotAnalyzed(obj);
 	}
 
 	/**
@@ -744,6 +755,8 @@ public class PropConInstructionsAnalysisVisitor extends EmptyVisitor {
 				+ obj.getReferenceType(constantPoolGen) + "."
 				+ obj.getMethodName(constantPoolGen));
 
+		System.out.print(obj.toString(false));
+
 		JavaClass superClazz = null;
 
 		try {
@@ -755,8 +768,9 @@ public class PropConInstructionsAnalysisVisitor extends EmptyVisitor {
 
 		PropConClassAnalyzer superclassAnalyzer = new PropConClassAnalyzer(
 				superClazz);
-		Method superCtor = superclassAnalyzer.getConstructor(obj
-				.getArgumentTypes(constantPoolGen));
+		Method superCtor = superclassAnalyzer.getMethod(
+				obj.getMethodName(constantPoolGen),
+				obj.getArgumentTypes(constantPoolGen));
 
 		PropConMethodAnalyzer superCtorAnalyzer = new PropConMethodAnalyzer(
 				superCtor);
@@ -794,23 +808,23 @@ public class PropConInstructionsAnalysisVisitor extends EmptyVisitor {
 		} catch (ClassNotFoundException e) {
 			System.out.println("Could not load class!");
 		}
-		Method[] classMethods = targetClass.getMethods();
-		for (Method method : classMethods) {
-			if (method.isStatic()
-					&& method.getName().equals(
-							obj.getMethodName(constantPoolGen))
-					&& method.getSignature().equals(
-							obj.getSignature(constantPoolGen))) {
-				PropConMethodAnalyzer methodAnalyzer = new PropConMethodAnalyzer(
-						method);
-				methodAnalyzer.analyze(stack);
-				bugs.addAll(methodAnalyzer.getBugs().getCollection());
-				if (!(method.getReturnType().equals(Type.VOID))) {
-					stack.push(methodAnalyzer.getResult());
-				}
-				break;
-			}
+
+		PropConClassAnalyzer targetClassAnalyzer = new PropConClassAnalyzer(
+				targetClass);
+		Method targetMethod = targetClassAnalyzer.getMethod(
+				obj.getMethodName(constantPoolGen),
+				obj.getArgumentTypes(constantPoolGen));
+
+		PropConMethodAnalyzer targetMethodAnalyzer = new PropConMethodAnalyzer(
+				targetMethod);
+		targetMethodAnalyzer.analyze(stack);
+
+		bugs.addAll(targetMethodAnalyzer.getBugs().getCollection());
+
+		if (!(targetMethod.getReturnType().equals(Type.VOID))) {
+			stack.push(targetMethodAnalyzer.getResult());
 		}
+
 		instructionHandle = instructionHandle.getNext();
 		instructionHandle.accept(this);
 	}
@@ -829,55 +843,7 @@ public class PropConInstructionsAnalysisVisitor extends EmptyVisitor {
 	 */
 	@Override
 	public void visitINVOKEVIRTUAL(INVOKEVIRTUAL obj) {
-		System.out.println(obj.toString(false) + " "
-				+ obj.getSignature(constantPoolGen));
-
-		System.out
-				.println("method name: " + obj.getMethodName(constantPoolGen));
-		System.out.println("load class type: "
-				+ obj.getLoadClassType(constantPoolGen));
-		System.out.println("reference type: "
-				+ obj.getReferenceType(constantPoolGen));
-
-		// the argument types passed to this method
-		Type[] types = obj.getArgumentTypes(constantPoolGen);
-		// the value to return from this method
-		Entry returnValue = Entry.getInstance(obj
-				.getReturnType(constantPoolGen).getSignature());
-		Entry argument;
-		for (int i = 0; i < types.length + 1; i++) {
-			// pop a value for each argument type and one for the hidden
-			// reference
-			argument = stack.pop();
-			if (argument.equals(Entry.maybeThisReference)) {
-				System.out
-						.println("Warning: 'maybeThis' reference is passed to a method and might escape.");
-				bugs.add(new BugInstance(
-						"Warning: 'maybeThis' reference is passed to a method and might escape.",
-						1));
-				if (returnValue.equals(Entry.notThisReference)) {
-					returnValue = Entry.maybeThisReference;
-				}
-			}
-			if (argument.equals(Entry.thisReference)) {
-				System.out
-						.println("Warning: 'this' reference is passed to a method and might escape.");
-				bugs.add(new BugInstance(
-						"Warning: 'this' reference is passed to a method and might escape.",
-						1));
-				if (returnValue.equals(Entry.notThisReference)) {
-					returnValue = Entry.maybeThisReference;
-				}
-			}
-		}
-		// if not void
-		if (!obj.getReturnType(constantPoolGen).getSignature()
-				.equals(Type.VOID.getSignature())) {
-			// push the return value onto the stack
-			stack.push(returnValue);
-		}
-		instructionHandle = instructionHandle.getNext();
-		instructionHandle.accept(this);
+		handleMethodThatIsNotAnalyzed(obj);
 	}
 
 	/**
