@@ -60,6 +60,11 @@ public enum Entry {
 		return notThisReference;
 	}
 
+	public boolean isReference() {
+		return this.equals(maybeThisReference) || this.equals(thisReference)
+				|| this.equals(notThisReference);
+	}
+
 	/**
 	 * Combines the current value with the outcome of other execution paths.
 	 * 
