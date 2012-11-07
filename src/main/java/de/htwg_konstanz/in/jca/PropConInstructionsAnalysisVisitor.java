@@ -14,7 +14,6 @@ import org.apache.bcel.generic.ArithmeticInstruction;
 import org.apache.bcel.generic.ArrayInstruction;
 import org.apache.bcel.generic.BIPUSH;
 import org.apache.bcel.generic.BREAKPOINT;
-import org.apache.bcel.generic.BasicType;
 import org.apache.bcel.generic.CHECKCAST;
 import org.apache.bcel.generic.ConstantPoolGen;
 import org.apache.bcel.generic.ConversionInstruction;
@@ -182,6 +181,46 @@ public class PropConInstructionsAnalysisVisitor extends EmptyVisitor {
 	// For details on enumeration see: //
 	// https://docs.google.com/open?id=0B4RYegfkX-vPUnlRUm56S1YtMG8 //
 	// ******************************************************************//
+
+	/**
+	 * used by visitINVOKESTATIC and visitINVOKESPECIAL
+	 * 
+	 * @param obj
+	 *            node to be visited
+	 */
+	private void handleMethodThatIsAnalyzed(InvokeInstruction obj) {
+		System.out.println(obj.toString(false) + " "
+				+ obj.getLoadClassType(constantPoolGen) + "."
+				+ obj.getMethodName(constantPoolGen)
+				+ obj.getSignature(constantPoolGen));
+
+		JavaClass targetClass = null;
+		try {
+			targetClass = Repository.lookupClass(obj.getReferenceType(
+					constantPoolGen).toString());
+		} catch (ClassNotFoundException e) {
+			System.out.println("Could not load class!");
+		}
+
+		PropConClassAnalyzer targetClassAnalyzer = new PropConClassAnalyzer(
+				targetClass);
+		Method targetMethod = targetClassAnalyzer.getMethod(
+				obj.getMethodName(constantPoolGen),
+				obj.getArgumentTypes(constantPoolGen));
+
+		PropConMethodAnalyzer targetMethodAnalyzer = new PropConMethodAnalyzer(
+				targetMethod);
+		targetMethodAnalyzer.analyze(stack);
+
+		bugs.addAll(targetMethodAnalyzer.getBugs().getCollection());
+
+		if (!(targetMethod.getReturnType().equals(Type.VOID))) {
+			stack.push(targetMethodAnalyzer.getResult());
+		}
+
+		instructionHandle = instructionHandle.getNext();
+		instructionHandle.accept(this);
+	}
 
 	/**
 	 * used by visitINVOKEINTERFACE and visitINVOKEVIRTUAL
@@ -750,44 +789,13 @@ public class PropConInstructionsAnalysisVisitor extends EmptyVisitor {
 	 */
 	@Override
 	public void visitINVOKESPECIAL(INVOKESPECIAL obj) {
-		System.out.println("INVOKESPECIAL: "
-				+ obj.getReturnType(constantPoolGen) + " "
-				+ obj.getReferenceType(constantPoolGen) + "."
-				+ obj.getMethodName(constantPoolGen));
-
-		System.out.print(obj.toString(false));
-
-		JavaClass superClazz = null;
-
-		try {
-			superClazz = Repository.lookupClass(obj.getReferenceType(
-					constantPoolGen).toString());
-		} catch (ClassNotFoundException e) {
-			throw new RuntimeException(e);
-		}
-
-		PropConClassAnalyzer superclassAnalyzer = new PropConClassAnalyzer(
-				superClazz);
-		Method superCtor = superclassAnalyzer.getMethod(
-				obj.getMethodName(constantPoolGen),
-				obj.getArgumentTypes(constantPoolGen));
-
-		PropConMethodAnalyzer superCtorAnalyzer = new PropConMethodAnalyzer(
-				superCtor);
-		superCtorAnalyzer.analyze(stack);
-		bugs.addAll(superCtorAnalyzer.getBugs().getCollection());
-
-		if (!obj.getReturnType(constantPoolGen).equals(BasicType.VOID)) {
-			stack.push(superCtorAnalyzer.getResult());
-		}
-		instructionHandle = instructionHandle.getNext();
-		instructionHandle.accept(this);
+		handleMethodThatIsAnalyzed(obj);
 	}
 
 	/**
 	 * 10. CPInstruction <br>
 	 * 10.4. InvokeInstruction <br>
-	 * 10.4.3. INVOKESTATIC
+	 * 10.4.3.
 	 * <p>
 	 * Invokes a static method, where the method is identified by method
 	 * reference index in constant pool (indexbyte1 << 8 + indexbyte2).
@@ -797,36 +805,7 @@ public class PropConInstructionsAnalysisVisitor extends EmptyVisitor {
 	 */
 	@Override
 	public void visitINVOKESTATIC(INVOKESTATIC obj) {
-		System.out.println(obj.toString(false) + " "
-				+ obj.getLoadClassType(constantPoolGen) + "."
-				+ obj.getMethodName(constantPoolGen)
-				+ obj.getSignature(constantPoolGen));
-		JavaClass targetClass = null;
-		try {
-			targetClass = Repository.lookupClass(obj.getReferenceType(
-					constantPoolGen).toString());
-		} catch (ClassNotFoundException e) {
-			System.out.println("Could not load class!");
-		}
-
-		PropConClassAnalyzer targetClassAnalyzer = new PropConClassAnalyzer(
-				targetClass);
-		Method targetMethod = targetClassAnalyzer.getMethod(
-				obj.getMethodName(constantPoolGen),
-				obj.getArgumentTypes(constantPoolGen));
-
-		PropConMethodAnalyzer targetMethodAnalyzer = new PropConMethodAnalyzer(
-				targetMethod);
-		targetMethodAnalyzer.analyze(stack);
-
-		bugs.addAll(targetMethodAnalyzer.getBugs().getCollection());
-
-		if (!(targetMethod.getReturnType().equals(Type.VOID))) {
-			stack.push(targetMethodAnalyzer.getResult());
-		}
-
-		instructionHandle = instructionHandle.getNext();
-		instructionHandle.accept(this);
+		handleMethodThatIsAnalyzed(obj);
 	}
 
 	/**
