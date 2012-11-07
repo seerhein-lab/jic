@@ -1297,7 +1297,7 @@ public class PropConInstructionsAnalysisVisitor extends EmptyVisitor {
 		System.out.println(obj.toString(false) + " "
 				+ obj.getType(constantPoolGen));
 		if (!obj.getType(constantPoolGen).equals(Type.VOID)) {
-			// pop the return value for all non void methods an save in result
+			// pop the return value for all non void methods and save in result
 			result = stack.pop();
 		}
 	}

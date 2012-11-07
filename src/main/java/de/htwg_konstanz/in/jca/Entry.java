@@ -34,7 +34,7 @@ public enum Entry {
 	/** A reference that certainly is not the 'this' reference */
 	notThisReference,
 
-	/** A reference that might or might be the 'this' reference */
+	/** A reference that might or might not be the 'this' reference */
 	maybeThisReference,
 
 	/** The 'this reference */
@@ -60,6 +60,14 @@ public enum Entry {
 		return notThisReference;
 	}
 
+	/**
+	 * Combines the current value with the outcome of other execution paths.
+	 * 
+	 * @param others the outcome of the other execution paths, not null,
+	 *        may be empty.
+	 *
+	 * @return the combined output.
+	 */
 	public Entry combineWithOthers(List<Entry> others) {
 		if (others.isEmpty()) {
 			return this;
@@ -68,6 +76,14 @@ public enum Entry {
 				others.subList(1, others.size()));
 	}
 
+	/**
+	 * Combines the current value with the outcome of another execution path.
+	 * 
+	 * @param other the outcome of the other execution path, or null if the
+	 *        other execution path has no outcome.
+	 *
+	 * @return the combined output.
+	 */
 	public Entry combineWithOther(Entry other) {
 		if (other == null) {
 			return this;

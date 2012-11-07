@@ -17,6 +17,8 @@ public class PropConMethodAnalyzer {
 
 	/** The method to analyze. */
 	private final Method method;
+	
+	/** The visitor which inspects the method 's bytecode instructions. */
 	private PropConInstructionsAnalysisVisitor visitor = null;
 
 	/**
@@ -32,8 +34,6 @@ public class PropConMethodAnalyzer {
 	/**
 	 * Checks whether the reference of the checked object is passed to another
 	 * object in the method.
-	 * 
-	 * @return BugCollection containing potential error messages
 	 */
 	public void analyze() {
 		Stack<Entry> callerStack = new Stack<Entry>();
@@ -58,8 +58,6 @@ public class PropConMethodAnalyzer {
 	 * 
 	 * @param callerStack
 	 *            the content of the local variable table of the constructor.
-	 * 
-	 * @return BugCollection containing potential error messages
 	 */
 	public void analyze(Stack<Entry> callerStack) {
 		LocalVars localVars = new LocalVars(
@@ -85,6 +83,14 @@ public class PropConMethodAnalyzer {
 		System.out.println("^^^^^^^^^^^^^^^^^^^^^^^^^^");
 	}
 
+	/**
+	 * Returns the bugs found in the analysis.
+	 * The method analyze() must be called before this method is called.
+	 * 
+	 * @return the bug list, not null.
+	 * 
+	 * @throws IllegalStateException if analyze() was not called beforehand.
+	 */
 	public BugCollection getBugs() {
 		if (visitor == null) {
 			throw new IllegalStateException(
@@ -95,8 +101,12 @@ public class PropConMethodAnalyzer {
 
 	/**
 	 * Returns the result of the method call.
+	 * The method analyze() must be called before this method is called.
 	 * 
-	 * @return the result of the method call, or null if not yet determined.
+	 * @return the result of the method call, or null if the method
+	 *         is a void method.
+	 * 
+	 * @throws IllegalStateException if analyze() was not called beforehand.
 	 */
 	public Entry getResult() {
 		if (visitor == null) {
