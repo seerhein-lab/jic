@@ -38,20 +38,20 @@ public class PropConClassAnalyzer {
 	 *            arguments of the constructor to be returned
 	 * @return
 	 */
-	public Method getConstructor(Type[] types) {
-		Method[] methods = clazz.getMethods();
-
-		for (Method method : methods) {
-			Type[] methodTypes = method.getArgumentTypes();
-			if (method.getName().equals("<init>")
-					&& methodTypes.length == types.length)
-				for (int i = 0; i < types.length; i++)
-					if (!types[i].equals(methodTypes[i]))
-						break;
-			return method;
-		}
-		return null;
-	}
+	// public Method getConstructor(Type[] types) {
+	// Method[] methods = clazz.getMethods();
+	//
+	// for (Method method : methods) {
+	// Type[] methodTypes = method.getArgumentTypes();
+	// if (method.getName().equals("<init>")
+	// && methodTypes.length == types.length)
+	// for (int i = 0; i < types.length; i++)
+	// if (!types[i].equals(methodTypes[i]))
+	// break;
+	// return method;
+	// }
+	// return null;
+	// }
 
 	public Method getMethod(String name, Type[] types) {
 		Method[] methods = clazz.getMethods();

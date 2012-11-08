@@ -17,7 +17,7 @@ public class PropConMethodAnalyzer {
 
 	/** The method to analyze. */
 	private final Method method;
-	
+
 	/** The visitor which inspects the method 's bytecode instructions. */
 	private PropConInstructionsAnalysisVisitor visitor = null;
 
@@ -29,6 +29,7 @@ public class PropConMethodAnalyzer {
 	 */
 	public PropConMethodAnalyzer(Method method) {
 		this.method = method;
+		System.out.println("Max Locals: " + method.getCode().getMaxLocals());
 	}
 
 	/**
@@ -84,12 +85,13 @@ public class PropConMethodAnalyzer {
 	}
 
 	/**
-	 * Returns the bugs found in the analysis.
-	 * The method analyze() must be called before this method is called.
+	 * Returns the bugs found in the analysis. The method analyze() must be
+	 * called before this method is called.
 	 * 
 	 * @return the bug list, not null.
 	 * 
-	 * @throws IllegalStateException if analyze() was not called beforehand.
+	 * @throws IllegalStateException
+	 *             if analyze() was not called beforehand.
 	 */
 	public BugCollection getBugs() {
 		if (visitor == null) {
@@ -100,13 +102,14 @@ public class PropConMethodAnalyzer {
 	}
 
 	/**
-	 * Returns the result of the method call.
-	 * The method analyze() must be called before this method is called.
+	 * Returns the result of the method call. The method analyze() must be
+	 * called before this method is called.
 	 * 
-	 * @return the result of the method call, or null if the method
-	 *         is a void method.
+	 * @return the result of the method call, or null if the method is a void
+	 *         method.
 	 * 
-	 * @throws IllegalStateException if analyze() was not called beforehand.
+	 * @throws IllegalStateException
+	 *             if analyze() was not called beforehand.
 	 */
 	public Entry getResult() {
 		if (visitor == null) {

@@ -394,15 +394,7 @@ public class PropConInstructionsAnalysisVisitor extends EmptyVisitor {
 	 */
 	@Override
 	public void visitATHROW(ATHROW obj) {
-		notImplementedYet(obj);
-		// TODO
-		// first try
-		/*
-		 * System.out.println(obj.toString(false)); Class<?>[] exceptions =
-		 * obj.getExceptions(); for (Class<?> exception : exceptions) {
-		 * System.out.println(exception); } stack.clear();
-		 * stack.push(Entry.notThisReference);
-		 */
+
 	}
 
 	// -----------------------------------------------------------------
