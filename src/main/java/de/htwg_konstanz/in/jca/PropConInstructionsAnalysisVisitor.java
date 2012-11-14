@@ -1,7 +1,6 @@
 package de.htwg_konstanz.in.jca;
 
 import java.util.ArrayList;
-import java.util.Stack;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -103,13 +102,12 @@ public class PropConInstructionsAnalysisVisitor extends EmptyVisitor {
 	private static final Logger logger = Logger
 			.getLogger("PropConInstructionsAnalysisVisitor");
 
-	private final LocalVars localVars;
-	private final Stack<Entry> stack;
+	private final Frame frame;
 	private final ConstantPoolGen constantPoolGen;
 	private InstructionHandle instructionHandle;
 	private ArrayList<AlreadyVisitedIfInstruction> alreadyVisited;
 	private SortedBugCollection bugs = new SortedBugCollection();
-	private Entry result = null;
+	private Slot result = null;
 
 	private static class AlreadyVisitedIfInstruction {
 		private final InstructionHandle ifInstruction;
@@ -150,19 +148,17 @@ public class PropConInstructionsAnalysisVisitor extends EmptyVisitor {
 
 	}
 
-	public PropConInstructionsAnalysisVisitor(LocalVars localVars,
-			Stack<Entry> stack, ConstantPoolGen constantPoolGen,
-			InstructionHandle instructionHandle) {
-		this(localVars, stack, constantPoolGen,
+	public PropConInstructionsAnalysisVisitor(Frame frame,
+			ConstantPoolGen constantPoolGen, InstructionHandle instructionHandle) {
+		this(frame, constantPoolGen,
 				new ArrayList<AlreadyVisitedIfInstruction>(), instructionHandle);
 	}
 
-	private PropConInstructionsAnalysisVisitor(LocalVars localVars,
-			Stack<Entry> stack, ConstantPoolGen constantPoolGen,
+	private PropConInstructionsAnalysisVisitor(Frame frame,
+			ConstantPoolGen constantPoolGen,
 			ArrayList<AlreadyVisitedIfInstruction> alreadyVisited,
 			InstructionHandle instructionHandle) {
-		this.localVars = localVars;
-		this.stack = stack;
+		this.frame = frame;
 		this.constantPoolGen = constantPoolGen;
 		this.alreadyVisited = alreadyVisited;
 		this.instructionHandle = instructionHandle;
@@ -216,12 +212,12 @@ public class PropConInstructionsAnalysisVisitor extends EmptyVisitor {
 
 		PropConMethodAnalyzer targetMethodAnalyzer = new PropConMethodAnalyzer(
 				targetMethod);
-		targetMethodAnalyzer.analyze(stack);
+		targetMethodAnalyzer.analyze(frame.getStack());
 
 		bugs.addAll(targetMethodAnalyzer.getBugs().getCollection());
 
 		if (!(targetMethod.getReturnType().equals(Type.VOID))) {
-			stack.push(targetMethodAnalyzer.getResult());
+			frame.getStack().push(targetMethodAnalyzer.getResult());
 		}
 
 		instructionHandle = instructionHandle.getNext();
@@ -242,31 +238,34 @@ public class PropConInstructionsAnalysisVisitor extends EmptyVisitor {
 		// get number of args
 		Type[] type = obj.getArgumentTypes(constantPoolGen);
 		// get return value
-		Entry returnValue = Entry.getInstance(obj
-				.getReturnType(constantPoolGen).getSignature());
-		Entry argument;
+
+		Slot returnValue = DataType.getDataType(
+				obj.getReturnType(constantPoolGen).getSignature())
+				.getInstance();
+
+		Slot argument;
 		// pop a value for each arg and 1 for the hidden reference
 		for (int i = 0; i < type.length + 1; i++) {
-			argument = stack.pop();
-			if (argument.equals(Entry.maybeThisReference)) {
+			argument = frame.getStack().pop();
+			if (argument.equals(Slot.maybeThisReference)) {
 				logger.log(
 						Level.WARNING,
 						"Warning: 'maybeThis' reference is passed into an alien method and might escape.");
 				bugs.add(new BugInstance(
 						"Warning: 'maybeThis' reference is passed into an alien method and might escape.",
 						1));
-				if (returnValue.isReference()) {
-					returnValue = Entry.maybeThisReference;
+				if (returnValue.getDataType().equals(DataType.referenceType)) {
+					returnValue = Slot.maybeThisReference;
 				}
 			}
-			if (argument.equals(Entry.thisReference)) {
+			if (argument.equals(Slot.thisReference)) {
 				logger.log(Level.WARNING,
 						"Warning: 'this' reference is passed into an alien method and might escape.");
 				bugs.add(new BugInstance(
 						"Warning: 'this' reference is passed into an alien method and might escape.",
 						1));
-				if (returnValue.isReference()) {
-					returnValue = Entry.maybeThisReference;
+				if (returnValue.getDataType().equals(DataType.referenceType)) {
+					returnValue = Slot.maybeThisReference;
 				}
 			}
 		}
@@ -274,7 +273,7 @@ public class PropConInstructionsAnalysisVisitor extends EmptyVisitor {
 		if (!obj.getReturnType(constantPoolGen).getSignature()
 				.equals(Type.VOID.getSignature())) {
 			// push the return value onto the stack
-			stack.push(returnValue);
+			frame.getStack().push(returnValue);
 		}
 		instructionHandle = instructionHandle.getNext();
 		instructionHandle.accept(this);
@@ -284,7 +283,7 @@ public class PropConInstructionsAnalysisVisitor extends EmptyVisitor {
 		return bugs;
 	}
 
-	public Entry getResult() {
+	public Slot getResult() {
 		return result;
 	}
 
@@ -298,7 +297,7 @@ public class PropConInstructionsAnalysisVisitor extends EmptyVisitor {
 	public void visitACONST_NULL(ACONST_NULL obj) {
 		logger.log(Level.FINE, obj.toString(false));
 		// push NULL onto stack
-		stack.push(Entry.notThisReference);
+		frame.getStack().push(Slot.notThisReference);
 		instructionHandle = instructionHandle.getNext();
 		instructionHandle.accept(this);
 	}
@@ -324,16 +323,16 @@ public class PropConInstructionsAnalysisVisitor extends EmptyVisitor {
 			consumed = obj.consumeStack(constantPoolGen);
 			produced = obj.produceStack(constantPoolGen);
 		}
-		Entry entry;
+		Slot entry;
 		for (int i = 0; i < consumed; i++) {
-			entry = stack.pop();
+			entry = frame.getStack().pop();
 			log += (i == 0) ? entry : ", " + entry;
 		}
 		log += ") -> (";
-		entry = Entry.getInstance(type.getSignature());
+		entry = Slot.getInstance(type.getSignature());
 
 		for (int i = 0; i < produced; i++) {
-			stack.push(entry);
+			frame.getStack().push(entry);
 			log += (i == 0) ? entry : ", " + entry;
 		}
 		log += ")";
@@ -356,25 +355,26 @@ public class PropConInstructionsAnalysisVisitor extends EmptyVisitor {
 		if (opcode >= 0x2E && opcode <= 0x35) {
 			// all ALOAD instructions
 			// pop index
-			stack.pop();
+			frame.getStack().pop();
 			// pop reference
-			stack.pop();
+			frame.getStack().pop();
 			if (opcode == 0x32) {
 				// AALOAD
-				stack.push(Entry.maybeThisReference);
+				frame.getStack().push(Slot.maybeThisReference);
 			} else {
 				// all other ALOAD instructions
-				stack.push(Entry.getInstance(obj.getType(constantPoolGen)
-						.getSignature()));
+				frame.getStack().push(
+						Slot.getInstance(obj.getType(constantPoolGen)
+								.getSignature()));
 			}
 		} else {
 			// all ASTORE instructions
 			// pop value
-			stack.pop();
+			frame.getStack().pop();
 			// pop index
-			stack.pop();
+			frame.getStack().pop();
 			// pop reference
-			stack.pop();
+			frame.getStack().pop();
 		}
 		instructionHandle = instructionHandle.getNext();
 		instructionHandle.accept(this);
@@ -391,9 +391,9 @@ public class PropConInstructionsAnalysisVisitor extends EmptyVisitor {
 	public void visitARRAYLENGTH(ARRAYLENGTH obj) {
 		logger.log(Level.FINE, obj.toString(false));
 		// pops array reference
-		stack.pop();
+		frame.getStack().pop();
 		// pushes length
-		stack.push(Entry.someInt);
+		frame.getStack().push(Slot.someInt);
 		instructionHandle = instructionHandle.getNext();
 		instructionHandle.accept(this);
 	}
@@ -419,7 +419,7 @@ public class PropConInstructionsAnalysisVisitor extends EmptyVisitor {
 	public void visitBIPUSH(BIPUSH obj) {
 		logger.log(Level.FINE, obj.toString(false));
 		// pushes the integer value onto the stack
-		stack.push(Entry.someInt);
+		frame.getStack().push(Slot.someInt);
 		instructionHandle = instructionHandle.getNext();
 		instructionHandle.accept(this);
 	}
@@ -447,28 +447,27 @@ public class PropConInstructionsAnalysisVisitor extends EmptyVisitor {
 	 * execute the next instruction from the instructionHandle list, else it
 	 * will follow both possible branches.
 	 */
-	@SuppressWarnings("unchecked")
 	@Override
 	public void visitIfInstruction(IfInstruction obj) {
 		logger.log(Level.FINE, obj.toString(false));
 		for (int i = 0; i < obj.consumeStack(constantPoolGen); i++) {
-			stack.pop();
+			frame.getStack().pop();
 		}
 
-		Entry elseResult = null;
-		Entry thenResult = null;
+		Slot elseResult = null;
+		Slot thenResult = null;
 
 		logger.log(Level.FINEST, "------------------  " + alreadyVisited.size()
 				+ ".else  ------------------");
 		AlreadyVisitedIfInstruction elseBranch = new AlreadyVisitedIfInstruction(
 				instructionHandle, false);
 		if (!alreadyVisited.contains(elseBranch)) {
+			@SuppressWarnings("unchecked")
 			ArrayList<AlreadyVisitedIfInstruction> newAlreadyVisited = (ArrayList<AlreadyVisitedIfInstruction>) alreadyVisited
 					.clone();
 			newAlreadyVisited.add(elseBranch);
 			PropConInstructionsAnalysisVisitor elseBranchVisitor = new PropConInstructionsAnalysisVisitor(
-					new LocalVars(localVars), (Stack<Entry>) stack.clone(),
-					constantPoolGen, newAlreadyVisited,
+					new Frame(frame), constantPoolGen, newAlreadyVisited,
 					instructionHandle.getNext());
 			instructionHandle.getNext().accept(elseBranchVisitor);
 			bugs.addAll(elseBranchVisitor.getBugs().getCollection());
@@ -481,13 +480,14 @@ public class PropConInstructionsAnalysisVisitor extends EmptyVisitor {
 		AlreadyVisitedIfInstruction thenBranch = new AlreadyVisitedIfInstruction(
 				instructionHandle, true);
 		if (!alreadyVisited.contains(thenBranch)) {
+			@SuppressWarnings("unchecked")
 			ArrayList<AlreadyVisitedIfInstruction> newAlreadyVisited = (ArrayList<AlreadyVisitedIfInstruction>) alreadyVisited
 					.clone();
 			newAlreadyVisited.add(thenBranch);
 
 			PropConInstructionsAnalysisVisitor thenBranchVisitor = new PropConInstructionsAnalysisVisitor(
-					new LocalVars(localVars), (Stack<Entry>) stack.clone(),
-					constantPoolGen, newAlreadyVisited, obj.getTarget());
+					new Frame(frame), constantPoolGen, newAlreadyVisited,
+					obj.getTarget());
 			obj.getTarget().accept(thenBranchVisitor);
 			bugs.addAll(thenBranchVisitor.getBugs().getCollection());
 			thenResult = thenBranchVisitor.getResult();
@@ -520,15 +520,14 @@ public class PropConInstructionsAnalysisVisitor extends EmptyVisitor {
 	 * stack and follows every possible case (including fall-trough) by creating
 	 * a new instance of MethodAnalysisVisitor for each case.
 	 */
-	@SuppressWarnings("unchecked")
 	@Override
 	public void visitSelect(Select obj) {
 
 		logger.log(Level.FINE, obj.toString(false));
 		// pops integer index
-		stack.pop();
+		frame.getStack().pop();
 
-		ArrayList<Entry> resultsOfCases = new ArrayList<Entry>();
+		ArrayList<Slot> resultsOfCases = new ArrayList<Slot>();
 		// gets all targets excluding the default case
 		InstructionHandle[] targets = obj.getTargets();
 		PropConInstructionsAnalysisVisitor caseToFollow;
@@ -537,9 +536,8 @@ public class PropConInstructionsAnalysisVisitor extends EmptyVisitor {
 			logger.log(Level.FINEST,
 					"--------------- Line " + targets[i].getPosition()
 							+ " ---------------");
-			caseToFollow = new PropConInstructionsAnalysisVisitor(
-					new LocalVars(localVars), (Stack<Entry>) stack.clone(),
-					constantPoolGen, alreadyVisited, targets[i]);
+			caseToFollow = new PropConInstructionsAnalysisVisitor(new Frame(
+					frame), constantPoolGen, alreadyVisited, targets[i]);
 			targets[i].accept(caseToFollow);
 			// adding occurred bugs to bug-collection
 			bugs.addAll(caseToFollow.getBugs().getCollection());
@@ -552,9 +550,8 @@ public class PropConInstructionsAnalysisVisitor extends EmptyVisitor {
 				+ " (DefaultCase) ---------------");
 		// NOTE: If the keyword "Default:" is not in the switch the following
 		// target is the end of the switch without executing a case.
-		caseToFollow = new PropConInstructionsAnalysisVisitor(new LocalVars(
-				localVars), (Stack<Entry>) stack.clone(), constantPoolGen,
-				alreadyVisited, obj.getTarget());
+		caseToFollow = new PropConInstructionsAnalysisVisitor(new Frame(frame),
+				constantPoolGen, alreadyVisited, obj.getTarget());
 		obj.getTarget().accept(caseToFollow);
 		// adding occurred bugs to bug-collection
 		bugs.addAll(caseToFollow.getBugs().getCollection());
@@ -592,12 +589,12 @@ public class PropConInstructionsAnalysisVisitor extends EmptyVisitor {
 		logger.log(Level.FINE, obj.toString(false));
 		String log = "\t (";
 		// pops the value
-		Entry entry = stack.pop();
+		Slot entry = frame.getStack().pop();
 		log += entry + ") -> (";
-		Entry convertedEntry = Entry.getInstance(obj.getType(constantPoolGen)
+		Slot convertedEntry = Slot.getInstance(obj.getType(constantPoolGen)
 				.getSignature());
 		// pushes the converted value
-		stack.push(convertedEntry);
+		frame.getStack().push(convertedEntry);
 		log += convertedEntry + ")";
 		logger.log(Level.FINEST, log);
 		instructionHandle = instructionHandle.getNext();
@@ -616,9 +613,9 @@ public class PropConInstructionsAnalysisVisitor extends EmptyVisitor {
 	public void visitANEWARRAY(ANEWARRAY obj) {
 		logger.log(Level.FINE, obj.toString(false));
 		// pops the length
-		stack.pop();
+		frame.getStack().pop();
 		// pushes the array reference
-		stack.push(Entry.notThisReference);
+		frame.getStack().push(Slot.notThisReference);
 		instructionHandle = instructionHandle.getNext();
 		instructionHandle.accept(this);
 	}
@@ -636,14 +633,14 @@ public class PropConInstructionsAnalysisVisitor extends EmptyVisitor {
 		// TODO
 		// first try
 		System.out.print(obj.toString(false) + ": (");
-		Entry entry = stack.pop();
+		Slot entry = frame.getStack().pop();
 		System.out.println(entry + ") ?= ("
 				+ obj.getLoadClassType(constantPoolGen));
 
-		if (entry.equals(Entry.getInstance(obj
-				.getLoadClassType(constantPoolGen).getSignature()))) {
+		if (entry.equals(Slot.getInstance(obj.getLoadClassType(constantPoolGen)
+				.getSignature()))) {
 			// push entry back onto stack
-			stack.push(entry);
+			frame.getStack().push(entry);
 		} else {
 			// throw exception
 			// TODO Exception-handling???
@@ -663,13 +660,13 @@ public class PropConInstructionsAnalysisVisitor extends EmptyVisitor {
 	public void visitGETFIELD(GETFIELD obj) {
 		logger.log(Level.FINEST, obj.toString(false));
 
-		Entry ref = stack.pop();
+		Slot ref = frame.getStack().pop();
 
-		Entry entry = Entry.getInstance(obj.getSignature(constantPoolGen));
+		Slot entry = Slot.getInstance(obj.getSignature(constantPoolGen));
 		if (entry.isReference()) {
-			entry = Entry.maybeThisReference;
+			entry = Slot.maybeThisReference;
 		}
-		stack.push(entry);
+		frame.getStack().push(entry);
 		logger.log(Level.FINEST,
 				"\t" + ref + "." + obj.getFieldName(constantPoolGen));
 		instructionHandle = instructionHandle.getNext();
@@ -686,13 +683,13 @@ public class PropConInstructionsAnalysisVisitor extends EmptyVisitor {
 	@Override
 	public void visitGETSTATIC(GETSTATIC obj) {
 		logger.log(Level.FINEST, obj.toString(false));
-		Entry toGet = Entry.getInstance(obj.getFieldType(constantPoolGen)
+		Slot toGet = Slot.getInstance(obj.getFieldType(constantPoolGen)
 				.getSignature());
 		// might be this, we do not know
 		if (toGet.isReference()) {
-			toGet = Entry.maybeThisReference;
+			toGet = Slot.maybeThisReference;
 		}
-		stack.push(toGet);
+		frame.getStack().push(toGet);
 		logger.log(Level.FINEST, "\t" + obj.getLoadClassType(constantPoolGen)
 				+ "." + obj.getFieldName(constantPoolGen) + " (" + toGet + ")");
 
@@ -712,15 +709,15 @@ public class PropConInstructionsAnalysisVisitor extends EmptyVisitor {
 	public void visitPUTFIELD(PUTFIELD obj) {
 		logger.log(Level.FINEST, obj.toString(false));
 		// right side of assignment
-		Entry right = stack.pop();
-		if (right.equals(Entry.thisReference)) {
+		Slot right = frame.getStack().pop();
+		if (right.equals(Slot.thisReference)) {
 			logger.log(Level.WARNING,
 					"Error: 'this' reference is assigned to some object's field and escapes.");
 			bugs.add(new BugInstance(
 					"Error: 'this' reference is assigned to some object's field and escapes.",
 					2));
 		}
-		if (right.equals(Entry.maybeThisReference)) {
+		if (right.equals(Slot.maybeThisReference)) {
 			logger.log(
 					Level.WARNING,
 					"Warning: 'this' reference might be assigned to some object's field and might escape.");
@@ -729,7 +726,7 @@ public class PropConInstructionsAnalysisVisitor extends EmptyVisitor {
 					1));
 		}
 		// pop left side of assignment off the stack, too
-		Entry left = stack.pop();
+		Slot left = frame.getStack().pop();
 		logger.log(Level.FINEST, left + "." + obj.getFieldName(constantPoolGen)
 				+ " <--" + right);
 		instructionHandle = instructionHandle.getNext();
@@ -747,20 +744,20 @@ public class PropConInstructionsAnalysisVisitor extends EmptyVisitor {
 	public void visitPUTSTATIC(PUTSTATIC obj) {
 		System.out.print(obj.toString(false));
 		// popping value from stack
-		Entry toPut = stack.pop();
+		Slot toPut = frame.getStack().pop();
 		// writing output
 		System.out.print(" " + obj.getReferenceType(constantPoolGen) + ".");
 		System.out.print(obj.getName(constantPoolGen));
 		System.out.println(" <-- " + toPut);
 
-		if (toPut.equals(Entry.thisReference)) {
+		if (toPut.equals(Slot.thisReference)) {
 			System.out
 					.println("Error: 'this' reference is assigned to a static field and escapes.");
 			bugs.add(new BugInstance(
 					"Error: 'this' reference is assigned to a static field and escapes.",
 					2));
 		}
-		if (toPut.equals(Entry.maybeThisReference)) {
+		if (toPut.equals(Slot.maybeThisReference)) {
 			System.out
 					.println("Warning: 'this' reference might be assigned to a static field and might escape.");
 			bugs.add(new BugInstance(
@@ -862,10 +859,10 @@ public class PropConInstructionsAnalysisVisitor extends EmptyVisitor {
 		Type type = obj.getType(constantPoolGen);
 		if (type.equals(Type.INT) || type.equals(Type.FLOAT)) {
 			// push integer or float
-			stack.push(Entry.getInstance(type.getSignature()));
+			frame.getStack().push(Slot.getInstance(type.getSignature()));
 		} else {
 			// push a String reference
-			stack.push(Entry.notThisReference);
+			frame.getStack().push(Slot.notThisReference);
 		}
 		instructionHandle = instructionHandle.getNext();
 		instructionHandle.accept(this);
@@ -882,7 +879,7 @@ public class PropConInstructionsAnalysisVisitor extends EmptyVisitor {
 		System.out.println(obj.toString(false));
 		Type type = obj.getType(constantPoolGen);
 		if (type.equals(Type.LONG) || type.equals(Type.DOUBLE)) {
-			stack.push(Entry.getInstance(type.getSignature()));
+			frame.getStack().push(Slot.getInstance(type.getSignature()));
 			instructionHandle = instructionHandle.getNext();
 			instructionHandle.accept(this);
 		}
@@ -904,10 +901,10 @@ public class PropConInstructionsAnalysisVisitor extends EmptyVisitor {
 		int consumedStack = obj.consumeStack(constantPoolGen);
 		for (int i = 0; i < consumedStack; i++) {
 			// pop the 2nd dimension as integer value
-			stack.pop();
+			frame.getStack().pop();
 		}
 		// push array reference to stack
-		stack.push(Entry.notThisReference);
+		frame.getStack().push(Slot.notThisReference);
 		instructionHandle = instructionHandle.getNext();
 		instructionHandle.accept(this);
 	}
@@ -922,7 +919,7 @@ public class PropConInstructionsAnalysisVisitor extends EmptyVisitor {
 	@Override
 	public void visitNEW(NEW obj) {
 		System.out.println(obj.toString(false));
-		stack.push(Entry.notThisReference);
+		frame.getStack().push(Slot.notThisReference);
 		instructionHandle = instructionHandle.getNext();
 		instructionHandle.accept(this);
 	}
@@ -940,12 +937,12 @@ public class PropConInstructionsAnalysisVisitor extends EmptyVisitor {
 	public void visitDCMPG(DCMPG obj) {
 		System.out.println(obj.toString(false));
 		// pop value2
-		stack.pop();
+		frame.getStack().pop();
 		// pop value1
-		stack.pop();
+		frame.getStack().pop();
 		// check if value1 or value2 is NaN then push 1 and return
 		// compare them and get result
-		stack.push(Entry.someInt);
+		frame.getStack().push(Slot.someInt);
 		instructionHandle = instructionHandle.getNext();
 		instructionHandle.accept(this);
 	}
@@ -963,12 +960,12 @@ public class PropConInstructionsAnalysisVisitor extends EmptyVisitor {
 	public void visitDCMPL(DCMPL obj) {
 		System.out.println(obj.toString(false));
 		// pop value2
-		stack.pop();
+		frame.getStack().pop();
 		// pop value1
-		stack.pop();
+		frame.getStack().pop();
 		// check if value1 or value2 is NaN then push -1 and return
 		// compare them and get result
-		stack.push(Entry.someInt);
+		frame.getStack().push(Slot.someInt);
 		instructionHandle = instructionHandle.getNext();
 		instructionHandle.accept(this);
 	}
@@ -982,7 +979,7 @@ public class PropConInstructionsAnalysisVisitor extends EmptyVisitor {
 	@Override
 	public void visitDCONST(DCONST obj) {
 		System.out.println(obj.toString(false));
-		stack.push(Entry.someInt);
+		frame.getStack().push(Slot.someInt);
 		instructionHandle = instructionHandle.getNext();
 		instructionHandle.accept(this);
 	}
@@ -1001,12 +998,12 @@ public class PropConInstructionsAnalysisVisitor extends EmptyVisitor {
 	public void visitFCMPG(FCMPG obj) {
 		System.out.println(obj.toString(false));
 		// pop value2
-		stack.pop();
+		frame.getStack().pop();
 		// pop value1
-		stack.pop();
+		frame.getStack().pop();
 		// check if value1 or value2 is NaN then push 1 and return
 		// compare them and get result
-		stack.push(Entry.someInt);
+		frame.getStack().push(Slot.someInt);
 		instructionHandle = instructionHandle.getNext();
 		instructionHandle.accept(this);
 	}
@@ -1025,12 +1022,12 @@ public class PropConInstructionsAnalysisVisitor extends EmptyVisitor {
 	public void visitFCMPL(FCMPL obj) {
 		System.out.println(obj.toString(false));
 		// pop value2
-		stack.pop();
+		frame.getStack().pop();
 		// pop value1
-		stack.pop();
+		frame.getStack().pop();
 		// check if value1 or value2 is NaN then push -1 and return
 		// compare them and get result
-		stack.push(Entry.someInt);
+		frame.getStack().push(Slot.someInt);
 		instructionHandle = instructionHandle.getNext();
 		instructionHandle.accept(this);
 	}
@@ -1044,7 +1041,7 @@ public class PropConInstructionsAnalysisVisitor extends EmptyVisitor {
 	@Override
 	public void visitFCONST(FCONST obj) {
 		System.out.println(obj.toString(false));
-		stack.push(Entry.someFloat);
+		frame.getStack().push(Slot.someFloat);
 		instructionHandle = instructionHandle.getNext();
 		instructionHandle.accept(this);
 	}
@@ -1058,7 +1055,7 @@ public class PropConInstructionsAnalysisVisitor extends EmptyVisitor {
 	@Override
 	public void visitICONST(ICONST obj) {
 		System.out.println(obj.toString(false));
-		stack.push(Entry.someInt);
+		frame.getStack().push(Slot.someInt);
 		instructionHandle = instructionHandle.getNext();
 		instructionHandle.accept(this);
 	}
@@ -1099,11 +1096,11 @@ public class PropConInstructionsAnalysisVisitor extends EmptyVisitor {
 	public void visitLCMP(LCMP obj) {
 		System.out.println(obj.toString(false));
 		// pop value2
-		stack.pop();
+		frame.getStack().pop();
 		// pop value1
-		stack.pop();
+		frame.getStack().pop();
 		// compare them
-		stack.push(Entry.someInt);
+		frame.getStack().push(Slot.someInt);
 		instructionHandle = instructionHandle.getNext();
 		instructionHandle.accept(this);
 	}
@@ -1117,7 +1114,7 @@ public class PropConInstructionsAnalysisVisitor extends EmptyVisitor {
 	@Override
 	public void visitLCONST(LCONST obj) {
 		System.out.println(obj.toString(false));
-		stack.push(Entry.someLong);
+		frame.getStack().push(Slot.someLong);
 		instructionHandle = instructionHandle.getNext();
 		instructionHandle.accept(this);
 	}
@@ -1147,7 +1144,7 @@ public class PropConInstructionsAnalysisVisitor extends EmptyVisitor {
 	@Override
 	public void visitLoadInstruction(LoadInstruction obj) {
 		System.out.println(obj.toString(false));
-		stack.push(localVars.getForIndex(obj.getIndex()));
+		frame.getStack().push(localVars.getForIndex(obj.getIndex()));
 		instructionHandle = instructionHandle.getNext();
 		instructionHandle.accept(this);
 	}
@@ -1161,7 +1158,7 @@ public class PropConInstructionsAnalysisVisitor extends EmptyVisitor {
 	@Override
 	public void visitStoreInstruction(StoreInstruction obj) {
 		System.out.println(obj.toString(false));
-		localVars.setForIndex(obj.getIndex(), stack.pop());
+		localVars.setForIndex(obj.getIndex(), frame.getStack().pop());
 		instructionHandle = instructionHandle.getNext();
 		instructionHandle.accept(this);
 	}
@@ -1175,7 +1172,7 @@ public class PropConInstructionsAnalysisVisitor extends EmptyVisitor {
 	@Override
 	public void visitMONITORENTER(MONITORENTER obj) {
 		System.out.println("MONITORENTER " + ": No Escape");
-		stack.pop();
+		frame.getStack().pop();
 		instructionHandle = instructionHandle.getNext();
 		instructionHandle.accept(this);
 	}
@@ -1189,7 +1186,7 @@ public class PropConInstructionsAnalysisVisitor extends EmptyVisitor {
 	@Override
 	public void visitMONITOREXIT(MONITOREXIT obj) {
 		System.out.println("MONITOREXIT " + ": No Escape");
-		stack.pop();
+		frame.getStack().pop();
 		instructionHandle = instructionHandle.getNext();
 		instructionHandle.accept(this);
 	}
@@ -1206,9 +1203,9 @@ public class PropConInstructionsAnalysisVisitor extends EmptyVisitor {
 		System.out.print(obj.toString(false));
 		System.out.println(" (Type: " + obj.getType() + ")");
 		// pop length of new array
-		stack.pop();
+		frame.getStack().pop();
 		// push reference to new array onto the stack
-		stack.push(Entry.notThisReference);
+		frame.getStack().push(Slot.notThisReference);
 		instructionHandle = instructionHandle.getNext();
 		instructionHandle.accept(this);
 	}
@@ -1252,7 +1249,7 @@ public class PropConInstructionsAnalysisVisitor extends EmptyVisitor {
 				+ obj.getType(constantPoolGen));
 		if (!obj.getType(constantPoolGen).equals(Type.VOID)) {
 			// pop the return value for all non void methods and save in result
-			result = stack.pop();
+			result = frame.getStack().pop();
 		}
 	}
 
@@ -1265,7 +1262,7 @@ public class PropConInstructionsAnalysisVisitor extends EmptyVisitor {
 	@Override
 	public void visitSIPUSH(SIPUSH obj) {
 		System.out.println("sipush " + obj.getValue());
-		stack.push(Entry.someShort);
+		frame.getStack().push(Slot.someShort);
 		instructionHandle = instructionHandle.getNext();
 		instructionHandle.accept(this);
 	}
@@ -1280,9 +1277,9 @@ public class PropConInstructionsAnalysisVisitor extends EmptyVisitor {
 	@Override
 	public void visitDUP(DUP obj) {
 		System.out.println(obj.toString(false));
-		Entry entry = stack.pop();
-		stack.push(entry);
-		stack.push(entry);
+		Slot entry = frame.getStack().pop();
+		frame.getStack().push(entry);
+		frame.getStack().push(entry);
 		instructionHandle = instructionHandle.getNext();
 		instructionHandle.accept(this);
 	}
@@ -1297,11 +1294,11 @@ public class PropConInstructionsAnalysisVisitor extends EmptyVisitor {
 	@Override
 	public void visitDUP_X1(DUP_X1 obj) {
 		System.out.println(obj.toString(false));
-		Entry value1 = stack.pop();
-		Entry value2 = stack.pop();
-		stack.push(value1);
-		stack.push(value2);
-		stack.push(value1);
+		Slot value1 = frame.getStack().pop();
+		Slot value2 = frame.getStack().pop();
+		frame.getStack().push(value1);
+		frame.getStack().push(value2);
+		frame.getStack().push(value1);
 		instructionHandle = instructionHandle.getNext();
 		instructionHandle.accept(this);
 	}
@@ -1317,18 +1314,18 @@ public class PropConInstructionsAnalysisVisitor extends EmptyVisitor {
 	@Override
 	public void visitDUP_X2(DUP_X2 obj) {
 		System.out.println(obj.toString(false));
-		Entry value1 = stack.pop();
-		Entry value2 = stack.pop();
-		if (value2.equals(Entry.someLong) || value2.equals(Entry.someDouble)) {
-			stack.push(value1);
-			stack.push(value2);
-			stack.push(value1);
+		Slot value1 = frame.getStack().pop();
+		Slot value2 = frame.getStack().pop();
+		if (value2.equals(Slot.someLong) || value2.equals(Slot.someDouble)) {
+			frame.getStack().push(value1);
+			frame.getStack().push(value2);
+			frame.getStack().push(value1);
 		} else {
-			Entry value3 = stack.pop();
-			stack.push(value1);
-			stack.push(value3);
-			stack.push(value2);
-			stack.push(value1);
+			Slot value3 = frame.getStack().pop();
+			frame.getStack().push(value1);
+			frame.getStack().push(value3);
+			frame.getStack().push(value2);
+			frame.getStack().push(value1);
 		}
 		instructionHandle = instructionHandle.getNext();
 		instructionHandle.accept(this);
@@ -1344,16 +1341,16 @@ public class PropConInstructionsAnalysisVisitor extends EmptyVisitor {
 	@Override
 	public void visitDUP2(DUP2 obj) {
 		System.out.println(obj.toString(false));
-		Entry value1 = stack.pop();
-		if (value1.equals(Entry.someLong) || value1.equals(Entry.someDouble)) {
-			stack.push(value1);
-			stack.push(value1);
+		Slot value1 = frame.getStack().pop();
+		if (value1.equals(Slot.someLong) || value1.equals(Slot.someDouble)) {
+			frame.getStack().push(value1);
+			frame.getStack().push(value1);
 		} else {
-			Entry value2 = stack.pop();
-			stack.push(value2);
-			stack.push(value1);
-			stack.push(value2);
-			stack.push(value1);
+			Slot value2 = frame.getStack().pop();
+			frame.getStack().push(value2);
+			frame.getStack().push(value1);
+			frame.getStack().push(value2);
+			frame.getStack().push(value1);
 		}
 		instructionHandle = instructionHandle.getNext();
 		instructionHandle.accept(this);
@@ -1368,20 +1365,20 @@ public class PropConInstructionsAnalysisVisitor extends EmptyVisitor {
 	@Override
 	public void visitDUP2_X1(DUP2_X1 obj) {
 		System.out.println(obj.toString(false));
-		Entry value1, value2, value3;
-		value1 = stack.pop();
-		value2 = stack.pop();
-		if (value1.equals(Entry.someLong) || value1.equals(Entry.someDouble)) {
-			stack.push(value1);
-			stack.push(value2);
-			stack.push(value1);
+		Slot value1, value2, value3;
+		value1 = frame.getStack().pop();
+		value2 = frame.getStack().pop();
+		if (value1.equals(Slot.someLong) || value1.equals(Slot.someDouble)) {
+			frame.getStack().push(value1);
+			frame.getStack().push(value2);
+			frame.getStack().push(value1);
 		} else {
-			value3 = stack.pop();
-			stack.push(value2);
-			stack.push(value1);
-			stack.push(value3);
-			stack.push(value2);
-			stack.push(value1);
+			value3 = frame.getStack().pop();
+			frame.getStack().push(value2);
+			frame.getStack().push(value1);
+			frame.getStack().push(value3);
+			frame.getStack().push(value2);
+			frame.getStack().push(value1);
 		}
 		instructionHandle = instructionHandle.getNext();
 		instructionHandle.accept(this);
@@ -1396,43 +1393,41 @@ public class PropConInstructionsAnalysisVisitor extends EmptyVisitor {
 	@Override
 	public void visitDUP2_X2(DUP2_X2 obj) {
 		System.out.println(obj.toString(false));
-		Entry value1, value2, value3, value4;
-		value1 = stack.pop();
-		value2 = stack.pop();
-		if (value1.equals(Entry.someLong) || value1.equals(Entry.someDouble)) {
-			if (value2.equals(Entry.someLong)
-					|| value2.equals(Entry.someDouble)) {
+		Slot value1, value2, value3, value4;
+		value1 = frame.getStack().pop();
+		value2 = frame.getStack().pop();
+		if (value1.equals(Slot.someLong) || value1.equals(Slot.someDouble)) {
+			if (value2.equals(Slot.someLong) || value2.equals(Slot.someDouble)) {
 				// form 4 in the JVM spec
-				stack.push(value1);
-				stack.push(value2);
-				stack.push(value1);
+				frame.getStack().push(value1);
+				frame.getStack().push(value2);
+				frame.getStack().push(value1);
 			} else {
 				// form 2 in the JVM spec
-				value3 = stack.pop();
-				stack.push(value1);
-				stack.push(value3);
-				stack.push(value2);
-				stack.push(value1);
+				value3 = frame.getStack().pop();
+				frame.getStack().push(value1);
+				frame.getStack().push(value3);
+				frame.getStack().push(value2);
+				frame.getStack().push(value1);
 			}
 		} else {
-			value3 = stack.pop();
-			if (value3.equals(Entry.someLong)
-					|| value3.equals(Entry.someDouble)) {
+			value3 = frame.getStack().pop();
+			if (value3.equals(Slot.someLong) || value3.equals(Slot.someDouble)) {
 				// form 3 in the JVM spec
-				stack.push(value2);
-				stack.push(value1);
-				stack.push(value3);
-				stack.push(value2);
-				stack.push(value1);
+				frame.getStack().push(value2);
+				frame.getStack().push(value1);
+				frame.getStack().push(value3);
+				frame.getStack().push(value2);
+				frame.getStack().push(value1);
 			} else {
 				// form 1 in the JVM spec
-				value4 = stack.pop();
-				stack.push(value2);
-				stack.push(value1);
-				stack.push(value4);
-				stack.push(value3);
-				stack.push(value2);
-				stack.push(value1);
+				value4 = frame.getStack().pop();
+				frame.getStack().push(value2);
+				frame.getStack().push(value1);
+				frame.getStack().push(value4);
+				frame.getStack().push(value3);
+				frame.getStack().push(value2);
+				frame.getStack().push(value1);
 			}
 		}
 		instructionHandle = instructionHandle.getNext();
@@ -1448,7 +1443,7 @@ public class PropConInstructionsAnalysisVisitor extends EmptyVisitor {
 	@Override
 	public void visitPOP(POP obj) {
 		System.out.println(obj.toString(false));
-		stack.pop();
+		frame.getStack().pop();
 		instructionHandle = instructionHandle.getNext();
 		instructionHandle.accept(this);
 	}
@@ -1462,9 +1457,9 @@ public class PropConInstructionsAnalysisVisitor extends EmptyVisitor {
 	@Override
 	public void visitPOP2(POP2 obj) {
 		System.out.println(obj.toString(false));
-		Entry entry = stack.pop();
-		if (!entry.equals(Entry.someLong) && !entry.equals(Entry.someDouble)) {
-			stack.pop();
+		Slot entry = frame.getStack().pop();
+		if (!entry.equals(Slot.someLong) && !entry.equals(Slot.someDouble)) {
+			frame.getStack().pop();
 		}
 		instructionHandle = instructionHandle.getNext();
 		instructionHandle.accept(this);
@@ -1478,10 +1473,10 @@ public class PropConInstructionsAnalysisVisitor extends EmptyVisitor {
 	 */
 	@Override
 	public void visitSWAP(SWAP obj) {
-		Entry value1 = stack.pop();
-		Entry value2 = stack.pop();
-		stack.push(value1);
-		stack.push(value2);
+		Slot value1 = frame.getStack().pop();
+		Slot value2 = frame.getStack().pop();
+		frame.getStack().push(value1);
+		frame.getStack().push(value2);
 		instructionHandle = instructionHandle.getNext();
 		instructionHandle.accept(this);
 	}
