@@ -194,11 +194,11 @@ public class PropConInstructionsAnalysisVisitor extends EmptyVisitor {
 	 */
 	private void handleMethodThatIsAnalyzed(InvokeInstruction obj) {
 		logger.log(Level.FINE, obj.toString(false));
-		logger.log(
-				Level.FINEST,
-				"\t" + obj.getLoadClassType(constantPoolGen) + "."
-						+ obj.getMethodName(constantPoolGen)
-						+ obj.getSignature(constantPoolGen));
+		String log = "\t";
+		log += obj.getLoadClassType(constantPoolGen) + "."
+				+ obj.getMethodName(constantPoolGen)
+				+ obj.getSignature(constantPoolGen);
+		logger.log(Level.FINEST, log);
 
 		JavaClass targetClass = null;
 		try {
@@ -236,7 +236,9 @@ public class PropConInstructionsAnalysisVisitor extends EmptyVisitor {
 	 */
 	private void handleMethodThatIsNotAnalyzed(InvokeInstruction obj) {
 		logger.log(Level.FINE, obj.toString(false));
-		logger.log(Level.FINEST, "\t" + obj.getSignature(constantPoolGen));
+		String log = "\t";
+		log += obj.getSignature(constantPoolGen);
+		logger.log(Level.FINEST, log);
 		// get number of args
 		Type[] type = obj.getArgumentTypes(constantPoolGen);
 		// get return value
@@ -310,7 +312,8 @@ public class PropConInstructionsAnalysisVisitor extends EmptyVisitor {
 	 */
 	@Override
 	public void visitArithmeticInstruction(ArithmeticInstruction obj) {
-		logger.log(Level.FINE, obj.toString(false)); // + ": (");
+		logger.log(Level.FINE, obj.toString(false));
+		String log = "\t" + "(";
 		Type type = obj.getType(constantPoolGen);
 		int consumed;
 		int produced;
@@ -324,16 +327,17 @@ public class PropConInstructionsAnalysisVisitor extends EmptyVisitor {
 		Entry entry;
 		for (int i = 0; i < consumed; i++) {
 			entry = stack.pop();
-			System.out.print((i == 0) ? entry : ", " + entry);
+			log += (i == 0) ? entry : ", " + entry;
 		}
-		System.out.print(") -> (");
+		log += ") -> (";
 		entry = Entry.getInstance(type.getSignature());
 
 		for (int i = 0; i < produced; i++) {
 			stack.push(entry);
-			System.out.print((i == 0) ? entry : ", " + entry);
+			log += (i == 0) ? entry : ", " + entry;
 		}
-		System.out.println(")");
+		log += ")";
+		logger.log(Level.FINEST, log);
 		instructionHandle = instructionHandle.getNext();
 		instructionHandle.accept(this);
 	}
@@ -347,7 +351,7 @@ public class PropConInstructionsAnalysisVisitor extends EmptyVisitor {
 	 */
 	@Override
 	public void visitArrayInstruction(ArrayInstruction obj) {
-		System.out.println(obj.toString(false));
+		logger.log(Level.FINE, obj.toString(false));
 		short opcode = obj.getOpcode();
 		if (opcode >= 0x2E && opcode <= 0x35) {
 			// all ALOAD instructions
@@ -385,7 +389,7 @@ public class PropConInstructionsAnalysisVisitor extends EmptyVisitor {
 	 */
 	@Override
 	public void visitARRAYLENGTH(ARRAYLENGTH obj) {
-		System.out.println(obj.toString(false));
+		logger.log(Level.FINE, obj.toString(false));
 		// pops array reference
 		stack.pop();
 		// pushes length
@@ -413,7 +417,7 @@ public class PropConInstructionsAnalysisVisitor extends EmptyVisitor {
 	 */
 	@Override
 	public void visitBIPUSH(BIPUSH obj) {
-		System.out.println(obj.toString(false));
+		logger.log(Level.FINE, obj.toString(false));
 		// pushes the integer value onto the stack
 		stack.push(Entry.someInt);
 		instructionHandle = instructionHandle.getNext();
@@ -429,7 +433,7 @@ public class PropConInstructionsAnalysisVisitor extends EmptyVisitor {
 	 */
 	@Override
 	public void visitGotoInstruction(GotoInstruction obj) {
-		System.out.println(obj.toString(false));
+		logger.log(Level.FINE, obj.toString(false));
 		instructionHandle = obj.getTarget();
 		instructionHandle.accept(this);
 	}
@@ -446,7 +450,7 @@ public class PropConInstructionsAnalysisVisitor extends EmptyVisitor {
 	@SuppressWarnings("unchecked")
 	@Override
 	public void visitIfInstruction(IfInstruction obj) {
-		System.out.println(obj.toString(false));
+		logger.log(Level.FINE, obj.toString(false));
 		for (int i = 0; i < obj.consumeStack(constantPoolGen); i++) {
 			stack.pop();
 		}
@@ -454,7 +458,7 @@ public class PropConInstructionsAnalysisVisitor extends EmptyVisitor {
 		Entry elseResult = null;
 		Entry thenResult = null;
 
-		System.out.println("------------------  " + alreadyVisited.size()
+		logger.log(Level.FINEST, "------------------  " + alreadyVisited.size()
 				+ ".else  ------------------");
 		AlreadyVisitedIfInstruction elseBranch = new AlreadyVisitedIfInstruction(
 				instructionHandle, false);
@@ -470,7 +474,7 @@ public class PropConInstructionsAnalysisVisitor extends EmptyVisitor {
 			bugs.addAll(elseBranchVisitor.getBugs().getCollection());
 			elseResult = elseBranchVisitor.getResult();
 		} else {
-			System.out.println("Loop detected, do not re-enter.");
+			logger.log(Level.FINEST, "Loop detected, do not re-enter.");
 		}
 		System.out.println("------------------  " + alreadyVisited.size()
 				+ ".then  ------------------");
@@ -488,7 +492,7 @@ public class PropConInstructionsAnalysisVisitor extends EmptyVisitor {
 			bugs.addAll(thenBranchVisitor.getBugs().getCollection());
 			thenResult = thenBranchVisitor.getResult();
 		} else {
-			System.out.println("Loop detected, do not re-enter.");
+			logger.log(Level.FINEST, "Loop detected, do not re-enter.");
 		}
 		if (elseResult != null) {
 			result = elseResult.combineWithOther(thenResult);
@@ -520,7 +524,7 @@ public class PropConInstructionsAnalysisVisitor extends EmptyVisitor {
 	@Override
 	public void visitSelect(Select obj) {
 
-		System.out.println(obj.toString(false));
+		logger.log(Level.FINE, obj.toString(false));
 		// pops integer index
 		stack.pop();
 
@@ -530,8 +534,9 @@ public class PropConInstructionsAnalysisVisitor extends EmptyVisitor {
 		PropConInstructionsAnalysisVisitor caseToFollow;
 		// follows all targets excluding the default case
 		for (int i = 0; i < targets.length; i++) {
-			System.out.println("--------------- Line "
-					+ targets[i].getPosition() + " ---------------");
+			logger.log(Level.FINEST,
+					"--------------- Line " + targets[i].getPosition()
+							+ " ---------------");
 			caseToFollow = new PropConInstructionsAnalysisVisitor(
 					new LocalVars(localVars), (Stack<Entry>) stack.clone(),
 					constantPoolGen, alreadyVisited, targets[i]);
@@ -542,7 +547,7 @@ public class PropConInstructionsAnalysisVisitor extends EmptyVisitor {
 			resultsOfCases.add(caseToFollow.getResult());
 		}
 		// handles the default case and follows it
-		System.out.println("--------------- Line "
+		logger.log(Level.FINEST, "--------------- Line "
 				+ obj.getTarget().getPosition()
 				+ " (DefaultCase) ---------------");
 		// NOTE: If the keyword "Default:" is not in the switch the following
@@ -584,15 +589,17 @@ public class PropConInstructionsAnalysisVisitor extends EmptyVisitor {
 	 */
 	@Override
 	public void visitConversionInstruction(ConversionInstruction obj) {
-		System.out.print(obj.toString(false) + ": (");
+		logger.log(Level.FINE, obj.toString(false));
+		String log = "\t (";
 		// pops the value
 		Entry entry = stack.pop();
-		System.out.print(entry + ") -> (");
+		log += entry + ") -> (";
 		Entry convertedEntry = Entry.getInstance(obj.getType(constantPoolGen)
 				.getSignature());
 		// pushes the converted value
 		stack.push(convertedEntry);
-		System.out.println(convertedEntry + ")");
+		log += convertedEntry + ")";
+		logger.log(Level.FINEST, log);
 		instructionHandle = instructionHandle.getNext();
 		instructionHandle.accept(this);
 	}
@@ -607,7 +614,7 @@ public class PropConInstructionsAnalysisVisitor extends EmptyVisitor {
 	 */
 	@Override
 	public void visitANEWARRAY(ANEWARRAY obj) {
-		System.out.println(obj.toString(false));
+		logger.log(Level.FINE, obj.toString(false));
 		// pops the length
 		stack.pop();
 		// pushes the array reference
@@ -654,16 +661,17 @@ public class PropConInstructionsAnalysisVisitor extends EmptyVisitor {
 	 * */
 	@Override
 	public void visitGETFIELD(GETFIELD obj) {
-		System.out.print(obj.toString(false) + ": ");
+		logger.log(Level.FINEST, obj.toString(false));
 
 		Entry ref = stack.pop();
-		System.out.println(ref + "." + obj.getFieldName(constantPoolGen));
 
 		Entry entry = Entry.getInstance(obj.getSignature(constantPoolGen));
 		if (entry.isReference()) {
 			entry = Entry.maybeThisReference;
 		}
 		stack.push(entry);
+		logger.log(Level.FINEST,
+				"\t" + ref + "." + obj.getFieldName(constantPoolGen));
 		instructionHandle = instructionHandle.getNext();
 		instructionHandle.accept(this);
 	}
@@ -677,7 +685,7 @@ public class PropConInstructionsAnalysisVisitor extends EmptyVisitor {
 	 */
 	@Override
 	public void visitGETSTATIC(GETSTATIC obj) {
-		System.out.print(obj.toString(false));
+		logger.log(Level.FINEST, obj.toString(false));
 		Entry toGet = Entry.getInstance(obj.getFieldType(constantPoolGen)
 				.getSignature());
 		// might be this, we do not know
@@ -685,8 +693,8 @@ public class PropConInstructionsAnalysisVisitor extends EmptyVisitor {
 			toGet = Entry.maybeThisReference;
 		}
 		stack.push(toGet);
-		System.out.println(" " + obj.getLoadClassType(constantPoolGen) + "."
-				+ obj.getFieldName(constantPoolGen) + " (" + toGet + ")");
+		logger.log(Level.FINEST, "\t" + obj.getLoadClassType(constantPoolGen)
+				+ "." + obj.getFieldName(constantPoolGen) + " (" + toGet + ")");
 
 		instructionHandle = instructionHandle.getNext();
 		instructionHandle.accept(this);
@@ -702,26 +710,27 @@ public class PropConInstructionsAnalysisVisitor extends EmptyVisitor {
 	 * */
 	@Override
 	public void visitPUTFIELD(PUTFIELD obj) {
-		System.out.print(obj.toString(false) + ": ");
+		logger.log(Level.FINEST, obj.toString(false));
 		// right side of assignment
 		Entry right = stack.pop();
 		if (right.equals(Entry.thisReference)) {
-			System.out
-					.println("Error: 'this' reference is assigned to some object's field and escapes.");
+			logger.log(Level.WARNING,
+					"Error: 'this' reference is assigned to some object's field and escapes.");
 			bugs.add(new BugInstance(
 					"Error: 'this' reference is assigned to some object's field and escapes.",
 					2));
 		}
 		if (right.equals(Entry.maybeThisReference)) {
-			System.out
-					.println("Warning: 'this' reference might be assigned to some object's field and might escape.");
+			logger.log(
+					Level.WARNING,
+					"Warning: 'this' reference might be assigned to some object's field and might escape.");
 			bugs.add(new BugInstance(
 					"Warning: 'this' reference might be assigned to some object's field and might escape.",
 					1));
 		}
 		// pop left side of assignment off the stack, too
 		Entry left = stack.pop();
-		System.out.println(left + "." + obj.getFieldName(constantPoolGen)
+		logger.log(Level.FINEST, left + "." + obj.getFieldName(constantPoolGen)
 				+ " <--" + right);
 		instructionHandle = instructionHandle.getNext();
 		instructionHandle.accept(this);

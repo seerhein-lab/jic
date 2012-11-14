@@ -26,6 +26,7 @@ public class ProperlyConstructedTestDriver {
 		ConsoleHandler consoleHandler = new ConsoleHandler();
 		consoleHandler
 				.setFormatter(new ProperlyConstructedTestDriver().new ProperlyConstructedTestDriverFormater());
+		consoleHandler.setLevel(Level.ALL);
 		globalLogger.addHandler(consoleHandler);
 		globalLogger.setLevel(Level.ALL);
 		Logger logger = Logger.getLogger("ProperlyConstructedTestDriver");
