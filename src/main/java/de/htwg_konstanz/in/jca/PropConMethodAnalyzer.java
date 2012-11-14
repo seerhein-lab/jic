@@ -1,6 +1,8 @@
 package de.htwg_konstanz.in.jca;
 
 import java.util.Stack;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import org.apache.bcel.classfile.LocalVariable;
 import org.apache.bcel.classfile.Method;
@@ -14,6 +16,8 @@ import edu.umd.cs.findbugs.BugCollection;
  * Analyzes methods.
  */
 public class PropConMethodAnalyzer {
+	private static final Logger logger = Logger
+			.getLogger("PropConMethodAnalyzer");
 
 	/** The method to analyze. */
 	private final Method method;
@@ -29,7 +33,7 @@ public class PropConMethodAnalyzer {
 	 */
 	public PropConMethodAnalyzer(Method method) {
 		this.method = method;
-		System.out.println("Max Locals: " + method.getCode().getMaxLocals());
+		logger.log(Level.INFO, "Max Locals: " + method.getCode().getMaxLocals());
 	}
 
 	/**
@@ -79,9 +83,9 @@ public class PropConMethodAnalyzer {
 				new ConstantPoolGen(method.getConstantPool()),
 				instructionHandles[0]);
 
-		System.out.println("vvvvvvvvvvvvvvvvvvvvvvvvvv");
+		logger.log(Level.FINE, "vvvvvvvvvvvvvvvvvvvvvvvvvv");
 		instructionHandles[0].accept(visitor);
-		System.out.println("^^^^^^^^^^^^^^^^^^^^^^^^^^");
+		logger.log(Level.FINE, "^^^^^^^^^^^^^^^^^^^^^^^^^^");
 	}
 
 	/**

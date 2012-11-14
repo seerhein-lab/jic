@@ -2,6 +2,8 @@ package de.htwg_konstanz.in.jca;
 
 import java.util.ArrayList;
 import java.util.Stack;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import org.apache.bcel.Repository;
 import org.apache.bcel.classfile.JavaClass;
@@ -98,6 +100,9 @@ import edu.umd.cs.findbugs.SortedBugCollection;
  * </p>
  */
 public class PropConInstructionsAnalysisVisitor extends EmptyVisitor {
+	private static final Logger logger = Logger
+			.getLogger("PropConInstructionsAnalysisVisitor");
+
 	private final LocalVars localVars;
 	private final Stack<Entry> stack;
 	private final ConstantPoolGen constantPoolGen;
@@ -168,10 +173,9 @@ public class PropConInstructionsAnalysisVisitor extends EmptyVisitor {
 	 * InstructionHandles.
 	 */
 	private void notImplementedYet(Object instruction) {
-		System.out.println(instruction.toString());
-		System.out.println("NOT IMPLEMENTED YET");
+		logger.log(Level.FINE, instruction.toString());
+		logger.log(Level.WARNING, "NOT IMPLEMENTED YET");
 		bugs.add(new BugInstance("Warning: 'this' reference might escape", 1));
-		System.out.println();
 	}
 
 	// ******************************************************************//
@@ -189,17 +193,19 @@ public class PropConInstructionsAnalysisVisitor extends EmptyVisitor {
 	 *            node to be visited
 	 */
 	private void handleMethodThatIsAnalyzed(InvokeInstruction obj) {
-		System.out.println(obj.toString(false) + " "
-				+ obj.getLoadClassType(constantPoolGen) + "."
-				+ obj.getMethodName(constantPoolGen)
-				+ obj.getSignature(constantPoolGen));
+		logger.log(Level.FINE, obj.toString(false));
+		logger.log(
+				Level.FINEST,
+				"\t" + obj.getLoadClassType(constantPoolGen) + "."
+						+ obj.getMethodName(constantPoolGen)
+						+ obj.getSignature(constantPoolGen));
 
 		JavaClass targetClass = null;
 		try {
 			targetClass = Repository.lookupClass(obj.getReferenceType(
 					constantPoolGen).toString());
 		} catch (ClassNotFoundException e) {
-			System.out.println("Could not load class!");
+			logger.log(Level.SEVERE, "Could not load class!");
 		}
 
 		PropConClassAnalyzer targetClassAnalyzer = new PropConClassAnalyzer(
@@ -229,8 +235,8 @@ public class PropConInstructionsAnalysisVisitor extends EmptyVisitor {
 	 *            node to be visited
 	 */
 	private void handleMethodThatIsNotAnalyzed(InvokeInstruction obj) {
-		System.out.println(obj.toString(false) + " "
-				+ obj.getSignature(constantPoolGen));
+		logger.log(Level.FINE, obj.toString(false));
+		logger.log(Level.FINEST, "\t" + obj.getSignature(constantPoolGen));
 		// get number of args
 		Type[] type = obj.getArgumentTypes(constantPoolGen);
 		// get return value
@@ -241,8 +247,9 @@ public class PropConInstructionsAnalysisVisitor extends EmptyVisitor {
 		for (int i = 0; i < type.length + 1; i++) {
 			argument = stack.pop();
 			if (argument.equals(Entry.maybeThisReference)) {
-				System.out
-						.println("Warning: 'maybeThis' reference is passed into an alien method and might escape.");
+				logger.log(
+						Level.WARNING,
+						"Warning: 'maybeThis' reference is passed into an alien method and might escape.");
 				bugs.add(new BugInstance(
 						"Warning: 'maybeThis' reference is passed into an alien method and might escape.",
 						1));
@@ -251,8 +258,8 @@ public class PropConInstructionsAnalysisVisitor extends EmptyVisitor {
 				}
 			}
 			if (argument.equals(Entry.thisReference)) {
-				System.out
-						.println("Warning: 'this' reference is passed into an alien method and might escape.");
+				logger.log(Level.WARNING,
+						"Warning: 'this' reference is passed into an alien method and might escape.");
 				bugs.add(new BugInstance(
 						"Warning: 'this' reference is passed into an alien method and might escape.",
 						1));
@@ -287,7 +294,7 @@ public class PropConInstructionsAnalysisVisitor extends EmptyVisitor {
 	 */
 	@Override
 	public void visitACONST_NULL(ACONST_NULL obj) {
-		System.out.println(obj.toString(false));
+		logger.log(Level.FINE, obj.toString(false));
 		// push NULL onto stack
 		stack.push(Entry.notThisReference);
 		instructionHandle = instructionHandle.getNext();
@@ -303,7 +310,7 @@ public class PropConInstructionsAnalysisVisitor extends EmptyVisitor {
 	 */
 	@Override
 	public void visitArithmeticInstruction(ArithmeticInstruction obj) {
-		System.out.print(obj.toString(false) + ": (");
+		logger.log(Level.FINE, obj.toString(false)); // + ": (");
 		Type type = obj.getType(constantPoolGen);
 		int consumed;
 		int produced;
@@ -321,6 +328,7 @@ public class PropConInstructionsAnalysisVisitor extends EmptyVisitor {
 		}
 		System.out.print(") -> (");
 		entry = Entry.getInstance(type.getSignature());
+
 		for (int i = 0; i < produced; i++) {
 			stack.push(entry);
 			System.out.print((i == 0) ? entry : ", " + entry);
