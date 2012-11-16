@@ -1,11 +1,11 @@
 package playground;
 
-import java.util.logging.ConsoleHandler;
 import java.util.logging.Formatter;
 import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
+import java.util.logging.StreamHandler;
 
 import org.apache.bcel.Repository;
 import org.apache.bcel.classfile.JavaClass;
@@ -23,11 +23,11 @@ public class ProperlyConstructedTestDriver {
 		for (Handler handler : globalLoggerHandlers) {
 			globalLogger.removeHandler(handler);
 		}
-		ConsoleHandler consoleHandler = new ConsoleHandler();
-		consoleHandler
-				.setFormatter(new ProperlyConstructedTestDriver().new ProperlyConstructedTestDriverFormater());
-		consoleHandler.setLevel(Level.ALL);
-		globalLogger.addHandler(consoleHandler);
+		StreamHandler streamHandler = new StreamHandler(
+				System.out,
+				new ProperlyConstructedTestDriver().new ProperlyConstructedTestDriverFormater());
+		streamHandler.setLevel(Level.ALL);
+		globalLogger.addHandler(streamHandler);
 		globalLogger.setLevel(Level.ALL);
 		Logger logger = Logger.getLogger("ProperlyConstructedTestDriver");
 		// end logging set up

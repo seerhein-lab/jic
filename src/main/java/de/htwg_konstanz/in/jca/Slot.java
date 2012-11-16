@@ -1,5 +1,7 @@
 package de.htwg_konstanz.in.jca;
 
+import java.util.List;
+
 import org.apache.bcel.generic.Type;
 
 /**
@@ -68,13 +70,13 @@ public enum Slot {
 	 * 
 	 * @return the combined output.
 	 */
-	// public Slot combineWithOthers(List<Slot> others) {
-	// if (others.isEmpty()) {
-	// return this;
-	// }
-	// return this.combineWithOther(others.get(0)).combineWithOthers(
-	// others.subList(1, others.size()));
-	// }
+	public Slot combineWithOthers(List<Slot> others) {
+		if (others.isEmpty()) {
+			return this;
+		}
+		return this.combineWithOther(others.get(0)).combineWithOthers(
+				others.subList(1, others.size()));
+	}
 
 	/**
 	 * Combines the current value with the outcome of another execution path.
@@ -85,58 +87,58 @@ public enum Slot {
 	 * 
 	 * @return the combined output.
 	 */
-	// public Slot combineWithOther(Slot other) {
-	// if (other == null) {
-	// return this;
-	// }
-	// switch (this) {
-	// case someByte:
-	// case someShort:
-	// case someInt:
-	// case someLong:
-	// case someFloat:
-	// case someDouble:
-	// case someChar:
-	// case someBoolean:
-	// if (!this.equals(other)) {
-	// throw new IllegalArgumentException(this
-	// + " cannot be combined with " + other);
-	// }
-	// return this;
-	// case notThisReference:
-	// switch (other) {
-	// case notThisReference:
-	// return notThisReference;
-	// case maybeThisReference:
-	// case thisReference:
-	// return maybeThisReference;
-	// default:
-	// throw new IllegalArgumentException(this
-	// + " cannot be combined with " + other);
-	// }
-	// case maybeThisReference:
-	// switch (other) {
-	// case notThisReference:
-	// case maybeThisReference:
-	// case thisReference:
-	// return maybeThisReference;
-	// default:
-	// throw new IllegalArgumentException(this
-	// + " cannot be combined with " + other);
-	// }
-	// case thisReference:
-	// switch (other) {
-	// case notThisReference:
-	// case maybeThisReference:
-	// return maybeThisReference;
-	// case thisReference:
-	// return thisReference;
-	// default:
-	// throw new IllegalArgumentException(this
-	// + " cannot be combined with " + other);
-	// }
-	// default:
-	// throw new AssertionError("cannot happen");
-	// }
-	// }
+	public Slot combineWithOther(Slot other) {
+		if (other == null) {
+			return this;
+		}
+		switch (this) {
+		case someByte:
+		case someShort:
+		case someInt:
+		case someHalfLong:
+		case someFloat:
+		case someHalfDouble:
+		case someChar:
+		case someBoolean:
+			if (!this.equals(other)) {
+				throw new IllegalArgumentException(this
+						+ " cannot be combined with " + other);
+			}
+			return this;
+		case notThisReference:
+			switch (other) {
+			case notThisReference:
+				return notThisReference;
+			case maybeThisReference:
+			case thisReference:
+				return maybeThisReference;
+			default:
+				throw new IllegalArgumentException(this
+						+ " cannot be combined with " + other);
+			}
+		case maybeThisReference:
+			switch (other) {
+			case notThisReference:
+			case maybeThisReference:
+			case thisReference:
+				return maybeThisReference;
+			default:
+				throw new IllegalArgumentException(this
+						+ " cannot be combined with " + other);
+			}
+		case thisReference:
+			switch (other) {
+			case notThisReference:
+			case maybeThisReference:
+				return maybeThisReference;
+			case thisReference:
+				return thisReference;
+			default:
+				throw new IllegalArgumentException(this
+						+ " cannot be combined with " + other);
+			}
+		default:
+			throw new AssertionError("cannot happen");
+		}
+	}
 }

@@ -29,7 +29,7 @@ public enum DataType {
 		if (signature.equals("I"))
 			return intType;
 		if (signature.equals("J"))
-			return longType;
+			return DataType.longType;
 		if (signature.equals("C"))
 			return charType;
 		if (signature.equals("B"))
