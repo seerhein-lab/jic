@@ -50,7 +50,7 @@ public class PropConMethodAnalyzer {
 		for (Type argType : argTypes) {
 			DataType dataType = DataType.getDataType(argType);
 			for (int i = 0; i < dataType.getNumSlots(); i++) {
-				callerStack.push(dataType.getInstance());
+				callerStack.push(Slot.getDefaultInstance(dataType));
 			}
 
 		}

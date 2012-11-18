@@ -28,15 +28,12 @@ public class Frame {
 	public void pushStackByDataType(Slot slot) {
 		for (int i = 0; i < slot.getDataType().getNumSlots(); i++) {
 			stack.push(slot);
-			System.out.println(stack.toString());
 		}
 	}
 
 	// XXX
 	public void pushStackByDataType(DataType dataType) {
-		System.out.println("here?");
-		System.out.println(dataType.getInstance().toString());
-		pushStackByDataType(dataType.getInstance());
+		pushStackByDataType(Slot.getDefaultInstance(dataType));
 	}
 
 	// XXX

@@ -238,9 +238,8 @@ public class PropConInstructionsAnalysisVisitor extends EmptyVisitor {
 		Type[] type = obj.getArgumentTypes(constantPoolGen);
 		// get return value
 
-		Slot returnValue = DataType.getDataType(
-				obj.getReturnType(constantPoolGen).getSignature())
-				.getInstance();
+		Slot returnValue = Slot.getDefaultInstance(DataType.getDataType(obj
+				.getReturnType(constantPoolGen)));
 
 		Slot argument;
 		// pop a value for each arg and 1 for the hidden reference
@@ -336,8 +335,7 @@ public class PropConInstructionsAnalysisVisitor extends EmptyVisitor {
 	 */
 	private void handleCONST(Type targetType) {
 		// XXX
-		frame.pushStackByDataType(DataType.getDataType(targetType)
-				.getInstance());
+		frame.pushStackByDataType(DataType.getDataType(targetType));
 
 		instructionHandle = instructionHandle.getNext();
 		instructionHandle.accept(this);
@@ -391,7 +389,7 @@ public class PropConInstructionsAnalysisVisitor extends EmptyVisitor {
 		}
 		log += ") -> (";
 
-		entry = targetDataType.getInstance();
+		entry = Slot.getDefaultInstance(targetDataType);
 		for (int i = 0; i < produced; i++) {
 			frame.getStack().push(entry);
 			log += (i == 0) ? entry : ", " + entry;
@@ -539,7 +537,7 @@ public class PropConInstructionsAnalysisVisitor extends EmptyVisitor {
 		} else {
 			logger.log(Level.FINEST, "Loop detected, do not re-enter.");
 		}
-		System.out.println("------------------  " + alreadyVisited.size()
+		logger.log(Level.FINEST, "------------------  " + alreadyVisited.size()
 				+ ".then  ------------------");
 		AlreadyVisitedIfInstruction thenBranch = new AlreadyVisitedIfInstruction(
 				instructionHandle, true);
@@ -665,9 +663,9 @@ public class PropConInstructionsAnalysisVisitor extends EmptyVisitor {
 		DataType targetType = DataType
 				.getDataType(obj.getType(constantPoolGen));
 		for (int i = 0; i < obj.produceStack(constantPoolGen); i++) {
-			log += (i == 0) ? targetType.getInstance() : ", "
-					+ targetType.getInstance();
-			frame.getStack().push(targetType.getInstance());
+			log += (i == 0) ? Slot.getDefaultInstance(targetType) : ", "
+					+ Slot.getDefaultInstance(targetType);
+			frame.getStack().push(Slot.getDefaultInstance(targetType));
 		}
 
 		log += ")";
@@ -746,7 +744,7 @@ public class PropConInstructionsAnalysisVisitor extends EmptyVisitor {
 		DataType targetType = DataType.getDataType(obj
 				.getSignature(constantPoolGen));
 		Slot value = (targetType.equals(DataType.referenceType)) ? Slot.maybeThisReference
-				: targetType.getInstance();
+				: Slot.getDefaultInstance(targetType);
 		frame.pushStackByDataType(value);
 
 		logger.log(Level.FINEST,
@@ -772,7 +770,7 @@ public class PropConInstructionsAnalysisVisitor extends EmptyVisitor {
 				.getFieldType(constantPoolGen));
 		// might be this, we do not know
 		Slot valueToGet = (targetType.equals(DataType.referenceType)) ? Slot.maybeThisReference
-				: targetType.getInstance();
+				: Slot.getDefaultInstance(targetType);
 
 		frame.pushStackByDataType(valueToGet);
 
@@ -968,7 +966,7 @@ public class PropConInstructionsAnalysisVisitor extends EmptyVisitor {
 		DataType type = DataType.getDataType(obj.getType(constantPoolGen));
 		// pushes an integer, a float or notThisReference (String) onto the
 		// stack
-		frame.getStack().push(type.getInstance());
+		frame.getStack().push(Slot.getDefaultInstance(type));
 
 		instructionHandle = instructionHandle.getNext();
 		instructionHandle.accept(this);
@@ -1137,7 +1135,6 @@ public class PropConInstructionsAnalysisVisitor extends EmptyVisitor {
 		// XXX
 		logger.log(Level.FINE, obj.toString(false));
 		handleCONST(obj.getType(constantPoolGen));
-		System.out.println("Here we are");
 	}
 
 	// -----------------------------------------------------------------

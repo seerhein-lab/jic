@@ -3,26 +3,17 @@ package de.htwg_konstanz.in.jca;
 import org.apache.bcel.generic.Type;
 
 public enum DataType {
-	byteType(1, Slot.someByte), shortType(1, Slot.someShort), intType(1,
-			Slot.someInt), longType(2, Slot.someHalfLong), floatType(1,
-			Slot.someFloat), doubleType(2, Slot.someHalfDouble), charType(1,
-			Slot.someChar), booleanType(1, Slot.someBoolean), referenceType(1,
-			Slot.notThisReference);
+	byteType(1), shortType(1), intType(1), longType(2), floatType(1), doubleType(
+			2), charType(1), booleanType(1), referenceType(1);
 
 	private int numSlots;
-	private Slot instance;
 
-	private DataType(int numSlots, Slot instance) {
+	private DataType(int numSlots) {
 		this.numSlots = numSlots;
-		this.instance = instance;
 	}
 
 	public int getNumSlots() {
 		return numSlots;
-	}
-
-	public Slot getInstance() {
-		return instance;
 	}
 
 	public static DataType getDataType(String signature) {

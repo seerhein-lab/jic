@@ -56,6 +56,27 @@ public enum Slot {
 		return numRequiredSlots;
 	}
 
+	public static Slot getDefaultInstance(DataType dataType) {
+		if (dataType.equals(DataType.byteType))
+			return Slot.someByte;
+		if (dataType.equals(DataType.shortType))
+			return Slot.someShort;
+		if (dataType.equals(DataType.intType))
+			return Slot.someInt;
+		if (dataType.equals(DataType.longType))
+			return Slot.someHalfLong;
+		if (dataType.equals(DataType.floatType))
+			return Slot.someFloat;
+		if (dataType.equals(DataType.doubleType))
+			return Slot.someHalfDouble;
+		if (dataType.equals(DataType.charType))
+			return Slot.someChar;
+		if (dataType.equals(DataType.booleanType))
+			return Slot.someBoolean;
+
+		return Slot.notThisReference;
+	}
+
 	public DataType getDataType() {
 		return dataType;
 
