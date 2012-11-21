@@ -25,22 +25,19 @@ public class Frame {
 		return stack;
 	}
 
-	public void pushStackByDataType(Slot slot) {
+	public void pushStackByRequiredSlots(Slot slot) {
 		for (int i = 0; i < slot.getDataType().getNumSlots(); i++) {
 			stack.push(slot);
 		}
 	}
 
-	// XXX
 	public void pushStackByDataType(DataType dataType) {
-		pushStackByDataType(Slot.getDefaultInstance(dataType));
+		pushStackByRequiredSlots(Slot.getDefaultInstance(dataType));
 	}
 
-	// XXX
-	public Slot popStackByDataType() {
+	public Slot popStackByRequiredSlots() {
 		Slot poppedValue = stack.pop();
-		if (poppedValue.getDataType().equals(DataType.doubleType)
-				|| poppedValue.getDataType().equals(DataType.longType)) {
+		if (poppedValue.getDataType().getNumSlots() == 2) {
 			stack.pop();
 		}
 		return poppedValue;

@@ -175,6 +175,14 @@ public class PropConInstructionsAnalysisVisitor extends EmptyVisitor {
 		bugs.add(new BugInstance("Warning: 'this' reference might escape", 1));
 	}
 
+	public BugCollection getBugs() {
+		return bugs;
+	}
+
+	public Slot getResult() {
+		return result;
+	}
+
 	// ******************************************************************//
 	// Visit section //
 	// For more details on ByteCode instructions see: //
@@ -216,9 +224,9 @@ public class PropConInstructionsAnalysisVisitor extends EmptyVisitor {
 		targetMethodAnalyzer.analyze(frame.getStack());
 
 		bugs.addAll(targetMethodAnalyzer.getBugs().getCollection());
-		// XXX
+
 		if (!(targetMethod.getReturnType().equals(Type.VOID))) {
-			frame.pushStackByDataType(targetMethodAnalyzer.getResult());
+			frame.pushStackByRequiredSlots(targetMethodAnalyzer.getResult());
 		}
 
 		instructionHandle = instructionHandle.getNext();
@@ -244,7 +252,7 @@ public class PropConInstructionsAnalysisVisitor extends EmptyVisitor {
 		Slot argument;
 		// pop a value for each arg and 1 for the hidden reference
 		for (int i = 0; i < type.length + 1; i++) {
-			argument = frame.getStack().pop();
+			argument = frame.popStackByRequiredSlots();
 			if (argument.equals(Slot.maybeThisReference)) {
 				logger.log(
 						Level.WARNING,
@@ -267,11 +275,11 @@ public class PropConInstructionsAnalysisVisitor extends EmptyVisitor {
 				}
 			}
 		}
-		// XXX
+
 		// if not void
 		if (!obj.getReturnType(constantPoolGen).equals(Type.VOID)) {
 			// push the return value onto the stack
-			frame.pushStackByDataType(returnValue);
+			frame.pushStackByRequiredSlots(returnValue);
 		}
 		instructionHandle = instructionHandle.getNext();
 		instructionHandle.accept(this);
@@ -288,13 +296,12 @@ public class PropConInstructionsAnalysisVisitor extends EmptyVisitor {
 	 *            the instruction
 	 */
 	private void handleCMPG(Instruction obj) {
-		// XXX
 		logger.log(Level.FINE, obj.toString(false));
 
 		// pop value2
-		frame.popStackByDataType();
+		frame.popStackByRequiredSlots();
 		// pop value1
-		frame.popStackByDataType();
+		frame.popStackByRequiredSlots();
 		// check if value1 or value2 is NaN then push 1 and return
 		// compare them and get result
 		frame.getStack().push(Slot.someInt);
@@ -312,12 +319,11 @@ public class PropConInstructionsAnalysisVisitor extends EmptyVisitor {
 	 * value1 or value2 is NaN the result is -1.
 	 */
 	private void handleCMPL(Instruction obj) {
-		// XXX
 		logger.log(Level.FINE, obj.toString(false));
 		// pop value2
-		frame.popStackByDataType();
+		frame.popStackByRequiredSlots();
 		// pop value1
-		frame.popStackByDataType();
+		frame.popStackByRequiredSlots();
 		// check if value1 or value2 is NaN then push -1 and return
 		// compare them and get result
 		frame.getStack().push(Slot.someInt);
@@ -334,19 +340,10 @@ public class PropConInstructionsAnalysisVisitor extends EmptyVisitor {
 	 *            the Type to push
 	 */
 	private void handleCONST(Type targetType) {
-		// XXX
 		frame.pushStackByDataType(DataType.getDataType(targetType));
 
 		instructionHandle = instructionHandle.getNext();
 		instructionHandle.accept(this);
-	}
-
-	public BugCollection getBugs() {
-		return bugs;
-	}
-
-	public Slot getResult() {
-		return result;
 	}
 
 	// -----------------------------------------------------------------
@@ -374,7 +371,6 @@ public class PropConInstructionsAnalysisVisitor extends EmptyVisitor {
 	@Override
 	public void visitArithmeticInstruction(ArithmeticInstruction obj) {
 		logger.log(Level.FINE, obj.toString(false));
-		// XXX
 		String log = "\t" + "(";
 
 		DataType targetDataType = DataType.getDataType(obj
@@ -413,7 +409,6 @@ public class PropConInstructionsAnalysisVisitor extends EmptyVisitor {
 	public void visitArrayInstruction(ArrayInstruction obj) {
 		logger.log(Level.FINE, obj.toString(false));
 
-		// XXX
 		short opcode = obj.getOpcode();
 		if (opcode >= 0x2E && opcode <= 0x35) {
 			// all ALOAD instructions
@@ -432,7 +427,7 @@ public class PropConInstructionsAnalysisVisitor extends EmptyVisitor {
 		} else {
 			// all ASTORE instructions
 			// pop value
-			frame.popStackByDataType();
+			frame.popStackByRequiredSlots();
 			// pop index
 			frame.getStack().pop();
 			// pop reference
@@ -635,8 +630,8 @@ public class PropConInstructionsAnalysisVisitor extends EmptyVisitor {
 	 */
 	@Override
 	public void visitBREAKPOINT(BREAKPOINT obj) {
-		// no need to implement this one
-		notImplementedYet(obj);
+		throw new AssertionError(
+				"The BREAKPOINT operation is reserved for Java debuggers and should not appear in any class file");
 	}
 
 	// -----------------------------------------------------------------
@@ -650,7 +645,7 @@ public class PropConInstructionsAnalysisVisitor extends EmptyVisitor {
 	public void visitConversionInstruction(ConversionInstruction obj) {
 		logger.log(Level.FINE, obj.toString(false));
 		String log = "\t" + "(";
-		// XXX
+
 		// pop the consumed values
 		for (int i = 0; i < obj.consumeStack(constantPoolGen); i++) {
 			log += (i == 0) ? frame.getStack().pop() : ", "
@@ -740,12 +735,11 @@ public class PropConInstructionsAnalysisVisitor extends EmptyVisitor {
 
 		Slot ref = frame.getStack().pop();
 
-		// XXX
 		DataType targetType = DataType.getDataType(obj
 				.getSignature(constantPoolGen));
 		Slot value = (targetType.equals(DataType.referenceType)) ? Slot.maybeThisReference
 				: Slot.getDefaultInstance(targetType);
-		frame.pushStackByDataType(value);
+		frame.pushStackByRequiredSlots(value);
 
 		logger.log(Level.FINEST,
 				"\t" + ref + "." + obj.getFieldName(constantPoolGen));
@@ -765,14 +759,13 @@ public class PropConInstructionsAnalysisVisitor extends EmptyVisitor {
 	public void visitGETSTATIC(GETSTATIC obj) {
 		logger.log(Level.FINEST, obj.toString(false));
 
-		// XXX
 		DataType targetType = DataType.getDataType(obj
 				.getFieldType(constantPoolGen));
 		// might be this, we do not know
 		Slot valueToGet = (targetType.equals(DataType.referenceType)) ? Slot.maybeThisReference
 				: Slot.getDefaultInstance(targetType);
 
-		frame.pushStackByDataType(valueToGet);
+		frame.pushStackByRequiredSlots(valueToGet);
 
 		String log = "\t";
 		log += obj.getLoadClassType(constantPoolGen) + "."
@@ -799,9 +792,8 @@ public class PropConInstructionsAnalysisVisitor extends EmptyVisitor {
 	public void visitPUTFIELD(PUTFIELD obj) {
 		logger.log(Level.FINEST, obj.toString(false));
 
-		// XXX
 		// right side of assignment
-		Slot right = frame.popStackByDataType();
+		Slot right = frame.popStackByRequiredSlots();
 		String logPart = "";
 		logPart += (right.getDataType().equals(DataType.doubleType) || right
 				.getDataType().equals(DataType.longType)) ? right + ", "
@@ -841,19 +833,17 @@ public class PropConInstructionsAnalysisVisitor extends EmptyVisitor {
 	 */
 	@Override
 	public void visitPUTSTATIC(PUTSTATIC obj) {
-		// XXX
 		logger.log(Level.FINE, obj.toString(false));
 
 		// popping value from stack
-		Slot toPut = frame.popStackByDataType();
+		Slot toPut = frame.popStackByRequiredSlots();
 
 		// writing log
 		String log = "\t";
 		log += obj.getReferenceType(constantPoolGen) + ".";
 		log += obj.getName(constantPoolGen) + " <-- ";
-		log += (toPut.getDataType().equals(DataType.doubleType) || toPut
-				.getDataType().equals(DataType.longType)) ? toPut + ", "
-				+ toPut : toPut;
+		log += (toPut.getDataType().getNumSlots() == 2) ? toPut + ", " + toPut
+				: toPut;
 		logger.log(Level.FINEST, log);
 
 		if (toPut.equals(Slot.thisReference)) {
@@ -962,7 +952,6 @@ public class PropConInstructionsAnalysisVisitor extends EmptyVisitor {
 	public void visitLDC(LDC obj) {
 		logger.log(Level.FINE, obj.toString(false));
 
-		// XXX
 		DataType type = DataType.getDataType(obj.getType(constantPoolGen));
 		// pushes an integer, a float or notThisReference (String) onto the
 		// stack
@@ -981,7 +970,7 @@ public class PropConInstructionsAnalysisVisitor extends EmptyVisitor {
 	@Override
 	public void visitLDC2_W(LDC2_W obj) {
 		logger.log(Level.FINE, obj.toString(false));
-		// XXX
+
 		DataType type = DataType.getDataType(obj.getType(constantPoolGen));
 		// pushes two halfDoubles or two halfLongs onto the stack
 		frame.pushStackByDataType(type);
@@ -1000,7 +989,7 @@ public class PropConInstructionsAnalysisVisitor extends EmptyVisitor {
 	 */
 	@Override
 	public void visitMULTIANEWARRAY(MULTIANEWARRAY obj) {
-		// XXX
+
 		logger.log(Level.FINE, obj.toString(false));
 		String log = "\t";
 		log += obj.getLoadClassType(constantPoolGen);
@@ -1047,7 +1036,6 @@ public class PropConInstructionsAnalysisVisitor extends EmptyVisitor {
 	 */
 	@Override
 	public void visitDCMPG(DCMPG obj) {
-		// XXX
 		handleCMPG(obj);
 	}
 
@@ -1062,7 +1050,6 @@ public class PropConInstructionsAnalysisVisitor extends EmptyVisitor {
 	 */
 	@Override
 	public void visitDCMPL(DCMPL obj) {
-		// XXX
 		handleCMPL(obj);
 	}
 
@@ -1074,7 +1061,6 @@ public class PropConInstructionsAnalysisVisitor extends EmptyVisitor {
 	 * */
 	@Override
 	public void visitDCONST(DCONST obj) {
-		// XXX
 		logger.log(Level.FINE, obj.toString(false));
 		handleCONST(obj.getType(constantPoolGen));
 	}
@@ -1091,7 +1077,6 @@ public class PropConInstructionsAnalysisVisitor extends EmptyVisitor {
 	 */
 	@Override
 	public void visitFCMPG(FCMPG obj) {
-		// XXX
 		handleCMPG(obj);
 	}
 
@@ -1107,7 +1092,6 @@ public class PropConInstructionsAnalysisVisitor extends EmptyVisitor {
 	 */
 	@Override
 	public void visitFCMPL(FCMPL obj) {
-		// XXX
 		handleCMPL(obj);
 	}
 
@@ -1119,7 +1103,6 @@ public class PropConInstructionsAnalysisVisitor extends EmptyVisitor {
 	 */
 	@Override
 	public void visitFCONST(FCONST obj) {
-		// XXX
 		logger.log(Level.FINE, obj.toString(false));
 		handleCONST(obj.getType(constantPoolGen));
 	}
@@ -1132,7 +1115,6 @@ public class PropConInstructionsAnalysisVisitor extends EmptyVisitor {
 	 */
 	@Override
 	public void visitICONST(ICONST obj) {
-		// XXX
 		logger.log(Level.FINE, obj.toString(false));
 		handleCONST(obj.getType(constantPoolGen));
 	}
@@ -1146,8 +1128,9 @@ public class PropConInstructionsAnalysisVisitor extends EmptyVisitor {
 	 */
 	@Override
 	public void visitIMPDEP1(IMPDEP1 obj) {
-		// no need to implement
-		notImplementedYet(obj);
+		throw new AssertionError(
+				"IMPDEP1 is reserved for implementation-dependent operations within debuggers "
+						+ "and should not appear in any class file.");
 	}
 
 	// -----------------------------------------------------------------
@@ -1159,8 +1142,9 @@ public class PropConInstructionsAnalysisVisitor extends EmptyVisitor {
 	 */
 	@Override
 	public void visitIMPDEP2(IMPDEP2 obj) {
-		// no need to implement
-		notImplementedYet(obj);
+		throw new AssertionError(
+				"IMPDEP2 is reserved for implementation-dependent operations within debuggers "
+						+ "and should not appear in any class file.");
 	}
 
 	// -----------------------------------------------------------------
@@ -1171,7 +1155,6 @@ public class PropConInstructionsAnalysisVisitor extends EmptyVisitor {
 	 */
 	@Override
 	public void visitLCMP(LCMP obj) {
-		// XXX
 		handleCMPL(obj);
 	}
 
@@ -1183,7 +1166,6 @@ public class PropConInstructionsAnalysisVisitor extends EmptyVisitor {
 	 */
 	@Override
 	public void visitLCONST(LCONST obj) {
-		// XXX
 		logger.log(Level.FINE, obj.toString(false));
 		handleCONST(obj.getType(constantPoolGen));
 	}
@@ -1213,8 +1195,7 @@ public class PropConInstructionsAnalysisVisitor extends EmptyVisitor {
 	@Override
 	public void visitLoadInstruction(LoadInstruction obj) {
 		logger.log(Level.FINE, obj.toString(false));
-		// XXX
-		frame.pushStackByDataType(frame.getLocalVars()[obj.getIndex()]);
+		frame.pushStackByRequiredSlots(frame.getLocalVars()[obj.getIndex()]);
 		instructionHandle = instructionHandle.getNext();
 		instructionHandle.accept(this);
 	}
@@ -1227,7 +1208,6 @@ public class PropConInstructionsAnalysisVisitor extends EmptyVisitor {
 	 */
 	@Override
 	public void visitStoreInstruction(StoreInstruction obj) {
-		// XXX
 		logger.log(Level.FINE, obj.toString(false));
 		for (int i = 0; i < obj.consumeStack(constantPoolGen); i++) {
 			frame.getLocalVars()[obj.getIndex() + i] = frame.getStack().pop();
@@ -1329,14 +1309,13 @@ public class PropConInstructionsAnalysisVisitor extends EmptyVisitor {
 	 */
 	@Override
 	public void visitReturnInstruction(ReturnInstruction obj) {
-		// XXX
 		logger.log(Level.FINE, obj.toString(false));
 		logger.log(Level.FINEST,
 				"\t" + DataType.getDataType(obj.getType(constantPoolGen)));
 
 		if (!obj.getType(constantPoolGen).equals(Type.VOID)) {
 			// pop the return value for all non void methods and save in result
-			result = frame.popStackByDataType();
+			result = frame.popStackByRequiredSlots();
 		}
 	}
 
@@ -1366,7 +1345,6 @@ public class PropConInstructionsAnalysisVisitor extends EmptyVisitor {
 	 */
 	@Override
 	public void visitDUP(DUP obj) {
-		// XXX
 		logger.log(Level.FINE, obj.toString(false));
 
 		Slot entry = frame.getStack().pop();
@@ -1386,7 +1364,6 @@ public class PropConInstructionsAnalysisVisitor extends EmptyVisitor {
 	 */
 	@Override
 	public void visitDUP_X1(DUP_X1 obj) {
-		// XXX
 		logger.log(Level.FINE, obj.toString(false));
 
 		Slot value1 = frame.getStack().pop();
@@ -1410,7 +1387,6 @@ public class PropConInstructionsAnalysisVisitor extends EmptyVisitor {
 	 */
 	@Override
 	public void visitDUP_X2(DUP_X2 obj) {
-		// XXX
 		logger.log(Level.FINE, obj.toString(false));
 
 		// pop values
@@ -1437,7 +1413,6 @@ public class PropConInstructionsAnalysisVisitor extends EmptyVisitor {
 	 */
 	@Override
 	public void visitDUP2(DUP2 obj) {
-		// XXX
 		logger.log(Level.FINE, obj.toString(false));
 
 		// pop slots
@@ -1462,7 +1437,6 @@ public class PropConInstructionsAnalysisVisitor extends EmptyVisitor {
 	 */
 	@Override
 	public void visitDUP2_X1(DUP2_X1 obj) {
-		// XXX
 		logger.log(Level.FINE, obj.toString(false));
 
 		// pop the slots
@@ -1470,7 +1444,7 @@ public class PropConInstructionsAnalysisVisitor extends EmptyVisitor {
 		Slot slot2 = frame.getStack().pop();
 		Slot slot3 = frame.getStack().pop();
 
-		// push them again (stack: s2, s1, s3, s2, s1
+		// push them again (stack: s2, s1, s3, s2, s1)
 		frame.getStack().push(slot2);
 		frame.getStack().push(slot1);
 		frame.getStack().push(slot3);
@@ -1489,7 +1463,6 @@ public class PropConInstructionsAnalysisVisitor extends EmptyVisitor {
 	 */
 	@Override
 	public void visitDUP2_X2(DUP2_X2 obj) {
-		// XXX
 		logger.log(Level.FINE, obj.toString(false));
 
 		// pop the slots
@@ -1518,7 +1491,6 @@ public class PropConInstructionsAnalysisVisitor extends EmptyVisitor {
 	 */
 	@Override
 	public void visitPOP(POP obj) {
-		// XXX
 		logger.log(Level.FINE, obj.toString(false));
 
 		// may not be called for long or double
@@ -1536,7 +1508,6 @@ public class PropConInstructionsAnalysisVisitor extends EmptyVisitor {
 	 */
 	@Override
 	public void visitPOP2(POP2 obj) {
-		// XXX
 		logger.log(Level.FINE, obj.toString(false));
 
 		// pop two slots
