@@ -8,7 +8,9 @@ import org.apache.bcel.classfile.Method;
 import org.apache.bcel.generic.ConstantPoolGen;
 import org.apache.bcel.generic.InstructionHandle;
 import org.apache.bcel.generic.InstructionList;
+import org.apache.bcel.generic.MethodGen;
 import org.apache.bcel.generic.Type;
+import org.apache.bcel.verifier.structurals.ExceptionHandlers;
 
 import edu.umd.cs.findbugs.BugCollection;
 
@@ -21,6 +23,7 @@ public class PropConMethodAnalyzer {
 
 	/** The method to analyze. */
 	private final Method method;
+	private final ExceptionHandlers exceptionHandlers;
 
 	/** The visitor which inspects the method's bytecode instructions. */
 	private PropConInstructionsAnalysisVisitor visitor = null;
@@ -31,8 +34,9 @@ public class PropConMethodAnalyzer {
 	 * @param method
 	 *            The method to analyze, not null.
 	 */
-	public PropConMethodAnalyzer(Method method) {
-		this.method = method;
+	public PropConMethodAnalyzer(MethodGen methodGen) {
+		this.method = methodGen.getMethod();
+		this.exceptionHandlers = new ExceptionHandlers(methodGen);
 	}
 
 	/**
@@ -79,7 +83,7 @@ public class PropConMethodAnalyzer {
 
 		visitor = new PropConInstructionsAnalysisVisitor(calleeFrame,
 				new ConstantPoolGen(method.getConstantPool()),
-				instructionHandles[0]);
+				instructionHandles[0], exceptionHandlers);
 
 		logger.log(Level.FINE, "vvvvvvvvvvvvvvvvvvvvvvvvvv");
 		instructionHandles[0].accept(visitor);

@@ -56,6 +56,7 @@ import org.apache.bcel.generic.LoadInstruction;
 import org.apache.bcel.generic.MONITORENTER;
 import org.apache.bcel.generic.MONITOREXIT;
 import org.apache.bcel.generic.MULTIANEWARRAY;
+import org.apache.bcel.generic.MethodGen;
 import org.apache.bcel.generic.NEW;
 import org.apache.bcel.generic.NEWARRAY;
 import org.apache.bcel.generic.NOP;
@@ -70,6 +71,8 @@ import org.apache.bcel.generic.SWAP;
 import org.apache.bcel.generic.Select;
 import org.apache.bcel.generic.StoreInstruction;
 import org.apache.bcel.generic.Type;
+import org.apache.bcel.verifier.structurals.ExceptionHandler;
+import org.apache.bcel.verifier.structurals.ExceptionHandlers;
 
 import edu.umd.cs.findbugs.BugCollection;
 import edu.umd.cs.findbugs.BugInstance;
@@ -106,6 +109,7 @@ public class PropConInstructionsAnalysisVisitor extends EmptyVisitor {
 	private final Frame frame;
 	private final ConstantPoolGen constantPoolGen;
 	private InstructionHandle instructionHandle;
+	private final ExceptionHandlers exceptionHandlers;
 	private ArrayList<AlreadyVisitedIfInstruction> alreadyVisited;
 	private SortedBugCollection bugs = new SortedBugCollection();
 	private Slot result = null;
@@ -150,19 +154,24 @@ public class PropConInstructionsAnalysisVisitor extends EmptyVisitor {
 	}
 
 	public PropConInstructionsAnalysisVisitor(Frame frame,
-			ConstantPoolGen constantPoolGen, InstructionHandle instructionHandle) {
+			ConstantPoolGen constantPoolGen,
+			InstructionHandle instructionHandle,
+			ExceptionHandlers exceptionHandlers) {
 		this(frame, constantPoolGen,
-				new ArrayList<AlreadyVisitedIfInstruction>(), instructionHandle);
+				new ArrayList<AlreadyVisitedIfInstruction>(),
+				instructionHandle, exceptionHandlers);
 	}
 
 	private PropConInstructionsAnalysisVisitor(Frame frame,
 			ConstantPoolGen constantPoolGen,
 			ArrayList<AlreadyVisitedIfInstruction> alreadyVisited,
-			InstructionHandle instructionHandle) {
+			InstructionHandle instructionHandle,
+			ExceptionHandlers exceptionHandlers) {
 		this.frame = frame;
 		this.constantPoolGen = constantPoolGen;
 		this.alreadyVisited = alreadyVisited;
 		this.instructionHandle = instructionHandle;
+		this.exceptionHandlers = exceptionHandlers;
 	}
 
 	/**
@@ -219,8 +228,12 @@ public class PropConInstructionsAnalysisVisitor extends EmptyVisitor {
 				obj.getMethodName(constantPoolGen),
 				obj.getArgumentTypes(constantPoolGen));
 
+		MethodGen targetMethodGen = new MethodGen(targetMethod,
+				targetClass.getClassName(), new ConstantPoolGen(
+						targetClass.getConstantPool()));
+
 		PropConMethodAnalyzer targetMethodAnalyzer = new PropConMethodAnalyzer(
-				targetMethod);
+				targetMethodGen);
 		targetMethodAnalyzer.analyze(frame.getStack());
 
 		bugs.addAll(targetMethodAnalyzer.getBugs().getCollection());
@@ -463,6 +476,31 @@ public class PropConInstructionsAnalysisVisitor extends EmptyVisitor {
 	 */
 	@Override
 	public void visitATHROW(ATHROW obj) {
+		// pop exception from stack
+		Slot exception = frame.getStack().pop();
+		ExceptionHandler[] excepHandlers = exceptionHandlers
+				.getExceptionHandlers(instructionHandle);
+
+		ArrayList<Slot> resultsOfCatches = new ArrayList<Slot>();
+
+		// push exception back onto stack before exception handlers are executed
+		frame.getStack().push(exception);
+
+		for (ExceptionHandler excepHandler : excepHandlers) {
+
+			PropConInstructionsAnalysisVisitor excepHandlerVisitor = new PropConInstructionsAnalysisVisitor(
+					new Frame(frame), constantPoolGen, alreadyVisited,
+					excepHandler.getHandlerStart(), exceptionHandlers);
+			excepHandler.getHandlerStart().accept(excepHandlerVisitor);
+			bugs.addAll(excepHandlerVisitor.getBugs().getCollection());
+			resultsOfCatches.add(excepHandlerVisitor.getResult());
+		}
+
+		// combine results
+		if (resultsOfCatches.get(0) != null) {
+			result = resultsOfCatches.get(0).combineWithOthers(
+					resultsOfCatches.subList(1, resultsOfCatches.size()));
+		}
 
 	}
 
@@ -525,7 +563,7 @@ public class PropConInstructionsAnalysisVisitor extends EmptyVisitor {
 			newAlreadyVisited.add(elseBranch);
 			PropConInstructionsAnalysisVisitor elseBranchVisitor = new PropConInstructionsAnalysisVisitor(
 					new Frame(frame), constantPoolGen, newAlreadyVisited,
-					instructionHandle.getNext());
+					instructionHandle.getNext(), exceptionHandlers);
 			instructionHandle.getNext().accept(elseBranchVisitor);
 			bugs.addAll(elseBranchVisitor.getBugs().getCollection());
 			elseResult = elseBranchVisitor.getResult();
@@ -544,7 +582,7 @@ public class PropConInstructionsAnalysisVisitor extends EmptyVisitor {
 
 			PropConInstructionsAnalysisVisitor thenBranchVisitor = new PropConInstructionsAnalysisVisitor(
 					new Frame(frame), constantPoolGen, newAlreadyVisited,
-					obj.getTarget());
+					obj.getTarget(), exceptionHandlers);
 			obj.getTarget().accept(thenBranchVisitor);
 			bugs.addAll(thenBranchVisitor.getBugs().getCollection());
 			thenResult = thenBranchVisitor.getResult();
@@ -594,7 +632,8 @@ public class PropConInstructionsAnalysisVisitor extends EmptyVisitor {
 					"--------------- Line " + targets[i].getPosition()
 							+ " ---------------");
 			caseToFollow = new PropConInstructionsAnalysisVisitor(new Frame(
-					frame), constantPoolGen, alreadyVisited, targets[i]);
+					frame), constantPoolGen, alreadyVisited, targets[i],
+					exceptionHandlers);
 			targets[i].accept(caseToFollow);
 			// adding occurred bugs to bug-collection
 			bugs.addAll(caseToFollow.getBugs().getCollection());
@@ -608,7 +647,8 @@ public class PropConInstructionsAnalysisVisitor extends EmptyVisitor {
 		// NOTE: If the keyword "Default:" is not in the switch the following
 		// target is the end of the switch without executing a case.
 		caseToFollow = new PropConInstructionsAnalysisVisitor(new Frame(frame),
-				constantPoolGen, alreadyVisited, obj.getTarget());
+				constantPoolGen, alreadyVisited, obj.getTarget(),
+				exceptionHandlers);
 		obj.getTarget().accept(caseToFollow);
 		// adding occurred bugs to bug-collection
 		bugs.addAll(caseToFollow.getBugs().getCollection());
