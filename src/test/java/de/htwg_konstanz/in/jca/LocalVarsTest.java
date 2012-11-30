@@ -66,16 +66,16 @@ public class LocalVarsTest {
 		assertEquals(10, localVars.getIndexesLength());
 		assertEquals(localVars.getEntriesLength(), localVars.getIndexesLength());
 		// checks entries
-		assertEquals(Entry.notThisReference, localVars.getEntry(0));
-		assertEquals(Entry.someByte, localVars.getEntry(1));
-		assertEquals(Entry.someShort, localVars.getEntry(2));
-		assertEquals(Entry.notThisReference, localVars.getEntry(3));
-		assertEquals(Entry.someInt, localVars.getEntry(4));
-		assertEquals(Entry.someLong, localVars.getEntry(5));
-		assertEquals(Entry.someFloat, localVars.getEntry(6));
-		assertEquals(Entry.someDouble, localVars.getEntry(7));
-		assertEquals(Entry.someChar, localVars.getEntry(8));
-		assertEquals(Entry.someBoolean, localVars.getEntry(9));
+		assertEquals(Slot.notThisReference, localVars.getEntry(0));
+		assertEquals(Slot.someByte, localVars.getEntry(1));
+		assertEquals(Slot.someShort, localVars.getEntry(2));
+		assertEquals(Slot.notThisReference, localVars.getEntry(3));
+		assertEquals(Slot.someInt, localVars.getEntry(4));
+		assertEquals(Slot.someLong, localVars.getEntry(5));
+		assertEquals(Slot.someFloat, localVars.getEntry(6));
+		assertEquals(Slot.someDouble, localVars.getEntry(7));
+		assertEquals(Slot.someChar, localVars.getEntry(8));
+		assertEquals(Slot.someBoolean, localVars.getEntry(9));
 		// checks indexes
 		assertEquals(0, localVars.getIndex(0));
 		assertEquals(1, localVars.getIndex(1));
@@ -96,8 +96,8 @@ public class LocalVarsTest {
 	@Test
 	public void testInitWithArgsOnZeroLengthEntries() {
 		LocalVars localVars = new LocalVars(new LocalVariable[0]);
-		Stack<Entry> callerStack = new Stack<Entry>();
-		callerStack.add(Entry.notThisReference);
+		Stack<Slot> callerStack = new Stack<Slot>();
+		callerStack.add(Slot.notThisReference);
 		localVars.initWithArgs(callerStack, 1);
 		assertEquals(true, callerStack.isEmpty());
 	}
@@ -109,8 +109,8 @@ public class LocalVarsTest {
 	public void testInitWithArgsInvalidArgs() {
 		// creates example LocalVars with 10 entries
 		LocalVars localVars = new LocalVars(localVariableTableExample);
-		Stack<Entry> callerStack = new Stack<Entry>();
-		callerStack.add(Entry.someFloat);
+		Stack<Slot> callerStack = new Stack<Slot>();
+		callerStack.add(Slot.someFloat);
 		// only 1 entry on the stack but trying to pop 2
 		localVars.initWithArgs(callerStack, 2);
 	}
@@ -122,20 +122,20 @@ public class LocalVarsTest {
 	public void testInitWithArgsNoChange() {
 		// creates example LocalVars with 10 entries
 		LocalVars localVars = new LocalVars(localVariableTableExample);
-		Stack<Entry> callerStack = new Stack<Entry>();
-		callerStack.add(Entry.someFloat);
+		Stack<Slot> callerStack = new Stack<Slot>();
+		callerStack.add(Slot.someFloat);
 		localVars.initWithArgs(callerStack, 0);
 		assertEquals(true, !callerStack.isEmpty());
-		assertEquals(Entry.notThisReference, localVars.getEntry(0));
-		assertEquals(Entry.someByte, localVars.getEntry(1));
-		assertEquals(Entry.someShort, localVars.getEntry(2));
-		assertEquals(Entry.notThisReference, localVars.getEntry(3));
-		assertEquals(Entry.someInt, localVars.getEntry(4));
-		assertEquals(Entry.someLong, localVars.getEntry(5));
-		assertEquals(Entry.someFloat, localVars.getEntry(6));
-		assertEquals(Entry.someDouble, localVars.getEntry(7));
-		assertEquals(Entry.someChar, localVars.getEntry(8));
-		assertEquals(Entry.someBoolean, localVars.getEntry(9));
+		assertEquals(Slot.notThisReference, localVars.getEntry(0));
+		assertEquals(Slot.someByte, localVars.getEntry(1));
+		assertEquals(Slot.someShort, localVars.getEntry(2));
+		assertEquals(Slot.notThisReference, localVars.getEntry(3));
+		assertEquals(Slot.someInt, localVars.getEntry(4));
+		assertEquals(Slot.someLong, localVars.getEntry(5));
+		assertEquals(Slot.someFloat, localVars.getEntry(6));
+		assertEquals(Slot.someDouble, localVars.getEntry(7));
+		assertEquals(Slot.someChar, localVars.getEntry(8));
+		assertEquals(Slot.someBoolean, localVars.getEntry(9));
 	}
 
 	/**
@@ -145,19 +145,19 @@ public class LocalVarsTest {
 	public void testInitWhithArgsHalfStack() {
 		// creates example LocalVars with 10 entries
 		LocalVars localVars = new LocalVars(localVariableTableExample);
-		Stack<Entry> callerStack = new Stack<Entry>();
+		Stack<Slot> callerStack = new Stack<Slot>();
 		for (int i = 0; i < 5; i++) {
-			callerStack.add(Entry.thisReference);
+			callerStack.add(Slot.thisReference);
 		}
 		localVars.initWithArgs(callerStack, 5);
 		for (int i = 0; i < 5; i++) {
-			assertEquals(Entry.thisReference, localVars.getEntry(i));
+			assertEquals(Slot.thisReference, localVars.getEntry(i));
 		}
-		assertEquals(Entry.someLong, localVars.getEntry(5));
-		assertEquals(Entry.someFloat, localVars.getEntry(6));
-		assertEquals(Entry.someDouble, localVars.getEntry(7));
-		assertEquals(Entry.someChar, localVars.getEntry(8));
-		assertEquals(Entry.someBoolean, localVars.getEntry(9));
+		assertEquals(Slot.someLong, localVars.getEntry(5));
+		assertEquals(Slot.someFloat, localVars.getEntry(6));
+		assertEquals(Slot.someDouble, localVars.getEntry(7));
+		assertEquals(Slot.someChar, localVars.getEntry(8));
+		assertEquals(Slot.someBoolean, localVars.getEntry(9));
 	}
 
 	/**
@@ -167,13 +167,13 @@ public class LocalVarsTest {
 	public void testInitWhithArgsCompleteStack() {
 		// creates example LocalVars with 10 entries
 		LocalVars localVars = new LocalVars(localVariableTableExample);
-		Stack<Entry> callerStack = new Stack<Entry>();
+		Stack<Slot> callerStack = new Stack<Slot>();
 		for (int i = 0; i < localVars.getEntriesLength(); i++) {
-			callerStack.add(Entry.thisReference);
+			callerStack.add(Slot.thisReference);
 		}
 		localVars.initWithArgs(callerStack, callerStack.size());
 		for (int i = 0; i < localVars.getEntriesLength(); i++) {
-			assertEquals(Entry.thisReference, localVars.getEntry(i));
+			assertEquals(Slot.thisReference, localVars.getEntry(i));
 		}
 	}
 
@@ -185,9 +185,9 @@ public class LocalVarsTest {
 	public void testInitWithArgsTooGreatArgNum() {
 		// creates example LocalVars with 10 entries
 		LocalVars localVars = new LocalVars(localVariableTableExample);
-		Stack<Entry> callerStack = new Stack<Entry>();
+		Stack<Slot> callerStack = new Stack<Slot>();
 		for (int i = 0; i < localVars.getEntriesLength() + 1; i++) {
-			callerStack.add(Entry.thisReference);
+			callerStack.add(Slot.thisReference);
 		}
 		localVars.initWithArgs(callerStack, callerStack.size());
 	}
@@ -221,16 +221,16 @@ public class LocalVarsTest {
 	public void testGetForIndex() {
 		// creates example LocalVars with 10 entries
 		LocalVars localVars = new LocalVars(localVariableTableExample);
-		assertEquals(Entry.notThisReference, localVars.getForIndex(0));
-		assertEquals(Entry.someByte, localVars.getForIndex(1));
-		assertEquals(Entry.someShort, localVars.getForIndex(2));
-		assertEquals(Entry.notThisReference, localVars.getForIndex(3));
-		assertEquals(Entry.someInt, localVars.getForIndex(4));
-		assertEquals(Entry.someLong, localVars.getForIndex(5));
-		assertEquals(Entry.someFloat, localVars.getForIndex(7));
-		assertEquals(Entry.someDouble, localVars.getForIndex(8));
-		assertEquals(Entry.someChar, localVars.getForIndex(10));
-		assertEquals(Entry.someBoolean, localVars.getForIndex(11));
+		assertEquals(Slot.notThisReference, localVars.getForIndex(0));
+		assertEquals(Slot.someByte, localVars.getForIndex(1));
+		assertEquals(Slot.someShort, localVars.getForIndex(2));
+		assertEquals(Slot.notThisReference, localVars.getForIndex(3));
+		assertEquals(Slot.someInt, localVars.getForIndex(4));
+		assertEquals(Slot.someLong, localVars.getForIndex(5));
+		assertEquals(Slot.someFloat, localVars.getForIndex(7));
+		assertEquals(Slot.someDouble, localVars.getForIndex(8));
+		assertEquals(Slot.someChar, localVars.getForIndex(10));
+		assertEquals(Slot.someBoolean, localVars.getForIndex(11));
 	}
 
 	/**
@@ -240,7 +240,7 @@ public class LocalVarsTest {
 	public void testSetForIndexOutOfBoundsError() {
 		// creates example LocalVars with 10 entries
 		LocalVars localVars = new LocalVars(localVariableTableExample);
-		localVars.setForIndex(-1, Entry.notThisReference);
+		localVars.setForIndex(-1, Slot.notThisReference);
 	}
 
 	/**
@@ -251,7 +251,7 @@ public class LocalVarsTest {
 		// creates example LocalVars with 10 entries
 		LocalVars localVars = new LocalVars(localVariableTableExample);
 		// tries to access index 9 (the double starts at 8)
-		localVars.setForIndex(9, Entry.notThisReference);
+		localVars.setForIndex(9, Slot.notThisReference);
 	}
 
 	/**
@@ -261,26 +261,26 @@ public class LocalVarsTest {
 	public void testSetForIndex() {
 		// creates example LocalVars with 10 entries
 		LocalVars localVars = new LocalVars(localVariableTableExample);
-		localVars.setForIndex(0, Entry.someBoolean);
-		localVars.setForIndex(1, Entry.someChar);
-		localVars.setForIndex(2, Entry.someDouble);
-		localVars.setForIndex(3, Entry.someFloat);
-		localVars.setForIndex(4, Entry.someLong);
-		localVars.setForIndex(5, Entry.someInt);
-		localVars.setForIndex(7, Entry.notThisReference);
-		localVars.setForIndex(8, Entry.someShort);
-		localVars.setForIndex(10, Entry.someByte);
-		localVars.setForIndex(11, Entry.thisReference);
-		assertEquals(Entry.someBoolean, localVars.getEntry(0));
-		assertEquals(Entry.someChar, localVars.getEntry(1));
-		assertEquals(Entry.someDouble, localVars.getEntry(2));
-		assertEquals(Entry.someFloat, localVars.getEntry(3));
-		assertEquals(Entry.someLong, localVars.getEntry(4));
-		assertEquals(Entry.someInt, localVars.getEntry(5));
-		assertEquals(Entry.notThisReference, localVars.getEntry(6));
-		assertEquals(Entry.someShort, localVars.getEntry(7));
-		assertEquals(Entry.someByte, localVars.getEntry(8));
-		assertEquals(Entry.thisReference, localVars.getEntry(9));
+		localVars.setForIndex(0, Slot.someBoolean);
+		localVars.setForIndex(1, Slot.someChar);
+		localVars.setForIndex(2, Slot.someDouble);
+		localVars.setForIndex(3, Slot.someFloat);
+		localVars.setForIndex(4, Slot.someLong);
+		localVars.setForIndex(5, Slot.someInt);
+		localVars.setForIndex(7, Slot.notThisReference);
+		localVars.setForIndex(8, Slot.someShort);
+		localVars.setForIndex(10, Slot.someByte);
+		localVars.setForIndex(11, Slot.thisReference);
+		assertEquals(Slot.someBoolean, localVars.getEntry(0));
+		assertEquals(Slot.someChar, localVars.getEntry(1));
+		assertEquals(Slot.someDouble, localVars.getEntry(2));
+		assertEquals(Slot.someFloat, localVars.getEntry(3));
+		assertEquals(Slot.someLong, localVars.getEntry(4));
+		assertEquals(Slot.someInt, localVars.getEntry(5));
+		assertEquals(Slot.notThisReference, localVars.getEntry(6));
+		assertEquals(Slot.someShort, localVars.getEntry(7));
+		assertEquals(Slot.someByte, localVars.getEntry(8));
+		assertEquals(Slot.thisReference, localVars.getEntry(9));
 	}
 
 }

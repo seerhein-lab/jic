@@ -241,7 +241,6 @@ public class PropConInstructionsAnalysisVisitor extends EmptyVisitor {
 
 		bugs.addAll(targetMethodAnalyzer.getBugs().getCollection());
 
-		// ***********
 		List<ResultValue> calleeResults = ResultValue
 				.normalize(targetMethodAnalyzer.getResult());
 
@@ -253,25 +252,26 @@ public class PropConInstructionsAnalysisVisitor extends EmptyVisitor {
 						new Frame(frame), constantPoolGen, alreadyVisited,
 						instructionHandle.getNext(), exceptionHandlers);
 
-				if ( calleeResult.getSlot().equals(Slot.))
-				frame.popStackByRequiredSlots();
+				if (!calleeResult.getSlot().equals(Slot.noSlot))
+					frame.popStackByRequiredSlots();
 
 				instructionHandle.getNext().accept(specificCalleeResultVisitor);
 
-				bugs.addAll(elseBranchVisitor.getBugs().getCollection());
-				result.addAll(elseBranchVisitor.getResult());
+				bugs.addAll(specificCalleeResultVisitor.getBugs()
+						.getCollection());
+				result.addAll(specificCalleeResultVisitor.getResult());
+			} else {
+				// exception handling
 			}
 
 		}
 
-		// ***********
-
-		if (!(targetMethod.getReturnType().equals(Type.VOID))) {
-			frame.pushStackByRequiredSlots(targetMethodAnalyzer.getResult());
-		}
-
-		instructionHandle = instructionHandle.getNext();
-		instructionHandle.accept(this);
+		// if (!(targetMethod.getReturnType().equals(Type.VOID))) {
+		// frame.pushStackByRequiredSlots(targetMethodAnalyzer.getResult());
+		// }
+		//
+		// instructionHandle = instructionHandle.getNext();
+		// instructionHandle.accept(this);
 	}
 
 	/**

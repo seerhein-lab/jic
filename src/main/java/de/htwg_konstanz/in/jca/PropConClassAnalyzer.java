@@ -9,6 +9,8 @@ import java.util.Vector;
 import org.apache.bcel.classfile.Field;
 import org.apache.bcel.classfile.JavaClass;
 import org.apache.bcel.classfile.Method;
+import org.apache.bcel.generic.ConstantPoolGen;
+import org.apache.bcel.generic.MethodGen;
 import org.apache.bcel.generic.Type;
 
 import edu.umd.cs.findbugs.BugCollection;
@@ -30,28 +32,6 @@ public class PropConClassAnalyzer {
 				ctors.add(method);
 		return ctors;
 	}
-
-	/**
-	 * return the constructor that is specified by its arguments.
-	 * 
-	 * @param types
-	 *            arguments of the constructor to be returned
-	 * @return
-	 */
-	// public Method getConstructor(Type[] types) {
-	// Method[] methods = clazz.getMethods();
-	//
-	// for (Method method : methods) {
-	// Type[] methodTypes = method.getArgumentTypes();
-	// if (method.getName().equals("<init>")
-	// && methodTypes.length == types.length)
-	// for (int i = 0; i < types.length; i++)
-	// if (!types[i].equals(methodTypes[i]))
-	// break;
-	// return method;
-	// }
-	// return null;
-	// }
 
 	public Method getMethod(String name, Type[] types) {
 		Method[] methods = clazz.getMethods();
@@ -82,7 +62,11 @@ public class PropConClassAnalyzer {
 		List<Method> ctors = getConstructors();
 
 		for (Method ctor : ctors) {
-			PropConMethodAnalyzer ctorAnalyzer = new PropConMethodAnalyzer(ctor);
+			MethodGen ctorGen = new MethodGen(ctor, clazz.getClassName(),
+					new ConstantPoolGen(clazz.getConstantPool()));
+
+			PropConMethodAnalyzer ctorAnalyzer = new PropConMethodAnalyzer(
+					ctorGen);
 			ctorAnalyzer.analyze();
 			bugs.addAll(ctorAnalyzer.getBugs().getCollection());
 		}

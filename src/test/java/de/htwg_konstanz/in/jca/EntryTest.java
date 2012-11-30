@@ -12,15 +12,15 @@ public class EntryTest {
 
 	@Test
 	public void testGetInstance() {
-		assertEquals(Entry.getInstance("I"), Entry.someInt);
-		assertEquals(Entry.getInstance("J"), Entry.someLong);
-		assertEquals(Entry.getInstance("C"), Entry.someChar);
-		assertEquals(Entry.getInstance("B"), Entry.someByte);
-		assertEquals(Entry.getInstance("Z"), Entry.someBoolean);
-		assertEquals(Entry.getInstance("S"), Entry.someShort);
-		assertEquals(Entry.getInstance("F"), Entry.someFloat);
-		assertEquals(Entry.getInstance("D"), Entry.someDouble);
-		assertEquals(Entry.getInstance("O"), Entry.notThisReference);
+		assertEquals(Slot.getInstance("I"), Slot.someInt);
+		assertEquals(Slot.getInstance("J"), Slot.someLong);
+		assertEquals(Slot.getInstance("C"), Slot.someChar);
+		assertEquals(Slot.getInstance("B"), Slot.someByte);
+		assertEquals(Slot.getInstance("Z"), Slot.someBoolean);
+		assertEquals(Slot.getInstance("S"), Slot.someShort);
+		assertEquals(Slot.getInstance("F"), Slot.someFloat);
+		assertEquals(Slot.getInstance("D"), Slot.someDouble);
+		assertEquals(Slot.getInstance("O"), Slot.notThisReference);
 	}
 
 	/**
@@ -29,17 +29,17 @@ public class EntryTest {
 	 */
 	@Test
 	public void testCombineWithOther_NullValue() {
-		assertEquals(Entry.someByte, Entry.someByte.combineWithOther(null));
-		assertEquals(Entry.someShort, Entry.someShort.combineWithOther(null));
-		assertEquals(Entry.someInt, Entry.someInt.combineWithOther(null));
-		assertEquals(Entry.someLong, Entry.someLong.combineWithOther(null));
-		assertEquals(Entry.someFloat, Entry.someFloat.combineWithOther(null));
-		assertEquals(Entry.someDouble, Entry.someDouble.combineWithOther(null));
-		assertEquals(Entry.someChar, Entry.someChar.combineWithOther(null));
-		assertEquals(Entry.someBoolean, Entry.someBoolean.combineWithOther(null));
-		assertEquals(Entry.notThisReference, Entry.notThisReference.combineWithOther(null));
-		assertEquals(Entry.maybeThisReference, Entry.maybeThisReference.combineWithOther(null));
-		assertEquals(Entry.thisReference, Entry.thisReference.combineWithOther(null));
+		assertEquals(Slot.someByte, Slot.someByte.combineWithOther(null));
+		assertEquals(Slot.someShort, Slot.someShort.combineWithOther(null));
+		assertEquals(Slot.someInt, Slot.someInt.combineWithOther(null));
+		assertEquals(Slot.someLong, Slot.someLong.combineWithOther(null));
+		assertEquals(Slot.someFloat, Slot.someFloat.combineWithOther(null));
+		assertEquals(Slot.someDouble, Slot.someDouble.combineWithOther(null));
+		assertEquals(Slot.someChar, Slot.someChar.combineWithOther(null));
+		assertEquals(Slot.someBoolean, Slot.someBoolean.combineWithOther(null));
+		assertEquals(Slot.notThisReference, Slot.notThisReference.combineWithOther(null));
+		assertEquals(Slot.maybeThisReference, Slot.maybeThisReference.combineWithOther(null));
+		assertEquals(Slot.thisReference, Slot.thisReference.combineWithOther(null));
 	}
 	/**
 
@@ -48,17 +48,17 @@ public class EntryTest {
 	 */
 	@Test
 	public void testCombineWithOther_SameValue() {
-		assertEquals(Entry.someByte, Entry.someByte.combineWithOther(Entry.someByte));
-		assertEquals(Entry.someShort, Entry.someShort.combineWithOther(Entry.someShort));
-		assertEquals(Entry.someInt, Entry.someInt.combineWithOther(Entry.someInt));
-		assertEquals(Entry.someLong, Entry.someLong.combineWithOther(Entry.someLong));
-		assertEquals(Entry.someFloat, Entry.someFloat.combineWithOther(Entry.someFloat));
-		assertEquals(Entry.someDouble, Entry.someDouble.combineWithOther(Entry.someDouble));
-		assertEquals(Entry.someChar, Entry.someChar.combineWithOther(Entry.someChar));
-		assertEquals(Entry.someBoolean, Entry.someBoolean.combineWithOther(Entry.someBoolean));
-		assertEquals(Entry.notThisReference, Entry.notThisReference.combineWithOther(Entry.notThisReference));
-		assertEquals(Entry.maybeThisReference, Entry.maybeThisReference.combineWithOther(Entry.maybeThisReference));
-		assertEquals(Entry.thisReference, Entry.thisReference.combineWithOther(Entry.thisReference));
+		assertEquals(Slot.someByte, Slot.someByte.combineWithOther(Slot.someByte));
+		assertEquals(Slot.someShort, Slot.someShort.combineWithOther(Slot.someShort));
+		assertEquals(Slot.someInt, Slot.someInt.combineWithOther(Slot.someInt));
+		assertEquals(Slot.someLong, Slot.someLong.combineWithOther(Slot.someLong));
+		assertEquals(Slot.someFloat, Slot.someFloat.combineWithOther(Slot.someFloat));
+		assertEquals(Slot.someDouble, Slot.someDouble.combineWithOther(Slot.someDouble));
+		assertEquals(Slot.someChar, Slot.someChar.combineWithOther(Slot.someChar));
+		assertEquals(Slot.someBoolean, Slot.someBoolean.combineWithOther(Slot.someBoolean));
+		assertEquals(Slot.notThisReference, Slot.notThisReference.combineWithOther(Slot.notThisReference));
+		assertEquals(Slot.maybeThisReference, Slot.maybeThisReference.combineWithOther(Slot.maybeThisReference));
+		assertEquals(Slot.thisReference, Slot.thisReference.combineWithOther(Slot.thisReference));
 	}
 	
 	/**
@@ -67,18 +67,18 @@ public class EntryTest {
 	 */
 	@Test
 	public void testCombineWithOther_NotThisReference() {
-		assertEquals(Entry.notThisReference, Entry.notThisReference.combineWithOther(Entry.notThisReference));
-		assertEquals(Entry.maybeThisReference, Entry.notThisReference.combineWithOther(Entry.maybeThisReference));
-		assertEquals(Entry.maybeThisReference, Entry.notThisReference.combineWithOther(Entry.thisReference));
+		assertEquals(Slot.notThisReference, Slot.notThisReference.combineWithOther(Slot.notThisReference));
+		assertEquals(Slot.maybeThisReference, Slot.notThisReference.combineWithOther(Slot.maybeThisReference));
+		assertEquals(Slot.maybeThisReference, Slot.notThisReference.combineWithOther(Slot.thisReference));
 		try
 		{
-			Entry.notThisReference.combineWithOther(Entry.someByte);
+			Slot.notThisReference.combineWithOther(Slot.someByte);
 			fail("Exception expected");
 		}
 		catch (IllegalArgumentException e)
 		{
-			assertEquals(Entry.notThisReference
-					+ " cannot be combined with " + Entry.someByte,
+			assertEquals(Slot.notThisReference
+					+ " cannot be combined with " + Slot.someByte,
 				e.getMessage());
 		}
 	}
@@ -89,18 +89,18 @@ public class EntryTest {
 	 */
 	@Test
 	public void testCombineWithOther_MaybeThisReference() {
-		assertEquals(Entry.maybeThisReference, Entry.maybeThisReference.combineWithOther(Entry.maybeThisReference));
-		assertEquals(Entry.maybeThisReference, Entry.maybeThisReference.combineWithOther(Entry.maybeThisReference));
-		assertEquals(Entry.maybeThisReference, Entry.maybeThisReference.combineWithOther(Entry.thisReference));
+		assertEquals(Slot.maybeThisReference, Slot.maybeThisReference.combineWithOther(Slot.maybeThisReference));
+		assertEquals(Slot.maybeThisReference, Slot.maybeThisReference.combineWithOther(Slot.maybeThisReference));
+		assertEquals(Slot.maybeThisReference, Slot.maybeThisReference.combineWithOther(Slot.thisReference));
 		try
 		{
-			Entry.maybeThisReference.combineWithOther(Entry.someByte);
+			Slot.maybeThisReference.combineWithOther(Slot.someByte);
 			fail("Exception expected");
 		}
 		catch (IllegalArgumentException e)
 		{
-			assertEquals(Entry.maybeThisReference
-					+ " cannot be combined with " + Entry.someByte,
+			assertEquals(Slot.maybeThisReference
+					+ " cannot be combined with " + Slot.someByte,
 				e.getMessage());
 		}
 	}
@@ -111,18 +111,18 @@ public class EntryTest {
 	 */
 	@Test
 	public void testCombineWithOther_thisReference() {
-		assertEquals(Entry.maybeThisReference, Entry.thisReference.combineWithOther(Entry.maybeThisReference));
-		assertEquals(Entry.maybeThisReference, Entry.thisReference.combineWithOther(Entry.maybeThisReference));
-		assertEquals(Entry.thisReference, Entry.thisReference.combineWithOther(Entry.thisReference));
+		assertEquals(Slot.maybeThisReference, Slot.thisReference.combineWithOther(Slot.maybeThisReference));
+		assertEquals(Slot.maybeThisReference, Slot.thisReference.combineWithOther(Slot.maybeThisReference));
+		assertEquals(Slot.thisReference, Slot.thisReference.combineWithOther(Slot.thisReference));
 		try
 		{
-			Entry.thisReference.combineWithOther(Entry.someByte);
+			Slot.thisReference.combineWithOther(Slot.someByte);
 			fail("Exception expected");
 		}
 		catch (IllegalArgumentException e)
 		{
-			assertEquals(Entry.thisReference
-					+ " cannot be combined with " + Entry.someByte,
+			assertEquals(Slot.thisReference
+					+ " cannot be combined with " + Slot.someByte,
 				e.getMessage());
 		}
 	}
@@ -133,18 +133,18 @@ public class EntryTest {
 	 */
 	@Test
 	public void testCombineWithOther_IllegalKnownTypes() {
-		List<Entry> types = new ArrayList<Entry>();
-		types.add(Entry.someByte);
-		types.add(Entry.someShort);
-		types.add(Entry.someInt);
-		types.add(Entry.someLong);
-		types.add(Entry.someFloat);
-		types.add(Entry.someDouble);
-		types.add(Entry.someChar);
-		types.add(Entry.someBoolean);
-		for (Entry own : types)
+		List<Slot> types = new ArrayList<Slot>();
+		types.add(Slot.someByte);
+		types.add(Slot.someShort);
+		types.add(Slot.someInt);
+		types.add(Slot.someLong);
+		types.add(Slot.someFloat);
+		types.add(Slot.someDouble);
+		types.add(Slot.someChar);
+		types.add(Slot.someBoolean);
+		for (Slot own : types)
 		{
-			for (Entry other : types)
+			for (Slot other : types)
 			{
 				if (own == other)
 				{
@@ -171,8 +171,8 @@ public class EntryTest {
 	 */
 	@Test
 	public void testCombineWithOthers() {
-		List<Entry> others = new ArrayList<Entry>();
-		others.add(Entry.someByte);
-		assertEquals(Entry.someByte, Entry.someByte.combineWithOthers(others));
+		List<Slot> others = new ArrayList<Slot>();
+		others.add(Slot.someByte);
+		assertEquals(Slot.someByte, Slot.someByte.combineWithOthers(others));
 	}
 }
