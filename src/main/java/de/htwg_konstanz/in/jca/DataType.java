@@ -4,7 +4,7 @@ import org.apache.bcel.generic.Type;
 
 public enum DataType {
 	byteType(1), shortType(1), intType(1), longType(2), floatType(1), doubleType(
-			2), charType(1), booleanType(1), referenceType(1);
+			2), charType(1), booleanType(1), referenceType(1), voidType(0);
 
 	private int numSlots;
 
@@ -33,6 +33,8 @@ public enum DataType {
 			return floatType;
 		if (signature.equals("D"))
 			return doubleType;
+		if (signature.equals("V"))
+			return voidType;
 		return referenceType;
 	}
 

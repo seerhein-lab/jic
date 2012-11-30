@@ -1,5 +1,6 @@
 package de.htwg_konstanz.in.jca;
 
+import java.util.List;
 import java.util.Stack;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -117,7 +118,7 @@ public class PropConMethodAnalyzer {
 	 * @throws IllegalStateException
 	 *             if analyze() was not called beforehand.
 	 */
-	public Slot getResult() {
+	public List<ResultValue> getResult() {
 		if (visitor == null) {
 			throw new IllegalStateException(
 					"analyze() must be called before getResult()");

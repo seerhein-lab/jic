@@ -1,6 +1,8 @@
 package de.htwg_konstanz.in.jca;
 
 import java.util.ArrayList;
+import java.util.List;
+import java.util.Vector;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -74,6 +76,7 @@ import org.apache.bcel.generic.Type;
 import org.apache.bcel.verifier.structurals.ExceptionHandler;
 import org.apache.bcel.verifier.structurals.ExceptionHandlers;
 
+import de.htwg_konstanz.in.jca.ResultValue.Kind;
 import edu.umd.cs.findbugs.BugCollection;
 import edu.umd.cs.findbugs.BugInstance;
 import edu.umd.cs.findbugs.SortedBugCollection;
@@ -112,7 +115,7 @@ public class PropConInstructionsAnalysisVisitor extends EmptyVisitor {
 	private final ExceptionHandlers exceptionHandlers;
 	private ArrayList<AlreadyVisitedIfInstruction> alreadyVisited;
 	private SortedBugCollection bugs = new SortedBugCollection();
-	private Slot result = null;
+	private List<ResultValue> result = new Vector<ResultValue>();
 
 	private static class AlreadyVisitedIfInstruction {
 		private final InstructionHandle ifInstruction;
@@ -188,7 +191,7 @@ public class PropConInstructionsAnalysisVisitor extends EmptyVisitor {
 		return bugs;
 	}
 
-	public Slot getResult() {
+	public List<ResultValue> getResult() {
 		return result;
 	}
 
@@ -237,6 +240,31 @@ public class PropConInstructionsAnalysisVisitor extends EmptyVisitor {
 		targetMethodAnalyzer.analyze(frame.getStack());
 
 		bugs.addAll(targetMethodAnalyzer.getBugs().getCollection());
+
+		// ***********
+		List<ResultValue> calleeResults = ResultValue
+				.normalize(targetMethodAnalyzer.getResult());
+
+		for (ResultValue calleeResult : calleeResults) {
+			if (calleeResult.getKind().equals(Kind.REGULAR)) {
+				frame.pushStackByRequiredSlots(calleeResult.getSlot());
+
+				PropConInstructionsAnalysisVisitor specificCalleeResultVisitor = new PropConInstructionsAnalysisVisitor(
+						new Frame(frame), constantPoolGen, alreadyVisited,
+						instructionHandle.getNext(), exceptionHandlers);
+
+				if ( calleeResult.getSlot().equals(Slot.))
+				frame.popStackByRequiredSlots();
+
+				instructionHandle.getNext().accept(specificCalleeResultVisitor);
+
+				bugs.addAll(elseBranchVisitor.getBugs().getCollection());
+				result.addAll(elseBranchVisitor.getResult());
+			}
+
+		}
+
+		// ***********
 
 		if (!(targetMethod.getReturnType().equals(Type.VOID))) {
 			frame.pushStackByRequiredSlots(targetMethodAnalyzer.getResult());
@@ -289,11 +317,9 @@ public class PropConInstructionsAnalysisVisitor extends EmptyVisitor {
 			}
 		}
 
-		// if not void
-		if (!obj.getReturnType(constantPoolGen).equals(Type.VOID)) {
-			// push the return value onto the stack
-			frame.pushStackByRequiredSlots(returnValue);
-		}
+		// works also for void results, because number of required slots = 0
+		frame.pushStackByRequiredSlots(returnValue);
+
 		instructionHandle = instructionHandle.getNext();
 		instructionHandle.accept(this);
 	}
@@ -481,27 +507,18 @@ public class PropConInstructionsAnalysisVisitor extends EmptyVisitor {
 		ExceptionHandler[] excepHandlers = exceptionHandlers
 				.getExceptionHandlers(instructionHandle);
 
-		ArrayList<Slot> resultsOfCatches = new ArrayList<Slot>();
-
 		// push exception back onto stack before exception handlers are executed
 		frame.getStack().push(exception);
 
 		for (ExceptionHandler excepHandler : excepHandlers) {
-
 			PropConInstructionsAnalysisVisitor excepHandlerVisitor = new PropConInstructionsAnalysisVisitor(
 					new Frame(frame), constantPoolGen, alreadyVisited,
 					excepHandler.getHandlerStart(), exceptionHandlers);
 			excepHandler.getHandlerStart().accept(excepHandlerVisitor);
 			bugs.addAll(excepHandlerVisitor.getBugs().getCollection());
-			resultsOfCatches.add(excepHandlerVisitor.getResult());
+			result.addAll(excepHandlerVisitor.getResult());
 		}
-
-		// combine results
-		if (resultsOfCatches.get(0) != null) {
-			result = resultsOfCatches.get(0).combineWithOthers(
-					resultsOfCatches.subList(1, resultsOfCatches.size()));
-		}
-
+		result.add(new ResultValue(Kind.EXCEPTION, Slot.notThisReference));
 	}
 
 	// -----------------------------------------------------------------
@@ -549,9 +566,6 @@ public class PropConInstructionsAnalysisVisitor extends EmptyVisitor {
 			frame.getStack().pop();
 		}
 
-		Slot elseResult = null;
-		Slot thenResult = null;
-
 		logger.log(Level.FINEST, "------------------  " + alreadyVisited.size()
 				+ ".else  ------------------");
 		AlreadyVisitedIfInstruction elseBranch = new AlreadyVisitedIfInstruction(
@@ -566,7 +580,7 @@ public class PropConInstructionsAnalysisVisitor extends EmptyVisitor {
 					instructionHandle.getNext(), exceptionHandlers);
 			instructionHandle.getNext().accept(elseBranchVisitor);
 			bugs.addAll(elseBranchVisitor.getBugs().getCollection());
-			elseResult = elseBranchVisitor.getResult();
+			result.addAll(elseBranchVisitor.getResult());
 		} else {
 			logger.log(Level.FINEST, "Loop detected, do not re-enter.");
 		}
@@ -585,16 +599,10 @@ public class PropConInstructionsAnalysisVisitor extends EmptyVisitor {
 					obj.getTarget(), exceptionHandlers);
 			obj.getTarget().accept(thenBranchVisitor);
 			bugs.addAll(thenBranchVisitor.getBugs().getCollection());
-			thenResult = thenBranchVisitor.getResult();
+			result.addAll(thenBranchVisitor.getResult());
 		} else {
 			logger.log(Level.FINEST, "Loop detected, do not re-enter.");
 		}
-		if (elseResult != null) {
-			result = elseResult.combineWithOther(thenResult);
-		} else {
-			result = thenResult;
-		}
-
 	}
 
 	/**
@@ -617,12 +625,10 @@ public class PropConInstructionsAnalysisVisitor extends EmptyVisitor {
 	 */
 	@Override
 	public void visitSelect(Select obj) {
-
 		logger.log(Level.FINE, obj.toString(false));
 		// pops integer index
 		frame.getStack().pop();
 
-		ArrayList<Slot> resultsOfCases = new ArrayList<Slot>();
 		// gets all targets excluding the default case
 		InstructionHandle[] targets = obj.getTargets();
 		PropConInstructionsAnalysisVisitor caseToFollow;
@@ -638,7 +644,7 @@ public class PropConInstructionsAnalysisVisitor extends EmptyVisitor {
 			// adding occurred bugs to bug-collection
 			bugs.addAll(caseToFollow.getBugs().getCollection());
 			// adding result of the case to a result-list
-			resultsOfCases.add(caseToFollow.getResult());
+			result.addAll(caseToFollow.getResult());
 		}
 		// handles the default case and follows it
 		logger.log(Level.FINEST, "--------------- Line "
@@ -653,13 +659,8 @@ public class PropConInstructionsAnalysisVisitor extends EmptyVisitor {
 		// adding occurred bugs to bug-collection
 		bugs.addAll(caseToFollow.getBugs().getCollection());
 		// adding result of the case to a result-list
-		resultsOfCases.add(caseToFollow.getResult());
+		result.addAll(caseToFollow.getResult());
 
-		// combine results
-		if (resultsOfCases.get(0) != null) {
-			result = resultsOfCases.get(0).combineWithOthers(
-					resultsOfCases.subList(1, resultsOfCases.size()));
-		}
 	}
 
 	// -----------------------------------------------------------------
@@ -1353,10 +1354,11 @@ public class PropConInstructionsAnalysisVisitor extends EmptyVisitor {
 		logger.log(Level.FINEST,
 				"\t" + DataType.getDataType(obj.getType(constantPoolGen)));
 
-		if (!obj.getType(constantPoolGen).equals(Type.VOID)) {
-			// pop the return value for all non void methods and save in result
-			result = frame.popStackByRequiredSlots();
-		}
+		if (obj.getType(constantPoolGen).equals(Type.VOID))
+			result.add(new ResultValue(Kind.REGULAR, Slot.noSlot));
+		else
+			result.add(new ResultValue(Kind.REGULAR, frame
+					.popStackByRequiredSlots()));
 	}
 
 	// -----------------------------------------------------------------

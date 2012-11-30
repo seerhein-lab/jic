@@ -1,7 +1,5 @@
 package de.htwg_konstanz.in.jca;
 
-import java.util.List;
-
 import org.apache.bcel.generic.Type;
 
 /**
@@ -40,7 +38,13 @@ public enum Slot {
 	maybeThisReference(DataType.referenceType),
 
 	/** The 'this reference */
-	thisReference(DataType.referenceType);
+	thisReference(DataType.referenceType),
+
+	/**
+	 * special value to indicate the (absence of a) result of a void method.
+	 * This value is never pushed onto the method stack.
+	 */
+	noSlot(DataType.voidType);
 
 	private DataType dataType;
 
@@ -73,6 +77,8 @@ public enum Slot {
 			return Slot.someChar;
 		if (dataType.equals(DataType.booleanType))
 			return Slot.someBoolean;
+		if (dataType.equals(DataType.voidType))
+			return Slot.noSlot;
 
 		return Slot.notThisReference;
 	}
@@ -80,23 +86,6 @@ public enum Slot {
 	public DataType getDataType() {
 		return dataType;
 
-	}
-
-	/**
-	 * Combines the current value with the outcome of other execution paths.
-	 * 
-	 * @param others
-	 *            the outcome of the other execution paths, not null, may be
-	 *            empty.
-	 * 
-	 * @return the combined output.
-	 */
-	public Slot combineWithOthers(List<Slot> others) {
-		if (others.isEmpty()) {
-			return this;
-		}
-		return this.combineWithOther(others.get(0)).combineWithOthers(
-				others.subList(1, others.size()));
 	}
 
 	/**
@@ -108,58 +97,55 @@ public enum Slot {
 	 * 
 	 * @return the combined output.
 	 */
-	public Slot combineWithOther(Slot other) {
-		if (other == null) {
-			return this;
-		}
-		switch (this) {
-		case someByte:
-		case someShort:
-		case someInt:
-		case someHalfLong:
-		case someFloat:
-		case someHalfDouble:
-		case someChar:
-		case someBoolean:
-			if (!this.equals(other)) {
-				throw new IllegalArgumentException(this
-						+ " cannot be combined with " + other);
-			}
-			return this;
-		case notThisReference:
-			switch (other) {
-			case notThisReference:
-				return notThisReference;
-			case maybeThisReference:
-			case thisReference:
-				return maybeThisReference;
-			default:
-				throw new IllegalArgumentException(this
-						+ " cannot be combined with " + other);
-			}
-		case maybeThisReference:
-			switch (other) {
-			case notThisReference:
-			case maybeThisReference:
-			case thisReference:
-				return maybeThisReference;
-			default:
-				throw new IllegalArgumentException(this
-						+ " cannot be combined with " + other);
-			}
-		case thisReference:
-			switch (other) {
-			case notThisReference:
-			case maybeThisReference:
-				return maybeThisReference;
-			case thisReference:
-				return thisReference;
-			default:
-				throw new IllegalArgumentException(this
-						+ " cannot be combined with " + other);
-			}
-		default:
-			throw new AssertionError("cannot happen");
-		}
-	}
+	// public boolean subsumedBy(Slot other) {
+	// switch (this) {
+	// case someByte:
+	// case someShort:
+	// case someInt:
+	// case someHalfLong:
+	// case someFloat:
+	// case someHalfDouble:
+	// case someChar:
+	// case someBoolean:
+	// if (!this.equals(other)) {
+	// throw new IllegalArgumentException(this
+	// + " cannot be combined with " + other);
+	// }
+	// return true;
+	// case notThisReference:
+	// switch (other) {
+	// case notThisReference:
+	// return true;
+	// case maybeThisReference:
+	// case thisReference:
+	// return maybeThisReference;
+	// default:
+	// throw new IllegalArgumentException(this
+	// + " cannot be combined with " + other);
+	// }
+	// case maybeThisReference:
+	// switch (other) {
+	// case notThisReference:
+	// case maybeThisReference:
+	// case thisReference:
+	// return maybeThisReference;
+	// default:
+	// throw new IllegalArgumentException(this
+	// + " cannot be combined with " + other);
+	// }
+	// case thisReference:
+	// switch (other) {
+	// case notThisReference:
+	// case maybeThisReference:
+	// return maybeThisReference;
+	// case thisReference:
+	// return thisReference;
+	// default:
+	// throw new IllegalArgumentException(this
+	// + " cannot be combined with " + other);
+	// }
+	// default:
+	// throw new AssertionError("cannot happen");
+	// }
+	// }
 }
