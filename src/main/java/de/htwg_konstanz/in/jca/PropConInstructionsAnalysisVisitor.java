@@ -261,7 +261,7 @@ public class PropConInstructionsAnalysisVisitor extends EmptyVisitor {
 						.getCollection());
 				result.addAll(specificCalleeResultVisitor.getResult());
 			} else {
-				// exception handling
+				handleException(calleeResult.getSlot());
 			}
 
 		}
@@ -500,15 +500,13 @@ public class PropConInstructionsAnalysisVisitor extends EmptyVisitor {
 	 * Called when an ATHROW operation occurs. Clears the stack and pushes a
 	 * reference to the thrown error or exception.
 	 */
-	@Override
-	public void visitATHROW(ATHROW obj) {
-		// pop exception from stack
-		Slot exception = frame.getStack().pop();
+
+	private void handleException(Slot exception) {
+		frame.getStack().clear();
+		frame.getStack().push(exception);
+
 		ExceptionHandler[] excepHandlers = exceptionHandlers
 				.getExceptionHandlers(instructionHandle);
-
-		// push exception back onto stack before exception handlers are executed
-		frame.getStack().push(exception);
 
 		for (ExceptionHandler excepHandler : excepHandlers) {
 			PropConInstructionsAnalysisVisitor excepHandlerVisitor = new PropConInstructionsAnalysisVisitor(
@@ -519,6 +517,12 @@ public class PropConInstructionsAnalysisVisitor extends EmptyVisitor {
 			result.addAll(excepHandlerVisitor.getResult());
 		}
 		result.add(new ResultValue(Kind.EXCEPTION, Slot.notThisReference));
+	}
+
+	@Override
+	public void visitATHROW(ATHROW obj) {
+		Slot exception = frame.getStack().pop();
+		handleException(exception);
 	}
 
 	// -----------------------------------------------------------------
