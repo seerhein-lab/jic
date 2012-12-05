@@ -177,16 +177,6 @@ public class PropConInstructionsAnalysisVisitor extends EmptyVisitor {
 		this.exceptionHandlers = exceptionHandlers;
 	}
 
-	/**
-	 * Called if a visit method is not yet implemented. Stops execution of the
-	 * InstructionHandles.
-	 */
-	private void notImplementedYet(Object instruction) {
-		logger.log(Level.FINE, instruction.toString());
-		logger.log(Level.WARNING, "NOT IMPLEMENTED YET");
-		bugs.add(new BugInstance("Warning: 'this' reference might escape", 1));
-	}
-
 	public BugCollection getBugs() {
 		return bugs;
 	}
@@ -496,12 +486,16 @@ public class PropConInstructionsAnalysisVisitor extends EmptyVisitor {
 				.getExceptionHandlers(instructionHandle);
 
 		for (ExceptionHandler excepHandler : excepHandlers) {
+			logger.log(Level.FINE, "vvvvv " + excepHandler.toString()
+					+ ": start vvvvv");
 			PropConInstructionsAnalysisVisitor excepHandlerVisitor = new PropConInstructionsAnalysisVisitor(
 					new Frame(frame), constantPoolGen, alreadyVisited,
 					excepHandler.getHandlerStart(), exceptionHandlers);
 			excepHandler.getHandlerStart().accept(excepHandlerVisitor);
 			bugs.addAll(excepHandlerVisitor.getBugs().getCollection());
 			result.addAll(excepHandlerVisitor.getResult());
+			logger.log(Level.FINE, "^^^^^ " + excepHandler.toString()
+					+ ": end ^^^^^");
 		}
 		result.add(new ResultValue(Kind.EXCEPTION, Slot.notThisReference));
 	}
@@ -750,6 +744,7 @@ public class PropConInstructionsAnalysisVisitor extends EmptyVisitor {
 	 */
 	@Override
 	public void visitCHECKCAST(CHECKCAST obj) {
+		logger.log(Level.FINE, obj.toString(false));
 		Slot objRef = frame.getStack().pop();
 		// check type of popped object reference
 
@@ -761,6 +756,8 @@ public class PropConInstructionsAnalysisVisitor extends EmptyVisitor {
 
 		regularCaseVisitor.frame.getStack().push(objRef);
 
+		logger.log(Level.FINEST,
+				"\t" + objRef + " ?= " + obj.getLoadClassType(constantPoolGen));
 		instructionHandle.getNext().accept(regularCaseVisitor);
 
 		bugs.addAll(regularCaseVisitor.getBugs().getCollection());
