@@ -610,8 +610,18 @@ public class PropConInstructionsAnalysisVisitor extends EmptyVisitor {
 	 */
 	@Override
 	public void visitJsrInstruction(JsrInstruction obj) {
-		// XXX when is this called? try-finally doesn't.
-		notImplementedYet(obj);
+		logger.log(Level.FINE, obj.toString(false));
+		logger.log(Level.WARNING,
+				"Untested Code Warning: Executing JSR instruction");
+		bugs.add(new BugInstance(
+				"Untested Code Warning: Executing JSR instruction", 1));
+		frame.getStack().push(Slot.notThisReference);
+		InstructionHandle savedInstructionHandle = instructionHandle;
+		instructionHandle = obj.getTarget();
+		instructionHandle.accept(this);
+
+		instructionHandle = savedInstructionHandle.getNext();
+		instructionHandle.accept(this);
 	}
 
 	/**
@@ -1340,8 +1350,7 @@ public class PropConInstructionsAnalysisVisitor extends EmptyVisitor {
 	 */
 	@Override
 	public void visitRET(RET obj) {
-		// TODO
-		notImplementedYet(obj);
+		logger.log(Level.FINE, obj.toString(false));
 	}
 
 	// -----------------------------------------------------------------
