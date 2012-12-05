@@ -983,8 +983,13 @@ public class PropConInstructionsAnalysisVisitor extends EmptyVisitor {
 	 */
 	@Override
 	public void visitINSTANCEOF(INSTANCEOF obj) {
-		notImplementedYet(obj);
-		// TODO
+		logger.log(Level.FINE, obj.toString(false));
+
+		frame.getStack().pop();
+		frame.pushStackByDataType(DataType.intType);
+
+		instructionHandle = instructionHandle.getNext();
+		instructionHandle.accept(this);
 	}
 
 	/**
