@@ -246,14 +246,12 @@ public class PropConInstructionsAnalysisVisitor extends EmptyVisitor {
 
 		for (ResultValue calleeResult : calleeResults) {
 			if (calleeResult.getKind().equals(Kind.REGULAR)) {
-				frame.pushStackByRequiredSlots(calleeResult.getSlot());
-
 				PropConInstructionsAnalysisVisitor specificCalleeResultVisitor = new PropConInstructionsAnalysisVisitor(
 						new Frame(frame), constantPoolGen, alreadyVisited,
 						instructionHandle.getNext(), exceptionHandlers);
 
-				if (!calleeResult.getSlot().equals(Slot.noSlot))
-					frame.popStackByRequiredSlots();
+				specificCalleeResultVisitor.frame
+						.pushStackByRequiredSlots(calleeResult.getSlot());
 
 				instructionHandle.getNext().accept(specificCalleeResultVisitor);
 
@@ -747,11 +745,11 @@ public class PropConInstructionsAnalysisVisitor extends EmptyVisitor {
 
 		// 1st case: type cast is valid, continue execution in a separate
 		// visitor
-		frame.getStack().push(objRef);
-
 		PropConInstructionsAnalysisVisitor regularCaseVisitor = new PropConInstructionsAnalysisVisitor(
 				new Frame(frame), constantPoolGen, alreadyVisited,
 				instructionHandle.getNext(), exceptionHandlers);
+
+		regularCaseVisitor.frame.getStack().push(objRef);
 
 		instructionHandle.getNext().accept(regularCaseVisitor);
 
@@ -759,7 +757,6 @@ public class PropConInstructionsAnalysisVisitor extends EmptyVisitor {
 		result.addAll(regularCaseVisitor.getResult());
 
 		// 2nd case: type cast is invalid, throw ClassCastException
-		frame.getStack().pop();
 		handleException(Slot.notThisReference);
 	}
 
