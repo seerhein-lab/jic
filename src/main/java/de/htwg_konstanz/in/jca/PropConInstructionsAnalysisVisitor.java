@@ -109,7 +109,7 @@ public class PropConInstructionsAnalysisVisitor extends EmptyVisitor {
 	private static final Logger logger = Logger
 			.getLogger("PropConInstructionsAnalysisVisitor");
 
-	private final Frame frame;
+	private Frame frame;
 	private final ConstantPoolGen constantPoolGen;
 	private InstructionHandle instructionHandle;
 	private final ExceptionHandlers exceptionHandlers;
@@ -261,17 +261,13 @@ public class PropConInstructionsAnalysisVisitor extends EmptyVisitor {
 						.getCollection());
 				result.addAll(specificCalleeResultVisitor.getResult());
 			} else {
+				Frame savedFrame = new Frame(frame);
 				handleException(calleeResult.getSlot());
+				frame = savedFrame;
 			}
 
 		}
 
-		// if (!(targetMethod.getReturnType().equals(Type.VOID))) {
-		// frame.pushStackByRequiredSlots(targetMethodAnalyzer.getResult());
-		// }
-		//
-		// instructionHandle = instructionHandle.getNext();
-		// instructionHandle.accept(this);
 	}
 
 	/**
@@ -494,13 +490,6 @@ public class PropConInstructionsAnalysisVisitor extends EmptyVisitor {
 		instructionHandle.accept(this);
 	}
 
-	// -----------------------------------------------------------------
-	/**
-	 * 5. ATHROW<br>
-	 * Called when an ATHROW operation occurs. Clears the stack and pushes a
-	 * reference to the thrown error or exception.
-	 */
-
 	private void handleException(Slot exception) {
 		frame.getStack().clear();
 		frame.getStack().push(exception);
@@ -518,6 +507,13 @@ public class PropConInstructionsAnalysisVisitor extends EmptyVisitor {
 		}
 		result.add(new ResultValue(Kind.EXCEPTION, Slot.notThisReference));
 	}
+
+	// -----------------------------------------------------------------
+	/**
+	 * 5. ATHROW<br>
+	 * Called when an ATHROW operation occurs. Clears the stack and pushes a
+	 * reference to the thrown error or exception.
+	 */
 
 	@Override
 	public void visitATHROW(ATHROW obj) {
@@ -746,25 +742,25 @@ public class PropConInstructionsAnalysisVisitor extends EmptyVisitor {
 	 */
 	@Override
 	public void visitCHECKCAST(CHECKCAST obj) {
-		notImplementedYet(obj);
-		// TODO
-		// // first try
-		// System.out.print(obj.toString(false) + ": (");
-		// Slot entry = frame.getStack().pop();
-		// System.out.println(entry + ") ?= ("
-		// + obj.getLoadClassType(constantPoolGen));
-		//
-		// if
-		// (entry.equals(Slot.getInstance(obj.getLoadClassType(constantPoolGen)
-		// .getSignature()))) {
-		// // push entry back onto stack
-		// frame.getStack().push(entry);
-		// } else {
-		// // throw exception
-		// // TODO Exception-handling???
-		// }
-		// instructionHandle = instructionHandle.getNext();
-		// instructionHandle.accept(this);
+		Slot objRef = frame.getStack().pop();
+		// check type of popped object reference
+
+		// 1st case: type cast is valid, continue execution in a separate
+		// visitor
+		frame.getStack().push(objRef);
+
+		PropConInstructionsAnalysisVisitor regularCaseVisitor = new PropConInstructionsAnalysisVisitor(
+				new Frame(frame), constantPoolGen, alreadyVisited,
+				instructionHandle.getNext(), exceptionHandlers);
+
+		instructionHandle.getNext().accept(regularCaseVisitor);
+
+		bugs.addAll(regularCaseVisitor.getBugs().getCollection());
+		result.addAll(regularCaseVisitor.getResult());
+
+		// 2nd case: type cast is invalid, throw ClassCastException
+		frame.getStack().pop();
+		handleException(Slot.notThisReference);
 	}
 
 	/**
