@@ -1,12 +1,19 @@
 package playground;
 
+import java.io.IOException;
+
 public class PropConstTestClass {
 
-	private void f() {
+	public PropConstTestClass(int j) {
+		int i = 0;
 
-	}
-
-	public PropConstTestClass() {
-		f();
+		try {
+			i = i / j;
+			if (i > 3)
+				throw new IOException();
+			i++;
+		} catch (IOException e) {
+			j++;
+		}
 	}
 }

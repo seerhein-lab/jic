@@ -18,6 +18,7 @@ import org.apache.bcel.generic.ArrayInstruction;
 import org.apache.bcel.generic.BIPUSH;
 import org.apache.bcel.generic.BREAKPOINT;
 import org.apache.bcel.generic.CHECKCAST;
+import org.apache.bcel.generic.CodeExceptionGen;
 import org.apache.bcel.generic.ConstantPoolGen;
 import org.apache.bcel.generic.ConversionInstruction;
 import org.apache.bcel.generic.DCMPG;
@@ -73,8 +74,6 @@ import org.apache.bcel.generic.SWAP;
 import org.apache.bcel.generic.Select;
 import org.apache.bcel.generic.StoreInstruction;
 import org.apache.bcel.generic.Type;
-import org.apache.bcel.verifier.structurals.ExceptionHandler;
-import org.apache.bcel.verifier.structurals.ExceptionHandlers;
 
 import de.htwg_konstanz.in.jca.ResultValue.Kind;
 import edu.umd.cs.findbugs.BugCollection;
@@ -112,7 +111,8 @@ public class PropConInstructionsAnalysisVisitor extends EmptyVisitor {
 	private Frame frame;
 	private final ConstantPoolGen constantPoolGen;
 	private InstructionHandle instructionHandle;
-	private final ExceptionHandlers exceptionHandlers;
+	// private final ExceptionHandlers exceptionHandlers;
+	private final CodeExceptionGen[] exceptionHandlers;
 	private ArrayList<AlreadyVisitedIfInstruction> alreadyVisited;
 	private SortedBugCollection bugs = new SortedBugCollection();
 	private List<ResultValue> result = new Vector<ResultValue>();
@@ -159,7 +159,7 @@ public class PropConInstructionsAnalysisVisitor extends EmptyVisitor {
 	public PropConInstructionsAnalysisVisitor(Frame frame,
 			ConstantPoolGen constantPoolGen,
 			InstructionHandle instructionHandle,
-			ExceptionHandlers exceptionHandlers) {
+			CodeExceptionGen[] exceptionHandlers) {
 		this(frame, constantPoolGen,
 				new ArrayList<AlreadyVisitedIfInstruction>(),
 				instructionHandle, exceptionHandlers);
@@ -169,7 +169,7 @@ public class PropConInstructionsAnalysisVisitor extends EmptyVisitor {
 			ConstantPoolGen constantPoolGen,
 			ArrayList<AlreadyVisitedIfInstruction> alreadyVisited,
 			InstructionHandle instructionHandle,
-			ExceptionHandlers exceptionHandlers) {
+			CodeExceptionGen[] exceptionHandlers) {
 		this.frame = frame;
 		this.constantPoolGen = constantPoolGen;
 		this.alreadyVisited = alreadyVisited;
@@ -482,20 +482,24 @@ public class PropConInstructionsAnalysisVisitor extends EmptyVisitor {
 		frame.getStack().clear();
 		frame.getStack().push(exception);
 
-		ExceptionHandler[] excepHandlers = exceptionHandlers
-				.getExceptionHandlers(instructionHandle);
+		// ExceptionHandler[] excepHandlers = exceptionHandlers
+		// .getExceptionHandlers(instructionHandle);
 
-		for (ExceptionHandler excepHandler : excepHandlers) {
-			logger.log(Level.FINE, "vvvvv " + excepHandler.toString()
-					+ ": start vvvvv");
-			PropConInstructionsAnalysisVisitor excepHandlerVisitor = new PropConInstructionsAnalysisVisitor(
-					new Frame(frame), constantPoolGen, alreadyVisited,
-					excepHandler.getHandlerStart(), exceptionHandlers);
-			excepHandler.getHandlerStart().accept(excepHandlerVisitor);
-			bugs.addAll(excepHandlerVisitor.getBugs().getCollection());
-			result.addAll(excepHandlerVisitor.getResult());
-			logger.log(Level.FINE, "^^^^^ " + excepHandler.toString()
-					+ ": end ^^^^^");
+		// for (ExceptionHandler excepHandler : excepHandlers) {
+		for (CodeExceptionGen exceptionHandler : exceptionHandlers) {
+			if (PropConMethodAnalyzer.protectsInstruction(exceptionHandler,
+					instructionHandle)) {
+				logger.log(Level.FINE, "vvvvv " + exceptionHandler.toString()
+						+ ": start vvvvv");
+				PropConInstructionsAnalysisVisitor excepHandlerVisitor = new PropConInstructionsAnalysisVisitor(
+						new Frame(frame), constantPoolGen, alreadyVisited,
+						exceptionHandler.getHandlerPC(), exceptionHandlers);
+				exceptionHandler.getHandlerPC().accept(excepHandlerVisitor);
+				bugs.addAll(excepHandlerVisitor.getBugs().getCollection());
+				result.addAll(excepHandlerVisitor.getResult());
+				logger.log(Level.FINE, "^^^^^ " + exceptionHandler.toString()
+						+ ": end ^^^^^");
+			}
 		}
 		result.add(new ResultValue(Kind.EXCEPTION, Slot.notThisReference));
 	}
@@ -509,6 +513,7 @@ public class PropConInstructionsAnalysisVisitor extends EmptyVisitor {
 
 	@Override
 	public void visitATHROW(ATHROW obj) {
+		logger.log(Level.FINE, obj.toString(false));
 		Slot exception = frame.getStack().pop();
 		handleException(exception);
 	}
@@ -978,7 +983,7 @@ public class PropConInstructionsAnalysisVisitor extends EmptyVisitor {
 	 * Determines if an object objectref is of a given type, identified by class
 	 * reference index in constant pool (indexbyte1 << 8 + indexbyte2).
 	 * <p>
-	 * Stack: objectref → result <br>
+	 * Stack: objectref result <br>
 	 * Note: 2 other bytes (indexbyte1, indexbyte2)
 	 */
 	@Override

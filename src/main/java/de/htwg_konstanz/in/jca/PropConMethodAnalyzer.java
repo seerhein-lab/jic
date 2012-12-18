@@ -6,12 +6,12 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.apache.bcel.classfile.Method;
+import org.apache.bcel.generic.CodeExceptionGen;
 import org.apache.bcel.generic.ConstantPoolGen;
 import org.apache.bcel.generic.InstructionHandle;
 import org.apache.bcel.generic.InstructionList;
 import org.apache.bcel.generic.MethodGen;
 import org.apache.bcel.generic.Type;
-import org.apache.bcel.verifier.structurals.ExceptionHandlers;
 
 import edu.umd.cs.findbugs.BugCollection;
 
@@ -24,7 +24,8 @@ public class PropConMethodAnalyzer {
 
 	/** The method to analyze. */
 	private final Method method;
-	private final ExceptionHandlers exceptionHandlers;
+	// private final ExceptionHandlers exceptionHandlers;
+	private final CodeExceptionGen[] exceptionHandlers;
 
 	/** The visitor which inspects the method's bytecode instructions. */
 	private PropConInstructionsAnalysisVisitor visitor = null;
@@ -37,7 +38,23 @@ public class PropConMethodAnalyzer {
 	 */
 	public PropConMethodAnalyzer(MethodGen methodGen) {
 		this.method = methodGen.getMethod();
-		this.exceptionHandlers = new ExceptionHandlers(methodGen);
+		// this.exceptionHandlers = new ExceptionHandlers(methodGen);
+		exceptionHandlers = methodGen.getExceptionHandlers();
+
+	}
+
+	static boolean protectsInstruction(CodeExceptionGen exceptionHandler,
+			InstructionHandle instruction) {
+		for (InstructionHandle protectedInstruction = exceptionHandler
+				.getStartPC(); !protectedInstruction.equals(exceptionHandler
+				.getEndPC()); protectedInstruction = protectedInstruction
+				.getNext()) {
+			// System.out.println(protectedInstruction + " | " + instruction);
+			if (protectedInstruction.getPosition() == instruction.getPosition())
+				return true;
+		}
+		return (exceptionHandler.getEndPC().getPosition() == instruction
+				.getPosition());
 	}
 
 	/**
@@ -81,6 +98,20 @@ public class PropConMethodAnalyzer {
 
 		InstructionHandle[] instructionHandles = new InstructionList(method
 				.getCode().getCode()).getInstructionHandles();
+
+		// for (CodeExceptionGen codeExceptionGen : exceptionHandlers) {
+		// System.out.println("Start: " + codeExceptionGen.getStartPC());
+		// System.out.println("End: " + codeExceptionGen.getEndPC());
+		//
+		// for (InstructionHandle instructionHandle : instructionHandles) {
+		// if (protectsInstruction(codeExceptionGen, instructionHandle))
+		// System.out.println("protected instruction:"
+		// + instructionHandle);
+		// else
+		// System.out.println("unprotected instruction:"
+		// + instructionHandle);
+		// }
+		// }
 
 		visitor = new PropConInstructionsAnalysisVisitor(calleeFrame,
 				new ConstantPoolGen(method.getConstantPool()),

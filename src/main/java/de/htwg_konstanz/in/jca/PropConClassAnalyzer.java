@@ -62,8 +62,12 @@ public class PropConClassAnalyzer {
 		List<Method> ctors = getConstructors();
 
 		for (Method ctor : ctors) {
-			MethodGen ctorGen = new MethodGen(ctor, clazz.getClassName(),
-					new ConstantPoolGen(clazz.getConstantPool()));
+			// MethodGen ctorGen = new MethodGen(ctor, clazz.getClassName(),
+			// new ConstantPoolGen(clazz.getConstantPool()));
+
+			MethodGen ctorGen = new MethodGen(ctor,
+					"playground.PropConstTestClass", new ConstantPoolGen(
+							clazz.getConstantPool()));
 
 			PropConMethodAnalyzer ctorAnalyzer = new PropConMethodAnalyzer(
 					ctorGen);
