@@ -1,5 +1,7 @@
 # JCA - Java Concurrency Analyzer
 
+[![Build Status](https://buildhive.cloudbees.com/job/Seitenbau/job/jca/badge/icon)](https://buildhive.cloudbees.com/job/Seitenbau/job/jca/)
+
 Project description - to be done.
 
 ## Tooling and Dependencies
