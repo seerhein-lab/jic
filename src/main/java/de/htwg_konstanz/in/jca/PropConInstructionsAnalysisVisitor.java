@@ -564,7 +564,7 @@ public class PropConInstructionsAnalysisVisitor extends EmptyVisitor {
 		}
 
 		logger.log(Level.FINEST, "------------------  " + alreadyVisited.size()
-				+ ".else  ------------------");
+				+ ".else  (condition might be inverted!) ------------------");
 		AlreadyVisitedIfInstruction elseBranch = new AlreadyVisitedIfInstruction(
 				instructionHandle, false);
 		if (!alreadyVisited.contains(elseBranch)) {
@@ -582,7 +582,7 @@ public class PropConInstructionsAnalysisVisitor extends EmptyVisitor {
 			logger.log(Level.FINEST, "Loop detected, do not re-enter.");
 		}
 		logger.log(Level.FINEST, "------------------  " + alreadyVisited.size()
-				+ ".then  ------------------");
+				+ ".then  (condition might be inverted!) ------------------");
 		AlreadyVisitedIfInstruction thenBranch = new AlreadyVisitedIfInstruction(
 				instructionHandle, true);
 		if (!alreadyVisited.contains(thenBranch)) {

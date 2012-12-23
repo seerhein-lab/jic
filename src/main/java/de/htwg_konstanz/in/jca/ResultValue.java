@@ -47,6 +47,31 @@ public class ResultValue {
 	// return normalize(survivors, tail);
 	// }
 
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + ((kind == null) ? 0 : kind.hashCode());
+		result = prime * result + ((slot == null) ? 0 : slot.hashCode());
+		return result;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (!(obj instanceof ResultValue))
+			return false;
+		ResultValue other = (ResultValue) obj;
+		if (kind != other.kind)
+			return false;
+		if (slot != other.slot)
+			return false;
+		return true;
+	}
+
 	private static List<ResultValue> combineReferences(
 			List<ResultValue> resultValues) {
 		List<ResultValue> correctedList = new Vector<ResultValue>();

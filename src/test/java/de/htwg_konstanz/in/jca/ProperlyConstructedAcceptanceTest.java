@@ -1,9 +1,12 @@
 package de.htwg_konstanz.in.jca;
 
+import java.io.IOException;
+
 import org.junit.runner.RunWith;
 
 import de.htwg_konstanz.in.jca.testutils.ClassAnalyzerRunner;
 import de.htwg_konstanz.in.jca.testutils.ClassAnalyzerRunner.BindAnalyzerMethod;
+import de.htwg_konstanz.in.jca.testutils.No;
 import de.htwg_konstanz.in.jca.testutils.Yes;
 import edu.umd.cs.findbugs.BugCollection;
 
@@ -195,17 +198,13 @@ public class ProperlyConstructedAcceptanceTest {
 	 */
 	@Yes
 	public static class Story015_ClassWithOneArgCtorByte {
-		final Class item = new Class((byte) 15);
+		@SuppressWarnings("unused")
+		private byte b;
 
-		public static final class Class {
-
-			@SuppressWarnings("unused")
-			private byte b;
-
-			public Class(byte b) {
-				this.b = b;
-			}
+		public Story015_ClassWithOneArgCtorByte(byte b) {
+			this.b = b;
 		}
+
 	}
 
 	// TODO: other param types, more than one param
@@ -258,6 +257,168 @@ public class ProperlyConstructedAcceptanceTest {
 				d = 12;
 			}
 			d = d + 1.1;
+		}
+	}
+
+	@Yes
+	public static class Story018_SimpleClassWithThrows {
+		public Story018_SimpleClassWithThrows() throws IOException {
+			throw new IOException();
+		}
+	}
+
+	@Yes
+	public static class Story019_SimpleClassWithTryCatch {
+		public Story019_SimpleClassWithTryCatch() {
+			try {
+				throw new IOException();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		}
+	}
+
+	@Yes
+	public static class Story020_SimpleClassWithTryCatchOneParm {
+		public Story020_SimpleClassWithTryCatchOneParm(Object obj) {
+			try {
+				throw new IOException();
+			} catch (IOException e) {
+				obj = this;
+			}
+		}
+	}
+
+	@No
+	public static class Story021_SimpleClassWithTryCatchNoParm {
+		@SuppressWarnings("unused")
+		private Object obj;
+
+		public Story021_SimpleClassWithTryCatchNoParm() {
+			try {
+				obj = this;
+				throw new IOException();
+			} catch (IOException e) {
+				obj = new Object();
+			}
+		}
+	}
+
+	@Yes
+	public static class Story022_ClassWithSingleArgumentExceptionHandling {
+		public Story022_ClassWithSingleArgumentExceptionHandling(int j) {
+			int i = 0;
+			try {
+				i = i / j;
+				if (i > 3)
+					throw new IOException();
+				i++;
+			} catch (IOException e) {
+				j++;
+			}
+		}
+	}
+
+	@Yes
+	public static class Story023_ClassWithSingleArgumentSimpleExceptionHandling {
+		public Story023_ClassWithSingleArgumentSimpleExceptionHandling(int i) {
+			try {
+				if (i > 2)
+					throw new IOException();
+				i++;
+			} catch (IOException e) {
+				i--;
+			}
+		}
+	}
+
+	@Yes
+	public static class Story024_ClassWithSingleArgumentSimpleTryCatchFinally {
+		public Story024_ClassWithSingleArgumentSimpleTryCatchFinally(int i) {
+			try {
+				if (i > 2)
+					throw new IOException();
+				i++;
+			} catch (IOException e) {
+				i--;
+			} finally {
+				i += 2;
+			}
+		}
+	}
+
+	@Yes
+	public static class Story025_ClassWithSingleArgumentTryDoubleCatchFinally {
+		public Story025_ClassWithSingleArgumentTryDoubleCatchFinally(int i) {
+			try {
+				if (i > 2)
+					throw new IOException();
+				i++;
+			} catch (IOException e) {
+				i--;
+			} catch (Exception e) {
+				i += 5;
+			} finally {
+				i += 2;
+			}
+		}
+	}
+
+	@Yes
+	public static class Story026_ClassWithSingleArgumentTryDoubleCatchFinallyMultipleExceptions {
+		public Story026_ClassWithSingleArgumentTryDoubleCatchFinallyMultipleExceptions(
+				int i) throws Exception {
+			try {
+				if (i > 2)
+					throw new IOException();
+				i++;
+			} catch (IOException e) {
+				i--;
+			} catch (Exception e) {
+				i += 5;
+				throw new Exception();
+			} finally {
+				i += 2;
+			}
+		}
+	}
+
+	@Yes
+	public static class Story027_ClassWithSimpleExceptionThrowingMethod {
+
+		private void thrower() throws IOException {
+			throw new IOException();
+		}
+
+		public Story027_ClassWithSimpleExceptionThrowingMethod(int i)
+				throws Exception {
+			try {
+				thrower();
+			} catch (IOException e) {
+				i--;
+			}
+		}
+	}
+
+	@Yes
+	public static class Story028_ClassWithNestedExceptionhandling {
+
+		private void thrower(int i) throws IOException {
+			try {
+				throw new IOException();
+			} catch (Exception e) {
+				i *= 15;
+			}
+		}
+
+		public Story028_ClassWithNestedExceptionhandling(int i)
+				throws Exception {
+			try {
+				thrower(i);
+			} catch (IOException e) {
+				i--;
+			}
+			i /= 5;
 		}
 	}
 }
