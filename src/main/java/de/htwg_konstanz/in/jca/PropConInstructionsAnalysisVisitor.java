@@ -107,6 +107,8 @@ import edu.umd.cs.findbugs.SortedBugCollection;
 public class PropConInstructionsAnalysisVisitor extends EmptyVisitor {
 	private static final Logger logger = Logger
 			.getLogger("PropConInstructionsAnalysisVisitor");
+	private final String indentation;
+	private final int depth;
 
 	private Frame frame;
 	private final ConstantPoolGen constantPoolGen;
@@ -159,22 +161,24 @@ public class PropConInstructionsAnalysisVisitor extends EmptyVisitor {
 	public PropConInstructionsAnalysisVisitor(Frame frame,
 			ConstantPoolGen constantPoolGen,
 			InstructionHandle instructionHandle,
-			CodeExceptionGen[] exceptionHandlers) {
+			CodeExceptionGen[] exceptionHandlers, int depth) {
 		this(frame, constantPoolGen,
 				new ArrayList<AlreadyVisitedIfInstruction>(),
-				instructionHandle, exceptionHandlers);
+				instructionHandle, exceptionHandlers, depth);
 	}
 
 	private PropConInstructionsAnalysisVisitor(Frame frame,
 			ConstantPoolGen constantPoolGen,
 			ArrayList<AlreadyVisitedIfInstruction> alreadyVisited,
 			InstructionHandle instructionHandle,
-			CodeExceptionGen[] exceptionHandlers) {
+			CodeExceptionGen[] exceptionHandlers, int depth) {
 		this.frame = frame;
 		this.constantPoolGen = constantPoolGen;
 		this.alreadyVisited = alreadyVisited;
 		this.instructionHandle = instructionHandle;
 		this.exceptionHandlers = exceptionHandlers;
+		this.depth = depth;
+		this.indentation = Utils.formatLoggingOutput(depth);
 	}
 
 	public BugCollection getBugs() {
@@ -200,11 +204,11 @@ public class PropConInstructionsAnalysisVisitor extends EmptyVisitor {
 	 *            node to be visited
 	 */
 	private void handleMethodThatIsAnalyzed(InvokeInstruction obj) {
-		logger.log(Level.FINE, obj.toString(false));
+		logger.log(Level.FINE, indentation + obj.toString(false));
 		logger.log(
 				Level.FINEST,
-				"\t" + obj.getLoadClassType(constantPoolGen) + "."
-						+ obj.getMethodName(constantPoolGen)
+				indentation + "\t" + obj.getLoadClassType(constantPoolGen)
+						+ "." + obj.getMethodName(constantPoolGen)
 						+ obj.getSignature(constantPoolGen));
 
 		JavaClass targetClass = null;
@@ -226,7 +230,7 @@ public class PropConInstructionsAnalysisVisitor extends EmptyVisitor {
 						targetClass.getConstantPool()));
 
 		PropConMethodAnalyzer targetMethodAnalyzer = new PropConMethodAnalyzer(
-				targetMethodGen);
+				targetMethodGen, depth);
 		targetMethodAnalyzer.analyze(frame.getStack());
 
 		bugs.addAll(targetMethodAnalyzer.getBugs().getCollection());
@@ -238,7 +242,7 @@ public class PropConInstructionsAnalysisVisitor extends EmptyVisitor {
 			if (calleeResult.getKind().equals(Kind.REGULAR)) {
 				PropConInstructionsAnalysisVisitor specificCalleeResultVisitor = new PropConInstructionsAnalysisVisitor(
 						new Frame(frame), constantPoolGen, alreadyVisited,
-						instructionHandle.getNext(), exceptionHandlers);
+						instructionHandle.getNext(), exceptionHandlers, depth);
 
 				specificCalleeResultVisitor.frame
 						.pushStackByRequiredSlots(calleeResult.getSlot());
@@ -265,8 +269,9 @@ public class PropConInstructionsAnalysisVisitor extends EmptyVisitor {
 	 *            node to be visited
 	 */
 	private void handleMethodThatIsNotAnalyzed(InvokeInstruction obj) {
-		logger.log(Level.FINE, obj.toString(false));
-		logger.log(Level.FINEST, "\t" + obj.getSignature(constantPoolGen));
+		logger.log(Level.FINE, indentation + obj.toString(false));
+		logger.log(Level.FINEST,
+				indentation + "\t" + obj.getSignature(constantPoolGen));
 		// get number of args
 		Type[] type = obj.getArgumentTypes(constantPoolGen);
 		// get return value
@@ -319,7 +324,7 @@ public class PropConInstructionsAnalysisVisitor extends EmptyVisitor {
 	 *            the instruction
 	 */
 	private void handleCMPG(Instruction obj) {
-		logger.log(Level.FINE, obj.toString(false));
+		logger.log(Level.FINE, indentation + obj.toString(false));
 
 		// pop value2
 		frame.popStackByRequiredSlots();
@@ -342,7 +347,7 @@ public class PropConInstructionsAnalysisVisitor extends EmptyVisitor {
 	 * value1 or value2 is NaN the result is -1.
 	 */
 	private void handleCMPL(Instruction obj) {
-		logger.log(Level.FINE, obj.toString(false));
+		logger.log(Level.FINE, indentation + obj.toString(false));
 		// pop value2
 		frame.popStackByRequiredSlots();
 		// pop value1
@@ -377,7 +382,7 @@ public class PropConInstructionsAnalysisVisitor extends EmptyVisitor {
 	 */
 	@Override
 	public void visitACONST_NULL(ACONST_NULL obj) {
-		logger.log(Level.FINE, obj.toString(false));
+		logger.log(Level.FINE, indentation + obj.toString(false));
 		// push NULL onto stack
 		frame.getStack().push(Slot.notThisReference);
 		instructionHandle = instructionHandle.getNext();
@@ -393,7 +398,7 @@ public class PropConInstructionsAnalysisVisitor extends EmptyVisitor {
 	 */
 	@Override
 	public void visitArithmeticInstruction(ArithmeticInstruction obj) {
-		logger.log(Level.FINE, obj.toString(false));
+		logger.log(Level.FINE, indentation + obj.toString(false));
 		String log = "\t" + "(";
 
 		DataType targetDataType = DataType.getDataType(obj
@@ -415,7 +420,7 @@ public class PropConInstructionsAnalysisVisitor extends EmptyVisitor {
 		}
 
 		log += ")";
-		logger.log(Level.FINEST, log);
+		logger.log(Level.FINEST, indentation + log);
 
 		instructionHandle = instructionHandle.getNext();
 		instructionHandle.accept(this);
@@ -430,7 +435,7 @@ public class PropConInstructionsAnalysisVisitor extends EmptyVisitor {
 	 */
 	@Override
 	public void visitArrayInstruction(ArrayInstruction obj) {
-		logger.log(Level.FINE, obj.toString(false));
+		logger.log(Level.FINE, indentation + obj.toString(false));
 
 		short opcode = obj.getOpcode();
 		if (opcode >= 0x2E && opcode <= 0x35) {
@@ -469,7 +474,7 @@ public class PropConInstructionsAnalysisVisitor extends EmptyVisitor {
 	 */
 	@Override
 	public void visitARRAYLENGTH(ARRAYLENGTH obj) {
-		logger.log(Level.FINE, obj.toString(false));
+		logger.log(Level.FINE, indentation + obj.toString(false));
 		// pops array reference
 		frame.getStack().pop();
 		// pushes length
@@ -489,16 +494,17 @@ public class PropConInstructionsAnalysisVisitor extends EmptyVisitor {
 		for (CodeExceptionGen exceptionHandler : exceptionHandlers) {
 			if (PropConMethodAnalyzer.protectsInstruction(exceptionHandler,
 					instructionHandle)) {
-				logger.log(Level.FINE, "vvvvv " + exceptionHandler.toString()
-						+ ": start vvvvv");
+				logger.log(Level.FINE, indentation + "vvvvv "
+						+ exceptionHandler.toString() + ": start vvvvv");
 				PropConInstructionsAnalysisVisitor excepHandlerVisitor = new PropConInstructionsAnalysisVisitor(
 						new Frame(frame), constantPoolGen, alreadyVisited,
-						exceptionHandler.getHandlerPC(), exceptionHandlers);
+						exceptionHandler.getHandlerPC(), exceptionHandlers,
+						depth);
 				exceptionHandler.getHandlerPC().accept(excepHandlerVisitor);
 				bugs.addAll(excepHandlerVisitor.getBugs().getCollection());
 				result.addAll(excepHandlerVisitor.getResult());
-				logger.log(Level.FINE, "^^^^^ " + exceptionHandler.toString()
-						+ ": end ^^^^^");
+				logger.log(Level.FINE, indentation + "^^^^^ "
+						+ exceptionHandler.toString() + ": end ^^^^^");
 			}
 		}
 		result.add(new ResultValue(Kind.EXCEPTION, Slot.notThisReference));
@@ -513,7 +519,7 @@ public class PropConInstructionsAnalysisVisitor extends EmptyVisitor {
 
 	@Override
 	public void visitATHROW(ATHROW obj) {
-		logger.log(Level.FINE, obj.toString(false));
+		logger.log(Level.FINE, indentation + obj.toString(false));
 		Slot exception = frame.getStack().pop();
 		handleException(exception);
 	}
@@ -526,7 +532,7 @@ public class PropConInstructionsAnalysisVisitor extends EmptyVisitor {
 	 */
 	@Override
 	public void visitBIPUSH(BIPUSH obj) {
-		logger.log(Level.FINE, obj.toString(false));
+		logger.log(Level.FINE, indentation + obj.toString(false));
 		// pushes the integer value onto the stack
 		frame.getStack().push(Slot.someInt);
 		instructionHandle = instructionHandle.getNext();
@@ -542,7 +548,7 @@ public class PropConInstructionsAnalysisVisitor extends EmptyVisitor {
 	 */
 	@Override
 	public void visitGotoInstruction(GotoInstruction obj) {
-		logger.log(Level.FINE, obj.toString(false));
+		logger.log(Level.FINE, indentation + obj.toString(false));
 		instructionHandle = obj.getTarget();
 		instructionHandle.accept(this);
 	}
@@ -558,12 +564,13 @@ public class PropConInstructionsAnalysisVisitor extends EmptyVisitor {
 	 */
 	@Override
 	public void visitIfInstruction(IfInstruction obj) {
-		logger.log(Level.FINE, obj.toString(false));
+		logger.log(Level.FINE, indentation + obj.toString(false));
 		for (int i = 0; i < obj.consumeStack(constantPoolGen); i++) {
 			frame.getStack().pop();
 		}
 
-		logger.log(Level.FINEST, "------------------  " + alreadyVisited.size()
+		logger.log(Level.FINEST, indentation + "------------------  "
+				+ alreadyVisited.size()
 				+ ".else  (condition might be inverted!) ------------------");
 		AlreadyVisitedIfInstruction elseBranch = new AlreadyVisitedIfInstruction(
 				instructionHandle, false);
@@ -574,14 +581,16 @@ public class PropConInstructionsAnalysisVisitor extends EmptyVisitor {
 			newAlreadyVisited.add(elseBranch);
 			PropConInstructionsAnalysisVisitor elseBranchVisitor = new PropConInstructionsAnalysisVisitor(
 					new Frame(frame), constantPoolGen, newAlreadyVisited,
-					instructionHandle.getNext(), exceptionHandlers);
+					instructionHandle.getNext(), exceptionHandlers, depth);
 			instructionHandle.getNext().accept(elseBranchVisitor);
 			bugs.addAll(elseBranchVisitor.getBugs().getCollection());
 			result.addAll(elseBranchVisitor.getResult());
 		} else {
-			logger.log(Level.FINEST, "Loop detected, do not re-enter.");
+			logger.log(Level.FINEST, indentation
+					+ "Loop detected, do not re-enter.");
 		}
-		logger.log(Level.FINEST, "------------------  " + alreadyVisited.size()
+		logger.log(Level.FINEST, indentation + "------------------  "
+				+ alreadyVisited.size()
 				+ ".then  (condition might be inverted!) ------------------");
 		AlreadyVisitedIfInstruction thenBranch = new AlreadyVisitedIfInstruction(
 				instructionHandle, true);
@@ -593,12 +602,13 @@ public class PropConInstructionsAnalysisVisitor extends EmptyVisitor {
 
 			PropConInstructionsAnalysisVisitor thenBranchVisitor = new PropConInstructionsAnalysisVisitor(
 					new Frame(frame), constantPoolGen, newAlreadyVisited,
-					obj.getTarget(), exceptionHandlers);
+					obj.getTarget(), exceptionHandlers, depth);
 			obj.getTarget().accept(thenBranchVisitor);
 			bugs.addAll(thenBranchVisitor.getBugs().getCollection());
 			result.addAll(thenBranchVisitor.getResult());
 		} else {
-			logger.log(Level.FINEST, "Loop detected, do not re-enter.");
+			logger.log(Level.FINEST, indentation
+					+ "Loop detected, do not re-enter.");
 		}
 	}
 
@@ -609,7 +619,7 @@ public class PropConInstructionsAnalysisVisitor extends EmptyVisitor {
 	 */
 	@Override
 	public void visitJsrInstruction(JsrInstruction obj) {
-		logger.log(Level.FINE, obj.toString(false));
+		logger.log(Level.FINE, indentation + obj.toString(false));
 		logger.log(Level.WARNING,
 				"Untested Code Warning: Executing JSR instruction");
 		bugs.add(new BugInstance(
@@ -632,7 +642,7 @@ public class PropConInstructionsAnalysisVisitor extends EmptyVisitor {
 	 */
 	@Override
 	public void visitSelect(Select obj) {
-		logger.log(Level.FINE, obj.toString(false));
+		logger.log(Level.FINE, indentation + obj.toString(false));
 		// pops integer index
 		frame.getStack().pop();
 
@@ -641,12 +651,11 @@ public class PropConInstructionsAnalysisVisitor extends EmptyVisitor {
 		PropConInstructionsAnalysisVisitor caseToFollow;
 		// follows all targets excluding the default case
 		for (int i = 0; i < targets.length; i++) {
-			logger.log(Level.FINEST,
-					"--------------- Line " + targets[i].getPosition()
-							+ " ---------------");
+			logger.log(Level.FINEST, indentation + "--------------- Line "
+					+ targets[i].getPosition() + " ---------------");
 			caseToFollow = new PropConInstructionsAnalysisVisitor(new Frame(
 					frame), constantPoolGen, alreadyVisited, targets[i],
-					exceptionHandlers);
+					exceptionHandlers, depth);
 			targets[i].accept(caseToFollow);
 			// adding occurred bugs to bug-collection
 			bugs.addAll(caseToFollow.getBugs().getCollection());
@@ -654,14 +663,14 @@ public class PropConInstructionsAnalysisVisitor extends EmptyVisitor {
 			result.addAll(caseToFollow.getResult());
 		}
 		// handles the default case and follows it
-		logger.log(Level.FINEST, "--------------- Line "
+		logger.log(Level.FINEST, indentation + "--------------- Line "
 				+ obj.getTarget().getPosition()
 				+ " (DefaultCase) ---------------");
 		// NOTE: If the keyword "Default:" is not in the switch the following
 		// target is the end of the switch without executing a case.
 		caseToFollow = new PropConInstructionsAnalysisVisitor(new Frame(frame),
 				constantPoolGen, alreadyVisited, obj.getTarget(),
-				exceptionHandlers);
+				exceptionHandlers, depth);
 		obj.getTarget().accept(caseToFollow);
 		// adding occurred bugs to bug-collection
 		bugs.addAll(caseToFollow.getBugs().getCollection());
@@ -691,7 +700,7 @@ public class PropConInstructionsAnalysisVisitor extends EmptyVisitor {
 	 */
 	@Override
 	public void visitConversionInstruction(ConversionInstruction obj) {
-		logger.log(Level.FINE, obj.toString(false));
+		logger.log(Level.FINE, indentation + obj.toString(false));
 		String log = "\t" + "(";
 
 		// pop the consumed values
@@ -712,7 +721,7 @@ public class PropConInstructionsAnalysisVisitor extends EmptyVisitor {
 		}
 
 		log += ")";
-		logger.log(Level.FINEST, log);
+		logger.log(Level.FINEST, indentation + log);
 
 		instructionHandle = instructionHandle.getNext();
 		instructionHandle.accept(this);
@@ -728,7 +737,7 @@ public class PropConInstructionsAnalysisVisitor extends EmptyVisitor {
 	 */
 	@Override
 	public void visitANEWARRAY(ANEWARRAY obj) {
-		logger.log(Level.FINE, obj.toString(false));
+		logger.log(Level.FINE, indentation + obj.toString(false));
 
 		// pops the length
 		frame.getStack().pop();
@@ -749,7 +758,7 @@ public class PropConInstructionsAnalysisVisitor extends EmptyVisitor {
 	 */
 	@Override
 	public void visitCHECKCAST(CHECKCAST obj) {
-		logger.log(Level.FINE, obj.toString(false));
+		logger.log(Level.FINE, indentation + obj.toString(false));
 		Slot objRef = frame.getStack().pop();
 		// check type of popped object reference
 
@@ -757,12 +766,14 @@ public class PropConInstructionsAnalysisVisitor extends EmptyVisitor {
 		// visitor
 		PropConInstructionsAnalysisVisitor regularCaseVisitor = new PropConInstructionsAnalysisVisitor(
 				new Frame(frame), constantPoolGen, alreadyVisited,
-				instructionHandle.getNext(), exceptionHandlers);
+				instructionHandle.getNext(), exceptionHandlers, depth);
 
 		regularCaseVisitor.frame.getStack().push(objRef);
 
-		logger.log(Level.FINEST,
-				"\t" + objRef + " ?= " + obj.getLoadClassType(constantPoolGen));
+		logger.log(
+				Level.FINEST,
+				indentation + "\t" + objRef + " ?= "
+						+ obj.getLoadClassType(constantPoolGen));
 		instructionHandle.getNext().accept(regularCaseVisitor);
 
 		bugs.addAll(regularCaseVisitor.getBugs().getCollection());
@@ -781,7 +792,7 @@ public class PropConInstructionsAnalysisVisitor extends EmptyVisitor {
 	 * */
 	@Override
 	public void visitGETFIELD(GETFIELD obj) {
-		logger.log(Level.FINEST, obj.toString(false));
+		logger.log(Level.FINEST, indentation + obj.toString(false));
 
 		Slot ref = frame.getStack().pop();
 
@@ -791,8 +802,10 @@ public class PropConInstructionsAnalysisVisitor extends EmptyVisitor {
 				: Slot.getDefaultInstance(targetType);
 		frame.pushStackByRequiredSlots(value);
 
-		logger.log(Level.FINEST,
-				"\t" + ref + "." + obj.getFieldName(constantPoolGen));
+		logger.log(
+				Level.FINEST,
+				indentation + "\t" + ref + "."
+						+ obj.getFieldName(constantPoolGen));
 
 		instructionHandle = instructionHandle.getNext();
 		instructionHandle.accept(this);
@@ -807,7 +820,7 @@ public class PropConInstructionsAnalysisVisitor extends EmptyVisitor {
 	 */
 	@Override
 	public void visitGETSTATIC(GETSTATIC obj) {
-		logger.log(Level.FINEST, obj.toString(false));
+		logger.log(Level.FINEST, indentation + obj.toString(false));
 
 		DataType targetType = DataType.getDataType(obj
 				.getFieldType(constantPoolGen));
@@ -824,7 +837,7 @@ public class PropConInstructionsAnalysisVisitor extends EmptyVisitor {
 				.equals(DataType.longType)) ? valueToGet + ", " + valueToGet
 				: valueToGet;
 		log += ")";
-		logger.log(Level.FINEST, log);
+		logger.log(Level.FINEST, indentation + log);
 
 		instructionHandle = instructionHandle.getNext();
 		instructionHandle.accept(this);
@@ -840,7 +853,7 @@ public class PropConInstructionsAnalysisVisitor extends EmptyVisitor {
 	 * */
 	@Override
 	public void visitPUTFIELD(PUTFIELD obj) {
-		logger.log(Level.FINEST, obj.toString(false));
+		logger.log(Level.FINEST, indentation + obj.toString(false));
 
 		// right side of assignment
 		Slot right = frame.popStackByRequiredSlots();
@@ -867,8 +880,9 @@ public class PropConInstructionsAnalysisVisitor extends EmptyVisitor {
 		// pop left side of assignment off the stack, too
 		Slot left = frame.getStack().pop();
 
-		logger.log(Level.FINEST, left + "." + obj.getFieldName(constantPoolGen)
-				+ " <--" + logPart);
+		logger.log(Level.FINEST,
+				indentation + left + "." + obj.getFieldName(constantPoolGen)
+						+ " <--" + logPart);
 
 		instructionHandle = instructionHandle.getNext();
 		instructionHandle.accept(this);
@@ -883,7 +897,7 @@ public class PropConInstructionsAnalysisVisitor extends EmptyVisitor {
 	 */
 	@Override
 	public void visitPUTSTATIC(PUTSTATIC obj) {
-		logger.log(Level.FINE, obj.toString(false));
+		logger.log(Level.FINE, indentation + obj.toString(false));
 
 		// popping value from stack
 		Slot toPut = frame.popStackByRequiredSlots();
@@ -894,7 +908,7 @@ public class PropConInstructionsAnalysisVisitor extends EmptyVisitor {
 		log += obj.getName(constantPoolGen) + " <-- ";
 		log += (toPut.getDataType().getNumSlots() == 2) ? toPut + ", " + toPut
 				: toPut;
-		logger.log(Level.FINEST, log);
+		logger.log(Level.FINEST, indentation + log);
 
 		if (toPut.equals(Slot.thisReference)) {
 			logger.log(Level.SEVERE,
@@ -988,7 +1002,7 @@ public class PropConInstructionsAnalysisVisitor extends EmptyVisitor {
 	 */
 	@Override
 	public void visitINSTANCEOF(INSTANCEOF obj) {
-		logger.log(Level.FINE, obj.toString(false));
+		logger.log(Level.FINE, indentation + obj.toString(false));
 
 		frame.getStack().pop();
 		frame.pushStackByDataType(DataType.intType);
@@ -1005,7 +1019,7 @@ public class PropConInstructionsAnalysisVisitor extends EmptyVisitor {
 	 */
 	@Override
 	public void visitLDC(LDC obj) {
-		logger.log(Level.FINE, obj.toString(false));
+		logger.log(Level.FINE, indentation + obj.toString(false));
 
 		DataType type = DataType.getDataType(obj.getType(constantPoolGen));
 		// pushes an integer, a float or notThisReference (String) onto the
@@ -1024,7 +1038,7 @@ public class PropConInstructionsAnalysisVisitor extends EmptyVisitor {
 	 * */
 	@Override
 	public void visitLDC2_W(LDC2_W obj) {
-		logger.log(Level.FINE, obj.toString(false));
+		logger.log(Level.FINE, indentation + obj.toString(false));
 
 		DataType type = DataType.getDataType(obj.getType(constantPoolGen));
 		// pushes two halfDoubles or two halfLongs onto the stack
@@ -1045,11 +1059,11 @@ public class PropConInstructionsAnalysisVisitor extends EmptyVisitor {
 	@Override
 	public void visitMULTIANEWARRAY(MULTIANEWARRAY obj) {
 
-		logger.log(Level.FINE, obj.toString(false));
+		logger.log(Level.FINE, indentation + obj.toString(false));
 		String log = "\t";
 		log += obj.getLoadClassType(constantPoolGen);
 		log += "[" + obj.getDimensions() + "][]";
-		logger.log(Level.FINEST, log);
+		logger.log(Level.FINEST, indentation + log);
 
 		for (int i = 0; i < obj.consumeStack(constantPoolGen); i++) {
 			// pop the 2nd dimension as integer value
@@ -1072,7 +1086,7 @@ public class PropConInstructionsAnalysisVisitor extends EmptyVisitor {
 	 */
 	@Override
 	public void visitNEW(NEW obj) {
-		logger.log(Level.FINE, obj.toString(false));
+		logger.log(Level.FINE, indentation + obj.toString(false));
 
 		frame.getStack().push(Slot.notThisReference);
 
@@ -1116,7 +1130,7 @@ public class PropConInstructionsAnalysisVisitor extends EmptyVisitor {
 	 * */
 	@Override
 	public void visitDCONST(DCONST obj) {
-		logger.log(Level.FINE, obj.toString(false));
+		logger.log(Level.FINE, indentation + obj.toString(false));
 		handleCONST(obj.getType(constantPoolGen));
 	}
 
@@ -1158,7 +1172,7 @@ public class PropConInstructionsAnalysisVisitor extends EmptyVisitor {
 	 */
 	@Override
 	public void visitFCONST(FCONST obj) {
-		logger.log(Level.FINE, obj.toString(false));
+		logger.log(Level.FINE, indentation + obj.toString(false));
 		handleCONST(obj.getType(constantPoolGen));
 	}
 
@@ -1170,7 +1184,7 @@ public class PropConInstructionsAnalysisVisitor extends EmptyVisitor {
 	 */
 	@Override
 	public void visitICONST(ICONST obj) {
-		logger.log(Level.FINE, obj.toString(false));
+		logger.log(Level.FINE, indentation + obj.toString(false));
 		handleCONST(obj.getType(constantPoolGen));
 	}
 
@@ -1221,7 +1235,7 @@ public class PropConInstructionsAnalysisVisitor extends EmptyVisitor {
 	 */
 	@Override
 	public void visitLCONST(LCONST obj) {
-		logger.log(Level.FINE, obj.toString(false));
+		logger.log(Level.FINE, indentation + obj.toString(false));
 		handleCONST(obj.getType(constantPoolGen));
 	}
 
@@ -1235,7 +1249,7 @@ public class PropConInstructionsAnalysisVisitor extends EmptyVisitor {
 	 */
 	@Override
 	public void visitIINC(IINC obj) {
-		logger.log(Level.FINE, obj.toString(false));
+		logger.log(Level.FINE, indentation + obj.toString(false));
 		// no change on the stack, operates on the localVariables
 		instructionHandle = instructionHandle.getNext();
 		instructionHandle.accept(this);
@@ -1249,7 +1263,7 @@ public class PropConInstructionsAnalysisVisitor extends EmptyVisitor {
 	 */
 	@Override
 	public void visitLoadInstruction(LoadInstruction obj) {
-		logger.log(Level.FINE, obj.toString(false));
+		logger.log(Level.FINE, indentation + obj.toString(false));
 		frame.pushStackByRequiredSlots(frame.getLocalVars()[obj.getIndex()]);
 		instructionHandle = instructionHandle.getNext();
 		instructionHandle.accept(this);
@@ -1263,7 +1277,7 @@ public class PropConInstructionsAnalysisVisitor extends EmptyVisitor {
 	 */
 	@Override
 	public void visitStoreInstruction(StoreInstruction obj) {
-		logger.log(Level.FINE, obj.toString(false));
+		logger.log(Level.FINE, indentation + obj.toString(false));
 		for (int i = 0; i < obj.consumeStack(constantPoolGen); i++) {
 			frame.getLocalVars()[obj.getIndex() + i] = frame.getStack().pop();
 		}
@@ -1280,7 +1294,7 @@ public class PropConInstructionsAnalysisVisitor extends EmptyVisitor {
 	 */
 	@Override
 	public void visitMONITORENTER(MONITORENTER obj) {
-		logger.log(Level.FINE, "MONITORENTER " + ": No Escape");
+		logger.log(Level.FINE, indentation + "MONITORENTER " + ": No Escape");
 
 		// pop a reference
 		frame.getStack().pop();
@@ -1297,7 +1311,7 @@ public class PropConInstructionsAnalysisVisitor extends EmptyVisitor {
 	 */
 	@Override
 	public void visitMONITOREXIT(MONITOREXIT obj) {
-		logger.log(Level.FINE, "MONITOREXIT " + ": No Escape");
+		logger.log(Level.FINE, indentation + "MONITOREXIT " + ": No Escape");
 		// pop a reference
 		frame.getStack().pop();
 
@@ -1314,9 +1328,10 @@ public class PropConInstructionsAnalysisVisitor extends EmptyVisitor {
 	 */
 	@Override
 	public void visitNEWARRAY(NEWARRAY obj) {
-		logger.log(Level.FINE, obj.toString(false));
+		logger.log(Level.FINE, indentation + obj.toString(false));
 		logger.log(Level.FINEST,
-				"\t" + "(" + DataType.getDataType(obj.getType()) + ")");
+				indentation + "\t" + "(" + DataType.getDataType(obj.getType())
+						+ ")");
 
 		// pop length of new array (integer)
 		frame.getStack().pop();
@@ -1335,7 +1350,7 @@ public class PropConInstructionsAnalysisVisitor extends EmptyVisitor {
 	 */
 	@Override
 	public void visitNOP(NOP obj) {
-		logger.log(Level.FINE, obj.toString(false));
+		logger.log(Level.FINE, indentation + obj.toString(false));
 
 		instructionHandle = instructionHandle.getNext();
 		instructionHandle.accept(this);
@@ -1352,7 +1367,7 @@ public class PropConInstructionsAnalysisVisitor extends EmptyVisitor {
 	 */
 	@Override
 	public void visitRET(RET obj) {
-		logger.log(Level.FINE, obj.toString(false));
+		logger.log(Level.FINE, indentation + obj.toString(false));
 	}
 
 	// -----------------------------------------------------------------
@@ -1363,9 +1378,11 @@ public class PropConInstructionsAnalysisVisitor extends EmptyVisitor {
 	 */
 	@Override
 	public void visitReturnInstruction(ReturnInstruction obj) {
-		logger.log(Level.FINE, obj.toString(false));
-		logger.log(Level.FINEST,
-				"\t" + DataType.getDataType(obj.getType(constantPoolGen)));
+		logger.log(Level.FINE, indentation + obj.toString(false));
+		logger.log(
+				Level.FINEST,
+				indentation + "\t"
+						+ DataType.getDataType(obj.getType(constantPoolGen)));
 
 		if (obj.getType(constantPoolGen).equals(Type.VOID))
 			result.add(new ResultValue(Kind.REGULAR, Slot.noSlot));
@@ -1382,8 +1399,8 @@ public class PropConInstructionsAnalysisVisitor extends EmptyVisitor {
 	 */
 	@Override
 	public void visitSIPUSH(SIPUSH obj) {
-		logger.log(Level.FINE, obj.toString(false));
-		logger.log(Level.FINEST, "\t" + obj.getValue());
+		logger.log(Level.FINE, indentation + obj.toString(false));
+		logger.log(Level.FINEST, indentation + "\t" + obj.getValue());
 
 		frame.getStack().push(Slot.someShort);
 
@@ -1400,7 +1417,7 @@ public class PropConInstructionsAnalysisVisitor extends EmptyVisitor {
 	 */
 	@Override
 	public void visitDUP(DUP obj) {
-		logger.log(Level.FINE, obj.toString(false));
+		logger.log(Level.FINE, indentation + obj.toString(false));
 
 		Slot entry = frame.getStack().pop();
 		frame.getStack().push(entry);
@@ -1419,7 +1436,7 @@ public class PropConInstructionsAnalysisVisitor extends EmptyVisitor {
 	 */
 	@Override
 	public void visitDUP_X1(DUP_X1 obj) {
-		logger.log(Level.FINE, obj.toString(false));
+		logger.log(Level.FINE, indentation + obj.toString(false));
 
 		Slot value1 = frame.getStack().pop();
 		Slot value2 = frame.getStack().pop();
@@ -1442,7 +1459,7 @@ public class PropConInstructionsAnalysisVisitor extends EmptyVisitor {
 	 */
 	@Override
 	public void visitDUP_X2(DUP_X2 obj) {
-		logger.log(Level.FINE, obj.toString(false));
+		logger.log(Level.FINE, indentation + obj.toString(false));
 
 		// pop values
 		Slot slot1 = frame.getStack().pop();
@@ -1468,7 +1485,7 @@ public class PropConInstructionsAnalysisVisitor extends EmptyVisitor {
 	 */
 	@Override
 	public void visitDUP2(DUP2 obj) {
-		logger.log(Level.FINE, obj.toString(false));
+		logger.log(Level.FINE, indentation + obj.toString(false));
 
 		// pop slots
 		Slot slot1 = frame.getStack().pop();
@@ -1492,7 +1509,7 @@ public class PropConInstructionsAnalysisVisitor extends EmptyVisitor {
 	 */
 	@Override
 	public void visitDUP2_X1(DUP2_X1 obj) {
-		logger.log(Level.FINE, obj.toString(false));
+		logger.log(Level.FINE, indentation + obj.toString(false));
 
 		// pop the slots
 		Slot slot1 = frame.getStack().pop();
@@ -1518,7 +1535,7 @@ public class PropConInstructionsAnalysisVisitor extends EmptyVisitor {
 	 */
 	@Override
 	public void visitDUP2_X2(DUP2_X2 obj) {
-		logger.log(Level.FINE, obj.toString(false));
+		logger.log(Level.FINE, indentation + obj.toString(false));
 
 		// pop the slots
 		Slot slot1 = frame.getStack().pop();
@@ -1546,7 +1563,7 @@ public class PropConInstructionsAnalysisVisitor extends EmptyVisitor {
 	 */
 	@Override
 	public void visitPOP(POP obj) {
-		logger.log(Level.FINE, obj.toString(false));
+		logger.log(Level.FINE, indentation + obj.toString(false));
 
 		// may not be called for long or double
 		frame.getStack().pop();
@@ -1563,7 +1580,7 @@ public class PropConInstructionsAnalysisVisitor extends EmptyVisitor {
 	 */
 	@Override
 	public void visitPOP2(POP2 obj) {
-		logger.log(Level.FINE, obj.toString(false));
+		logger.log(Level.FINE, indentation + obj.toString(false));
 
 		// pop two slots
 		frame.getStack().pop();
@@ -1581,7 +1598,7 @@ public class PropConInstructionsAnalysisVisitor extends EmptyVisitor {
 	 */
 	@Override
 	public void visitSWAP(SWAP obj) {
-		logger.log(Level.FINE, obj.toString(false));
+		logger.log(Level.FINE, indentation + obj.toString(false));
 
 		// pop the values
 		Slot slot1 = frame.getStack().pop();

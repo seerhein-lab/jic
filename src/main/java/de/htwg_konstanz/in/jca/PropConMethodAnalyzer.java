@@ -21,6 +21,8 @@ import edu.umd.cs.findbugs.BugCollection;
 public class PropConMethodAnalyzer {
 	private static final Logger logger = Logger
 			.getLogger("PropConMethodAnalyzer");
+	private final int depth;
+	private final String indentation;
 
 	/** The method to analyze. */
 	private final Method method;
@@ -36,11 +38,12 @@ public class PropConMethodAnalyzer {
 	 * @param method
 	 *            The method to analyze, not null.
 	 */
-	public PropConMethodAnalyzer(MethodGen methodGen) {
+	public PropConMethodAnalyzer(MethodGen methodGen, int depth) {
 		this.method = methodGen.getMethod();
 		// this.exceptionHandlers = new ExceptionHandlers(methodGen);
 		exceptionHandlers = methodGen.getExceptionHandlers();
-
+		this.depth = depth + 1;
+		this.indentation = Utils.formatLoggingOutput(this.depth);
 	}
 
 	static boolean protectsInstruction(CodeExceptionGen exceptionHandler,
@@ -115,11 +118,11 @@ public class PropConMethodAnalyzer {
 
 		visitor = new PropConInstructionsAnalysisVisitor(calleeFrame,
 				new ConstantPoolGen(method.getConstantPool()),
-				instructionHandles[0], exceptionHandlers);
+				instructionHandles[0], exceptionHandlers, depth);
 
-		logger.log(Level.FINE, "vvvvvvvvvvvvvvvvvvvvvvvvvv");
+		logger.log(Level.FINE, indentation + "vvvvvvvvvvvvvvvvvvvvvvvvvv");
 		instructionHandles[0].accept(visitor);
-		logger.log(Level.FINE, "^^^^^^^^^^^^^^^^^^^^^^^^^^");
+		logger.log(Level.FINE, indentation + "^^^^^^^^^^^^^^^^^^^^^^^^^^");
 	}
 
 	/**

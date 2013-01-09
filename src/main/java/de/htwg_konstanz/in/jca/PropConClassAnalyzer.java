@@ -70,7 +70,7 @@ public class PropConClassAnalyzer {
 			// clazz.getConstantPool()));
 
 			PropConMethodAnalyzer ctorAnalyzer = new PropConMethodAnalyzer(
-					ctorGen);
+					ctorGen, -1);
 			ctorAnalyzer.analyze();
 			bugs.addAll(ctorAnalyzer.getBugs().getCollection());
 		}
