@@ -1,8 +1,8 @@
 package de.htwg_konstanz.in.jca;
 
 import java.util.ArrayList;
-import java.util.List;
-import java.util.Vector;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -115,7 +115,7 @@ public class PropConInstructionsAnalysisVisitor extends EmptyVisitor {
 	private final CodeExceptionGen[] exceptionHandlers;
 	private ArrayList<AlreadyVisitedIfInstruction> alreadyVisited;
 	private SortedBugCollection bugs = new SortedBugCollection();
-	private List<ResultValue> result = new Vector<ResultValue>();
+	private Set<ResultValue> result = new HashSet<ResultValue>();
 
 	private static class AlreadyVisitedIfInstruction {
 		private final InstructionHandle ifInstruction;
@@ -181,7 +181,7 @@ public class PropConInstructionsAnalysisVisitor extends EmptyVisitor {
 		return bugs;
 	}
 
-	public List<ResultValue> getResult() {
+	public Set<ResultValue> getResult() {
 		return result;
 	}
 
@@ -231,8 +231,8 @@ public class PropConInstructionsAnalysisVisitor extends EmptyVisitor {
 
 		bugs.addAll(targetMethodAnalyzer.getBugs().getCollection());
 
-		List<ResultValue> calleeResults = ResultValue
-				.normalize(targetMethodAnalyzer.getResult());
+		Set<ResultValue> calleeResults = ResultValue
+				.combineReferences(targetMethodAnalyzer.getResult());
 
 		for (ResultValue calleeResult : calleeResults) {
 			if (calleeResult.getKind().equals(Kind.REGULAR)) {
