@@ -6,6 +6,7 @@ public class UtilsTestClass {
 	}
 
 	UtilsTestClass(int i) {
+		@SuppressWarnings("unused")
 		int j;
 	}
 
@@ -13,6 +14,7 @@ public class UtilsTestClass {
 	}
 
 	void f(int i) {
+		@SuppressWarnings("unused")
 		int j;
 	}
 
@@ -20,6 +22,7 @@ public class UtilsTestClass {
 	}
 
 	static void g(int i) {
+		@SuppressWarnings("unused")
 		int j;
 	}
 

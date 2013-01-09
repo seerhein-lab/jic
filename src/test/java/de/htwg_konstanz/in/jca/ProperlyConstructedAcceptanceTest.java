@@ -228,6 +228,7 @@ public class ProperlyConstructedAcceptanceTest {
 		public Story016_NestedLoop() {
 			for (int i = 0; i < 10; i++) {
 				for (int j = 0; j < i; j++) {
+					@SuppressWarnings("unused")
 					int k = i + j;
 				}
 			}
@@ -237,6 +238,7 @@ public class ProperlyConstructedAcceptanceTest {
 	@Yes
 	public static class JsrTest {
 		public JsrTest() {
+			@SuppressWarnings("unused")
 			int i = 0;
 			try {
 				i++;
