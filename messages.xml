@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<MessageCollection xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="messagecollection.xsd">
+
+        <Plugin>
+                <ShortDescription>Java Concurrency Analyzer plugin</ShortDescription>
+                <Details>Checks java code for thread safety</Details>
+        </Plugin>
+
+        <Detector class="de.htwg_konstanz.in.jca.JcaDetector">
+                <Details>
+<![CDATA[
+<p> Some meaningful text to be inserted.
+]]>
+                </Details>
+
+        </Detector>
+
+        <BugPattern type="PROPER_CONSTRUCTION_BUG">
+                <ShortDescription>this reference escapes</ShortDescription>
+                <LongDescription>this reference escapes</LongDescription>
+                <Details><![CDATA[
+<p> this reference escapes
+]]></Details>
+        </BugPattern>
+
+        <BugCode abbrev="PC">PROPER_CONSTRUCTION</BugCode>
+</MessageCollection>

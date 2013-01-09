@@ -78,7 +78,10 @@ import org.apache.bcel.generic.Type;
 import de.htwg_konstanz.in.jca.ResultValue.Kind;
 import edu.umd.cs.findbugs.BugCollection;
 import edu.umd.cs.findbugs.BugInstance;
+import edu.umd.cs.findbugs.Priorities;
 import edu.umd.cs.findbugs.SortedBugCollection;
+
+;
 
 /**
  * Analyzes methods whether the this-reference escapes or not. Therefore a
@@ -913,9 +916,13 @@ public class PropConInstructionsAnalysisVisitor extends EmptyVisitor {
 		if (toPut.equals(Slot.thisReference)) {
 			logger.log(Level.SEVERE,
 					"Error: 'this' reference is assigned to a static field and escapes.");
-			bugs.add(new BugInstance(
-					"Error: 'this' reference is assigned to a static field and escapes.",
-					2));
+			// bugs.add(new BugInstance(
+			// "Error: 'this' reference is assigned to a static field and escapes.",
+			// 2));
+
+			bugs.add(new BugInstance("PROPER_CONSTRUCTION_BUG",
+					Priorities.NORMAL_PRIORITY)
+					.addClass("de.htwg_konstanz.in.jca.testclasses.UtilsTestClass"));
 		}
 		if (toPut.equals(Slot.maybeThisReference)) {
 			logger.log(

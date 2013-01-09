@@ -1,0 +1,10 @@
+<FindbugsPlugin xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="findbugsplugin.xsd" 
+        pluginid="de.htwg_konstanz.in.jca"
+        provider="Java Concurrency Analyzer" 
+        website="http://www.cnn.com">
+
+        <Detector class="de.htwg_konstanz.in.jca.JcaDetector" reports="PROPER_CONSTRUCTION_BUG" />
+        <BugPattern type="PROPER_CONSTRUCTION_BUG" abbrev="PC" category="MT_CORRECTNESS"/>
+
+</FindbugsPlugin>
