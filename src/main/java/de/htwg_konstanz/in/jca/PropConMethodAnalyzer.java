@@ -150,6 +150,7 @@ public class PropConMethodAnalyzer {
 	 *             if analyze() was not called beforehand.
 	 */
 	public Set<ResultValue> getResult() {
+
 		if (visitor == null) {
 			throw new IllegalStateException(
 					"analyze() must be called before getResult()");
