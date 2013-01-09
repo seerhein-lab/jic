@@ -5,7 +5,8 @@ import static org.junit.Assert.assertEquals;
 import org.junit.Test;
 
 /**
- * JUnit test for class DataType.
+ * JUnit test for class DataType. Not testing auto-generated methods and simple
+ * getter and setter.
  */
 public class DataTypeTest {
 

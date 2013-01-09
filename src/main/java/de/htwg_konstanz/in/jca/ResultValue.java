@@ -86,15 +86,15 @@ public class ResultValue {
 					if (resultValues.contains(maybeThisValue)
 							|| resultValues.contains(thisValue))
 						correctedValue = maybeThisValue;
+				}
 
-					if (value.slot.equals(Slot.thisReference)) {
-						if (resultValues.contains(notThisValue)
-								|| resultValues.contains(maybeThisValue))
-							correctedValue = maybeThisValue;
-					}
-
+				if (value.slot.equals(Slot.thisReference)) {
+					if (resultValues.contains(notThisValue)
+							|| resultValues.contains(maybeThisValue))
+						correctedValue = maybeThisValue;
 				}
 			}
+
 			correctedSet.add(correctedValue);
 		}
 		return correctedSet;
