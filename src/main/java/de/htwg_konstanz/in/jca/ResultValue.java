@@ -3,7 +3,18 @@ package de.htwg_konstanz.in.jca;
 import java.util.List;
 import java.util.Vector;
 
+/**
+ * This class is used for the return values of called methods or results of
+ * different branches occurring in PropConInstructionsAnalysisVisitor. It
+ * contains a Kind which says, if the return value is regular or a thrown
+ * exception and a Slot standing for the returned DataType.
+ */
 public class ResultValue {
+
+	/**
+	 * Internal enumeration. EXCEPTION is used for all kinds of thrown
+	 * exceptions, REGULAR for all other.
+	 */
 	public enum Kind {
 		REGULAR, EXCEPTION;
 	}
@@ -11,42 +22,22 @@ public class ResultValue {
 	private final Kind kind;
 	private final Slot slot;
 
+	/**
+	 * Simple constructor.
+	 * 
+	 * @param kind
+	 *            EXCEPTION for thrown exceptions, REGULAR for all others.
+	 * @param slot
+	 *            The returned value represented by a Slot.
+	 */
 	public ResultValue(Kind kind, Slot slot) {
 		this.kind = kind;
 		this.slot = slot;
 	}
 
-	// private boolean subsumedBy(ResultValue other) {
-	// if (equals(kind.equals(Kind.EXCEPTION)))
-	// return other.kind.equals(Kind.EXCEPTION);
-	//
-	// // kind.equals(Kind.REGULAR) remains
-	// return slot.subsumedBy(other.slot);
-	//
-	// }
-	//
-	// private boolean subsumedBy(List<ResultValue> resultValues) {
-	// for (ResultValue other : resultValues) {
-	// if (subsumedBy(other))
-	// return true;
-	// }
-	// return false;
-	// }
-
-	// private static List<ResultValue> normalize(List<ResultValue> survivors,
-	// List<ResultValue> contenders) {
-	// if (contenders.isEmpty())
-	// return survivors;
-	//
-	// ResultValue head = contenders.get(0);
-	// List<ResultValue> tail = contenders.subList(1, contenders.size());
-	//
-	// if (!head.subsumedBy(survivors) && !head.subsumedBy(tail))
-	// survivors.add(head);
-	//
-	// return normalize(survivors, tail);
-	// }
-
+	/**
+	 * Simple auto-generated hashCode method.
+	 */
 	@Override
 	public int hashCode() {
 		final int prime = 31;
@@ -56,6 +47,9 @@ public class ResultValue {
 		return result;
 	}
 
+	/**
+	 * Simple auto.generated equals method.
+	 */
 	@Override
 	public boolean equals(Object obj) {
 		if (this == obj)
