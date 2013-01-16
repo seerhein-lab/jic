@@ -1,10 +1,10 @@
 <FindbugsPlugin xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
         xsi:noNamespaceSchemaLocation="findbugsplugin.xsd" 
-        pluginid="de.htwg_konstanz.in.jca"
-        provider="Java Concurrency Analyzer" 
-        website="http://www.cnn.com">
+        pluginid="de.htwg_konstanz.in.jca.ProperConstructionDetector"
+        provider="FindBugs Tutorial" 
+        website="http://findbugs.sourceforge.net">
 
-        <Detector class="de.htwg_konstanz.in.jca.JcaDetector" reports="PROPER_CONSTRUCTION_BUG" />
-        <BugPattern type="PROPER_CONSTRUCTION_BUG" abbrev="PC" category="MT_CORRECTNESS"/>
+        <Detector class="de.htwg_konstanz.in.jca.ProperConstructionDetector" reports="TUTORIAL_BUG" />
+        <BugPattern type="TUTORIAL_BUG" abbrev="TU" category="CORRECTNESS"/>
 
 </FindbugsPlugin>

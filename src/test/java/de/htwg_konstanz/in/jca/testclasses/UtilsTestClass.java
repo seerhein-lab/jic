@@ -2,7 +2,10 @@ package de.htwg_konstanz.in.jca.testclasses;
 
 public class UtilsTestClass {
 
+	private static UtilsTestClass staticReference;
+
 	UtilsTestClass() {
+		staticReference = this;
 	}
 
 	UtilsTestClass(int i) {

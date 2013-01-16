@@ -3,26 +3,28 @@
         xsi:noNamespaceSchemaLocation="messagecollection.xsd">
 
         <Plugin>
-                <ShortDescription>Java Concurrency Analyzer plugin</ShortDescription>
-                <Details>Checks java code for thread safety</Details>
+                <ShortDescription>FindBugs Plugin Tutorial Plugin</ShortDescription>
+                <Details>Provides detectors as part of the FindBugs detector plugin
+                        tutorial.</Details>
         </Plugin>
 
-        <Detector class="de.htwg_konstanz.in.jca.JcaDetector">
+        <Detector class="de.htwg_konstanz.in.jca.ProperConstructionDetector">
                 <Details>
-<![CDATA[
-<p> Some meaningful text to be inserted.
-]]>
+                        Finds instances of BigDecimals being created
+                        with doubles.
                 </Details>
 
         </Detector>
 
-        <BugPattern type="PROPER_CONSTRUCTION_BUG">
-                <ShortDescription>this reference escapes</ShortDescription>
-                <LongDescription>this reference escapes</LongDescription>
-                <Details><![CDATA[
-<p> this reference escapes
-]]></Details>
+        <BugPattern type="TUTORIAL_BUG">
+                <ShortDescription>BigDecimal created from double</ShortDescription>
+                <LongDescription>BigDecimal created from double in {1}</LongDescription>
+                <Details>
+<![CDATA[
+<p>Due to the way double-precision floating point values are represented in Java, creating a new BigDecimal from a double is unreliable and may produce surprising results.</p>
+]]>
+                </Details>
         </BugPattern>
 
-        <BugCode abbrev="PC">PROPER_CONSTRUCTION</BugCode>
+        <BugCode abbrev="TU">Tutorial</BugCode>
 </MessageCollection>

@@ -14,6 +14,7 @@ import org.apache.bcel.generic.MethodGen;
 import org.apache.bcel.generic.Type;
 
 import edu.umd.cs.findbugs.BugCollection;
+import edu.umd.cs.findbugs.ba.ClassContext;
 
 /**
  * Analyzes methods.
@@ -21,6 +22,7 @@ import edu.umd.cs.findbugs.BugCollection;
 public class PropConMethodAnalyzer {
 	private static final Logger logger = Logger
 			.getLogger("PropConMethodAnalyzer");
+	private final ClassContext classContext;
 	private final int depth;
 	private final String indentation;
 
@@ -35,10 +37,14 @@ public class PropConMethodAnalyzer {
 	/**
 	 * Constructor.
 	 * 
+	 * @param classContext
+	 * 
 	 * @param method
 	 *            The method to analyze, not null.
 	 */
-	public PropConMethodAnalyzer(MethodGen methodGen, int depth) {
+	public PropConMethodAnalyzer(ClassContext classContext,
+			MethodGen methodGen, int depth) {
+		this.classContext = classContext;
 		this.method = methodGen.getMethod();
 		// this.exceptionHandlers = new ExceptionHandlers(methodGen);
 		exceptionHandlers = methodGen.getExceptionHandlers();
@@ -116,8 +122,8 @@ public class PropConMethodAnalyzer {
 		// }
 		// }
 
-		visitor = new PropConInstructionsAnalysisVisitor(calleeFrame,
-				new ConstantPoolGen(method.getConstantPool()),
+		visitor = new PropConInstructionsAnalysisVisitor(classContext, method,
+				calleeFrame, new ConstantPoolGen(method.getConstantPool()),
 				instructionHandles[0], exceptionHandlers, depth);
 
 		logger.log(Level.FINE, indentation + "vvvvvvvvvvvvvvvvvvvvvvvvvv");

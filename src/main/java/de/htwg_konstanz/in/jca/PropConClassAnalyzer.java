@@ -16,12 +16,15 @@ import org.apache.bcel.generic.Type;
 import edu.umd.cs.findbugs.BugCollection;
 import edu.umd.cs.findbugs.BugInstance;
 import edu.umd.cs.findbugs.SortedBugCollection;
+import edu.umd.cs.findbugs.ba.ClassContext;
 
 public class PropConClassAnalyzer {
 	private final JavaClass clazz;
+	private final ClassContext classContext;
 
-	public PropConClassAnalyzer(JavaClass clazz) {
+	public PropConClassAnalyzer(JavaClass clazz, ClassContext classContext) {
 		this.clazz = clazz;
+		this.classContext = classContext;
 	}
 
 	private List<Method> getConstructors() {
@@ -70,7 +73,7 @@ public class PropConClassAnalyzer {
 			// clazz.getConstantPool()));
 
 			PropConMethodAnalyzer ctorAnalyzer = new PropConMethodAnalyzer(
-					ctorGen, -1);
+					classContext, ctorGen, -1);
 			ctorAnalyzer.analyze();
 			bugs.addAll(ctorAnalyzer.getBugs().getCollection());
 		}
