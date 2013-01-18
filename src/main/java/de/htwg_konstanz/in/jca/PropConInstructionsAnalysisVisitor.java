@@ -496,10 +496,6 @@ public class PropConInstructionsAnalysisVisitor extends EmptyVisitor {
 		frame.getStack().clear();
 		frame.getStack().push(exception);
 
-		// ExceptionHandler[] excepHandlers = exceptionHandlers
-		// .getExceptionHandlers(instructionHandle);
-
-		// for (ExceptionHandler excepHandler : excepHandlers) {
 		for (CodeExceptionGen exceptionHandler : exceptionHandlers) {
 			if (PropConMethodAnalyzer.protectsInstruction(exceptionHandler,
 					instructionHandle)) {
@@ -1574,7 +1570,7 @@ public class PropConInstructionsAnalysisVisitor extends EmptyVisitor {
 	}
 
 	/**
-	 * 30. StackInstuructions <br>
+	 * 30. StackInstructions <br>
 	 * 30.6. POP <br>
 	 * Called when a POP operation occurs. Discards the top value/word on the
 	 * stack.
