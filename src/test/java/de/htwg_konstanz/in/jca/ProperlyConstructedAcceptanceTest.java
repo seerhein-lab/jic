@@ -6,7 +6,7 @@ import org.junit.runner.RunWith;
 
 import de.htwg_konstanz.in.jca.testutils.ClassAnalyzerRunner;
 import de.htwg_konstanz.in.jca.testutils.ClassAnalyzerRunner.BindAnalyzerMethod;
-import de.htwg_konstanz.in.jca.testutils.No;
+import de.htwg_konstanz.in.jca.testutils.UnKnown;
 import de.htwg_konstanz.in.jca.testutils.Yes;
 import edu.umd.cs.findbugs.BugCollection;
 
@@ -291,7 +291,7 @@ public class ProperlyConstructedAcceptanceTest {
 		}
 	}
 
-	@No
+	@UnKnown
 	public static class Story021_SimpleClassWithTryCatchNoParm {
 		@SuppressWarnings("unused")
 		private Object obj;

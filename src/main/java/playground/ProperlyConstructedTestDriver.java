@@ -35,7 +35,7 @@ public class ProperlyConstructedTestDriver {
 		JavaClass clazz = Repository
 				.lookupClass("playground.PropConstTestClass");
 
-		BugCollection bugs = new PropConClassAnalyzer(clazz)
+		BugCollection bugs = new PropConClassAnalyzer(clazz, null)
 				.properlyConstructed();
 		logger.log(Level.SEVERE, "bugs: ");
 		for (BugInstance bug : bugs) {

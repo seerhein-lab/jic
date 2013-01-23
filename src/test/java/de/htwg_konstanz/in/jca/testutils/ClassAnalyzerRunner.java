@@ -74,7 +74,8 @@ public class ClassAnalyzerRunner extends Runner {
 	void runTest(RunNotifier notifier, Description testDescription,
 			Class<?> classToTest) throws Exception {
 		JavaClass javaClass = Repository.lookupClass(classToTest);
-		PropConClassAnalyzer analyzer = new PropConClassAnalyzer(javaClass);
+		PropConClassAnalyzer analyzer = new PropConClassAnalyzer(javaClass,
+				null);
 
 		BugCollection bugs = runCheckMethod(analyzer);
 

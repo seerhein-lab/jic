@@ -214,9 +214,13 @@ public class PropConInstructionsAnalysisVisitor extends EmptyVisitor {
 			prior = Priorities.HIGH_PRIORITY;
 			break;
 		}
-		BugInstance bugInstance = new BugInstance("TUTORIAL_BUG", prior)
-				.addClass(classContext.getClass().getName()).addSourceLine(
-						classContext, method, instructionHandle);
+
+		BugInstance bugInstance = new BugInstance("TUTORIAL_BUG", prior);
+
+		if (classContext != null) {
+			bugInstance.addClass(classContext.getClass().getName())
+					.addSourceLine(classContext, method, instructionHandle);
+		}
 		bugs.add(bugInstance);
 	}
 
