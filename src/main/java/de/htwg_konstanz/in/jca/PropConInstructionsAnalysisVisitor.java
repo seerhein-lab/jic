@@ -85,7 +85,7 @@ import edu.umd.cs.findbugs.ba.ClassContext;
 ;
 
 /**
- * Analyzes methods whether the this-reference escapes or not. Therefore a
+ * Analyzes constructors whether the this-reference escapes or not. Therefore a
  * virtual machine is simulated and all occurring ByteCode operations are
  * performed in the corresponding visit-method.
  * <p>
@@ -103,8 +103,8 @@ import edu.umd.cs.findbugs.ba.ClassContext;
  * This class does not:
  * <ul>
  * <li>Check if the entries have the expected type
- * <li>Check if 64 bit values are set/read atomic
  * <li>Consider exact values
+ * <li>Consider storage into arrays
  * </ul>
  * </p>
  */
@@ -197,12 +197,31 @@ public class PropConInstructionsAnalysisVisitor extends EmptyVisitor {
 		return result;
 	}
 
+	private void addBug(int priority, String message,
+			InstructionHandle instructionHandle) {
+		int prior;
+		switch (priority) {
+		case 2:
+			prior = Priorities.NORMAL_PRIORITY;
+			break;
+		case 3:
+			prior = Priorities.LOW_PRIORITY;
+			break;
+		case 4:
+			prior = Priorities.EXP_PRIORITY;
+			break;
+		default:
+			prior = Priorities.HIGH_PRIORITY;
+			break;
+		}
+		BugInstance bugInstance = new BugInstance("TUTORIAL_BUG", prior)
+				.addClass(classContext.getClass().getName()).addSourceLine(
+						classContext, method, instructionHandle);
+		bugs.add(bugInstance);
+	}
+
 	// ******************************************************************//
 	// Visit section //
-	// For more details on ByteCode instructions see: //
-	// http://en.wikipedia.org/wiki/Java_bytecode_instruction_listings //
-	// For details on enumeration see: //
-	// https://docs.google.com/open?id=0B4RYegfkX-vPUnlRUm56S1YtMG8 //
 	// ******************************************************************//
 
 	/**
@@ -296,9 +315,9 @@ public class PropConInstructionsAnalysisVisitor extends EmptyVisitor {
 				logger.log(
 						Level.WARNING,
 						"Warning: 'maybeThis' reference is passed into an alien method and might escape.");
-				bugs.add(new BugInstance(
+				addBug(2,
 						"Warning: 'maybeThis' reference is passed into an alien method and might escape.",
-						1));
+						instructionHandle);
 				if (returnValue.getDataType().equals(DataType.referenceType)) {
 					returnValue = Slot.maybeThisReference;
 				}
@@ -306,9 +325,9 @@ public class PropConInstructionsAnalysisVisitor extends EmptyVisitor {
 			if (argument.equals(Slot.thisReference)) {
 				logger.log(Level.WARNING,
 						"Warning: 'this' reference is passed into an alien method and might escape.");
-				bugs.add(new BugInstance(
+				addBug(1,
 						"Warning: 'this' reference is passed into an alien method and might escape.",
-						1));
+						instructionHandle);
 				if (returnValue.getDataType().equals(DataType.referenceType)) {
 					returnValue = Slot.maybeThisReference;
 				}
@@ -449,12 +468,12 @@ public class PropConInstructionsAnalysisVisitor extends EmptyVisitor {
 		short opcode = obj.getOpcode();
 		if (opcode >= 0x2E && opcode <= 0x35) {
 			// all ALOAD instructions
-			// pop index
+			// pop array index
 			frame.getStack().pop();
-			// pop reference
+			// pop array reference
 			frame.getStack().pop();
 			if (opcode == 0x32) {
-				// AALOAD
+				// AALOAD, array might contain this-reference
 				frame.getStack().push(Slot.maybeThisReference);
 			} else {
 				// all other ALOAD instructions
@@ -462,12 +481,12 @@ public class PropConInstructionsAnalysisVisitor extends EmptyVisitor {
 						.getType(constantPoolGen)));
 			}
 		} else {
-			// all ASTORE instructions
+			// all ASTORE instructions, might copy this-reference into array
 			// pop value
 			frame.popStackByRequiredSlots();
-			// pop index
+			// pop array index
 			frame.getStack().pop();
-			// pop reference
+			// pop array reference
 			frame.getStack().pop();
 		}
 		instructionHandle = instructionHandle.getNext();
@@ -522,7 +541,6 @@ public class PropConInstructionsAnalysisVisitor extends EmptyVisitor {
 	 * Called when an ATHROW operation occurs. Clears the stack and pushes a
 	 * reference to the thrown error or exception.
 	 */
-
 	@Override
 	public void visitATHROW(ATHROW obj) {
 		logger.log(Level.FINE, indentation + obj.toString(false));
@@ -797,16 +815,19 @@ public class PropConInstructionsAnalysisVisitor extends EmptyVisitor {
 	 * 10.3. FieldOrMethod <br>
 	 * 10.3.2. GETFIELD <br>
 	 * Called when a GETFIELD operation occurs. Pops an object reference from
-	 * the stack and pushes the corresponding field value onto the stack.
+	 * the stack and pushes the value of the specified field onto the stack.
 	 * */
 	@Override
 	public void visitGETFIELD(GETFIELD obj) {
 		logger.log(Level.FINEST, indentation + obj.toString(false));
 
+		// pop object reference
 		Slot ref = frame.getStack().pop();
 
+		// obj.getSignature() refers to desired field
 		DataType targetType = DataType.getDataType(obj
 				.getSignature(constantPoolGen));
+		// field might contain this-reference, type permitting
 		Slot value = (targetType.equals(DataType.referenceType)) ? Slot.maybeThisReference
 				: Slot.getDefaultInstance(targetType);
 		frame.pushStackByRequiredSlots(value);
@@ -874,17 +895,17 @@ public class PropConInstructionsAnalysisVisitor extends EmptyVisitor {
 		if (right.equals(Slot.thisReference)) {
 			logger.log(Level.WARNING,
 					"Error: 'this' reference is assigned to some object's field and escapes.");
-			bugs.add(new BugInstance(
+			addBug(3,
 					"Error: 'this' reference is assigned to some object's field and escapes.",
-					2));
+					instructionHandle);
 		}
 		if (right.equals(Slot.maybeThisReference)) {
 			logger.log(
 					Level.WARNING,
 					"Warning: 'this' reference might be assigned to some object's field and might escape.");
-			bugs.add(new BugInstance(
+			addBug(4,
 					"Warning: 'this' reference might be assigned to some object's field and might escape.",
-					1));
+					instructionHandle);
 		}
 		// pop left side of assignment off the stack, too
 		Slot left = frame.getStack().pop();
@@ -922,22 +943,17 @@ public class PropConInstructionsAnalysisVisitor extends EmptyVisitor {
 		if (toPut.equals(Slot.thisReference)) {
 			logger.log(Level.SEVERE,
 					"Error: 'this' reference is assigned to a static field and escapes.");
-			// bugs.add(new BugInstance(
-			// "Error: 'this' reference is assigned to a static field and escapes.",
-			// 2));
-
-			bugs.add(new BugInstance("TUTORIAL_BUG", Priorities.NORMAL_PRIORITY)
-					.addClass(
-							"de.htwg_konstanz.in.jca.testclasses.UtilsTestClass")
-					.addSourceLine(classContext, method, instructionHandle));
+			addBug(1,
+					"Error: 'this' reference is assigned to a static field and escapes.",
+					instructionHandle);
 		}
 		if (toPut.equals(Slot.maybeThisReference)) {
 			logger.log(
 					Level.WARNING,
 					"Warning: 'this' reference might be assigned to a static field and might escape.");
-			bugs.add(new BugInstance(
+			addBug(2,
 					"Warning: 'this' reference might be assigned to a static field and might escape.",
-					1));
+					instructionHandle);
 		}
 
 		instructionHandle = instructionHandle.getNext();
@@ -1084,7 +1100,7 @@ public class PropConInstructionsAnalysisVisitor extends EmptyVisitor {
 			frame.getStack().pop();
 		}
 
-		// push array reference to stack
+		// push array reference onto stack
 		frame.getStack().push(Slot.notThisReference);
 
 		instructionHandle = instructionHandle.getNext();
@@ -1319,8 +1335,8 @@ public class PropConInstructionsAnalysisVisitor extends EmptyVisitor {
 
 	// -----------------------------------------------------------------
 	/**
-	 * 24. MINITOREXIT<br>
-	 * Called when a MINITOREXIT operation occurs. Releases the lock from a
+	 * 24. MONITOREXIT<br>
+	 * Called when a MONITOREXIT operation occurs. Releases the lock from a
 	 * synchronized section for a popped object reference.
 	 */
 	@Override
