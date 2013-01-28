@@ -8,15 +8,10 @@ public class SimpleEventListener implements EventListener {
 		this.state = 42;
 	}
 
-	private void doSomething() {
+	@Override
+	public void onEvent() {
 		if (this.state != 42) {
 			throw new AssertionError("SimpleEventListener in invalid state.");
 		}
-	}
-
-	@Override
-	public void onEvent() {
-		doSomething();
-
 	}
 }

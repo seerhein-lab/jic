@@ -1,9 +1,9 @@
 package lightningtalk;
 
-public class AnonymousEventListener {
+public class HiddenThis {
 	private final int state;
 
-	public AnonymousEventListener(EventSource source) {
+	public HiddenThis(EventSource source) {
 		source.registerListener(new EventListener() {
 			@Override
 			public void onEvent() {
@@ -13,9 +13,9 @@ public class AnonymousEventListener {
 		this.state = 42;
 	}
 
-	private void doSomething() {
+	public void doSomething() {
 		if (this.state != 42) {
-			throw new AssertionError("AnonymousEventListener in invalid state.");
+			throw new AssertionError("SimpleEventListener in invalid state.");
 		}
 	}
 }
