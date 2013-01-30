@@ -24,9 +24,9 @@ public final class ProperConstructionDetector implements Detector {
 	@Override
 	public void visitClassContext(ClassContext classContext) {
 		JavaClass clazz = classContext.getJavaClass();
-		System.out.println("**************************");
-		System.out.println("clazz: " + clazz);
-		System.out.println("**************************");
+		// System.out.println("**************************");
+		// System.out.println("clazz: " + clazz);
+		// System.out.println("**************************");
 
 		// reporter.reportBug(new BugInstance("TUTORIAL_BUG",
 		// Priorities.NORMAL_PRIORITY)
@@ -36,7 +36,7 @@ public final class ProperConstructionDetector implements Detector {
 				.properlyConstructed();
 
 		for (BugInstance bug : bugs) {
-			System.out.println("bug" + bug);
+			System.out.println("bug: " + bug);
 			reporter.reportBug(bug);
 		}
 

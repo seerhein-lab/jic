@@ -3,22 +3,21 @@
         xsi:noNamespaceSchemaLocation="messagecollection.xsd">
 
         <Plugin>
-                <ShortDescription>FindBugs Plugin Tutorial Plugin</ShortDescription>
-                <Details>Provides detectors as part of the FindBugs detector plugin
-                        tutorial.</Details>
+                <ShortDescription>Proper Construction Plugin</ShortDescription>
+                <Details>Checks if a class is properly constructed, i.e. that the 'this' reference does not 
+                	escape during construction.</Details>
         </Plugin>
 
         <Detector class="de.htwg_konstanz.in.jca.ProperConstructionDetector">
                 <Details>
-                        Finds instances of BigDecimals being created
-                        with doubles.
+                        Starts proper construction check for class under inspection.
                 </Details>
 
         </Detector>
 
-        <BugPattern type="TUTORIAL_BUG">
-                <ShortDescription>BigDecimal created from double</ShortDescription>
-                <LongDescription>BigDecimal created from double in {1}</LongDescription>
+        <BugPattern type="PROPER_CONSTRUCTION_BUG">
+                <ShortDescription>'this' reference escapes</ShortDescription>
+                <LongDescription>'this' reference escapes before object is properly constructed</LongDescription>
                 <Details>
 <![CDATA[
 <p>Due to the way double-precision floating point values are represented in Java, creating a new BigDecimal from a double is unreliable and may produce surprising results.</p>
@@ -26,5 +25,5 @@
                 </Details>
         </BugPattern>
 
-        <BugCode abbrev="TU">Tutorial</BugCode>
+        <BugCode abbrev="PC">PROPER_CONSTRUCTION</BugCode>
 </MessageCollection>

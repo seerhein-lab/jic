@@ -215,13 +215,22 @@ public class PropConInstructionsAnalysisVisitor extends EmptyVisitor {
 			break;
 		}
 
-		BugInstance bugInstance = new BugInstance("TUTORIAL_BUG", prior);
+		BugInstance bugInstance = new BugInstance("PROPER_CONSTRUCTION_BUG",
+				prior);
+		bugInstance.addString(message);
+		// bugInstance
+		// .addClass("de.htwg_konstanz.in.jca.testclasses.UtilsTestClass");
+
+		// System.out.println("bug instance created: " + message);
 
 		if (classContext != null) {
-			bugInstance.addClass(classContext.getClass().getName())
-					.addSourceLine(classContext, method, instructionHandle);
+			bugInstance.addClass(classContext.getJavaClass()).addSourceLine(
+					classContext, method, instructionHandle);
+			// System.out.println("bug instance annotated.");
 		}
 		bugs.add(bugInstance);
+		// System.out.println("bug instance added.");
+
 	}
 
 	// ******************************************************************//
