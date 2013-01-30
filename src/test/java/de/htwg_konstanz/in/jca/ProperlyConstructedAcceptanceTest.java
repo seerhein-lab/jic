@@ -1,6 +1,10 @@
 package de.htwg_konstanz.in.jca;
 
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.io.IOException;
+
+import javax.swing.JButton;
 
 import org.junit.runner.RunWith;
 
@@ -421,6 +425,54 @@ public class ProperlyConstructedAcceptanceTest {
 				i--;
 			}
 			i /= 5;
+		}
+	}
+
+	@Yes
+	public static class Story029_ClassWithMultipleTryCatchFinally {
+		private void thrower(int i) throws Exception {
+			try {
+				if (i != 0)
+					throw new IOException();
+				else
+					i /= 20;
+			} catch (IOException e) {
+				i--;
+			} catch (Exception e) {
+				i++;
+			} finally {
+				i *= 16;
+			}
+			i /= 5;
+		}
+
+		public Story029_ClassWithMultipleTryCatchFinally(int i)
+				throws IOException {
+			try {
+				thrower(i);
+			} catch (IOException e) {
+				i--;
+			} catch (Exception e) {
+				i++;
+			} finally {
+				i *= 16;
+			}
+			i /= 5;
+		}
+	}
+
+	@UnKnown
+	public static class Story030_CtorWithAnonymousInnerClass {
+		public Story030_CtorWithAnonymousInnerClass(JButton button) {
+			ActionListener listener = new ActionListener() {
+
+				@Override
+				public void actionPerformed(ActionEvent arg0) {
+					// TODO Auto-generated method stub
+
+				}
+			};
+			button.addActionListener(listener);
 		}
 	}
 }

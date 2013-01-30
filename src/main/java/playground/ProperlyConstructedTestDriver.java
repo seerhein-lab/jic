@@ -39,7 +39,8 @@ public class ProperlyConstructedTestDriver {
 				.properlyConstructed();
 		logger.log(Level.SEVERE, "bugs: ");
 		for (BugInstance bug : bugs) {
-			logger.log(Level.SEVERE, "  " + bug);
+			logger.log(Level.SEVERE,
+					" " + bug.getType() + " (" + bug.getPriorityString() + ")");
 		}
 
 		logger.log(Level.SEVERE, "end bugs");

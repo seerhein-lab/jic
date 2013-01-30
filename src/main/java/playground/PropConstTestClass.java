@@ -1,35 +1,20 @@
 package playground;
 
-import java.io.IOException;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+
+import javax.swing.JButton;
 
 public class PropConstTestClass {
+	public PropConstTestClass(JButton button) {
+		ActionListener listener = new ActionListener() {
 
-	private void thrower(int i) throws Exception {
-		try {
-			if (i != 0)
-				throw new IOException();
-			else
-				i /= 20;
-		} catch (IOException e) {
-			i--;
-		} catch (Exception e) {
-			i++;
-		} finally {
-			i *= 16;
-		}
-		i /= 5;
-	}
+			@Override
+			public void actionPerformed(ActionEvent arg0) {
+				// TODO Auto-generated method stub
 
-	public PropConstTestClass(int i) throws IOException {
-		try {
-			thrower(i);
-		} catch (IOException e) {
-			i--;
-		} catch (Exception e) {
-			i++;
-		} finally {
-			i *= 16;
-		}
-		i /= 5;
+			}
+		};
+		button.addActionListener(listener);
 	}
 }
