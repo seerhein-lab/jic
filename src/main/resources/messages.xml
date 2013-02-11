@@ -20,7 +20,8 @@
                 <LongDescription>'this' reference escapes before object is properly constructed</LongDescription>
                 <Details>
 <![CDATA[
-<p>Due to the way double-precision floating point values are represented in Java, creating a new BigDecimal from a double is unreliable and may produce surprising results.</p>
+<p>Premature publication of the 'this' reference might let others see the object in an incomplete, 
+	invalid state.</p>
 ]]>
                 </Details>
         </BugPattern>
