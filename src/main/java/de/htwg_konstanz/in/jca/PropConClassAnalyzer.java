@@ -38,15 +38,24 @@ public class PropConClassAnalyzer {
 
 	public Method getMethod(String name, Type[] types) {
 		Method[] methods = clazz.getMethods();
-
+		boolean found = false;
 		for (Method method : methods) {
 			Type[] methodTypes = method.getArgumentTypes();
 			if (method.getName().equals(name)
-					&& methodTypes.length == types.length)
-				for (int i = 0; i < types.length; i++)
-					if (!types[i].equals(methodTypes[i]))
-						break;
-			return method;
+					&& methodTypes.length == types.length) {
+				for (int i = 0; i < methodTypes.length; i++) {
+					found = methodTypes[i].getSignature().equals(
+							types[i].getSignature());
+					if (!found)
+						continue;
+				}
+				if (types.length == 0) {
+					found = true;
+				}
+			}
+
+			if (found)
+				return method;
 		}
 		return null;
 	}
