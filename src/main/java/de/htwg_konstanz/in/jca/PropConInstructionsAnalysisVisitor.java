@@ -640,8 +640,8 @@ public class PropConInstructionsAnalysisVisitor extends EmptyVisitor {
 
 			PropConInstructionsAnalysisVisitor thenBranchVisitor = new PropConInstructionsAnalysisVisitor(
 					classContext, method, new Frame(frame), constantPoolGen,
-					newAlreadyVisited, obj.getTarget(), exceptionHandlers,
-					depth);
+					newAlreadyVisited, obj.getTarget(),
+					exceptionHandlers, depth);
 			obj.getTarget().accept(thenBranchVisitor);
 			bugs.addAll(thenBranchVisitor.getBugs().getCollection());
 			result.addAll(thenBranchVisitor.getResult());
