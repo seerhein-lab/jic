@@ -39,39 +39,21 @@ public class PropConClassAnalyzer {
 	public Method getMethod(String name, Type[] types) {
 		Method[] methods = clazz.getMethods();
 		for (Method method : methods) {
-			Type[] methodTypes = method.getArgumentTypes();
-			if (method.getName().equals(name)
-					&& methodTypes.length == types.length) {
-				for (int i = 0; i < methodTypes.length; i++)
-					if (!methodTypes[i].getSignature().equals(
-							types[i].getSignature()))
-						break;
-				return method;
-			}
-		}
-		return null;
-	}
-
-	public Method getMethodOld(String name, Type[] types) {
-		Method[] methods = clazz.getMethods();
-		boolean found = false;
-		for (Method method : methods) {
+			boolean different = false;
 			Type[] methodTypes = method.getArgumentTypes();
 			if (method.getName().equals(name)
 					&& methodTypes.length == types.length) {
 				for (int i = 0; i < methodTypes.length; i++) {
-					found = methodTypes[i].getSignature().equals(
-							types[i].getSignature());
-					if (!found)
-						continue;
+					if (!methodTypes[i].getSignature().equals(
+							types[i].getSignature())) {
+						different = true;
+						break;
+					}
 				}
-				if (types.length == 0) {
-					found = true;
-				}
+				if (!different)
+					return method;
 			}
 
-			if (found)
-				return method;
 		}
 		return null;
 	}
@@ -98,7 +80,7 @@ public class PropConClassAnalyzer {
 			// clazz.getConstantPool()));
 
 			PropConMethodAnalyzer ctorAnalyzer = new PropConMethodAnalyzer(
-					classContext, ctorGen, -1);
+					classContext, ctorGen);
 			ctorAnalyzer.analyze();
 			bugs.addAll(ctorAnalyzer.getBugs().getCollection());
 		}
