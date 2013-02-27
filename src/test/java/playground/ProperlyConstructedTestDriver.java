@@ -1,5 +1,7 @@
 package playground;
 
+import java.io.IOException;
+import java.util.logging.FileHandler;
 import java.util.logging.Formatter;
 import java.util.logging.Handler;
 import java.util.logging.Level;
@@ -15,8 +17,10 @@ import edu.umd.cs.findbugs.BugCollection;
 import edu.umd.cs.findbugs.BugInstance;
 
 public class ProperlyConstructedTestDriver {
+	private static final String LOGFILEPATH = "/home/seerheinlab/Arbeitsfläche/log.txt";
 
-	public static void main(String[] args) throws ClassNotFoundException {
+	public static void main(String[] args) throws ClassNotFoundException,
+			SecurityException, IOException {
 		// logging stuff
 		Logger globalLogger = Logger.getLogger("");
 		Handler[] globalLoggerHandlers = globalLogger.getHandlers();
@@ -29,6 +33,10 @@ public class ProperlyConstructedTestDriver {
 		streamHandler.setLevel(Level.ALL);
 		globalLogger.addHandler(streamHandler);
 		globalLogger.setLevel(Level.ALL);
+		FileHandler fh = new FileHandler(LOGFILEPATH);
+		fh.setFormatter(new ProperlyConstructedTestDriver().new ProperlyConstructedTestDriverFormater());
+		fh.setLevel(Level.ALL);
+		globalLogger.addHandler(fh);
 		Logger logger = Logger.getLogger("ProperlyConstructedTestDriver");
 		// end logging set up
 

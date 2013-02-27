@@ -5,6 +5,9 @@ import static org.junit.Assert.assertEquals;
 import org.apache.bcel.generic.Type;
 import org.junit.Test;
 
+/**
+ * JUnit test for Slot class. Does not test simple getters and setters.
+ */
 public class SlotTest {
 
 	/**

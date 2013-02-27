@@ -4,6 +4,9 @@ import static org.junit.Assert.assertEquals;
 
 import org.junit.Test;
 
+/**
+ * JUnit test for ThreeValueBoolean class.
+ */
 public class ThreeValueBooleanTest {
 
 	@Test

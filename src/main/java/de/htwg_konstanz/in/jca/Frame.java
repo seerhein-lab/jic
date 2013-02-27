@@ -2,6 +2,9 @@ package de.htwg_konstanz.in.jca;
 
 import java.util.Stack;
 
+/**
+ * Class representing a method frame. Contains LocalVars and a method stack.
+ */
 public class Frame {
 	private Slot[] localVars;
 	private Stack<Slot> stack;
@@ -83,8 +86,12 @@ public class Frame {
 		return poppedValue;
 	}
 
+	/**
+	 * Simple getter for LocalVars.
+	 * 
+	 * @return The LocalVars as an array of type Slot
+	 */
 	public Slot[] getLocalVars() {
 		return localVars;
 	}
-
 }

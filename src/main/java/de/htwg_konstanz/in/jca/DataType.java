@@ -2,6 +2,9 @@ package de.htwg_konstanz.in.jca;
 
 import org.apache.bcel.generic.Type;
 
+/**
+ * Enumeration containing all relevant data types for this-escapes analysis.
+ */
 public enum DataType {
 	byteType(1), shortType(1), intType(1), longType(2), floatType(1), doubleType(
 			2), charType(1), booleanType(1), referenceType(1), voidType(0);

@@ -86,7 +86,7 @@ import edu.umd.cs.findbugs.ba.ClassContext;
 
 /**
  * Analyzes constructors whether the this-reference escapes or not. Therefore a
- * virtual machine is simulated and all occurring ByteCode operations are
+ * virtual machine is simulated and all occurring byte code operations are
  * performed in the corresponding visit-method.
  * <p>
  * This class does:
@@ -640,8 +640,8 @@ public class PropConInstructionsAnalysisVisitor extends EmptyVisitor {
 
 			PropConInstructionsAnalysisVisitor thenBranchVisitor = new PropConInstructionsAnalysisVisitor(
 					classContext, method, new Frame(frame), constantPoolGen,
-					newAlreadyVisited, obj.getTarget(),
-					exceptionHandlers, depth);
+					newAlreadyVisited, obj.getTarget(), exceptionHandlers,
+					depth);
 			obj.getTarget().accept(thenBranchVisitor);
 			bugs.addAll(thenBranchVisitor.getBugs().getCollection());
 			result.addAll(thenBranchVisitor.getResult());
