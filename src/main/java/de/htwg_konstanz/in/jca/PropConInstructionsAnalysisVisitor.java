@@ -75,6 +75,7 @@ import org.apache.bcel.generic.Select;
 import org.apache.bcel.generic.StoreInstruction;
 import org.apache.bcel.generic.Type;
 
+import de.htwg_konstanz.in.jca.PropConMethodAnalyzer.AlreadyVisitedMethod;
 import de.htwg_konstanz.in.jca.ResultValue.Kind;
 import edu.umd.cs.findbugs.BugCollection;
 import edu.umd.cs.findbugs.BugInstance;
@@ -122,6 +123,7 @@ public class PropConInstructionsAnalysisVisitor extends EmptyVisitor {
 	// private final ExceptionHandlers exceptionHandlers;
 	private final CodeExceptionGen[] exceptionHandlers;
 	private ArrayList<AlreadyVisitedIfInstruction> alreadyVisited;
+	private final ArrayList<AlreadyVisitedMethod> alreadyVisitedMethods;
 	private SortedBugCollection bugs = new SortedBugCollection();
 	private Set<ResultValue> result = new HashSet<ResultValue>();
 
@@ -167,15 +169,18 @@ public class PropConInstructionsAnalysisVisitor extends EmptyVisitor {
 	public PropConInstructionsAnalysisVisitor(ClassContext classContext,
 			Method method, Frame frame, ConstantPoolGen constantPoolGen,
 			InstructionHandle instructionHandle,
-			CodeExceptionGen[] exceptionHandlers, int depth) {
+			CodeExceptionGen[] exceptionHandlers,
+			ArrayList<AlreadyVisitedMethod> alreadyVisitedMethods, int depth) {
 		this(classContext, method, frame, constantPoolGen,
 				new ArrayList<AlreadyVisitedIfInstruction>(),
-				instructionHandle, exceptionHandlers, depth);
+				alreadyVisitedMethods, instructionHandle, exceptionHandlers,
+				depth);
 	}
 
 	private PropConInstructionsAnalysisVisitor(ClassContext classContext,
 			Method method, Frame frame, ConstantPoolGen constantPoolGen,
 			ArrayList<AlreadyVisitedIfInstruction> alreadyVisited,
+			ArrayList<AlreadyVisitedMethod> alreadyVisitedMethods,
 			InstructionHandle instructionHandle,
 			CodeExceptionGen[] exceptionHandlers, int depth) {
 		this.classContext = classContext;
@@ -183,6 +188,7 @@ public class PropConInstructionsAnalysisVisitor extends EmptyVisitor {
 		this.frame = frame;
 		this.constantPoolGen = constantPoolGen;
 		this.alreadyVisited = alreadyVisited;
+		this.alreadyVisitedMethods = alreadyVisitedMethods;
 		this.instructionHandle = instructionHandle;
 		this.exceptionHandlers = exceptionHandlers;
 		this.depth = depth;
@@ -270,7 +276,7 @@ public class PropConInstructionsAnalysisVisitor extends EmptyVisitor {
 						targetClass.getConstantPool()));
 
 		PropConMethodAnalyzer targetMethodAnalyzer = new PropConMethodAnalyzer(
-				classContext, targetMethodGen, depth);
+				classContext, targetMethodGen, alreadyVisitedMethods, depth);
 		targetMethodAnalyzer.analyze(frame.getStack());
 
 		bugs.addAll(targetMethodAnalyzer.getBugs().getCollection());
@@ -282,7 +288,7 @@ public class PropConInstructionsAnalysisVisitor extends EmptyVisitor {
 			if (calleeResult.getKind().equals(Kind.REGULAR)) {
 				PropConInstructionsAnalysisVisitor specificCalleeResultVisitor = new PropConInstructionsAnalysisVisitor(
 						classContext, method, new Frame(frame),
-						constantPoolGen, alreadyVisited,
+						constantPoolGen, alreadyVisited, alreadyVisitedMethods,
 						instructionHandle.getNext(), exceptionHandlers, depth);
 
 				specificCalleeResultVisitor.frame
@@ -535,7 +541,7 @@ public class PropConInstructionsAnalysisVisitor extends EmptyVisitor {
 						+ exceptionHandler.toString() + ": start vvvvv");
 				PropConInstructionsAnalysisVisitor excepHandlerVisitor = new PropConInstructionsAnalysisVisitor(
 						classContext, method, new Frame(frame),
-						constantPoolGen, alreadyVisited,
+						constantPoolGen, alreadyVisited, alreadyVisitedMethods,
 						exceptionHandler.getHandlerPC(), exceptionHandlers,
 						depth);
 				exceptionHandler.getHandlerPC().accept(excepHandlerVisitor);
@@ -618,8 +624,8 @@ public class PropConInstructionsAnalysisVisitor extends EmptyVisitor {
 			newAlreadyVisited.add(elseBranch);
 			PropConInstructionsAnalysisVisitor elseBranchVisitor = new PropConInstructionsAnalysisVisitor(
 					classContext, method, new Frame(frame), constantPoolGen,
-					newAlreadyVisited, instructionHandle.getNext(),
-					exceptionHandlers, depth);
+					newAlreadyVisited, alreadyVisitedMethods,
+					instructionHandle.getNext(), exceptionHandlers, depth);
 			instructionHandle.getNext().accept(elseBranchVisitor);
 			bugs.addAll(elseBranchVisitor.getBugs().getCollection());
 			result.addAll(elseBranchVisitor.getResult());
@@ -640,8 +646,8 @@ public class PropConInstructionsAnalysisVisitor extends EmptyVisitor {
 
 			PropConInstructionsAnalysisVisitor thenBranchVisitor = new PropConInstructionsAnalysisVisitor(
 					classContext, method, new Frame(frame), constantPoolGen,
-					newAlreadyVisited, obj.getTarget(), exceptionHandlers,
-					depth);
+					newAlreadyVisited, alreadyVisitedMethods, obj.getTarget(),
+					exceptionHandlers, depth);
 			obj.getTarget().accept(thenBranchVisitor);
 			bugs.addAll(thenBranchVisitor.getBugs().getCollection());
 			result.addAll(thenBranchVisitor.getResult());
@@ -694,7 +700,7 @@ public class PropConInstructionsAnalysisVisitor extends EmptyVisitor {
 					+ targets[i].getPosition() + " ---------------");
 			caseToFollow = new PropConInstructionsAnalysisVisitor(classContext,
 					method, new Frame(frame), constantPoolGen, alreadyVisited,
-					targets[i], exceptionHandlers, depth);
+					alreadyVisitedMethods, targets[i], exceptionHandlers, depth);
 			targets[i].accept(caseToFollow);
 			// adding occurred bugs to bug-collection
 			bugs.addAll(caseToFollow.getBugs().getCollection());
@@ -709,7 +715,8 @@ public class PropConInstructionsAnalysisVisitor extends EmptyVisitor {
 		// target is the end of the switch without executing a case.
 		caseToFollow = new PropConInstructionsAnalysisVisitor(classContext,
 				method, new Frame(frame), constantPoolGen, alreadyVisited,
-				obj.getTarget(), exceptionHandlers, depth);
+				alreadyVisitedMethods, obj.getTarget(), exceptionHandlers,
+				depth);
 		obj.getTarget().accept(caseToFollow);
 		// adding occurred bugs to bug-collection
 		bugs.addAll(caseToFollow.getBugs().getCollection());
@@ -805,8 +812,8 @@ public class PropConInstructionsAnalysisVisitor extends EmptyVisitor {
 		// visitor
 		PropConInstructionsAnalysisVisitor regularCaseVisitor = new PropConInstructionsAnalysisVisitor(
 				classContext, method, new Frame(frame), constantPoolGen,
-				alreadyVisited, instructionHandle.getNext(), exceptionHandlers,
-				depth);
+				alreadyVisited, alreadyVisitedMethods,
+				instructionHandle.getNext(), exceptionHandlers, depth);
 
 		regularCaseVisitor.frame.getStack().push(objRef);
 

@@ -1,5 +1,7 @@
 package de.htwg_konstanz.in.jca;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Set;
 import java.util.Stack;
 import java.util.logging.Level;
@@ -23,6 +25,7 @@ public class PropConMethodAnalyzer {
 	private static final Logger logger = Logger
 			.getLogger("PropConMethodAnalyzer");
 	private final ClassContext classContext;
+	private final ArrayList<AlreadyVisitedMethod> alreadyVisitedMethods;
 	private final int depth;
 	private final String indentation;
 
@@ -41,13 +44,58 @@ public class PropConMethodAnalyzer {
 	 * 
 	 * @param method
 	 *            The method to analyze, not null.
+	 * 
 	 */
+
+	public static class AlreadyVisitedMethod {
+		final Method method;
+		final Slot[] localVars;
+
+		public AlreadyVisitedMethod(Method method, Slot[] localVars) {
+			this.method = method;
+			this.localVars = localVars;
+		}
+
+		@Override
+		public int hashCode() {
+			final int prime = 31;
+			int result = 1;
+			result = prime * result + Arrays.hashCode(localVars);
+			result = prime * result
+					+ ((method == null) ? 0 : method.hashCode());
+			return result;
+		}
+
+		@Override
+		public boolean equals(Object obj) {
+			if (this == obj)
+				return true;
+			if (!(obj instanceof AlreadyVisitedMethod))
+				return false;
+			AlreadyVisitedMethod other = (AlreadyVisitedMethod) obj;
+			if (!Arrays.equals(localVars, other.localVars))
+				return false;
+			if (method == null) {
+				if (other.method != null)
+					return false;
+			} else if (!method.equals(other.method))
+				return false;
+			return true;
+		}
+	}
+
+	public PropConMethodAnalyzer(ClassContext classContext, MethodGen methodGen) {
+		this(classContext, methodGen, new ArrayList<AlreadyVisitedMethod>(), -1);
+	}
+
 	public PropConMethodAnalyzer(ClassContext classContext,
-			MethodGen methodGen, int depth) {
+			MethodGen methodGen,
+			ArrayList<AlreadyVisitedMethod> alreadyVisitedMethods, int depth) {
 		this.classContext = classContext;
 		this.method = methodGen.getMethod();
 		// this.exceptionHandlers = new ExceptionHandlers(methodGen);
 		exceptionHandlers = methodGen.getExceptionHandlers();
+		this.alreadyVisitedMethods = alreadyVisitedMethods;
 		this.depth = depth + 1;
 		this.indentation = Utils.formatLoggingOutput(this.depth);
 	}
@@ -99,7 +147,7 @@ public class PropConMethodAnalyzer {
 	public void analyze(Stack<Slot> callerStack) {
 		int numSlots = Slot.numRequiredSlots(method.getArgumentTypes());
 
-		// if non static method +1 because of hidden this reference
+		// if non static method +1 because of hidden 'this' reference
 		numSlots = method.isStatic() ? numSlots : numSlots + 1;
 
 		Frame calleeFrame = new Frame(method.getCode().getMaxLocals(),
@@ -122,13 +170,21 @@ public class PropConMethodAnalyzer {
 		// }
 		// }
 
-		visitor = new PropConInstructionsAnalysisVisitor(classContext, method,
-				calleeFrame, new ConstantPoolGen(method.getConstantPool()),
-				instructionHandles[0], exceptionHandlers, depth);
+		AlreadyVisitedMethod thisMethod = new AlreadyVisitedMethod(method,
+				calleeFrame.getLocalVars());
 
-		logger.log(Level.FINE, indentation + "vvvvvvvvvvvvvvvvvvvvvvvvvv");
-		instructionHandles[0].accept(visitor);
-		logger.log(Level.FINE, indentation + "^^^^^^^^^^^^^^^^^^^^^^^^^^");
+		if (!alreadyVisitedMethods.contains(thisMethod)) {
+			alreadyVisitedMethods.add(thisMethod);
+
+			visitor = new PropConInstructionsAnalysisVisitor(classContext,
+					method, calleeFrame, new ConstantPoolGen(
+							method.getConstantPool()), instructionHandles[0],
+					exceptionHandlers, alreadyVisitedMethods, depth);
+
+			logger.log(Level.FINE, indentation + "vvvvvvvvvvvvvvvvvvvvvvvvvv");
+			instructionHandles[0].accept(visitor);
+			logger.log(Level.FINE, indentation + "^^^^^^^^^^^^^^^^^^^^^^^^^^");
+		}
 	}
 
 	/**
