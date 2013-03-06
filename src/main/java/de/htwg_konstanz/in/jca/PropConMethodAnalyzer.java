@@ -145,6 +145,22 @@ public class PropConMethodAnalyzer {
 	 *            the content of the local variable table of the constructor.
 	 */
 	public void analyze(Stack<Slot> callerStack) {
+		Frame calleeFrame = createCalleeFrame(callerStack);
+
+		InstructionHandle[] instructionHandles = new InstructionList(method
+				.getCode().getCode()).getInstructionHandles();
+
+		visitor = new PropConInstructionsAnalysisVisitor(classContext, method,
+				calleeFrame, new ConstantPoolGen(method.getConstantPool()),
+				instructionHandles[0], exceptionHandlers,
+				alreadyVisitedMethods, depth);
+
+		logger.log(Level.FINE, indentation + "vvvvvvvvvvvvvvvvvvvvvvvvvv");
+		instructionHandles[0].accept(visitor);
+		logger.log(Level.FINE, indentation + "^^^^^^^^^^^^^^^^^^^^^^^^^^");
+	}
+
+	private Frame createCalleeFrame(Stack<Slot> callerStack) {
 		int numSlots = Slot.numRequiredSlots(method.getArgumentTypes());
 
 		// if non static method +1 because of hidden 'this' reference
@@ -152,39 +168,14 @@ public class PropConMethodAnalyzer {
 
 		Frame calleeFrame = new Frame(method.getCode().getMaxLocals(),
 				callerStack, numSlots);
+		return calleeFrame;
+	}
 
-		InstructionHandle[] instructionHandles = new InstructionList(method
-				.getCode().getCode()).getInstructionHandles();
+	@SuppressWarnings("unchecked")
+	public Slot[] getActualParams(Stack<Slot> callerStack) {
+		return createCalleeFrame((Stack<Slot>) callerStack.clone())
+				.getLocalVars();
 
-		// for (CodeExceptionGen codeExceptionGen : exceptionHandlers) {
-		// System.out.println("Start: " + codeExceptionGen.getStartPC());
-		// System.out.println("End: " + codeExceptionGen.getEndPC());
-		//
-		// for (InstructionHandle instructionHandle : instructionHandles) {
-		// if (protectsInstruction(codeExceptionGen, instructionHandle))
-		// System.out.println("protected instruction:"
-		// + instructionHandle);
-		// else
-		// System.out.println("unprotected instruction:"
-		// + instructionHandle);
-		// }
-		// }
-
-		AlreadyVisitedMethod thisMethod = new AlreadyVisitedMethod(method,
-				calleeFrame.getLocalVars());
-
-		if (!alreadyVisitedMethods.contains(thisMethod)) {
-			alreadyVisitedMethods.add(thisMethod);
-
-			visitor = new PropConInstructionsAnalysisVisitor(classContext,
-					method, calleeFrame, new ConstantPoolGen(
-							method.getConstantPool()), instructionHandles[0],
-					exceptionHandlers, alreadyVisitedMethods, depth);
-
-			logger.log(Level.FINE, indentation + "vvvvvvvvvvvvvvvvvvvvvvvvvv");
-			instructionHandles[0].accept(visitor);
-			logger.log(Level.FINE, indentation + "^^^^^^^^^^^^^^^^^^^^^^^^^^");
-		}
 	}
 
 	/**

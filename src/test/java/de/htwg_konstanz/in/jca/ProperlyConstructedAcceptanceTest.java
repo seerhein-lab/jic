@@ -18,8 +18,6 @@ import edu.umd.cs.findbugs.BugCollection;
  * Functional acceptance tests for the method properlyConstructed of the class
  * ClassAnalyzer.
  * 
- * TODO: JavaDoc
- * 
  * @see ProperlyConstructedTestRunner
  */
 @RunWith(ClassAnalyzerRunner.class)
@@ -211,8 +209,6 @@ public class ProperlyConstructedAcceptanceTest {
 
 	}
 
-	// TODO: other param types, more than one param
-
 	/**
 	 * Class with a constructor with a single byte argument.
 	 */
@@ -227,6 +223,9 @@ public class ProperlyConstructedAcceptanceTest {
 		}
 	}
 
+	/**
+	 * Test class containing a nested loop.
+	 */
 	@Yes
 	public static class Story016_NestedLoop {
 		public Story016_NestedLoop() {
@@ -235,19 +234,6 @@ public class ProperlyConstructedAcceptanceTest {
 					@SuppressWarnings("unused")
 					int k = i + j;
 				}
-			}
-		}
-	}
-
-	@Yes
-	public static class JsrTest {
-		public JsrTest() {
-			@SuppressWarnings("unused")
-			int i = 0;
-			try {
-				i++;
-			} finally {
-				i--;
 			}
 		}
 	}
@@ -266,6 +252,9 @@ public class ProperlyConstructedAcceptanceTest {
 		}
 	}
 
+	/**
+	 * Class which only throws an exception.
+	 */
 	@Yes
 	public static class Story018_SimpleClassWithThrows {
 		public Story018_SimpleClassWithThrows() throws IOException {
@@ -273,6 +262,9 @@ public class ProperlyConstructedAcceptanceTest {
 		}
 	}
 
+	/**
+	 * Throws an exception and catches it immediately.
+	 */
 	@Yes
 	public static class Story019_SimpleClassWithTryCatch {
 		public Story019_SimpleClassWithTryCatch() {
@@ -284,6 +276,10 @@ public class ProperlyConstructedAcceptanceTest {
 		}
 	}
 
+	/**
+	 * Class which throws an exception and catches it immediately. Assigning the
+	 * this-reference to an arg is not a problem and should not be detected.
+	 */
 	@Yes
 	public static class Story020_SimpleClassWithTryCatchOneParm {
 		public Story020_SimpleClassWithTryCatchOneParm(Object obj) {
@@ -295,6 +291,12 @@ public class ProperlyConstructedAcceptanceTest {
 		}
 	}
 
+	/**
+	 * Class which throws an exception and catches it immediately. Assigning the
+	 * this-reference to a field could be a problem and should not be detected.
+	 * Due to combination of the results "UnKnown" and not "No" must be
+	 * returned.
+	 */
 	@UnKnown
 	public static class Story021_SimpleClassWithTryCatchNoParm {
 		@SuppressWarnings("unused")
@@ -310,9 +312,30 @@ public class ProperlyConstructedAcceptanceTest {
 		}
 	}
 
+	/**
+	 * Class which throws an exception in some cases and catches it immediately.
+	 * Tests exception handling combined with a BranchInstruction.
+	 */
 	@Yes
-	public static class Story022_ClassWithSingleArgumentExceptionHandling {
-		public Story022_ClassWithSingleArgumentExceptionHandling(int j) {
+	public static class Story022_ClassWithSingleArgumentSimpleExceptionHandling {
+		public Story022_ClassWithSingleArgumentSimpleExceptionHandling(int i) {
+			try {
+				if (i > 2)
+					throw new IOException();
+				i++;
+			} catch (IOException e) {
+				i--;
+			}
+		}
+	}
+
+	/**
+	 * More complex class which throws an exception in some cases and catches it
+	 * immediately. Tests exception handling combined with a BranchInstruction.
+	 */
+	@Yes
+	public static class Story023_ClassWithSingleArgumentExceptionHandling {
+		public Story023_ClassWithSingleArgumentExceptionHandling(int j) {
 			int i = 0;
 			try {
 				i = i / j;
@@ -325,19 +348,9 @@ public class ProperlyConstructedAcceptanceTest {
 		}
 	}
 
-	@Yes
-	public static class Story023_ClassWithSingleArgumentSimpleExceptionHandling {
-		public Story023_ClassWithSingleArgumentSimpleExceptionHandling(int i) {
-			try {
-				if (i > 2)
-					throw new IOException();
-				i++;
-			} catch (IOException e) {
-				i--;
-			}
-		}
-	}
-
+	/**
+	 * Class which combines TryCatchFinally with a BranchInstruction.
+	 */
 	@Yes
 	public static class Story024_ClassWithSingleArgumentSimpleTryCatchFinally {
 		public Story024_ClassWithSingleArgumentSimpleTryCatchFinally(int i) {
@@ -353,6 +366,11 @@ public class ProperlyConstructedAcceptanceTest {
 		}
 	}
 
+	/**
+	 * Class which combines TryFinally with multiple catches and a
+	 * BranchInsturction. Tests if multiple catches are considered by the
+	 * exception handling.
+	 */
 	@Yes
 	public static class Story025_ClassWithSingleArgumentTryDoubleCatchFinally {
 		public Story025_ClassWithSingleArgumentTryDoubleCatchFinally(int i) {
@@ -370,6 +388,11 @@ public class ProperlyConstructedAcceptanceTest {
 		}
 	}
 
+	/**
+	 * Class which combines TryFinally with multiple catches and a
+	 * BranchInsturction. Tests if the exception handling allows to throw
+	 * exceptions in a catch block.
+	 */
 	@Yes
 	public static class Story026_ClassWithSingleArgumentTryDoubleCatchFinallyMultipleExceptions {
 		public Story026_ClassWithSingleArgumentTryDoubleCatchFinallyMultipleExceptions(
@@ -389,6 +412,10 @@ public class ProperlyConstructedAcceptanceTest {
 		}
 	}
 
+	/**
+	 * Class with a method throwing an exception. Tests if exception handling
+	 * can detect methods throwing an exception.
+	 */
 	@Yes
 	public static class Story027_ClassWithSimpleExceptionThrowingMethod {
 
@@ -406,6 +433,10 @@ public class ProperlyConstructedAcceptanceTest {
 		}
 	}
 
+	/**
+	 * Class containing a exception throwing method and multiple tryCatch
+	 * blocks. Tests if exception handling considers all possible paths.
+	 */
 	@Yes
 	public static class Story028_ClassWithNestedExceptionhandling {
 
@@ -428,6 +459,10 @@ public class ProperlyConstructedAcceptanceTest {
 		}
 	}
 
+	/**
+	 * Complex class for exception handling test. Combines methods with a
+	 * BranchInstruction, TryFinally and multiple catch blocks.
+	 */
 	@Yes
 	public static class Story029_ClassWithMultipleTryCatchFinally {
 		private void thrower(int i) throws Exception {
@@ -461,6 +496,9 @@ public class ProperlyConstructedAcceptanceTest {
 		}
 	}
 
+	/**
+	 * Class with anonymous inner class.
+	 */
 	@UnKnown
 	public static class Story030_CtorWithAnonymousInnerClass {
 		public Story030_CtorWithAnonymousInnerClass(JButton button) {
@@ -468,11 +506,27 @@ public class ProperlyConstructedAcceptanceTest {
 
 				@Override
 				public void actionPerformed(ActionEvent arg0) {
-					// TODO Auto-generated method stub
-
 				}
 			};
 			button.addActionListener(listener);
+		}
+	}
+
+	/**
+	 * Class with multiple constructors using this().
+	 */
+	@Yes
+	public static class Story031_MultipleCtorsUsingThis {
+		public Story031_MultipleCtorsUsingThis(int i, String s) {
+			this(i, (Object) s);
+		}
+
+		public Story031_MultipleCtorsUsingThis(int i) {
+			this(i, (Object) null);
+		}
+
+		public Story031_MultipleCtorsUsingThis(int i, Object o) {
+
 		}
 	}
 }

@@ -256,7 +256,6 @@ public class PropConInstructionsAnalysisVisitor extends EmptyVisitor {
 				indentation + "\t" + obj.getLoadClassType(constantPoolGen)
 						+ "." + obj.getMethodName(constantPoolGen)
 						+ obj.getSignature(constantPoolGen));
-
 		JavaClass targetClass = null;
 		try {
 			targetClass = Repository.lookupClass(obj.getReferenceType(
@@ -270,13 +269,26 @@ public class PropConInstructionsAnalysisVisitor extends EmptyVisitor {
 		Method targetMethod = targetClassAnalyzer.getMethod(
 				obj.getMethodName(constantPoolGen),
 				obj.getArgumentTypes(constantPoolGen));
-
 		MethodGen targetMethodGen = new MethodGen(targetMethod,
 				targetClass.getClassName(), new ConstantPoolGen(
 						targetClass.getConstantPool()));
 
 		PropConMethodAnalyzer targetMethodAnalyzer = new PropConMethodAnalyzer(
 				classContext, targetMethodGen, alreadyVisitedMethods, depth);
+
+		// for detection of recursion
+		AlreadyVisitedMethod thisMethod = new AlreadyVisitedMethod(
+				targetMethod, targetMethodAnalyzer.getActualParams(frame
+						.getStack()));
+		if (alreadyVisitedMethods.contains(thisMethod)) {
+			logger.log(Level.FINE, indentation
+					+ "Recursion found: Method already analyzed.");
+			// if already visited then do not analyze again
+			handleMethodThatIsNotAnalyzed(obj);
+			return;
+		}
+		alreadyVisitedMethods.add(thisMethod);
+
 		targetMethodAnalyzer.analyze(frame.getStack());
 
 		bugs.addAll(targetMethodAnalyzer.getBugs().getCollection());
