@@ -529,4 +529,16 @@ public class ProperlyConstructedAcceptanceTest {
 
 		}
 	}
+
+	/**
+	 * Class with multiple constructors using this().
+	 */
+	@UnKnown
+	public static class Story032_SimpleThisEscaping {
+		static Object obj;
+
+		public Story032_SimpleThisEscaping() {
+			obj = this;
+		}
+	}
 }
