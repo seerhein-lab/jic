@@ -541,4 +541,24 @@ public class ProperlyConstructedAcceptanceTest {
 			obj = this;
 		}
 	}
+
+	/**
+	 * Class with simple recursion.
+	 */
+	@UnKnown
+	// because we do not analyze recursion and return maybe
+	public static class Story_033_RecursionClass {
+		@SuppressWarnings("unused")
+		private int i;
+
+		public Story_033_RecursionClass(int i) {
+			this.i = fak(i);
+		}
+
+		private int fak(int i) {
+			if (i == 0)
+				return 1;
+			return i * fak(i - 1);
+		}
+	}
 }
