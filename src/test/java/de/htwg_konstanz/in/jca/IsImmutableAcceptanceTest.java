@@ -22,7 +22,7 @@ import edu.umd.cs.findbugs.BugCollection;
 public class IsImmutableAcceptanceTest {
 
 	@BindAnalyzerMethod
-	public static BugCollection bindIsImmutable(PropConClassAnalyzer analyzer) {
+	public static BugCollection bindIsImmutable(ClassAnalyzer analyzer) {
 		return analyzer.isImmutable();
 	}
 

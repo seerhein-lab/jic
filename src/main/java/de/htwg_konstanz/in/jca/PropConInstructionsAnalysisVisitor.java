@@ -8,11 +8,12 @@ import org.apache.bcel.generic.CodeExceptionGen;
 import org.apache.bcel.generic.ConstantPoolGen;
 import org.apache.bcel.generic.InstructionHandle;
 import org.apache.bcel.generic.InvokeInstruction;
+import org.apache.bcel.generic.MethodGen;
 import org.apache.bcel.generic.PUTFIELD;
 import org.apache.bcel.generic.PUTSTATIC;
 import org.apache.bcel.generic.Type;
 
-import de.htwg_konstanz.in.jca.PropConMethodAnalyzer.AlreadyVisitedMethod;
+import de.htwg_konstanz.in.jca.BaseMethodAnalyzer.AlreadyVisitedMethod;
 import edu.umd.cs.findbugs.ba.ClassContext;
 
 public class PropConInstructionsAnalysisVisitor extends
@@ -38,17 +39,19 @@ public class PropConInstructionsAnalysisVisitor extends
 				exceptionHandlers, alreadyVisitedMethods, depth);
 	}
 
-	protected BaseInstructionsAnalysisVisitor getCorrectInstructionsAnalysisVisitor(
-			ClassContext classContext, Method method, Frame frame,
-			ConstantPoolGen constantPoolGen,
-			ArrayList<AlreadyVisitedIfInstruction> alreadyVisited,
-			ArrayList<AlreadyVisitedMethod> alreadyVisitedMethods,
-			InstructionHandle instructionHandle,
-			CodeExceptionGen[] exceptionHandlers, int depth) {
+	@Override
+	protected BaseInstructionsAnalysisVisitor getInstructionsAnalysisVisitor(
+			Frame frame, ArrayList<AlreadyVisitedIfInstruction> alreadyVisited,
+			InstructionHandle instructionHandle) {
 		return new PropConInstructionsAnalysisVisitor(classContext, method,
 				frame, constantPoolGen, alreadyVisited, alreadyVisitedMethods,
 				instructionHandle, exceptionHandlers, depth);
+	}
 
+	@Override
+	protected BaseMethodAnalyzer getMethodAnalyzer(MethodGen targetMethodGen) {
+		return new PropConMethodAnalyzer(classContext, targetMethodGen,
+				alreadyVisitedMethods, depth);
 	}
 
 	// ******************************************************************//
@@ -61,6 +64,7 @@ public class PropConInstructionsAnalysisVisitor extends
 	 * @param obj
 	 *            node to be visited
 	 */
+	@Override
 	protected void handleMethodThatIsNotAnalyzed(InvokeInstruction obj) {
 		logger.log(Level.FINE, indentation + obj.toString(false));
 		logger.log(Level.FINEST,

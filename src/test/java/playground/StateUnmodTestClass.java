@@ -1,10 +1,10 @@
 package playground;
 
 //
-public class PropConstTestClass {
+public class StateUnmodTestClass {
 	private static Object i;
 
-	public PropConstTestClass() {
+	public StateUnmodTestClass() {
 		i = this;
 	}
 }

@@ -18,7 +18,7 @@ import org.junit.runner.Runner;
 import org.junit.runner.notification.Failure;
 import org.junit.runner.notification.RunNotifier;
 
-import de.htwg_konstanz.in.jca.PropConClassAnalyzer;
+import de.htwg_konstanz.in.jca.ClassAnalyzer;
 import de.htwg_konstanz.in.jca.ThreeValueBoolean;
 import edu.umd.cs.findbugs.BugCollection;
 
@@ -74,34 +74,34 @@ public class ClassAnalyzerRunner extends Runner {
 	void runTest(RunNotifier notifier, Description testDescription,
 			Class<?> classToTest) throws Exception {
 		JavaClass javaClass = Repository.lookupClass(classToTest);
-		PropConClassAnalyzer analyzer = new PropConClassAnalyzer(javaClass,
+		ClassAnalyzer analyzer = new ClassAnalyzer(javaClass,
 				null);
 
 		BugCollection bugs = runCheckMethod(analyzer);
 
 		if (classToTest.isAnnotationPresent(Yes.class)) {
 			Assert.assertEquals(ThreeValueBoolean.yes,
-					PropConClassAnalyzer.indicatesSuccess(bugs));
+					ClassAnalyzer.indicatesSuccess(bugs));
 		}
 
 		if (classToTest.isAnnotationPresent(No.class)) {
 			Assert.assertEquals(ThreeValueBoolean.no,
-					PropConClassAnalyzer.indicatesSuccess(bugs));
+					ClassAnalyzer.indicatesSuccess(bugs));
 		}
 
 		if (classToTest.isAnnotationPresent(UnKnown.class)) {
 			Assert.assertEquals(ThreeValueBoolean.unknown,
-					PropConClassAnalyzer.indicatesSuccess(bugs));
+					ClassAnalyzer.indicatesSuccess(bugs));
 		}
 	}
 
-	BugCollection runCheckMethod(PropConClassAnalyzer analyzer) {
+	BugCollection runCheckMethod(ClassAnalyzer analyzer) {
 		Method method = findAnalyzerBindingSutMethod();
 
 		return invokeBindMethod(method, analyzer);
 	}
 
-	BugCollection invokeBindMethod(Method method, PropConClassAnalyzer analyzer) {
+	BugCollection invokeBindMethod(Method method, ClassAnalyzer analyzer) {
 		try {
 			return (BugCollection) method.invoke(null, analyzer);
 		} catch (Exception exp) {
@@ -127,7 +127,7 @@ public class ClassAnalyzerRunner extends Runner {
 							"bind method has no parameter. "
 									+ "The method should have a ClassAnaylzer as parameter.");
 				} else if (!method.getParameterTypes()[0]
-						.equals(PropConClassAnalyzer.class)) {
+						.equals(ClassAnalyzer.class)) {
 					throw new RuntimeException(
 							"The parameter type of the bind method must be ClassAnaylzer.");
 				} else {

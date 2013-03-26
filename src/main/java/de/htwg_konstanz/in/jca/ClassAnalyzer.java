@@ -18,11 +18,11 @@ import edu.umd.cs.findbugs.BugInstance;
 import edu.umd.cs.findbugs.SortedBugCollection;
 import edu.umd.cs.findbugs.ba.ClassContext;
 
-public class PropConClassAnalyzer {
+public class ClassAnalyzer {
 	private final JavaClass clazz;
 	private final ClassContext classContext;
 
-	public PropConClassAnalyzer(JavaClass clazz, ClassContext classContext) {
+	public ClassAnalyzer(JavaClass clazz, ClassContext classContext) {
 		this.clazz = clazz;
 		this.classContext = classContext;
 	}
@@ -53,7 +53,6 @@ public class PropConClassAnalyzer {
 				if (!different)
 					return method;
 			}
-
 		}
 		return null;
 	}
@@ -75,11 +74,7 @@ public class PropConClassAnalyzer {
 			MethodGen ctorGen = new MethodGen(ctor, clazz.getClassName(),
 					new ConstantPoolGen(clazz.getConstantPool()));
 
-			// MethodGen ctorGen = new MethodGen(ctor,
-			// "playground.PropConstTestClass", new ConstantPoolGen(
-			// clazz.getConstantPool()));
-
-			PropConMethodAnalyzer ctorAnalyzer = new PropConMethodAnalyzer(
+			BaseMethodAnalyzer ctorAnalyzer = new PropConMethodAnalyzer(
 					classContext, ctorGen);
 			ctorAnalyzer.analyze();
 			bugs.addAll(ctorAnalyzer.getBugs().getCollection());
@@ -87,26 +82,72 @@ public class PropConClassAnalyzer {
 		return bugs;
 	}
 
-	private Field[] getMutableFields() {
-		return clazz.getFields();
+	private List<Method> getAllMethodsWithoutCtors() {
+		List<Method> methods = new Vector<Method>();
+		Method[] allMethods = clazz.getMethods();
+		for (Method method : allMethods)
+			if (!method.getName().equals(CONSTRUCTOR_NAME))
+				methods.add(method);
+		return methods;
 	}
 
-	private BugCollection ctorParamIsCopied(Field field) {
-		return new SortedBugCollection();
+	// TODO set private when testing is complete
+	public SortedBugCollection ctorParamsAreNotCopied() {
+		SortedBugCollection bugs = new SortedBugCollection();
+		List<Method> ctors = getConstructors();
+
+		for (Method ctor : ctors) {
+			MethodGen ctorGen = new MethodGen(ctor, clazz.getClassName(),
+					new ConstantPoolGen(clazz.getConstantPool()));
+
+			BaseMethodAnalyzer ctorAnalyzer = new StateUnmodCtorMethodAnalyzer(
+					classContext, ctorGen);
+			ctorAnalyzer.analyze();
+			bugs.addAll(ctorAnalyzer.getBugs().getCollection());
+		}
+		return bugs;
 	}
 
-	private BugCollection fieldIsNotPublished(Field field) {
-		return new SortedBugCollection();
+	// TODO set private when testing is complete
+	public BugCollection fieldsAreNotPublished() {
+		SortedBugCollection bugs = new SortedBugCollection();
+		List<Method> methods = getAllMethodsWithoutCtors();
+
+		for (Method method : methods) {
+			MethodGen methodGen = new MethodGen(method, clazz.getClassName(),
+					new ConstantPoolGen(clazz.getConstantPool()));
+
+			BaseMethodAnalyzer methodAnalyzer = new StateUnmodMethodRefEscapeMethodAnalyzer(
+					classContext, methodGen);
+			methodAnalyzer.analyze();
+			bugs.addAll(methodAnalyzer.getBugs().getCollection());
+		}
+		return bugs;
+	}
+
+	// TODO set private when testing is complete
+	public BugCollection stateUnmodified() {
+		SortedBugCollection bugs = new SortedBugCollection();
+		List<Method> methods = getAllMethodsWithoutCtors();
+
+		for (Method method : methods) {
+			MethodGen methodGen = new MethodGen(method, clazz.getClassName(),
+					new ConstantPoolGen(clazz.getConstantPool()));
+
+			BaseMethodAnalyzer methodAnalyzer = new StateUnmodMethodModifyMethodAnalyzer(
+					classContext, methodGen);
+			methodAnalyzer.analyze();
+			bugs.addAll(methodAnalyzer.getBugs().getCollection());
+		}
+		return bugs;
 	}
 
 	public BugCollection stateUnmodifiable() {
 		SortedBugCollection bugs = new SortedBugCollection();
 
-		Field[] mutableFields = getMutableFields();
-		for (Field mutableField : mutableFields) {
-			bugs.addAll(ctorParamIsCopied(mutableField).getCollection());
-			bugs.addAll(fieldIsNotPublished(mutableField).getCollection());
-		}
+		bugs.addAll(ctorParamsAreNotCopied().getCollection());
+		bugs.addAll(stateUnmodified().getCollection());
+		bugs.addAll(fieldsAreNotPublished().getCollection());
 
 		bugs.add(new BugInstance("Warning: state might be modifiable", 1));
 		return bugs;

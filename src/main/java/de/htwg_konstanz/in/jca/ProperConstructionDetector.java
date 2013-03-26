@@ -32,7 +32,7 @@ public final class ProperConstructionDetector implements Detector {
 		// Priorities.NORMAL_PRIORITY)
 		// .addClass("de.htwg_konstanz.in.jca.testclasses.UtilsTestClass"));
 
-		BugCollection bugs = new PropConClassAnalyzer(clazz, classContext)
+		BugCollection bugs = new ClassAnalyzer(clazz, classContext)
 				.properlyConstructed();
 
 		for (BugInstance bug : bugs) {

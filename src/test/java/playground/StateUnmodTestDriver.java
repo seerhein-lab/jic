@@ -13,11 +13,14 @@ import org.apache.bcel.Repository;
 import org.apache.bcel.classfile.JavaClass;
 
 import de.htwg_konstanz.in.jca.ClassAnalyzer;
-import edu.umd.cs.findbugs.BugCollection;
 import edu.umd.cs.findbugs.BugInstance;
+import edu.umd.cs.findbugs.SortedBugCollection;
 
-public class ProperlyConstructedTestDriver {
+public class StateUnmodTestDriver {
 	private static final String LOGFILEPATH = "/home/seerheinlab/Arbeitsfläche/log.txt";
+	private static final boolean analyzeCtorCopy = true;
+	private static final boolean analyzeFieldsMutate = true;
+	private static final boolean analyzeFieldsArePuplished = true;
 
 	public static void main(String[] args) throws ClassNotFoundException,
 			SecurityException, IOException {
@@ -29,12 +32,12 @@ public class ProperlyConstructedTestDriver {
 		}
 		StreamHandler streamHandler = new StreamHandler(
 				System.out,
-				new ProperlyConstructedTestDriver().new ProperlyConstructedTestDriverFormater());
+				new StateUnmodTestDriver().new ProperlyConstructedTestDriverFormater());
 		streamHandler.setLevel(Level.ALL);
 		globalLogger.addHandler(streamHandler);
 		globalLogger.setLevel(Level.ALL);
 		FileHandler fh = new FileHandler(LOGFILEPATH);
-		fh.setFormatter(new ProperlyConstructedTestDriver().new ProperlyConstructedTestDriverFormater());
+		fh.setFormatter(new StateUnmodTestDriver().new ProperlyConstructedTestDriverFormater());
 		fh.setLevel(Level.ALL);
 		globalLogger.addHandler(fh);
 		Logger logger = Logger.getLogger("ProperlyConstructedTestDriver");
@@ -43,8 +46,21 @@ public class ProperlyConstructedTestDriver {
 		JavaClass clazz = Repository
 				.lookupClass("playground.PropConstTestClass");
 
-		BugCollection bugs = new ClassAnalyzer(clazz, null)
-				.properlyConstructed();
+		SortedBugCollection bugs = new SortedBugCollection();
+		ClassAnalyzer classAlalyzer = new ClassAnalyzer(clazz, null);
+		if (analyzeCtorCopy) {
+			logger.log(Level.FINE, "Analyzing CtorCopy");
+			bugs.addAll(classAlalyzer.ctorParamsAreNotCopied().getCollection());
+		}
+		if (analyzeFieldsMutate) {
+			logger.log(Level.FINE, "Analyzing FieldsMutate");
+			bugs.addAll(classAlalyzer.stateUnmodified().getCollection());
+		}
+		if (analyzeFieldsArePuplished) {
+			logger.log(Level.FINE, "Analyzing FieldsNotPublished");
+			bugs.addAll(classAlalyzer.fieldsAreNotPublished().getCollection());
+		}
+
 		logger.log(Level.SEVERE, "bugs: ");
 		for (BugInstance bug : bugs) {
 			logger.log(Level.SEVERE,

@@ -1,22 +1,21 @@
 package de.htwg_konstanz.in.jca;
 
 import java.util.ArrayList;
-import java.util.Stack;
 
 import org.apache.bcel.generic.ConstantPoolGen;
 import org.apache.bcel.generic.InstructionHandle;
 import org.apache.bcel.generic.MethodGen;
-import org.apache.bcel.generic.Type;
 
 import edu.umd.cs.findbugs.ba.ClassContext;
 
-public class PropConMethodAnalyzer extends BaseMethodAnalyzer {
+public class StateUnmodCtorMethodAnalyzer extends BaseMethodAnalyzer {
 
-	public PropConMethodAnalyzer(ClassContext classContext, MethodGen methodGen) {
+	public StateUnmodCtorMethodAnalyzer(ClassContext classContext,
+			MethodGen methodGen) {
 		super(classContext, methodGen);
 	}
 
-	public PropConMethodAnalyzer(ClassContext classContext,
+	public StateUnmodCtorMethodAnalyzer(ClassContext classContext,
 			MethodGen methodGen,
 			ArrayList<AlreadyVisitedMethod> alreadyVisitedMethods, int depth) {
 		super(classContext, methodGen, alreadyVisitedMethods, depth);
@@ -30,22 +29,24 @@ public class PropConMethodAnalyzer extends BaseMethodAnalyzer {
 				depth);
 	}
 
-	@Override
 	public void analyze() {
-		Stack<Slot> callerStack = new Stack<Slot>();
-
-		// push this + args onto the stack
-		callerStack.push(Slot.thisReference);
-
-		Type[] argTypes = method.getArgumentTypes();
-
-		for (Type argType : argTypes) {
-			DataType dataType = DataType.getDataType(argType);
-			for (int i = 0; i < dataType.getNumSlots(); i++) {
-				callerStack.push(Slot.getDefaultInstance(dataType));
-			}
-
-		}
-		analyze(callerStack);
+		System.err.println("analyze not implemented yet!");
+		// TODO remove comment add specific "external" marker to all external
+		// references
+		// Stack<Slot> callerStack = new Stack<Slot>();
+		//
+		// // push this + args onto the stack
+		// callerStack.push(Slot.thisReference);
+		//
+		// Type[] argTypes = method.getArgumentTypes();
+		//
+		// for (Type argType : argTypes) {
+		// DataType dataType = DataType.getDataType(argType);
+		// for (int i = 0; i < dataType.getNumSlots(); i++) {
+		// callerStack.push(Slot.getDefaultInstance(dataType));
+		// }
+		//
+		// }
+		// analyze(callerStack);
 	}
 }

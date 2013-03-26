@@ -75,7 +75,7 @@ import org.apache.bcel.generic.Select;
 import org.apache.bcel.generic.StoreInstruction;
 import org.apache.bcel.generic.Type;
 
-import de.htwg_konstanz.in.jca.PropConMethodAnalyzer.AlreadyVisitedMethod;
+import de.htwg_konstanz.in.jca.BaseMethodAnalyzer.AlreadyVisitedMethod;
 import de.htwg_konstanz.in.jca.ResultValue.Kind;
 import edu.umd.cs.findbugs.BugCollection;
 import edu.umd.cs.findbugs.BugInstance;
@@ -109,7 +109,7 @@ import edu.umd.cs.findbugs.ba.ClassContext;
  * </ul>
  * </p>
  */
-public class BaseInstructionsAnalysisVisitor extends EmptyVisitor {
+public abstract class BaseInstructionsAnalysisVisitor extends EmptyVisitor {
 	protected static final Logger logger = Logger
 			.getLogger("PropConInstructionsAnalysisVisitor");
 	protected final ClassContext classContext;
@@ -264,8 +264,8 @@ public class BaseInstructionsAnalysisVisitor extends EmptyVisitor {
 			logger.log(Level.SEVERE, "Could not load class!");
 		}
 
-		PropConClassAnalyzer targetClassAnalyzer = new PropConClassAnalyzer(
-				targetClass, classContext);
+		ClassAnalyzer targetClassAnalyzer = new ClassAnalyzer(targetClass,
+				classContext);
 		Method targetMethod = targetClassAnalyzer.getMethod(
 				obj.getMethodName(constantPoolGen),
 				obj.getArgumentTypes(constantPoolGen));
@@ -273,8 +273,7 @@ public class BaseInstructionsAnalysisVisitor extends EmptyVisitor {
 				targetClass.getClassName(), new ConstantPoolGen(
 						targetClass.getConstantPool()));
 
-		PropConMethodAnalyzer targetMethodAnalyzer = new PropConMethodAnalyzer(
-				classContext, targetMethodGen, alreadyVisitedMethods, depth);
+		BaseMethodAnalyzer targetMethodAnalyzer = getMethodAnalyzer(targetMethodGen);
 
 		// for detection of recursion
 		AlreadyVisitedMethod thisMethod = new AlreadyVisitedMethod(
@@ -298,10 +297,9 @@ public class BaseInstructionsAnalysisVisitor extends EmptyVisitor {
 
 		for (ResultValue calleeResult : calleeResults) {
 			if (calleeResult.getKind().equals(Kind.REGULAR)) {
-				BaseInstructionsAnalysisVisitor specificCalleeResultVisitor = getCorrectInstructionsAnalysisVisitor(
-						classContext, method, new Frame(frame),
-						constantPoolGen, alreadyVisited, alreadyVisitedMethods,
-						instructionHandle.getNext(), exceptionHandlers, depth);
+				BaseInstructionsAnalysisVisitor specificCalleeResultVisitor = getInstructionsAnalysisVisitor(
+						new Frame(frame), alreadyVisited,
+						instructionHandle.getNext());
 
 				specificCalleeResultVisitor.frame
 						.pushStackByRequiredSlots(calleeResult.getSlot());
@@ -418,18 +416,12 @@ public class BaseInstructionsAnalysisVisitor extends EmptyVisitor {
 		instructionHandle.accept(this);
 	}
 
-	protected BaseInstructionsAnalysisVisitor getCorrectInstructionsAnalysisVisitor(
-			ClassContext classContext, Method method, Frame frame,
-			ConstantPoolGen constantPoolGen,
-			ArrayList<AlreadyVisitedIfInstruction> alreadyVisited,
-			ArrayList<AlreadyVisitedMethod> alreadyVisitedMethods,
-			InstructionHandle instructionHandle,
-			CodeExceptionGen[] exceptionHandlers, int depth) {
-		return new BaseInstructionsAnalysisVisitor(classContext, method, frame,
-				constantPoolGen, alreadyVisited, alreadyVisitedMethods,
-				instructionHandle, exceptionHandlers, depth);
+	protected abstract BaseInstructionsAnalysisVisitor getInstructionsAnalysisVisitor(
+			Frame frame, ArrayList<AlreadyVisitedIfInstruction> alreadyVisited,
+			InstructionHandle instructionHandle);
 
-	}
+	protected abstract BaseMethodAnalyzer getMethodAnalyzer(
+			MethodGen targetMethodGen);
 
 	// -----------------------------------------------------------------
 	/**
@@ -545,15 +537,13 @@ public class BaseInstructionsAnalysisVisitor extends EmptyVisitor {
 		frame.getStack().push(exception);
 
 		for (CodeExceptionGen exceptionHandler : exceptionHandlers) {
-			if (PropConMethodAnalyzer.protectsInstruction(exceptionHandler,
+			if (BaseMethodAnalyzer.protectsInstruction(exceptionHandler,
 					instructionHandle)) {
 				logger.log(Level.FINE, indentation + "vvvvv "
 						+ exceptionHandler.toString() + ": start vvvvv");
-				BaseInstructionsAnalysisVisitor excepHandlerVisitor = new BaseInstructionsAnalysisVisitor(
-						classContext, method, new Frame(frame),
-						constantPoolGen, alreadyVisited, alreadyVisitedMethods,
-						exceptionHandler.getHandlerPC(), exceptionHandlers,
-						depth);
+				BaseInstructionsAnalysisVisitor excepHandlerVisitor = getInstructionsAnalysisVisitor(
+						new Frame(frame), alreadyVisited,
+						exceptionHandler.getHandlerPC());
 				exceptionHandler.getHandlerPC().accept(excepHandlerVisitor);
 				bugs.addAll(excepHandlerVisitor.getBugs().getCollection());
 				result.addAll(excepHandlerVisitor.getResult());
@@ -632,10 +622,9 @@ public class BaseInstructionsAnalysisVisitor extends EmptyVisitor {
 			ArrayList<AlreadyVisitedIfInstruction> newAlreadyVisited = (ArrayList<AlreadyVisitedIfInstruction>) alreadyVisited
 					.clone();
 			newAlreadyVisited.add(elseBranch);
-			BaseInstructionsAnalysisVisitor elseBranchVisitor = getCorrectInstructionsAnalysisVisitor(
-					classContext, method, new Frame(frame), constantPoolGen,
-					newAlreadyVisited, alreadyVisitedMethods,
-					instructionHandle.getNext(), exceptionHandlers, depth);
+			BaseInstructionsAnalysisVisitor elseBranchVisitor = getInstructionsAnalysisVisitor(
+					new Frame(frame), newAlreadyVisited,
+					instructionHandle.getNext());
 			instructionHandle.getNext().accept(elseBranchVisitor);
 			bugs.addAll(elseBranchVisitor.getBugs().getCollection());
 			result.addAll(elseBranchVisitor.getResult());
@@ -654,10 +643,8 @@ public class BaseInstructionsAnalysisVisitor extends EmptyVisitor {
 					.clone();
 			newAlreadyVisited.add(thenBranch);
 
-			BaseInstructionsAnalysisVisitor thenBranchVisitor = getCorrectInstructionsAnalysisVisitor(
-					classContext, method, new Frame(frame), constantPoolGen,
-					newAlreadyVisited, alreadyVisitedMethods, obj.getTarget(),
-					exceptionHandlers, depth);
+			BaseInstructionsAnalysisVisitor thenBranchVisitor = getInstructionsAnalysisVisitor(
+					new Frame(frame), newAlreadyVisited, obj.getTarget());
 			obj.getTarget().accept(thenBranchVisitor);
 			bugs.addAll(thenBranchVisitor.getBugs().getCollection());
 			result.addAll(thenBranchVisitor.getResult());
@@ -708,9 +695,8 @@ public class BaseInstructionsAnalysisVisitor extends EmptyVisitor {
 		for (int i = 0; i < targets.length; i++) {
 			logger.log(Level.FINEST, indentation + "--------------- Line "
 					+ targets[i].getPosition() + " ---------------");
-			caseToFollow = getCorrectInstructionsAnalysisVisitor(classContext,
-					method, new Frame(frame), constantPoolGen, alreadyVisited,
-					alreadyVisitedMethods, targets[i], exceptionHandlers, depth);
+			caseToFollow = getInstructionsAnalysisVisitor(new Frame(frame),
+					alreadyVisited, targets[i]);
 			targets[i].accept(caseToFollow);
 			// adding occurred bugs to bug-collection
 			bugs.addAll(caseToFollow.getBugs().getCollection());
@@ -723,10 +709,8 @@ public class BaseInstructionsAnalysisVisitor extends EmptyVisitor {
 				+ " (DefaultCase) ---------------");
 		// NOTE: If the keyword "Default:" is not in the switch the following
 		// target is the end of the switch without executing a case.
-		caseToFollow = getCorrectInstructionsAnalysisVisitor(classContext,
-				method, new Frame(frame), constantPoolGen, alreadyVisited,
-				alreadyVisitedMethods, obj.getTarget(), exceptionHandlers,
-				depth);
+		caseToFollow = getInstructionsAnalysisVisitor(new Frame(frame),
+				alreadyVisited, obj.getTarget());
 		obj.getTarget().accept(caseToFollow);
 		// adding occurred bugs to bug-collection
 		bugs.addAll(caseToFollow.getBugs().getCollection());
@@ -820,10 +804,8 @@ public class BaseInstructionsAnalysisVisitor extends EmptyVisitor {
 
 		// 1st case: type cast is valid, continue execution in a separate
 		// visitor
-		BaseInstructionsAnalysisVisitor regularCaseVisitor = getCorrectInstructionsAnalysisVisitor(
-				classContext, method, new Frame(frame), constantPoolGen,
-				alreadyVisited, alreadyVisitedMethods,
-				instructionHandle.getNext(), exceptionHandlers, depth);
+		BaseInstructionsAnalysisVisitor regularCaseVisitor = getInstructionsAnalysisVisitor(
+				new Frame(frame), alreadyVisited, instructionHandle.getNext());
 
 		regularCaseVisitor.frame.getStack().push(objRef);
 

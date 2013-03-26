@@ -25,7 +25,7 @@ public class ProperlyConstructedAcceptanceTest {
 
 	@BindAnalyzerMethod
 	public static BugCollection bindClassAnalyzerToProperlyConstructed(
-			PropConClassAnalyzer analyzer) {
+			ClassAnalyzer analyzer) {
 		return analyzer.properlyConstructed();
 	}
 
@@ -531,7 +531,7 @@ public class ProperlyConstructedAcceptanceTest {
 	}
 
 	/**
-	 * Class with multiple constructors using this().
+	 * Simple class with this escaping.
 	 */
 	@UnKnown
 	public static class Story032_SimpleThisEscaping {
@@ -546,7 +546,6 @@ public class ProperlyConstructedAcceptanceTest {
 	 * Class with simple recursion.
 	 */
 	@UnKnown
-	// because we do not analyze recursion and return maybe
 	public static class Story_033_RecursionClass {
 		@SuppressWarnings("unused")
 		private int i;
