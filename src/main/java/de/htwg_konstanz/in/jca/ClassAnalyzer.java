@@ -92,7 +92,7 @@ public class ClassAnalyzer {
 	}
 
 	// TODO set private when testing is complete
-	public SortedBugCollection ctorParamsAreNotCopied() {
+	public SortedBugCollection ctorParamsAreCopied() {
 		SortedBugCollection bugs = new SortedBugCollection();
 		List<Method> ctors = getConstructors();
 
@@ -100,7 +100,7 @@ public class ClassAnalyzer {
 			MethodGen ctorGen = new MethodGen(ctor, clazz.getClassName(),
 					new ConstantPoolGen(clazz.getConstantPool()));
 
-			BaseMethodAnalyzer ctorAnalyzer = new StateUnmodCtorMethodAnalyzer(
+			BaseMethodAnalyzer ctorAnalyzer = new StateUnmodCtorAnalyzer(
 					classContext, ctorGen);
 			ctorAnalyzer.analyze();
 			bugs.addAll(ctorAnalyzer.getBugs().getCollection());
@@ -117,7 +117,7 @@ public class ClassAnalyzer {
 			MethodGen methodGen = new MethodGen(method, clazz.getClassName(),
 					new ConstantPoolGen(clazz.getConstantPool()));
 
-			BaseMethodAnalyzer methodAnalyzer = new StateUnmodMethodRefEscapeMethodAnalyzer(
+			BaseMethodAnalyzer methodAnalyzer = new StateUnmodRefPublishedMethodAnalyzer(
 					classContext, methodGen);
 			methodAnalyzer.analyze();
 			bugs.addAll(methodAnalyzer.getBugs().getCollection());
@@ -134,7 +134,7 @@ public class ClassAnalyzer {
 			MethodGen methodGen = new MethodGen(method, clazz.getClassName(),
 					new ConstantPoolGen(clazz.getConstantPool()));
 
-			BaseMethodAnalyzer methodAnalyzer = new StateUnmodMethodModifyMethodAnalyzer(
+			BaseMethodAnalyzer methodAnalyzer = new StateUnmodFieldsModifyMethodAnalyzer(
 					classContext, methodGen);
 			methodAnalyzer.analyze();
 			bugs.addAll(methodAnalyzer.getBugs().getCollection());
@@ -145,7 +145,7 @@ public class ClassAnalyzer {
 	public BugCollection stateUnmodifiable() {
 		SortedBugCollection bugs = new SortedBugCollection();
 
-		bugs.addAll(ctorParamsAreNotCopied().getCollection());
+		bugs.addAll(ctorParamsAreCopied().getCollection());
 		bugs.addAll(stateUnmodified().getCollection());
 		bugs.addAll(fieldsAreNotPublished().getCollection());
 

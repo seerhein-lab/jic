@@ -8,14 +8,14 @@ import org.apache.bcel.generic.MethodGen;
 
 import edu.umd.cs.findbugs.ba.ClassContext;
 
-public class StateUnmodMethodModifyMethodAnalyzer extends BaseMethodAnalyzer {
+public class StateUnmodCtorAnalyzer extends BaseMethodAnalyzer {
 
-	public StateUnmodMethodModifyMethodAnalyzer(ClassContext classContext,
+	public StateUnmodCtorAnalyzer(ClassContext classContext,
 			MethodGen methodGen) {
 		super(classContext, methodGen);
 	}
 
-	public StateUnmodMethodModifyMethodAnalyzer(ClassContext classContext,
+	public StateUnmodCtorAnalyzer(ClassContext classContext,
 			MethodGen methodGen,
 			ArrayList<AlreadyVisitedMethod> alreadyVisitedMethods, int depth) {
 		super(classContext, methodGen, alreadyVisitedMethods, depth);
@@ -31,7 +31,8 @@ public class StateUnmodMethodModifyMethodAnalyzer extends BaseMethodAnalyzer {
 
 	public void analyze() {
 		System.err.println("analyze not implemented yet!");
-		// TODO remove comment add specific "field" marker to all references
+		// TODO remove comment add specific "external" marker to all external
+		// references
 		// Stack<Slot> callerStack = new Stack<Slot>();
 		//
 		// // push this + args onto the stack

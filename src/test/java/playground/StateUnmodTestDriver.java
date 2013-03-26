@@ -50,7 +50,7 @@ public class StateUnmodTestDriver {
 		ClassAnalyzer classAlalyzer = new ClassAnalyzer(clazz, null);
 		if (analyzeCtorCopy) {
 			logger.log(Level.FINE, "Analyzing CtorCopy");
-			bugs.addAll(classAlalyzer.ctorParamsAreNotCopied().getCollection());
+			bugs.addAll(classAlalyzer.ctorParamsAreCopied().getCollection());
 		}
 		if (analyzeFieldsMutate) {
 			logger.log(Level.FINE, "Analyzing FieldsMutate");

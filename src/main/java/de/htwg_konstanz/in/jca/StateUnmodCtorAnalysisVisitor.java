@@ -45,7 +45,7 @@ public class StateUnmodCtorAnalysisVisitor extends
 
 	@Override
 	protected BaseMethodAnalyzer getMethodAnalyzer(MethodGen targetMethodGen) {
-		return new StateUnmodCtorMethodAnalyzer(classContext, targetMethodGen,
+		return new StateUnmodCtorAnalyzer(classContext, targetMethodGen,
 				alreadyVisitedMethods, depth);
 	}
 
