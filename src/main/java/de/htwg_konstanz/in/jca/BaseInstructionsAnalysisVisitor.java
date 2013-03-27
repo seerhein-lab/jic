@@ -79,8 +79,8 @@ import de.htwg_konstanz.in.jca.BaseMethodAnalyzer.AlreadyVisitedMethod;
 import de.htwg_konstanz.in.jca.ResultValue.Kind;
 import edu.umd.cs.findbugs.BugCollection;
 import edu.umd.cs.findbugs.BugInstance;
-import edu.umd.cs.findbugs.Priorities;
 import edu.umd.cs.findbugs.SortedBugCollection;
+import edu.umd.cs.findbugs.annotations.Confidence;
 import edu.umd.cs.findbugs.ba.ClassContext;
 
 ;
@@ -203,39 +203,20 @@ public abstract class BaseInstructionsAnalysisVisitor extends EmptyVisitor {
 		return result;
 	}
 
-	protected void addBug(int priority, String message,
+	protected void addBug(Confidence confidence, String message,
 			InstructionHandle instructionHandle) {
-		int prior;
-		switch (priority) {
-		case 2:
-			prior = Priorities.NORMAL_PRIORITY;
-			break;
-		case 3:
-			prior = Priorities.LOW_PRIORITY;
-			break;
-		case 4:
-			prior = Priorities.EXP_PRIORITY;
-			break;
-		default:
-			prior = Priorities.HIGH_PRIORITY;
-			break;
-		}
-
 		BugInstance bugInstance = new BugInstance("PROPER_CONSTRUCTION_BUG",
-				prior);
+				confidence.getConfidenceValue());
 		bugInstance.addString(message);
-		// bugInstance
-		// .addClass("de.htwg_konstanz.in.jca.testclasses.UtilsTestClass");
-
-		// System.out.println("bug instance created: " + message);
 
 		if (classContext != null) {
 			bugInstance.addClass(classContext.getJavaClass()).addSourceLine(
 					classContext, method, instructionHandle);
-			// System.out.println("bug instance annotated.");
+		} else {
+			bugInstance
+					.addClass("de.htwg_konstanz.in.jca.testclasses.UtilsTestClass");
 		}
 		bugs.add(bugInstance);
-		// System.out.println("bug instance added.");
 
 	}
 

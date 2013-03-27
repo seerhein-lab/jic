@@ -19,7 +19,6 @@ import org.junit.runner.notification.Failure;
 import org.junit.runner.notification.RunNotifier;
 
 import de.htwg_konstanz.in.jca.ClassAnalyzer;
-import de.htwg_konstanz.in.jca.ThreeValueBoolean;
 import edu.umd.cs.findbugs.BugCollection;
 
 public class ClassAnalyzerRunner extends Runner {
@@ -74,24 +73,16 @@ public class ClassAnalyzerRunner extends Runner {
 	void runTest(RunNotifier notifier, Description testDescription,
 			Class<?> classToTest) throws Exception {
 		JavaClass javaClass = Repository.lookupClass(classToTest);
-		ClassAnalyzer analyzer = new ClassAnalyzer(javaClass,
-				null);
+		ClassAnalyzer analyzer = new ClassAnalyzer(javaClass, null);
 
 		BugCollection bugs = runCheckMethod(analyzer);
 
-		if (classToTest.isAnnotationPresent(Yes.class)) {
-			Assert.assertEquals(ThreeValueBoolean.yes,
-					ClassAnalyzer.indicatesSuccess(bugs));
+		if (classToTest.isAnnotationPresent(ProperlyConstructed.class)) {
+			Assert.assertTrue(bugs.getCollection().isEmpty());
 		}
 
-		if (classToTest.isAnnotationPresent(No.class)) {
-			Assert.assertEquals(ThreeValueBoolean.no,
-					ClassAnalyzer.indicatesSuccess(bugs));
-		}
-
-		if (classToTest.isAnnotationPresent(UnKnown.class)) {
-			Assert.assertEquals(ThreeValueBoolean.unknown,
-					ClassAnalyzer.indicatesSuccess(bugs));
+		if (classToTest.isAnnotationPresent(ImproperlyConstructed.class)) {
+			Assert.assertFalse(bugs.getCollection().isEmpty());
 		}
 	}
 
@@ -144,12 +135,10 @@ public class ClassAnalyzerRunner extends Runner {
 		Class<?>[] classes = testCaseClass.getClasses();
 		for (Class<?> klass : classes) {
 
-			if (klass.isAnnotationPresent(Yes.class)
-					|| klass.isAnnotationPresent(No.class)
-					|| klass.isAnnotationPresent(UnKnown.class)) {
+			if (klass.isAnnotationPresent(ProperlyConstructed.class)
+					|| klass.isAnnotationPresent(ImproperlyConstructed.class)) {
 				testClassesList.add(klass);
 			}
-
 		}
 		return testClassesList;
 	}

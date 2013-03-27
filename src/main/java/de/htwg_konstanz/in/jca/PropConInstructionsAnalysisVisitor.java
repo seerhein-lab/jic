@@ -14,6 +14,7 @@ import org.apache.bcel.generic.PUTSTATIC;
 import org.apache.bcel.generic.Type;
 
 import de.htwg_konstanz.in.jca.BaseMethodAnalyzer.AlreadyVisitedMethod;
+import edu.umd.cs.findbugs.annotations.Confidence;
 import edu.umd.cs.findbugs.ba.ClassContext;
 
 public class PropConInstructionsAnalysisVisitor extends
@@ -84,7 +85,8 @@ public class PropConInstructionsAnalysisVisitor extends
 				logger.log(
 						Level.WARNING,
 						"Warning: 'maybeThis' reference is passed into an alien method and might escape.");
-				addBug(2,
+
+				addBug(Confidence.HIGH,
 						"Warning: 'maybeThis' reference is passed into an alien method and might escape.",
 						instructionHandle);
 				if (returnValue.getDataType().equals(DataType.referenceType)) {
@@ -94,7 +96,7 @@ public class PropConInstructionsAnalysisVisitor extends
 			if (argument.equals(Slot.thisReference)) {
 				logger.log(Level.WARNING,
 						"Warning: 'this' reference is passed into an alien method and might escape.");
-				addBug(1,
+				addBug(Confidence.HIGH,
 						"Warning: 'this' reference is passed into an alien method and might escape.",
 						instructionHandle);
 				if (returnValue.getDataType().equals(DataType.referenceType)) {
@@ -131,16 +133,16 @@ public class PropConInstructionsAnalysisVisitor extends
 
 		if (right.equals(Slot.thisReference)) {
 			logger.log(Level.WARNING,
-					"Error: 'this' reference is assigned to some object's field and escapes.");
-			addBug(3,
-					"Error: 'this' reference is assigned to some object's field and escapes.",
+					"Error: 'this' reference is assigned to some object's field and might escape.");
+			addBug(Confidence.MEDIUM,
+					"Error: 'this' reference is assigned to some object's field and might escape.",
 					instructionHandle);
 		}
 		if (right.equals(Slot.maybeThisReference)) {
 			logger.log(
 					Level.WARNING,
 					"Warning: 'this' reference might be assigned to some object's field and might escape.");
-			addBug(4,
+			addBug(Confidence.MEDIUM,
 					"Warning: 'this' reference might be assigned to some object's field and might escape.",
 					instructionHandle);
 		}
@@ -180,7 +182,7 @@ public class PropConInstructionsAnalysisVisitor extends
 		if (toPut.equals(Slot.thisReference)) {
 			logger.log(Level.SEVERE,
 					"Error: 'this' reference is assigned to a static field and escapes.");
-			addBug(1,
+			addBug(Confidence.HIGH,
 					"Error: 'this' reference is assigned to a static field and escapes.",
 					instructionHandle);
 		}
@@ -188,7 +190,7 @@ public class PropConInstructionsAnalysisVisitor extends
 			logger.log(
 					Level.WARNING,
 					"Warning: 'this' reference might be assigned to a static field and might escape.");
-			addBug(2,
+			addBug(Confidence.HIGH,
 					"Warning: 'this' reference might be assigned to a static field and might escape.",
 					instructionHandle);
 		}
