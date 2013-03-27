@@ -18,7 +18,7 @@ import org.junit.runner.Runner;
 import org.junit.runner.notification.Failure;
 import org.junit.runner.notification.RunNotifier;
 
-import de.htwg_konstanz.in.jca.ClassAnalyzer;
+import de.htwg_konstanz.in.jca.analyzer.ClassAnalyzer;
 import edu.umd.cs.findbugs.BugCollection;
 
 public class ClassAnalyzerRunner extends Runner {

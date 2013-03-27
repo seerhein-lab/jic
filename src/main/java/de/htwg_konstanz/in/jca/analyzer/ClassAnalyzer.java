@@ -1,4 +1,4 @@
-package de.htwg_konstanz.in.jca;
+package de.htwg_konstanz.in.jca.analyzer;
 
 import static org.apache.bcel.Constants.CONSTRUCTOR_NAME;
 
@@ -12,6 +12,8 @@ import org.apache.bcel.classfile.Method;
 import org.apache.bcel.generic.ConstantPoolGen;
 import org.apache.bcel.generic.MethodGen;
 import org.apache.bcel.generic.Type;
+
+import de.htwg_konstanz.in.jca.ThreeValueBoolean;
 
 import edu.umd.cs.findbugs.BugCollection;
 import edu.umd.cs.findbugs.BugInstance;

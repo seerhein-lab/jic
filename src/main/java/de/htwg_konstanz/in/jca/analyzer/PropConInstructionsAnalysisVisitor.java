@@ -1,4 +1,4 @@
-package de.htwg_konstanz.in.jca;
+package de.htwg_konstanz.in.jca.analyzer;
 
 import java.util.ArrayList;
 import java.util.logging.Level;
@@ -13,7 +13,10 @@ import org.apache.bcel.generic.PUTFIELD;
 import org.apache.bcel.generic.PUTSTATIC;
 import org.apache.bcel.generic.Type;
 
-import de.htwg_konstanz.in.jca.BaseMethodAnalyzer.AlreadyVisitedMethod;
+import de.htwg_konstanz.in.jca.DataType;
+import de.htwg_konstanz.in.jca.Frame;
+import de.htwg_konstanz.in.jca.Slot;
+import de.htwg_konstanz.in.jca.analyzer.BaseMethodAnalyzer.AlreadyVisitedMethod;
 import edu.umd.cs.findbugs.annotations.Confidence;
 import edu.umd.cs.findbugs.ba.ClassContext;
 

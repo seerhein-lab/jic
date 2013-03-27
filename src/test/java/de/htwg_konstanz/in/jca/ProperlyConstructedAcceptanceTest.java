@@ -8,6 +8,7 @@ import javax.swing.JButton;
 
 import org.junit.runner.RunWith;
 
+import de.htwg_konstanz.in.jca.analyzer.ClassAnalyzer;
 import de.htwg_konstanz.in.jca.testutils.ClassAnalyzerRunner;
 import de.htwg_konstanz.in.jca.testutils.ClassAnalyzerRunner.BindAnalyzerMethod;
 import de.htwg_konstanz.in.jca.testutils.ImproperlyConstructed;

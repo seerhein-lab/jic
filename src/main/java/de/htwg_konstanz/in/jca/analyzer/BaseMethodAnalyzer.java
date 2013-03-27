@@ -1,4 +1,4 @@
-package de.htwg_konstanz.in.jca;
+package de.htwg_konstanz.in.jca.analyzer;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -12,6 +12,11 @@ import org.apache.bcel.generic.CodeExceptionGen;
 import org.apache.bcel.generic.InstructionHandle;
 import org.apache.bcel.generic.InstructionList;
 import org.apache.bcel.generic.MethodGen;
+
+import de.htwg_konstanz.in.jca.Frame;
+import de.htwg_konstanz.in.jca.ResultValue;
+import de.htwg_konstanz.in.jca.Slot;
+import de.htwg_konstanz.in.jca.Utils;
 
 import edu.umd.cs.findbugs.BugCollection;
 import edu.umd.cs.findbugs.ba.ClassContext;

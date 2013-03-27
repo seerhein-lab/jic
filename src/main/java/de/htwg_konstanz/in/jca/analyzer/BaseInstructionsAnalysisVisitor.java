@@ -1,4 +1,4 @@
-package de.htwg_konstanz.in.jca;
+package de.htwg_konstanz.in.jca.analyzer;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -75,8 +75,13 @@ import org.apache.bcel.generic.Select;
 import org.apache.bcel.generic.StoreInstruction;
 import org.apache.bcel.generic.Type;
 
-import de.htwg_konstanz.in.jca.BaseMethodAnalyzer.AlreadyVisitedMethod;
+import de.htwg_konstanz.in.jca.DataType;
+import de.htwg_konstanz.in.jca.Frame;
+import de.htwg_konstanz.in.jca.ResultValue;
+import de.htwg_konstanz.in.jca.Slot;
+import de.htwg_konstanz.in.jca.Utils;
 import de.htwg_konstanz.in.jca.ResultValue.Kind;
+import de.htwg_konstanz.in.jca.analyzer.BaseMethodAnalyzer.AlreadyVisitedMethod;
 import edu.umd.cs.findbugs.BugCollection;
 import edu.umd.cs.findbugs.BugInstance;
 import edu.umd.cs.findbugs.SortedBugCollection;

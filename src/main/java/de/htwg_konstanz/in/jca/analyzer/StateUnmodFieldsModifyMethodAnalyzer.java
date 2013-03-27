@@ -1,4 +1,4 @@
-package de.htwg_konstanz.in.jca;
+package de.htwg_konstanz.in.jca.analyzer;
 
 import java.util.ArrayList;
 
@@ -6,16 +6,18 @@ import org.apache.bcel.generic.ConstantPoolGen;
 import org.apache.bcel.generic.InstructionHandle;
 import org.apache.bcel.generic.MethodGen;
 
+import de.htwg_konstanz.in.jca.Frame;
+
 import edu.umd.cs.findbugs.ba.ClassContext;
 
-public class StateUnmodCtorAnalyzer extends BaseMethodAnalyzer {
+public class StateUnmodFieldsModifyMethodAnalyzer extends BaseMethodAnalyzer {
 
-	public StateUnmodCtorAnalyzer(ClassContext classContext,
+	public StateUnmodFieldsModifyMethodAnalyzer(ClassContext classContext,
 			MethodGen methodGen) {
 		super(classContext, methodGen);
 	}
 
-	public StateUnmodCtorAnalyzer(ClassContext classContext,
+	public StateUnmodFieldsModifyMethodAnalyzer(ClassContext classContext,
 			MethodGen methodGen,
 			ArrayList<AlreadyVisitedMethod> alreadyVisitedMethods, int depth) {
 		super(classContext, methodGen, alreadyVisitedMethods, depth);
@@ -31,8 +33,7 @@ public class StateUnmodCtorAnalyzer extends BaseMethodAnalyzer {
 
 	public void analyze() {
 		System.err.println("analyze not implemented yet!");
-		// TODO remove comment add specific "external" marker to all external
-		// references
+		// TODO remove comment add specific "field" marker to all references
 		// Stack<Slot> callerStack = new Stack<Slot>();
 		//
 		// // push this + args onto the stack

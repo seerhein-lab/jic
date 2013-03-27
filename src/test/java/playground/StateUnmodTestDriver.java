@@ -12,7 +12,7 @@ import java.util.logging.StreamHandler;
 import org.apache.bcel.Repository;
 import org.apache.bcel.classfile.JavaClass;
 
-import de.htwg_konstanz.in.jca.ClassAnalyzer;
+import de.htwg_konstanz.in.jca.analyzer.ClassAnalyzer;
 import edu.umd.cs.findbugs.BugInstance;
 import edu.umd.cs.findbugs.SortedBugCollection;
 

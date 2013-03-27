@@ -1,10 +1,12 @@
-package de.htwg_konstanz.in.jca;
+package de.htwg_konstanz.in.jca.analyzer;
 
 import java.util.ArrayList;
 
 import org.apache.bcel.generic.ConstantPoolGen;
 import org.apache.bcel.generic.InstructionHandle;
 import org.apache.bcel.generic.MethodGen;
+
+import de.htwg_konstanz.in.jca.Frame;
 
 import edu.umd.cs.findbugs.ba.ClassContext;
 

@@ -1,4 +1,4 @@
-package de.htwg_konstanz.in.jca;
+package de.htwg_konstanz.in.jca.analyzer;
 
 import java.util.ArrayList;
 
@@ -8,15 +8,15 @@ import org.apache.bcel.generic.ConstantPoolGen;
 import org.apache.bcel.generic.InstructionHandle;
 import org.apache.bcel.generic.MethodGen;
 
-import de.htwg_konstanz.in.jca.BaseMethodAnalyzer.AlreadyVisitedMethod;
+import de.htwg_konstanz.in.jca.Frame;
+import de.htwg_konstanz.in.jca.analyzer.BaseMethodAnalyzer.AlreadyVisitedMethod;
 import edu.umd.cs.findbugs.ba.ClassContext;
 
-public class StateUnmodRefPublishedAnalysisVisitor extends
+public class StateUnmodFieldsModifyAnalysisVisitor extends
 		BaseInstructionsAnalysisVisitor {
 
-	protected StateUnmodRefPublishedAnalysisVisitor(
-			ClassContext classContext, Method method, Frame frame,
-			ConstantPoolGen constantPoolGen,
+	protected StateUnmodFieldsModifyAnalysisVisitor(ClassContext classContext,
+			Method method, Frame frame, ConstantPoolGen constantPoolGen,
 			ArrayList<AlreadyVisitedIfInstruction> alreadyVisited,
 			ArrayList<AlreadyVisitedMethod> alreadyVisitedMethods,
 			InstructionHandle instructionHandle,
@@ -26,7 +26,7 @@ public class StateUnmodRefPublishedAnalysisVisitor extends
 				depth);
 	}
 
-	public StateUnmodRefPublishedAnalysisVisitor(ClassContext classContext,
+	public StateUnmodFieldsModifyAnalysisVisitor(ClassContext classContext,
 			Method method, Frame frame, ConstantPoolGen constantPoolGen,
 			InstructionHandle instructionHandle,
 			CodeExceptionGen[] exceptionHandlers,
@@ -39,15 +39,14 @@ public class StateUnmodRefPublishedAnalysisVisitor extends
 	protected BaseInstructionsAnalysisVisitor getInstructionsAnalysisVisitor(
 			Frame frame, ArrayList<AlreadyVisitedIfInstruction> alreadyVisited,
 			InstructionHandle instructionHandle) {
-		return new StateUnmodRefPublishedAnalysisVisitor(classContext,
-				method, frame, constantPoolGen, alreadyVisited,
-				alreadyVisitedMethods, instructionHandle, exceptionHandlers,
-				depth);
+		return new StateUnmodFieldsModifyAnalysisVisitor(classContext, method,
+				frame, constantPoolGen, alreadyVisited, alreadyVisitedMethods,
+				instructionHandle, exceptionHandlers, depth);
 	}
 
 	@Override
 	protected BaseMethodAnalyzer getMethodAnalyzer(MethodGen targetMethodGen) {
-		return new StateUnmodRefPublishedMethodAnalyzer(classContext,
+		return new StateUnmodFieldsModifyMethodAnalyzer(classContext,
 				targetMethodGen, alreadyVisitedMethods, depth);
 	}
 }
