@@ -1,4 +1,4 @@
-package de.htwg_konstanz.in.jca.analyzer;
+package de.htwg_konstanz.in.jca.analyzer.stateUnmodFieldsModify;
 
 import java.util.ArrayList;
 
@@ -9,13 +9,16 @@ import org.apache.bcel.generic.InstructionHandle;
 import org.apache.bcel.generic.MethodGen;
 
 import de.htwg_konstanz.in.jca.Frame;
+import de.htwg_konstanz.in.jca.analyzer.BaseInstructionsAnalysisVisitor;
+import de.htwg_konstanz.in.jca.analyzer.BaseMethodAnalyzer;
 import de.htwg_konstanz.in.jca.analyzer.BaseMethodAnalyzer.AlreadyVisitedMethod;
+import de.htwg_konstanz.in.jca.slot.ReferenceSlot;
 import edu.umd.cs.findbugs.ba.ClassContext;
 
-public class StateUnmodCtorAnalysisVisitor extends
+public class StateUnmodFieldsModifyAnalysisVisitor extends
 		BaseInstructionsAnalysisVisitor {
 
-	protected StateUnmodCtorAnalysisVisitor(ClassContext classContext,
+	protected StateUnmodFieldsModifyAnalysisVisitor(ClassContext classContext,
 			Method method, Frame frame, ConstantPoolGen constantPoolGen,
 			ArrayList<AlreadyVisitedIfInstruction> alreadyVisited,
 			ArrayList<AlreadyVisitedMethod> alreadyVisitedMethods,
@@ -26,7 +29,7 @@ public class StateUnmodCtorAnalysisVisitor extends
 				depth);
 	}
 
-	public StateUnmodCtorAnalysisVisitor(ClassContext classContext,
+	public StateUnmodFieldsModifyAnalysisVisitor(ClassContext classContext,
 			Method method, Frame frame, ConstantPoolGen constantPoolGen,
 			InstructionHandle instructionHandle,
 			CodeExceptionGen[] exceptionHandlers,
@@ -39,15 +42,40 @@ public class StateUnmodCtorAnalysisVisitor extends
 	protected BaseInstructionsAnalysisVisitor getInstructionsAnalysisVisitor(
 			Frame frame, ArrayList<AlreadyVisitedIfInstruction> alreadyVisited,
 			InstructionHandle instructionHandle) {
-		return new StateUnmodCtorAnalysisVisitor(classContext, method, frame,
-				constantPoolGen, alreadyVisited, alreadyVisitedMethods,
+		return new StateUnmodFieldsModifyAnalysisVisitor(classContext, method,
+				frame, constantPoolGen, alreadyVisited, alreadyVisitedMethods,
 				instructionHandle, exceptionHandlers, depth);
 	}
 
 	@Override
 	protected BaseMethodAnalyzer getMethodAnalyzer(MethodGen targetMethodGen) {
-		return new StateUnmodCtorAnalyzer(classContext, targetMethodGen,
-				alreadyVisitedMethods, depth);
+		return new StateUnmodFieldsModifyMethodAnalyzer(classContext,
+				targetMethodGen, alreadyVisitedMethods, depth);
 	}
 
+	@Override
+	protected void detectMethodThatIsNotAnalyzedBug(ReferenceSlot argument) {
+		// TODO Auto-generated method stub
+
+	}
+
+	@Override
+	protected void detectAAStoreBug(ReferenceSlot arrayReference,
+			ReferenceSlot referenceToStore) {
+		// TODO Auto-generated method stub
+
+	}
+
+	@Override
+	protected void detectPutFieldBug(ReferenceSlot targetReference,
+			ReferenceSlot referenceToPut) {
+		// TODO Auto-generated method stub
+
+	}
+
+	@Override
+	protected void detectPutStaticBug(ReferenceSlot referenceToPut) {
+		// TODO Auto-generated method stub
+
+	}
 }

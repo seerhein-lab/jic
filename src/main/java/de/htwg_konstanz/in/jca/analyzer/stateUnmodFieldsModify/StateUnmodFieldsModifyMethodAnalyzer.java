@@ -1,4 +1,4 @@
-package de.htwg_konstanz.in.jca.analyzer;
+package de.htwg_konstanz.in.jca.analyzer.stateUnmodFieldsModify;
 
 import java.util.ArrayList;
 
@@ -6,18 +6,23 @@ import org.apache.bcel.generic.ConstantPoolGen;
 import org.apache.bcel.generic.InstructionHandle;
 import org.apache.bcel.generic.MethodGen;
 
+
 import de.htwg_konstanz.in.jca.Frame;
+import de.htwg_konstanz.in.jca.analyzer.BaseInstructionsAnalysisVisitor;
+import de.htwg_konstanz.in.jca.analyzer.BaseMethodAnalyzer;
+import de.htwg_konstanz.in.jca.analyzer.BaseMethodAnalyzer.AlreadyVisitedMethod;
+import de.htwg_konstanz.in.jca.analyzer.propConAnalyzer.PropConInstructionsAnalysisVisitor;
 
 import edu.umd.cs.findbugs.ba.ClassContext;
 
-public class StateUnmodCtorAnalyzer extends BaseMethodAnalyzer {
+public class StateUnmodFieldsModifyMethodAnalyzer extends BaseMethodAnalyzer {
 
-	public StateUnmodCtorAnalyzer(ClassContext classContext,
+	public StateUnmodFieldsModifyMethodAnalyzer(ClassContext classContext,
 			MethodGen methodGen) {
 		super(classContext, methodGen);
 	}
 
-	public StateUnmodCtorAnalyzer(ClassContext classContext,
+	public StateUnmodFieldsModifyMethodAnalyzer(ClassContext classContext,
 			MethodGen methodGen,
 			ArrayList<AlreadyVisitedMethod> alreadyVisitedMethods, int depth) {
 		super(classContext, methodGen, alreadyVisitedMethods, depth);
@@ -33,19 +38,18 @@ public class StateUnmodCtorAnalyzer extends BaseMethodAnalyzer {
 
 	public void analyze() {
 		System.err.println("analyze not implemented yet!");
-		// TODO remove comment add specific "external" marker to all external
-		// references
-		// Stack<Slot> callerStack = new Stack<Slot>();
+		// TODO remove comment add specific "field" marker to all references
+		// Stack<SlotOld> callerStack = new Stack<SlotOld>();
 		//
 		// // push this + args onto the stack
-		// callerStack.push(Slot.thisReference);
+		// callerStack.push(SlotOld.thisReference);
 		//
 		// Type[] argTypes = method.getArgumentTypes();
 		//
 		// for (Type argType : argTypes) {
 		// DataType dataType = DataType.getDataType(argType);
 		// for (int i = 0; i < dataType.getNumSlots(); i++) {
-		// callerStack.push(Slot.getDefaultInstance(dataType));
+		// callerStack.push(SlotOld.getDefaultInstance(dataType));
 		// }
 		//
 		// }

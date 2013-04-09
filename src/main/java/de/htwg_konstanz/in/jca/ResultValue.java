@@ -1,7 +1,6 @@
 package de.htwg_konstanz.in.jca;
 
-import java.util.HashSet;
-import java.util.Set;
+import de.htwg_konstanz.in.jca.slot.Slot;
 
 /**
  * This class is used for the return values of called methods or results of
@@ -66,39 +65,39 @@ public class ResultValue {
 		return true;
 	}
 
-	public static Set<ResultValue> combineReferences(
-			Set<ResultValue> resultValues) {
-		Set<ResultValue> correctedSet = new HashSet<ResultValue>();
-
-		// values to compare
-		ResultValue notThisValue = new ResultValue(Kind.REGULAR,
-				Slot.notThisReference);
-		ResultValue maybeThisValue = new ResultValue(Kind.REGULAR,
-				Slot.maybeThisReference);
-		ResultValue thisValue = new ResultValue(Kind.REGULAR,
-				Slot.thisReference);
-
-		for (ResultValue value : resultValues) {
-			ResultValue correctedValue = value;
-			if (value.kind.equals(ResultValue.Kind.REGULAR)
-					&& value.slot.getDataType().equals(DataType.referenceType)) {
-				if (value.slot.equals(Slot.notThisReference)) {
-					if (resultValues.contains(maybeThisValue)
-							|| resultValues.contains(thisValue))
-						correctedValue = maybeThisValue;
-				}
-
-				if (value.slot.equals(Slot.thisReference)) {
-					if (resultValues.contains(notThisValue)
-							|| resultValues.contains(maybeThisValue))
-						correctedValue = maybeThisValue;
-				}
-			}
-
-			correctedSet.add(correctedValue);
-		}
-		return correctedSet;
-	}
+	// public static Set<ResultValue> combineReferences(
+	// Set<ResultValue> resultValues) {
+	// Set<ResultValue> correctedSet = new HashSet<ResultValue>();
+	//
+	// // values to compare
+	// ResultValue notThisValue = new ResultValue(Kind.REGULAR,
+	// Slot.notThisReference);
+	// ResultValue maybeThisValue = new ResultValue(Kind.REGULAR,
+	// Slot.maybeThisReference);
+	// ResultValue thisValue = new ResultValue(Kind.REGULAR,
+	// Slot.thisReference);
+	//
+	// for (ResultValue value : resultValues) {
+	// ResultValue correctedValue = value;
+	// if (value.kind.equals(ResultValue.Kind.REGULAR)
+	// && value.slot.getDataType().equals(DataType.referenceType)) {
+	// if (value.slot.equals(Slot.notThisReference)) {
+	// if (resultValues.contains(maybeThisValue)
+	// || resultValues.contains(thisValue))
+	// correctedValue = maybeThisValue;
+	// }
+	//
+	// if (value.slot.equals(Slot.thisReference)) {
+	// if (resultValues.contains(notThisValue)
+	// || resultValues.contains(maybeThisValue))
+	// correctedValue = maybeThisValue;
+	// }
+	// }
+	//
+	// correctedSet.add(correctedValue);
+	// }
+	// return correctedSet;
+	// }
 
 	public Kind getKind() {
 		return kind;

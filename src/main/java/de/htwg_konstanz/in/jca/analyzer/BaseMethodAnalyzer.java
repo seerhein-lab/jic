@@ -15,9 +15,8 @@ import org.apache.bcel.generic.MethodGen;
 
 import de.htwg_konstanz.in.jca.Frame;
 import de.htwg_konstanz.in.jca.ResultValue;
-import de.htwg_konstanz.in.jca.Slot;
 import de.htwg_konstanz.in.jca.Utils;
-
+import de.htwg_konstanz.in.jca.slot.Slot;
 import edu.umd.cs.findbugs.BugCollection;
 import edu.umd.cs.findbugs.ba.ClassContext;
 
@@ -39,16 +38,6 @@ public abstract class BaseMethodAnalyzer {
 
 	/** The visitor which inspects the method's bytecode instructions. */
 	protected BaseInstructionsAnalysisVisitor visitor = null;
-
-	/**
-	 * Constructor.
-	 * 
-	 * @param classContext
-	 * 
-	 * @param method
-	 *            The method to analyze, not null.
-	 * 
-	 */
 
 	public static class AlreadyVisitedMethod {
 		final Method method;
@@ -87,6 +76,15 @@ public abstract class BaseMethodAnalyzer {
 		}
 	}
 
+	/**
+	 * Constructor.
+	 * 
+	 * @param classContext
+	 * 
+	 * @param method
+	 *            The method to analyze, not null.
+	 * 
+	 */
 	public BaseMethodAnalyzer(ClassContext classContext, MethodGen methodGen) {
 		this(classContext, methodGen, new ArrayList<AlreadyVisitedMethod>(), -1);
 	}
@@ -157,10 +155,12 @@ public abstract class BaseMethodAnalyzer {
 		return calleeFrame;
 	}
 
-	@SuppressWarnings("unchecked")
 	public Slot[] getActualParams(Stack<Slot> callerStack) {
-		return createCalleeFrame((Stack<Slot>) callerStack.clone())
-				.getLocalVars();
+		Stack<Slot> clonedStack = new Stack<Slot>();
+		for (Slot slot : callerStack.toArray(new Slot[0])) {
+			clonedStack.add(slot.copy());
+		}
+		return createCalleeFrame(clonedStack).getLocalVars();
 
 	}
 

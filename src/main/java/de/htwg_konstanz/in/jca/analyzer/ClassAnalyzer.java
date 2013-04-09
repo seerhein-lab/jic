@@ -13,7 +13,12 @@ import org.apache.bcel.generic.ConstantPoolGen;
 import org.apache.bcel.generic.MethodGen;
 import org.apache.bcel.generic.Type;
 
+
 import de.htwg_konstanz.in.jca.ThreeValueBoolean;
+import de.htwg_konstanz.in.jca.analyzer.propConAnalyzer.PropConMethodAnalyzer;
+import de.htwg_konstanz.in.jca.analyzer.stateUnmodFieldsModify.StateUnmodFieldsModifyMethodAnalyzer;
+import de.htwg_konstanz.in.jca.analyzer.stateUnmodParmsAreCopied.StateUnmodCtorAnalyzer;
+import de.htwg_konstanz.in.jca.analyzer.stateUnmodRefPublished.StateUnmodRefPublishedMethodAnalyzer;
 
 import edu.umd.cs.findbugs.BugCollection;
 import edu.umd.cs.findbugs.BugInstance;

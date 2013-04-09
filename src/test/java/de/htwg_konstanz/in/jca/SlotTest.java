@@ -6,7 +6,7 @@ import org.apache.bcel.generic.Type;
 import org.junit.Test;
 
 /**
- * JUnit test for Slot class. Does not test simple getters and setters.
+ * JUnit test for SlotOld class. Does not test simple getters and setters.
  */
 public class SlotTest {
 
@@ -15,7 +15,7 @@ public class SlotTest {
 	 */
 	@Test(expected = NullPointerException.class)
 	public void testNumRequiredSlotsTypesNull() {
-		Slot.numRequiredSlots(null);
+		SlotOld.numRequiredSlots(null);
 	}
 
 	/**
@@ -24,7 +24,7 @@ public class SlotTest {
 	@Test
 	public void testNumRequiredSlotsEmptyTypes() {
 		Type[] types = new Type[0];
-		assertEquals(0, Slot.numRequiredSlots(types));
+		assertEquals(0, SlotOld.numRequiredSlots(types));
 	}
 
 	/**
@@ -44,7 +44,7 @@ public class SlotTest {
 		types[8] = Type.SHORT;
 		types[9] = Type.STRING;
 
-		assertEquals(12, Slot.numRequiredSlots(types));
+		assertEquals(12, SlotOld.numRequiredSlots(types));
 	}
 
 	/**
@@ -65,7 +65,7 @@ public class SlotTest {
 		types[9] = Type.STRING;
 		types[10] = Type.FLOAT;
 
-		assertEquals(12, Slot.numRequiredSlots(types));
+		assertEquals(12, SlotOld.numRequiredSlots(types));
 	}
 
 	/**
@@ -73,7 +73,7 @@ public class SlotTest {
 	 */
 	@Test(expected = AssertionError.class)
 	public final void testGetDefaultInstanceError() {
-		Slot.getDefaultInstance(null);
+		SlotOld.getDefaultInstance(null);
 	}
 
 	/**
@@ -81,43 +81,43 @@ public class SlotTest {
 	 */
 	@Test
 	public final void testGetDefaultInstance() {
-		assertEquals(Slot.someBoolean,
-				Slot.getDefaultInstance(DataType.booleanType));
-		assertEquals(Slot.someByte, Slot.getDefaultInstance(DataType.byteType));
-		assertEquals(Slot.someChar, Slot.getDefaultInstance(DataType.charType));
-		assertEquals(Slot.someHalfDouble,
-				Slot.getDefaultInstance(DataType.doubleType));
-		assertEquals(Slot.someFloat,
-				Slot.getDefaultInstance(DataType.floatType));
-		assertEquals(Slot.someInt, Slot.getDefaultInstance(DataType.intType));
-		assertEquals(Slot.someHalfLong,
-				Slot.getDefaultInstance(DataType.longType));
-		assertEquals(Slot.notThisReference,
-				Slot.getDefaultInstance(DataType.referenceType));
-		assertEquals(Slot.someShort,
-				Slot.getDefaultInstance(DataType.shortType));
-		assertEquals(Slot.noSlot, Slot.getDefaultInstance(DataType.voidType));
+		assertEquals(SlotOld.someBoolean,
+				SlotOld.getDefaultInstance(DataType.booleanType));
+		assertEquals(SlotOld.someByte, SlotOld.getDefaultInstance(DataType.byteType));
+		assertEquals(SlotOld.someChar, SlotOld.getDefaultInstance(DataType.charType));
+		assertEquals(SlotOld.someHalfDouble,
+				SlotOld.getDefaultInstance(DataType.doubleType));
+		assertEquals(SlotOld.someFloat,
+				SlotOld.getDefaultInstance(DataType.floatType));
+		assertEquals(SlotOld.someInt, SlotOld.getDefaultInstance(DataType.intType));
+		assertEquals(SlotOld.someHalfLong,
+				SlotOld.getDefaultInstance(DataType.longType));
+		assertEquals(SlotOld.notThisReference,
+				SlotOld.getDefaultInstance(DataType.referenceType));
+		assertEquals(SlotOld.someShort,
+				SlotOld.getDefaultInstance(DataType.shortType));
+		assertEquals(SlotOld.noSlot, SlotOld.getDefaultInstance(DataType.voidType));
 	}
 
 	/**
-	 * Tests if getDataType returns the correct DataType for a given Slot.
+	 * Tests if getDataType returns the correct DataType for a given SlotOld.
 	 */
 	@Test
 	public final void testGetDataType() {
 		assertEquals(DataType.referenceType,
-				Slot.maybeThisReference.getDataType());
-		assertEquals(DataType.voidType, Slot.noSlot.getDataType());
+				SlotOld.maybeThisReference.getDataType());
+		assertEquals(DataType.voidType, SlotOld.noSlot.getDataType());
 		assertEquals(DataType.referenceType,
-				Slot.notThisReference.getDataType());
-		assertEquals(DataType.booleanType, Slot.someBoolean.getDataType());
-		assertEquals(DataType.byteType, Slot.someByte.getDataType());
-		assertEquals(DataType.charType, Slot.someChar.getDataType());
-		assertEquals(DataType.floatType, Slot.someFloat.getDataType());
-		assertEquals(DataType.doubleType, Slot.someHalfDouble.getDataType());
-		assertEquals(DataType.longType, Slot.someHalfLong.getDataType());
-		assertEquals(DataType.intType, Slot.someInt.getDataType());
-		assertEquals(DataType.shortType, Slot.someShort.getDataType());
-		assertEquals(DataType.referenceType, Slot.thisReference.getDataType());
+				SlotOld.notThisReference.getDataType());
+		assertEquals(DataType.booleanType, SlotOld.someBoolean.getDataType());
+		assertEquals(DataType.byteType, SlotOld.someByte.getDataType());
+		assertEquals(DataType.charType, SlotOld.someChar.getDataType());
+		assertEquals(DataType.floatType, SlotOld.someFloat.getDataType());
+		assertEquals(DataType.doubleType, SlotOld.someHalfDouble.getDataType());
+		assertEquals(DataType.longType, SlotOld.someHalfLong.getDataType());
+		assertEquals(DataType.intType, SlotOld.someInt.getDataType());
+		assertEquals(DataType.shortType, SlotOld.someShort.getDataType());
+		assertEquals(DataType.referenceType, SlotOld.thisReference.getDataType());
 	}
 
 }
