@@ -2,7 +2,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>de.htwg_konstanz.in</groupId>
   <artifactId>proper-construction</artifactId>
-  <version>1.0</version>
+  <version>1.1</version>
   <name>jca</name>
   	<dependencies>
   		<dependency>
