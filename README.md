@@ -4,7 +4,6 @@
 
 Project description -- to be done.
 
-TODO
 
 ## Tooling and Dependencies
 
