@@ -16,15 +16,16 @@
         </Detector>
 
         <BugPattern type="PROPER_CONSTRUCTION_BUG">
-                <ShortDescription>'this' reference escapes</ShortDescription>
-                <LongDescription>'this' reference escapes before object is properly constructed</LongDescription>
+                <ShortDescription>Improper construction</ShortDescription>
+                <LongDescription>Improper construction: {0}</LongDescription>
                 <Details>
 <![CDATA[
-<p>Premature publication of the 'this' reference might let others see the object in an incomplete, 
-	invalid state.</p>
+<p>The reference of the object under construction escapes prematurely. 
+	This might let others see the object in an incomplete, invalid state.
+</p>
 ]]>
                 </Details>
         </BugPattern>
 
-        <BugCode abbrev="PC">PROPER_CONSTRUCTION</BugCode>
+        <BugCode abbrev="PC">Improper construction</BugCode>
 </MessageCollection>

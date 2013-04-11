@@ -89,9 +89,10 @@ public class PropConInstructionsAnalysisVisitor extends
 						Level.WARNING,
 						"Warning: 'maybeThis' reference is passed into an alien method and might escape.");
 
-				addBug(Confidence.HIGH,
-						"Warning: 'maybeThis' reference is passed into an alien method and might escape.",
-						instructionHandle);
+				// addBug(Confidence.MEDIUM,
+				// "'this' reference might be passed into an alien method and might escape.",
+				// instructionHandle);
+				addBug(Confidence.MEDIUM, "msg 1", instructionHandle);
 				if (returnValue.getDataType().equals(DataType.referenceType)) {
 					returnValue = Slot.maybeThisReference;
 				}
@@ -99,9 +100,10 @@ public class PropConInstructionsAnalysisVisitor extends
 			if (argument.equals(Slot.thisReference)) {
 				logger.log(Level.WARNING,
 						"Warning: 'this' reference is passed into an alien method and might escape.");
-				addBug(Confidence.HIGH,
-						"Warning: 'this' reference is passed into an alien method and might escape.",
-						instructionHandle);
+				// addBug(Confidence.HIGH,
+				// "'this' reference is passed into an alien method and escapes.",
+				// instructionHandle);
+				addBug(Confidence.MEDIUM, "msg 2", instructionHandle);
 				if (returnValue.getDataType().equals(DataType.referenceType)) {
 					returnValue = Slot.maybeThisReference;
 				}
@@ -137,17 +139,19 @@ public class PropConInstructionsAnalysisVisitor extends
 		if (right.equals(Slot.thisReference)) {
 			logger.log(Level.WARNING,
 					"Error: 'this' reference is assigned to some object's field and might escape.");
-			addBug(Confidence.MEDIUM,
-					"Error: 'this' reference is assigned to some object's field and might escape.",
-					instructionHandle);
+			// addBug(Confidence.LOW,
+			// "'this' reference is assigned to some object's field and might escape.",
+			// instructionHandle);
+			addBug(Confidence.MEDIUM, "msg 3", instructionHandle);
 		}
 		if (right.equals(Slot.maybeThisReference)) {
 			logger.log(
 					Level.WARNING,
 					"Warning: 'this' reference might be assigned to some object's field and might escape.");
-			addBug(Confidence.MEDIUM,
-					"Warning: 'this' reference might be assigned to some object's field and might escape.",
-					instructionHandle);
+			// addBug(Confidence.LOW,
+			// "'this' reference might be assigned to some object's field and might escape.",
+			// instructionHandle);
+			addBug(Confidence.MEDIUM, "msg 4", instructionHandle);
 		}
 		// pop left side of assignment off the stack, too
 		Slot left = frame.getStack().pop();
@@ -185,17 +189,19 @@ public class PropConInstructionsAnalysisVisitor extends
 		if (toPut.equals(Slot.thisReference)) {
 			logger.log(Level.SEVERE,
 					"Error: 'this' reference is assigned to a static field and escapes.");
-			addBug(Confidence.HIGH,
-					"Error: 'this' reference is assigned to a static field and escapes.",
-					instructionHandle);
+			// addBug(Confidence.HIGH,
+			// "'this' reference is assigned to a static field and escapes.",
+			// instructionHandle);
+			addBug(Confidence.MEDIUM, "msg 5", instructionHandle);
 		}
 		if (toPut.equals(Slot.maybeThisReference)) {
 			logger.log(
 					Level.WARNING,
 					"Warning: 'this' reference might be assigned to a static field and might escape.");
-			addBug(Confidence.HIGH,
-					"Warning: 'this' reference might be assigned to a static field and might escape.",
-					instructionHandle);
+			// addBug(Confidence.MEDIUM,
+			// "'this' reference might be assigned to a static field and might escape.",
+			// instructionHandle);
+			addBug(Confidence.MEDIUM, "msg 6", instructionHandle);
 		}
 
 		instructionHandle = instructionHandle.getNext();

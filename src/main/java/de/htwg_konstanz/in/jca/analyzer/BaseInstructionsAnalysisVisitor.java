@@ -78,9 +78,9 @@ import org.apache.bcel.generic.Type;
 import de.htwg_konstanz.in.jca.DataType;
 import de.htwg_konstanz.in.jca.Frame;
 import de.htwg_konstanz.in.jca.ResultValue;
+import de.htwg_konstanz.in.jca.ResultValue.Kind;
 import de.htwg_konstanz.in.jca.Slot;
 import de.htwg_konstanz.in.jca.Utils;
-import de.htwg_konstanz.in.jca.ResultValue.Kind;
 import de.htwg_konstanz.in.jca.analyzer.BaseMethodAnalyzer.AlreadyVisitedMethod;
 import edu.umd.cs.findbugs.BugCollection;
 import edu.umd.cs.findbugs.BugInstance;
@@ -212,6 +212,8 @@ public abstract class BaseInstructionsAnalysisVisitor extends EmptyVisitor {
 			InstructionHandle instructionHandle) {
 		BugInstance bugInstance = new BugInstance("PROPER_CONSTRUCTION_BUG",
 				confidence.getConfidenceValue());
+
+		// param {0} in messages.xml
 		bugInstance.addString(message);
 
 		if (classContext != null) {
