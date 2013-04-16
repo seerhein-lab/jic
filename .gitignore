@@ -1,4 +1,11 @@
-/target
-/.settings
-/.classpath
-/.project
+# Eclipse
+.cache
+.classpath
+.project
+.settings
+
+# Mac
+.DS_Store
+
+# Maven
+target
