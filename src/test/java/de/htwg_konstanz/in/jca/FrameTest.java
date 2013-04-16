@@ -5,6 +5,7 @@ import static org.junit.Assert.assertEquals;
 import java.util.EmptyStackException;
 import java.util.Stack;
 
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 import de.htwg_konstanz.in.jca.slot.BooleanSlot;
@@ -23,18 +24,23 @@ import de.htwg_konstanz.in.jca.slot.VoidSlot;
  * JUnit test for Frame class. Does not test simple getters and setters.
  */
 public class FrameTest {
-	private static Slot bool = BooleanSlot.getInstance();
-	private static Slot bytE = ByteSlot.getInstance();
-	private static Slot chaR = CharSlot.getInstance();
-	private static Slot doublE = DoubleSlot.getInstance();
-	private static Slot floaT = FloatSlot.getInstance();
-	private static Slot inT = IntSlot.getInstance();
-	private static Slot lonG = LongSlot.getInstance();
-	private static Slot thiS = ReferenceSlot.getThisReference();
-	private static Slot someRef = ReferenceSlot.getInstance();
-	private static Slot someOtherRef = ReferenceSlot.getInstance();
-	private static Slot shorT = ShortSlot.getInstance();
-	private static Slot voiD = VoidSlot.getInstance();
+	 Slot bool = BooleanSlot.getInstance();
+	 Slot bytE = ByteSlot.getInstance();
+	 Slot chaR = CharSlot.getInstance();
+	 Slot doublE = DoubleSlot.getInstance();
+	 Slot floaT = FloatSlot.getInstance();
+	 Slot inT = IntSlot.getInstance();
+	 Slot lonG = LongSlot.getInstance();
+	 Slot thiS = ReferenceSlot.getThisReference();
+	 Slot someRef = ReferenceSlot.getInternalInstance();
+	 Slot someOtherRef = ReferenceSlot.getInternalInstance();
+	 Slot shorT = ShortSlot.getInstance();
+	 Slot voiD = VoidSlot.getInstance();
+	 
+	 @BeforeClass
+	 public static void beforeTest(){
+		 ReferenceSlot.initSpecialReferences();
+	 }
 
 	/**
 	 * Tests constructor with negative maxLocals. Expects

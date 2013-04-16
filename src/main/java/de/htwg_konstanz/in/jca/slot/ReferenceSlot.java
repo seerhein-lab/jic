@@ -12,14 +12,18 @@ public class ReferenceSlot extends Slot {
 	private static Set<ReferenceSlot> leafElements;
 	private static Set<RefContainer> alreadyVisited;
 	private static boolean somethingChanged;
+	private static ReferenceSlot currentStartElement;
 
 	public static class RefContainer {
 		private final ReferenceSlot caller;
 		private final ReferenceSlot callee;
+		private final ReferenceSlot startElement;
 
-		public RefContainer(ReferenceSlot caller, ReferenceSlot callee) {
+		public RefContainer(ReferenceSlot caller, ReferenceSlot callee,
+				ReferenceSlot startElement) {
 			this.caller = caller;
 			this.callee = callee;
+			this.startElement = startElement;
 		}
 
 		@Override
@@ -30,23 +34,47 @@ public class ReferenceSlot extends Slot {
 					+ ((callee == null) ? 0 : callee.hashCode());
 			result = prime * result
 					+ ((caller == null) ? 0 : caller.hashCode());
+			result = prime * result
+					+ ((startElement == null) ? 0 : startElement.hashCode());
 			return result;
 		}
 
 		@Override
 		public boolean equals(Object obj) {
-			if (this == obj)
-				return true;
-			if (obj == null)
-				return false;
-			if (!(obj instanceof RefContainer))
-				return false;
-			RefContainer other = (RefContainer) obj;
-			if ((callee == other.callee) && (caller == other.caller)) {
+			if (this == obj) {
 				return true;
 			}
-			return false;
+			if (obj == null) {
+				return false;
+			}
+			if (!(obj instanceof RefContainer)) {
+				return false;
+			}
+			RefContainer other = (RefContainer) obj;
+			if (callee == null) {
+				if (other.callee != null) {
+					return false;
+				}
+			} else if (!callee.equals(other.callee)) {
+				return false;
+			}
+			if (caller == null) {
+				if (other.caller != null) {
+					return false;
+				}
+			} else if (!caller.equals(other.caller)) {
+				return false;
+			}
+			if (startElement == null) {
+				if (other.startElement != null) {
+					return false;
+				}
+			} else if (!startElement.equals(other.startElement)) {
+				return false;
+			}
+			return true;
 		}
+
 	}
 
 	private final boolean isExternal;
@@ -120,10 +148,12 @@ public class ReferenceSlot extends Slot {
 			somethingChanged = false;
 			alreadyVisited.clear();
 			for (ReferenceSlot rootElement : rootElements) {
+				currentStartElement = rootElement;
 				topDown(rootElement);
 			}
 			alreadyVisited.clear();
 			for (ReferenceSlot leafElement : leafElements) {
+				currentStartElement = leafElement;
 				bottomUp(leafElement);
 			}
 		} while (somethingChanged);
@@ -134,8 +164,11 @@ public class ReferenceSlot extends Slot {
 			rootElements.add(current);
 		} else {
 			for (ReferenceSlot parent : current.referedBy) {
-				childToParent(parent, current);
-				bottomUp(parent);
+				if (alreadyVisited.add(new RefContainer(current, parent,
+						currentStartElement)) && !current.equals(nullReference)) {
+					childToParent(parent, current);
+					bottomUp(parent);
+				}
 			}
 		}
 	}
@@ -145,50 +178,48 @@ public class ReferenceSlot extends Slot {
 			leafElements.add(current);
 		} else {
 			for (ReferenceSlot child : current.references) {
-				parentToChild(current, child);
-				topDown(child);
+				if (alreadyVisited.add(new RefContainer(current, child,
+						currentStartElement)) && !child.equals(nullReference)) {
+					parentToChild(current, child);
+					topDown(child);
+				}
 			}
 		}
 	}
 
 	private static void childToParent(ReferenceSlot parent, ReferenceSlot child) {
-		if (alreadyVisited.add(new RefContainer(child, parent))
-				&& !child.equals(nullReference)) {
-			boolean newRefersThis = (parent.refersThis
-					|| child.equals(thisReference) || child.refersThis);
-			boolean newRefersExternal = (parent.refersExternal
-					|| child.isExternal || child.refersExternal);
-			boolean newRefersField = (parent.refersField || child.refersField);
-			if (!somethingChanged
-					&& (newRefersThis != parent.refersThis
-							|| newRefersExternal != parent.refersExternal || newRefersField != parent.refersField)) {
-				somethingChanged = true;
-			}
-			parent.refersThis = newRefersThis;
-			parent.refersExternal = newRefersExternal;
-			parent.refersField = newRefersField;
+		boolean newRefersThis = (parent.refersThis
+				|| child.equals(thisReference) || child.refersThis);
+		boolean newRefersExternal = (parent.refersExternal || child.isExternal
+				|| child.refersExternal || child.referedByExternal);
+		boolean newRefersField = (parent.refersField || child.refersField);
+		if (!somethingChanged
+				&& (newRefersThis != parent.refersThis
+						|| newRefersExternal != parent.refersExternal || newRefersField != parent.refersField)) {
+			somethingChanged = true;
 		}
+		parent.refersThis = newRefersThis;
+		parent.refersExternal = newRefersExternal;
+		parent.refersField = newRefersField;
 	}
 
 	private static void parentToChild(ReferenceSlot parent, ReferenceSlot child) {
-		if (alreadyVisited.add(new RefContainer(parent, child))
-				&& !child.equals(nullReference)) {
-			boolean newReferedByThis = child.referedByThis
-					|| parent.equals(ReferenceSlot.getThisReference())
-					|| parent.referedByThis;
-			boolean newReferedByExternal = child.referedByExternal
-					|| parent.isExternal || parent.referedByExternal;
-			boolean newReferedByField = child.referedByField
-					|| parent.referedByField;
-			if (!somethingChanged
-					&& (newReferedByThis != child.referedByThis
-							|| newReferedByExternal != child.referedByExternal || newReferedByField != child.referedByField)) {
-				somethingChanged = true;
-			}
-			child.referedByThis = newReferedByThis;
-			child.referedByExternal = newReferedByExternal;
-			child.referedByField = newReferedByField;
+
+		boolean newReferedByThis = child.referedByThis
+				|| parent.equals(ReferenceSlot.getThisReference())
+				|| parent.referedByThis;
+		boolean newReferedByExternal = child.referedByExternal
+				|| parent.isExternal || parent.referedByExternal;
+		boolean newReferedByField = child.referedByField
+				|| parent.referedByField;
+		if (!somethingChanged
+				&& (newReferedByThis != child.referedByThis
+						|| newReferedByExternal != child.referedByExternal || newReferedByField != child.referedByField)) {
+			somethingChanged = true;
 		}
+		child.referedByThis = newReferedByThis;
+		child.referedByExternal = newReferedByExternal;
+		child.referedByField = newReferedByField;
 	}
 
 	@Override

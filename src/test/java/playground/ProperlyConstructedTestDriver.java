@@ -1,17 +1,13 @@
 package playground;
 
 import java.io.IOException;
-import java.util.logging.FileHandler;
-import java.util.logging.Formatter;
-import java.util.logging.Handler;
 import java.util.logging.Level;
-import java.util.logging.LogRecord;
 import java.util.logging.Logger;
-import java.util.logging.StreamHandler;
 
 import org.apache.bcel.Repository;
 import org.apache.bcel.classfile.JavaClass;
 
+import de.htwg_konstanz.in.jca.Utils;
 import de.htwg_konstanz.in.jca.analyzer.ClassAnalyzer;
 import edu.umd.cs.findbugs.BugCollection;
 import edu.umd.cs.findbugs.BugInstance;
@@ -21,24 +17,8 @@ public class ProperlyConstructedTestDriver {
 
 	public static void main(String[] args) throws ClassNotFoundException,
 			SecurityException, IOException {
-		// logging stuff
-		Logger globalLogger = Logger.getLogger("");
-		Handler[] globalLoggerHandlers = globalLogger.getHandlers();
-		for (Handler handler : globalLoggerHandlers) {
-			globalLogger.removeHandler(handler);
-		}
-		StreamHandler streamHandler = new StreamHandler(
-				System.out,
-				new ProperlyConstructedTestDriver().new ProperlyConstructedTestDriverFormater());
-		streamHandler.setLevel(Level.ALL);
-		globalLogger.addHandler(streamHandler);
-		globalLogger.setLevel(Level.ALL);
-		FileHandler fh = new FileHandler(LOGFILEPATH);
-		fh.setFormatter(new ProperlyConstructedTestDriver().new ProperlyConstructedTestDriverFormater());
-		fh.setLevel(Level.ALL);
-		globalLogger.addHandler(fh);
-		Logger logger = Logger.getLogger("ProperlyConstructedTestDriver");
-		// end logging set up
+
+		Logger logger = Utils.setUpLogger("ProperlyConstructedTestDriver", LOGFILEPATH);
 
 		JavaClass clazz = Repository
 				.lookupClass("playground.PropConstTestClass");
@@ -52,15 +32,6 @@ public class ProperlyConstructedTestDriver {
 		}
 
 		logger.log(Level.SEVERE, "end bugs");
-
-	}
-
-	public class ProperlyConstructedTestDriverFormater extends Formatter {
-
-		@Override
-		public String format(LogRecord arg0) {
-			return arg0.getMessage() + "\n";
-		}
 
 	}
 

@@ -109,9 +109,6 @@ public class PropConInstructionsAnalysisVisitor extends
 						instructionHandle);
 			}
 		}
-		addBug(Confidence.HIGH,
-				"this reference or a reference containing it is assigned to an external array and escapes",
-				instructionHandle);
 	}
 
 	@Override
