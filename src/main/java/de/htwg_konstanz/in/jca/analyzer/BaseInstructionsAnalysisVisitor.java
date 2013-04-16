@@ -215,6 +215,8 @@ public abstract class BaseInstructionsAnalysisVisitor extends EmptyVisitor {
 			InstructionHandle instructionHandle) {
 		BugInstance bugInstance = new BugInstance("PROPER_CONSTRUCTION_BUG",
 				confidence.getConfidenceValue());
+
+		// param {0} in messages.xml
 		bugInstance.addString(message);
 
 		if (classContext != null) {
