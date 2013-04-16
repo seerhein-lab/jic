@@ -143,6 +143,7 @@ public class ReferenceSlot extends Slot {
 	}
 
 	private static void visitReferenceTree(ReferenceSlot child) {
+		currentStartElement = child;
 		bottomUp(child);
 		do {
 			somethingChanged = false;
