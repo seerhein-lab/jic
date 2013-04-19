@@ -12,6 +12,7 @@ import org.apache.bcel.generic.CodeExceptionGen;
 import org.apache.bcel.generic.InstructionHandle;
 import org.apache.bcel.generic.InstructionList;
 import org.apache.bcel.generic.MethodGen;
+import org.apache.bcel.generic.Type;
 
 import de.htwg_konstanz.in.jca.Frame;
 import de.htwg_konstanz.in.jca.ResultValue;
@@ -145,7 +146,11 @@ public abstract class BaseMethodAnalyzer {
 	}
 
 	protected Frame createCalleeFrame(Stack<Slot> callerStack) {
-		int numSlots = Slot.numRequiredSlots(method.getArgumentTypes());
+		int numSlots = method.isStatic() ? 0 : 1;
+
+		for (Type type : method.getArgumentTypes()) {
+			numSlots += Utils.getDefaultSlotInstance(type).getNumSlots();
+		}
 
 		// if non static method +1 because of hidden 'this' reference
 		numSlots = method.isStatic() ? numSlots : numSlots + 1;
