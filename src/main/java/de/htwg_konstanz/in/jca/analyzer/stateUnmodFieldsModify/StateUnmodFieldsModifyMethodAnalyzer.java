@@ -6,13 +6,9 @@ import org.apache.bcel.generic.ConstantPoolGen;
 import org.apache.bcel.generic.InstructionHandle;
 import org.apache.bcel.generic.MethodGen;
 
-
 import de.htwg_konstanz.in.jca.Frame;
 import de.htwg_konstanz.in.jca.analyzer.BaseInstructionsAnalysisVisitor;
 import de.htwg_konstanz.in.jca.analyzer.BaseMethodAnalyzer;
-import de.htwg_konstanz.in.jca.analyzer.BaseMethodAnalyzer.AlreadyVisitedMethod;
-import de.htwg_konstanz.in.jca.analyzer.propConAnalyzer.PropConInstructionsAnalysisVisitor;
-
 import edu.umd.cs.findbugs.ba.ClassContext;
 
 public class StateUnmodFieldsModifyMethodAnalyzer extends BaseMethodAnalyzer {
@@ -30,7 +26,7 @@ public class StateUnmodFieldsModifyMethodAnalyzer extends BaseMethodAnalyzer {
 
 	protected BaseInstructionsAnalysisVisitor getInstructionAnalysisVisitor(
 			Frame frame, InstructionHandle instructionHandle) {
-		return new PropConInstructionsAnalysisVisitor(classContext, method,
+		return new StateUnmodFieldsModifyAnalysisVisitor(classContext, method,
 				frame, new ConstantPoolGen(method.getConstantPool()),
 				instructionHandle, exceptionHandlers, alreadyVisitedMethods,
 				depth);
