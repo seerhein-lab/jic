@@ -13,13 +13,11 @@ import org.apache.bcel.generic.ConstantPoolGen;
 import org.apache.bcel.generic.MethodGen;
 import org.apache.bcel.generic.Type;
 
-
 import de.htwg_konstanz.in.jca.ThreeValueBoolean;
 import de.htwg_konstanz.in.jca.analyzer.propConAnalyzer.PropConMethodAnalyzer;
 import de.htwg_konstanz.in.jca.analyzer.stateUnmodFieldsModify.StateUnmodFieldsModifyMethodAnalyzer;
 import de.htwg_konstanz.in.jca.analyzer.stateUnmodParmsAreCopied.StateUnmodCtorAnalyzer;
 import de.htwg_konstanz.in.jca.analyzer.stateUnmodRefPublished.StateUnmodRefPublishedMethodAnalyzer;
-
 import edu.umd.cs.findbugs.BugCollection;
 import edu.umd.cs.findbugs.BugInstance;
 import edu.umd.cs.findbugs.SortedBugCollection;
@@ -68,7 +66,7 @@ public class ClassAnalyzer {
 		BugCollection bugs = new SortedBugCollection();
 		Field[] fields = clazz.getFields();
 		for (Field field : fields)
-			if (!field.isFinal())
+			if (!field.isStatic() && !field.isFinal())
 				bugs.add(new BugInstance("Error: field must be final", 2));
 		return bugs;
 	}
