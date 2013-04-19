@@ -174,6 +174,27 @@ public abstract class BaseInstructionsAnalysisVisitor extends EmptyVisitor {
 
 	}
 
+	protected abstract BaseInstructionsAnalysisVisitor getInstructionsAnalysisVisitor(
+			Frame frame, ArrayList<AlreadyVisitedIfInstruction> alreadyVisited,
+			InstructionHandle instructionHandle);
+
+	protected abstract BaseMethodAnalyzer getMethodAnalyzer(
+			MethodGen targetMethodGen);
+
+	// methods for bug detection
+	protected abstract void detectMethodThatIsNotAnalyzedBug(
+			ReferenceSlot argument);
+
+	protected abstract void detectAAStoreBug(ReferenceSlot arrayReference,
+			ReferenceSlot referenceToStore);
+
+	protected abstract void detectPutFieldBug(ReferenceSlot targetReference,
+			ReferenceSlot referenceToPut);
+
+	protected abstract void detectPutStaticBug(ReferenceSlot referenceToPut);
+
+	protected abstract String getBugType();
+
 	public BaseInstructionsAnalysisVisitor(ClassContext classContext,
 			Method method, Frame frame, ConstantPoolGen constantPoolGen,
 			InstructionHandle instructionHandle,
@@ -213,7 +234,7 @@ public abstract class BaseInstructionsAnalysisVisitor extends EmptyVisitor {
 
 	protected void addBug(Confidence confidence, String message,
 			InstructionHandle instructionHandle) {
-		BugInstance bugInstance = new BugInstance("PROPER_CONSTRUCTION_BUG",
+		BugInstance bugInstance = new BugInstance(getBugType(),
 				confidence.getConfidenceValue());
 
 		// param {0} in messages.xml
@@ -436,25 +457,6 @@ public abstract class BaseInstructionsAnalysisVisitor extends EmptyVisitor {
 		instructionHandle = instructionHandle.getNext();
 		instructionHandle.accept(this);
 	}
-
-	protected abstract BaseInstructionsAnalysisVisitor getInstructionsAnalysisVisitor(
-			Frame frame, ArrayList<AlreadyVisitedIfInstruction> alreadyVisited,
-			InstructionHandle instructionHandle);
-
-	protected abstract BaseMethodAnalyzer getMethodAnalyzer(
-			MethodGen targetMethodGen);
-
-	// methods for bug detection
-	protected abstract void detectMethodThatIsNotAnalyzedBug(
-			ReferenceSlot argument);
-
-	protected abstract void detectAAStoreBug(ReferenceSlot arrayReference,
-			ReferenceSlot referenceToStore);
-
-	protected abstract void detectPutFieldBug(ReferenceSlot targetReference,
-			ReferenceSlot referenceToPut);
-
-	protected abstract void detectPutStaticBug(ReferenceSlot referenceToPut);
 
 	// -----------------------------------------------------------------
 	/**
@@ -877,8 +879,7 @@ public abstract class BaseInstructionsAnalysisVisitor extends EmptyVisitor {
 		ReferenceSlot ref = (ReferenceSlot) frame.getStack().pop();
 
 		// obj.getSignature() refers to desired field
-		Slot target = Slot
-				.getDefaultSlotInstance(obj.getType(constantPoolGen));
+		Slot target = Slot.getDefaultSlotInstance(obj.getType(constantPoolGen));
 		// field might contain this-reference, type permitting
 		if (target instanceof ReferenceSlot) {
 			// save temporary copy of boolean flags for bug detection

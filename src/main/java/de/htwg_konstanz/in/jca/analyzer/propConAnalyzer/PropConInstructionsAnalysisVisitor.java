@@ -54,6 +54,11 @@ public class PropConInstructionsAnalysisVisitor extends
 				alreadyVisitedMethods, depth);
 	}
 
+	@Override
+	protected String getBugType() {
+		return "PROPER_CONSTRUCTION_BUG";
+	}
+
 	// ******************************************************************//
 	// Bug detection section //
 	// ******************************************************************//
@@ -166,4 +171,5 @@ public class PropConInstructionsAnalysisVisitor extends
 			}
 		}
 	}
+
 }

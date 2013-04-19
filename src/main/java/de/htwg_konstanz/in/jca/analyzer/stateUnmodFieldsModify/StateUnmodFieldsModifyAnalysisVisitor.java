@@ -54,6 +54,11 @@ public class StateUnmodFieldsModifyAnalysisVisitor extends
 	}
 
 	@Override
+	protected String getBugType() {
+		return "to be defined";
+	}
+
+	@Override
 	protected void detectMethodThatIsNotAnalyzedBug(ReferenceSlot argument) {
 		// TODO Auto-generated method stub
 
