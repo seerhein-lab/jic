@@ -347,7 +347,7 @@ public abstract class BaseInstructionsAnalysisVisitor extends EmptyVisitor {
 		Type[] type = obj.getArgumentTypes(constantPoolGen);
 		// get return value
 
-		Slot returnValue = Utils.getDefaultSlotInstance(obj
+		Slot returnValue = Slot.getDefaultSlotInstance(obj
 				.getReturnType(constantPoolGen));
 
 		// TODO CHECK THIS
@@ -431,7 +431,7 @@ public abstract class BaseInstructionsAnalysisVisitor extends EmptyVisitor {
 	 *            the Type to push
 	 */
 	protected void handleCONST(Type targetType) {
-		frame.pushStackByRequiredSlots(Utils.getDefaultSlotInstance(targetType));
+		frame.pushStackByRequiredSlots(Slot.getDefaultSlotInstance(targetType));
 
 		instructionHandle = instructionHandle.getNext();
 		instructionHandle.accept(this);
@@ -484,7 +484,7 @@ public abstract class BaseInstructionsAnalysisVisitor extends EmptyVisitor {
 		StringBuilder log = new StringBuilder();
 		log.append("\t" + "(");
 
-		Slot targetType = Utils.getDefaultSlotInstance(obj
+		Slot targetType = Slot.getDefaultSlotInstance(obj
 				.getType(constantPoolGen));
 		int consumed = obj.consumeStack(constantPoolGen);
 		int produced = obj.produceStack(constantPoolGen);
@@ -540,7 +540,7 @@ public abstract class BaseInstructionsAnalysisVisitor extends EmptyVisitor {
 				frame.pushStackByRequiredSlots(refToGet);
 			} else {
 				// all other ALOAD instructions
-				frame.pushStackByRequiredSlots(Utils.getDefaultSlotInstance(obj
+				frame.pushStackByRequiredSlots(Slot.getDefaultSlotInstance(obj
 						.getType(constantPoolGen)));
 			}
 		} else {
@@ -793,7 +793,7 @@ public abstract class BaseInstructionsAnalysisVisitor extends EmptyVisitor {
 		log.append(") -> (");
 
 		// push the produced values
-		Slot targetValue = Utils.getDefaultSlotInstance(obj
+		Slot targetValue = Slot.getDefaultSlotInstance(obj
 				.getType(constantPoolGen));
 		for (int i = 0; i < obj.produceStack(constantPoolGen); i++) {
 			log.append((i == 0) ? targetValue : ", " + targetValue);
@@ -877,7 +877,7 @@ public abstract class BaseInstructionsAnalysisVisitor extends EmptyVisitor {
 		ReferenceSlot ref = (ReferenceSlot) frame.getStack().pop();
 
 		// obj.getSignature() refers to desired field
-		Slot target = Utils
+		Slot target = Slot
 				.getDefaultSlotInstance(obj.getType(constantPoolGen));
 		// field might contain this-reference, type permitting
 		if (target instanceof ReferenceSlot) {
@@ -918,7 +918,7 @@ public abstract class BaseInstructionsAnalysisVisitor extends EmptyVisitor {
 		log.append(obj.getLoadClassType(constantPoolGen) + "."
 				+ obj.getFieldName(constantPoolGen) + " (");
 
-		Slot valueToGet = Utils.getDefaultSlotInstance(obj
+		Slot valueToGet = Slot.getDefaultSlotInstance(obj
 				.getFieldType(constantPoolGen));
 		// if a reference is expected
 		if (valueToGet instanceof ReferenceSlot) {
@@ -1108,7 +1108,7 @@ public abstract class BaseInstructionsAnalysisVisitor extends EmptyVisitor {
 	public void visitLDC(LDC obj) {
 		logger.log(Level.FINE, indentation + obj.toString(false));
 
-		Slot value = Utils.getDefaultSlotInstance(obj.getType(constantPoolGen));
+		Slot value = Slot.getDefaultSlotInstance(obj.getType(constantPoolGen));
 		// pushes an integer, a float or String (notThis) onto the stack
 		frame.getStack().push(value);
 
@@ -1126,7 +1126,7 @@ public abstract class BaseInstructionsAnalysisVisitor extends EmptyVisitor {
 	public void visitLDC2_W(LDC2_W obj) {
 		logger.log(Level.FINE, indentation + obj.toString(false));
 
-		Slot value = Utils.getDefaultSlotInstance(obj.getType(constantPoolGen));
+		Slot value = Slot.getDefaultSlotInstance(obj.getType(constantPoolGen));
 		// pushes two halfDoubles or two halfLongs onto the stack
 		frame.pushStackByRequiredSlots(value);
 
@@ -1418,7 +1418,7 @@ public abstract class BaseInstructionsAnalysisVisitor extends EmptyVisitor {
 		logger.log(
 				Level.FINEST,
 				indentation + "\t" + "("
-						+ Utils.getDefaultSlotInstance(obj.getType()) + ")");
+						+ Slot.getDefaultSlotInstance(obj.getType()) + ")");
 
 		// pop length of new array (integer)
 		frame.getStack().pop();
@@ -1466,7 +1466,7 @@ public abstract class BaseInstructionsAnalysisVisitor extends EmptyVisitor {
 	@Override
 	public void visitReturnInstruction(ReturnInstruction obj) {
 		logger.log(Level.FINE, indentation + obj.toString(false));
-		Slot returnType = Utils.getDefaultSlotInstance(obj
+		Slot returnType = Slot.getDefaultSlotInstance(obj
 				.getType(constantPoolGen));
 		logger.log(Level.FINEST, indentation + "\t" + returnType);
 

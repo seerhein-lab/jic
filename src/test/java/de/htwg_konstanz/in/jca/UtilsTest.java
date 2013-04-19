@@ -16,6 +16,7 @@ import de.htwg_konstanz.in.jca.slot.IntSlot;
 import de.htwg_konstanz.in.jca.slot.LongSlot;
 import de.htwg_konstanz.in.jca.slot.ReferenceSlot;
 import de.htwg_konstanz.in.jca.slot.ShortSlot;
+import de.htwg_konstanz.in.jca.slot.Slot;
 import de.htwg_konstanz.in.jca.slot.VoidSlot;
 
 public class UtilsTest {
@@ -40,18 +41,18 @@ public class UtilsTest {
 
 	@Test
 	public void testGetDefaultSlotInstanceType() {
-		assertTrue(Utils.getDefaultSlotInstance(Type.INT) instanceof IntSlot);
-		assertTrue(Utils.getDefaultSlotInstance(Type.LONG) instanceof LongSlot);
-		assertTrue(Utils.getDefaultSlotInstance(Type.CHAR) instanceof CharSlot);
-		assertTrue(Utils.getDefaultSlotInstance(Type.BYTE) instanceof ByteSlot);
-		assertTrue(Utils.getDefaultSlotInstance(Type.BOOLEAN) instanceof BooleanSlot);
-		assertTrue(Utils.getDefaultSlotInstance(Type.SHORT) instanceof ShortSlot);
-		assertTrue(Utils.getDefaultSlotInstance(Type.FLOAT) instanceof FloatSlot);
-		assertTrue(Utils.getDefaultSlotInstance(Type.DOUBLE) instanceof DoubleSlot);
-		assertTrue(Utils.getDefaultSlotInstance(Type.VOID) instanceof VoidSlot);
-		assertTrue(Utils.getDefaultSlotInstance(Type.OBJECT) instanceof ReferenceSlot);
-		assertTrue(Utils.getDefaultSlotInstance(Type.THROWABLE) instanceof ReferenceSlot);
-		assertTrue(Utils.getDefaultSlotInstance(Type.UNKNOWN) instanceof ReferenceSlot);
+		assertTrue(Slot.getDefaultSlotInstance(Type.INT) instanceof IntSlot);
+		assertTrue(Slot.getDefaultSlotInstance(Type.LONG) instanceof LongSlot);
+		assertTrue(Slot.getDefaultSlotInstance(Type.CHAR) instanceof CharSlot);
+		assertTrue(Slot.getDefaultSlotInstance(Type.BYTE) instanceof ByteSlot);
+		assertTrue(Slot.getDefaultSlotInstance(Type.BOOLEAN) instanceof BooleanSlot);
+		assertTrue(Slot.getDefaultSlotInstance(Type.SHORT) instanceof ShortSlot);
+		assertTrue(Slot.getDefaultSlotInstance(Type.FLOAT) instanceof FloatSlot);
+		assertTrue(Slot.getDefaultSlotInstance(Type.DOUBLE) instanceof DoubleSlot);
+		assertTrue(Slot.getDefaultSlotInstance(Type.VOID) instanceof VoidSlot);
+		assertTrue(Slot.getDefaultSlotInstance(Type.OBJECT) instanceof ReferenceSlot);
+		assertTrue(Slot.getDefaultSlotInstance(Type.THROWABLE) instanceof ReferenceSlot);
+		assertTrue(Slot.getDefaultSlotInstance(Type.UNKNOWN) instanceof ReferenceSlot);
 	}
 
 

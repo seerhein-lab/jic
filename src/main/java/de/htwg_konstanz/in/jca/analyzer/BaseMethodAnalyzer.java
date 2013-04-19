@@ -149,7 +149,7 @@ public abstract class BaseMethodAnalyzer {
 		int numSlots = method.isStatic() ? 0 : 1;
 
 		for (Type type : method.getArgumentTypes()) {
-			numSlots += Utils.getDefaultSlotInstance(type).getNumSlots();
+			numSlots += Slot.getDefaultSlotInstance(type).getNumSlots();
 		}
 
 		// if non static method +1 because of hidden 'this' reference

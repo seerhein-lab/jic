@@ -9,7 +9,6 @@ import org.apache.bcel.generic.MethodGen;
 import org.apache.bcel.generic.Type;
 
 import de.htwg_konstanz.in.jca.Frame;
-import de.htwg_konstanz.in.jca.Utils;
 import de.htwg_konstanz.in.jca.analyzer.BaseInstructionsAnalysisVisitor;
 import de.htwg_konstanz.in.jca.analyzer.BaseMethodAnalyzer;
 import de.htwg_konstanz.in.jca.slot.ReferenceSlot;
@@ -47,7 +46,7 @@ public class PropConMethodAnalyzer extends BaseMethodAnalyzer {
 		Type[] argTypes = method.getArgumentTypes();
 
 		for (Type argType : argTypes) {
-			Slot argument = Utils.getDefaultSlotInstance(argType);
+			Slot argument = Slot.getDefaultSlotInstance(argType);
 			if (argument instanceof ReferenceSlot) {
 				argument = ReferenceSlot.getExternalInstance();
 			}
