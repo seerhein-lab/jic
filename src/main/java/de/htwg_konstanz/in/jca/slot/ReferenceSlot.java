@@ -7,9 +7,9 @@ public class ReferenceSlot extends Slot {
 	private static ReferenceSlot thisReference;
 	private static ReferenceSlot nullReference;
 
-	private static Set<ReferenceSlot> rootElements;
-	private static Set<ReferenceSlot> leafElements;
-	private static Set<RefContainer> alreadyVisited;
+	// private static Set<ReferenceSlot> rootElements;
+	// private static Set<ReferenceSlot> leafElements;
+	// private static Set<RefContainer> alreadyVisited;
 	private static boolean somethingChanged;
 	private static ReferenceSlot currentStartElement;
 
@@ -130,35 +130,38 @@ public class ReferenceSlot extends Slot {
 
 	public void linkReferences(ReferenceSlot child) {
 		if (this.references.add(child) | child.referedBy.add(this)) {
-			rootElements = new HashSet<ReferenceSlot>();
-			leafElements = new HashSet<ReferenceSlot>();
-			alreadyVisited = new HashSet<RefContainer>();
+			Set<ReferenceSlot> rootElements = new HashSet<ReferenceSlot>();
+			Set<ReferenceSlot> leafElements = new HashSet<ReferenceSlot>();
+			Set<RefContainer> alreadyVisited = new HashSet<RefContainer>();
 			somethingChanged = false;
 
 			this.parentToChild(child);
-			child.visitReferenceTree();
+			child.visitReferenceTree(rootElements, leafElements, alreadyVisited);
 		}
 	}
 
-	private void visitReferenceTree() {
+	private void visitReferenceTree(Set<ReferenceSlot> rootElements,
+			Set<ReferenceSlot> leafElements, Set<RefContainer> alreadyVisited) {
 		currentStartElement = this;
-		this.bottomUp();
+		this.bottomUp(rootElements, leafElements, alreadyVisited);
 		do {
 			somethingChanged = false;
 			alreadyVisited.clear();
 			for (ReferenceSlot rootElement : rootElements) {
 				currentStartElement = rootElement;
-				rootElement.topDown();
+				rootElement.topDown(rootElements, leafElements, alreadyVisited);
 			}
 			alreadyVisited.clear();
 			for (ReferenceSlot leafElement : leafElements) {
 				currentStartElement = leafElement;
-				leafElement.bottomUp();
+				leafElement
+						.bottomUp(rootElements, leafElements, alreadyVisited);
 			}
 		} while (somethingChanged);
 	}
 
-	private void bottomUp() {
+	private void bottomUp(Set<ReferenceSlot> rootElements,
+			Set<ReferenceSlot> leafElements, Set<RefContainer> alreadyVisited) {
 		if (this.referedBy.isEmpty()) {
 			rootElements.add(this);
 		} else {
@@ -166,13 +169,14 @@ public class ReferenceSlot extends Slot {
 				if (alreadyVisited.add(new RefContainer(this, parent,
 						currentStartElement)) && !this.equals(nullReference)) {
 					parent.childToParent(this);
-					parent.bottomUp();
+					parent.bottomUp(rootElements, leafElements, alreadyVisited);
 				}
 			}
 		}
 	}
 
-	private void topDown() {
+	private void topDown(Set<ReferenceSlot> rootElements,
+			Set<ReferenceSlot> leafElements, Set<RefContainer> alreadyVisited) {
 		if (this.references.isEmpty()) {
 			leafElements.add(this);
 		} else {
@@ -180,7 +184,7 @@ public class ReferenceSlot extends Slot {
 				if (alreadyVisited.add(new RefContainer(this, child,
 						currentStartElement)) && !child.equals(nullReference)) {
 					this.parentToChild(child);
-					child.topDown();
+					child.topDown(rootElements, leafElements, alreadyVisited);
 				}
 			}
 		}
