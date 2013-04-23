@@ -9,8 +9,10 @@ import org.apache.bcel.generic.MethodGen;
 import org.apache.bcel.generic.Type;
 
 import de.htwg_konstanz.in.jca.Frame;
+import de.htwg_konstanz.in.jca.Heap;
 import de.htwg_konstanz.in.jca.analyzer.BaseInstructionsAnalysisVisitor;
 import de.htwg_konstanz.in.jca.analyzer.BaseMethodAnalyzer;
+import de.htwg_konstanz.in.jca.slot.HeapObject;
 import de.htwg_konstanz.in.jca.slot.ReferenceSlot;
 import de.htwg_konstanz.in.jca.slot.Slot;
 import edu.umd.cs.findbugs.ba.ClassContext;
@@ -37,25 +39,34 @@ public class PropConMethodAnalyzer extends BaseMethodAnalyzer {
 
 	@Override
 	public void analyze() {
-		ReferenceSlot.initSpecialReferences();
 		Stack<Slot> callerStack = new Stack<Slot>();
+		Heap callerHeap = new Heap();
+
+		// set up this and external reference
+		ReferenceSlot thisReference = new ReferenceSlot();
+		callerHeap.registerObject(thisReference, HeapObject.THIS_REFERENCE);
+		ReferenceSlot externalReference = new ReferenceSlot();
+		callerHeap.registerObject(externalReference,
+				HeapObject.EXTERNAL_REFERENCE);
 
 		// push this + args onto the stack
-		callerStack.push(ReferenceSlot.getThisReference());
+		callerStack.push(thisReference);
 
 		Type[] argTypes = method.getArgumentTypes();
 
 		for (Type argType : argTypes) {
 			Slot argument = Slot.getDefaultSlotInstance(argType);
 			if (argument instanceof ReferenceSlot) {
-				argument = ReferenceSlot.getExternalInstance();
+				argument = externalReference;
 			}
 			for (int i = 0; i < argument.getNumSlots(); i++) {
 				callerStack.push(argument);
 			}
 
 		}
-		Frame callerFrame = new Frame(0, callerStack, 0);
+
+		Frame callerFrame = new Frame(0, callerStack, 0, callerHeap);
+
 		analyze(callerFrame);
 	}
 }

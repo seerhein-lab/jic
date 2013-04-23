@@ -81,6 +81,7 @@ import de.htwg_konstanz.in.jca.ResultValue.Kind;
 import de.htwg_konstanz.in.jca.Utils;
 import de.htwg_konstanz.in.jca.analyzer.BaseMethodAnalyzer.AlreadyVisitedMethod;
 import de.htwg_konstanz.in.jca.slot.DoubleSlot;
+import de.htwg_konstanz.in.jca.slot.HeapObject;
 import de.htwg_konstanz.in.jca.slot.IntSlot;
 import de.htwg_konstanz.in.jca.slot.LongSlot;
 import de.htwg_konstanz.in.jca.slot.ReferenceSlot;
@@ -128,10 +129,9 @@ public abstract class BaseInstructionsAnalysisVisitor extends EmptyVisitor {
 	protected Frame frame;
 	protected final ConstantPoolGen constantPoolGen;
 	protected InstructionHandle instructionHandle;
-	// protected final ExceptionHandlers exceptionHandlers;
 	protected final CodeExceptionGen[] exceptionHandlers;
-	protected ArrayList<AlreadyVisitedIfInstruction> alreadyVisited;
-	protected final ArrayList<AlreadyVisitedMethod> alreadyVisitedMethods;
+	protected Set<AlreadyVisitedIfInstruction> alreadyVisited;
+	protected final Set<AlreadyVisitedMethod> alreadyVisitedMethods;
 	protected SortedBugCollection bugs = new SortedBugCollection();
 	protected Set<ResultValue> result = new HashSet<ResultValue>();
 
@@ -175,7 +175,7 @@ public abstract class BaseInstructionsAnalysisVisitor extends EmptyVisitor {
 	}
 
 	protected abstract BaseInstructionsAnalysisVisitor getInstructionsAnalysisVisitor(
-			Frame frame, ArrayList<AlreadyVisitedIfInstruction> alreadyVisited,
+			Frame frame, Set<AlreadyVisitedIfInstruction> alreadyVisited,
 			InstructionHandle instructionHandle);
 
 	protected abstract BaseMethodAnalyzer getMethodAnalyzer(
@@ -199,17 +199,17 @@ public abstract class BaseInstructionsAnalysisVisitor extends EmptyVisitor {
 			Method method, Frame frame, ConstantPoolGen constantPoolGen,
 			InstructionHandle instructionHandle,
 			CodeExceptionGen[] exceptionHandlers,
-			ArrayList<AlreadyVisitedMethod> alreadyVisitedMethods, int depth) {
+			Set<AlreadyVisitedMethod> alreadyVisitedMethods, int depth) {
 		this(classContext, method, frame, constantPoolGen,
-				new ArrayList<AlreadyVisitedIfInstruction>(),
+				new HashSet<AlreadyVisitedIfInstruction>(),
 				alreadyVisitedMethods, instructionHandle, exceptionHandlers,
 				depth);
 	}
 
 	protected BaseInstructionsAnalysisVisitor(ClassContext classContext,
 			Method method, Frame frame, ConstantPoolGen constantPoolGen,
-			ArrayList<AlreadyVisitedIfInstruction> alreadyVisited,
-			ArrayList<AlreadyVisitedMethod> alreadyVisitedMethods,
+			Set<AlreadyVisitedIfInstruction> alreadyVisited,
+			Set<AlreadyVisitedMethod> alreadyVisitedMethods,
 			InstructionHandle instructionHandle,
 			CodeExceptionGen[] exceptionHandlers, int depth) {
 		this.classContext = classContext;
@@ -274,8 +274,8 @@ public abstract class BaseInstructionsAnalysisVisitor extends EmptyVisitor {
 						+ exceptionHandler.toString() + ": end ^^^^^");
 			}
 		}
-		// XXX DO WE HAVE TO COPY IT?
-		result.add(new ResultValue(Kind.EXCEPTION, exception.copy()));
+		// XXX DO WE HAVE TO COPY IT? exception was copied before...
+		result.add(new ResultValue(Kind.EXCEPTION, exception));
 	}
 
 	/**
@@ -313,14 +313,13 @@ public abstract class BaseInstructionsAnalysisVisitor extends EmptyVisitor {
 		// for detection of recursion
 		AlreadyVisitedMethod thisMethod = new AlreadyVisitedMethod(
 				targetMethod, targetMethodAnalyzer.getActualParams(frame));
-		if (alreadyVisitedMethods.contains(thisMethod)) {
+		if (!alreadyVisitedMethods.add(thisMethod)) {
 			logger.log(Level.FINE, indentation
 					+ "Recursion found: Method already analyzed.");
 			// if already visited then do not analyze again
 			handleMethodThatIsNotAnalyzed(obj);
 			return;
 		}
-		alreadyVisitedMethods.add(thisMethod);
 
 		targetMethodAnalyzer.analyze(frame);
 
@@ -371,7 +370,8 @@ public abstract class BaseInstructionsAnalysisVisitor extends EmptyVisitor {
 				.getReturnType(constantPoolGen));
 
 		// TODO CHECK THIS
-		ReferenceSlot evilReference = ReferenceSlot.getExternalInstance();
+		ReferenceSlot externalReference = frame.getHeap().getContainer(
+				HeapObject.EXTERNAL_REFERENCE.getId());
 		Slot argument;
 		// pop a value for each arg and 1 for the hidden reference
 		for (int i = 0; i < type.length + 1; i++) {
@@ -380,13 +380,14 @@ public abstract class BaseInstructionsAnalysisVisitor extends EmptyVisitor {
 				// check for bugs
 				detectMethodThatIsNotAnalyzedBug((ReferenceSlot) argument);
 				// add each reference to evilReference
-				evilReference.linkReferences((ReferenceSlot) argument);
+				frame.getHeap().linkReferences(externalReference,
+						(ReferenceSlot) argument);
 			}
 		}
 
 		// return evilReference if returnType reference is expected
 		if (returnValue instanceof ReferenceSlot)
-			returnValue = evilReference;
+			returnValue = externalReference;
 
 		// works also for void results, because number of required slots = 0
 		frame.pushStackByRequiredSlots(returnValue);

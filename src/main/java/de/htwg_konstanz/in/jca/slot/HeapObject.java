@@ -22,4 +22,12 @@ public class HeapObject {
 		refers.addAll(original.refers);
 		referedBy.addAll(original.referedBy);
 	}
+
+	/**
+	 * @return the id
+	 */
+	public UUID getId() {
+		return id;
+	}
+
 }

@@ -25,4 +25,14 @@ public class ReferenceSlot extends Slot {
 		return new ReferenceSlot(this);
 	}
 
+	/**
+	 * @return the possibleObjects
+	 */
+	public Set<UUID> getPossibleObjects() {
+		return possibleObjects;
+	}
+
+	public void addToPossibleObjects(UUID object) {
+		possibleObjects.add(object);
+	}
 }

@@ -12,14 +12,14 @@ public class Frame {
 	private final Stack<Slot> stack;
 	private final Heap heap;
 
-	public Frame(int maxLocals, Stack<Slot> callerStack, int numSlots) {
+	public Frame(int maxLocals, Stack<Slot> callerStack, int numSlots, Heap heap) {
 		localVars = new Slot[maxLocals];
 
 		for (int i = numSlots - 1; i >= 0; i--)
 			localVars[i] = callerStack.pop();
 
 		stack = new Stack<Slot>();
-		heap = new Heap();
+		this.heap = heap;
 	}
 
 	/**
