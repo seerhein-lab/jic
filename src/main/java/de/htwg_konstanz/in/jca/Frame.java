@@ -8,8 +8,19 @@ import de.htwg_konstanz.in.jca.slot.Slot;
  * Class representing a method frame. Contains LocalVars and a method stack.
  */
 public class Frame {
-	private Slot[] localVars;
-	private Stack<Slot> stack;
+	private final Slot[] localVars;
+	private final Stack<Slot> stack;
+	private final Heap heap;
+
+	public Frame(int maxLocals, Stack<Slot> callerStack, int numSlots) {
+		localVars = new Slot[maxLocals];
+
+		for (int i = numSlots - 1; i >= 0; i--)
+			localVars[i] = callerStack.pop();
+
+		stack = new Stack<Slot>();
+		heap = new Heap();
+	}
 
 	/**
 	 * Constructor. Pops numSlots values from the callerStack and stores them
@@ -23,13 +34,14 @@ public class Frame {
 	 * @param numSlots
 	 *            Number of values to be popped from the callerStack.
 	 */
-	public Frame(int maxLocals, Stack<Slot> callerStack, int numSlots) {
+	public Frame(int maxLocals, Frame callerFrame, int numSlots) {
 		localVars = new Slot[maxLocals];
 
 		for (int i = numSlots - 1; i >= 0; i--)
-			localVars[i] = callerStack.pop();
+			localVars[i] = callerFrame.getStack().pop();
 
 		stack = new Stack<Slot>();
+		heap = callerFrame.getHeap();
 	}
 
 	/**
@@ -49,6 +61,7 @@ public class Frame {
 		for (Slot slot : stackArray) {
 			stack.add(slot.copy());
 		}
+		heap = new Heap(frame.getHeap());
 	}
 
 	public Stack<Slot> getStack() {
@@ -89,5 +102,9 @@ public class Frame {
 	 */
 	public Slot[] getLocalVars() {
 		return localVars;
+	}
+
+	public Heap getHeap() {
+		return heap;
 	}
 }

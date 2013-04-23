@@ -312,8 +312,7 @@ public abstract class BaseInstructionsAnalysisVisitor extends EmptyVisitor {
 
 		// for detection of recursion
 		AlreadyVisitedMethod thisMethod = new AlreadyVisitedMethod(
-				targetMethod, targetMethodAnalyzer.getActualParams(frame
-						.getStack()));
+				targetMethod, targetMethodAnalyzer.getActualParams(frame));
 		if (alreadyVisitedMethods.contains(thisMethod)) {
 			logger.log(Level.FINE, indentation
 					+ "Recursion found: Method already analyzed.");
@@ -323,7 +322,7 @@ public abstract class BaseInstructionsAnalysisVisitor extends EmptyVisitor {
 		}
 		alreadyVisitedMethods.add(thisMethod);
 
-		targetMethodAnalyzer.analyze(frame.getStack());
+		targetMethodAnalyzer.analyze(frame);
 
 		bugs.addAll(targetMethodAnalyzer.getBugs().getCollection());
 

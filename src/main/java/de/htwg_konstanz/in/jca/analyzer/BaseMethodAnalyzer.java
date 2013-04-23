@@ -3,7 +3,6 @@ package de.htwg_konstanz.in.jca.analyzer;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Set;
-import java.util.Stack;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -131,8 +130,8 @@ public abstract class BaseMethodAnalyzer {
 	 * @param callerStack
 	 *            the content of the local variable table of the constructor.
 	 */
-	public void analyze(Stack<Slot> callerStack) {
-		Frame calleeFrame = createCalleeFrame(callerStack);
+	public void analyze(Frame callerFrame) {
+		Frame calleeFrame = createCalleeFrame(callerFrame);
 
 		InstructionHandle[] instructionHandles = new InstructionList(method
 				.getCode().getCode()).getInstructionHandles();
@@ -145,7 +144,7 @@ public abstract class BaseMethodAnalyzer {
 		logger.log(Level.FINE, indentation + "^^^^^^^^^^^^^^^^^^^^^^^^^^");
 	}
 
-	protected Frame createCalleeFrame(Stack<Slot> callerStack) {
+	protected Frame createCalleeFrame(Frame callerFrame) {
 		int numSlots = method.isStatic() ? 0 : 1;
 
 		for (Type type : method.getArgumentTypes()) {
@@ -153,16 +152,13 @@ public abstract class BaseMethodAnalyzer {
 		}
 
 		Frame calleeFrame = new Frame(method.getCode().getMaxLocals(),
-				callerStack, numSlots);
+				callerFrame, numSlots);
 		return calleeFrame;
 	}
 
-	public Slot[] getActualParams(Stack<Slot> callerStack) {
-		Stack<Slot> clonedStack = new Stack<Slot>();
-		for (Slot slot : callerStack.toArray(new Slot[0])) {
-			clonedStack.add(slot.copy());
-		}
-		return createCalleeFrame(clonedStack).getLocalVars();
+	public Slot[] getActualParams(Frame frame) {
+		Frame clonedFrame = new Frame(frame);
+		return createCalleeFrame(clonedFrame).getLocalVars();
 
 	}
 
