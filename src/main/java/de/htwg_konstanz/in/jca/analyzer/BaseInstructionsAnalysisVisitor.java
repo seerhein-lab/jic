@@ -381,8 +381,7 @@ public abstract class BaseInstructionsAnalysisVisitor extends EmptyVisitor {
 				// check for bugs
 				detectMethodThatIsNotAnalyzedBug((ReferenceSlot) argument);
 				// add each reference to evilReference
-				ReferenceSlot.linkReferences(evilReference,
-						(ReferenceSlot) argument);
+				evilReference.linkReferences((ReferenceSlot) argument);
 			}
 		}
 
@@ -537,7 +536,7 @@ public abstract class BaseInstructionsAnalysisVisitor extends EmptyVisitor {
 				// sub-dependencies and link it to arrayRef
 				ReferenceSlot refToGet = arrayReference
 						.copyWithoutDependencies();
-				ReferenceSlot.linkWithSubdependencies(arrayReference, refToGet);
+				arrayReference.linkWithSubdependencies(refToGet);
 
 				frame.pushStackByRequiredSlots(refToGet);
 			} else {
@@ -562,7 +561,7 @@ public abstract class BaseInstructionsAnalysisVisitor extends EmptyVisitor {
 				detectAAStoreBug(arrayReference, refToStore);
 
 				// link reference to array
-				ReferenceSlot.linkReferences(arrayReference, refToStore);
+				arrayReference.linkReferences(refToStore);
 			} else {
 				// all other ASTORE instructions, we do not care
 
@@ -886,7 +885,7 @@ public abstract class BaseInstructionsAnalysisVisitor extends EmptyVisitor {
 			ReferenceSlot targetReference = ref.copyWithoutDependencies();
 			// add all sub-dependencies from ref to targetReference and link it
 			// to ref
-			ReferenceSlot.linkWithSubdependencies(ref, targetReference);
+			ref.linkWithSubdependencies(targetReference);
 
 			// XXX targetReference: refersField, referedByField???
 
@@ -964,7 +963,7 @@ public abstract class BaseInstructionsAnalysisVisitor extends EmptyVisitor {
 			// TODO set refersField, referedByField??
 
 			// link them together
-			ReferenceSlot.linkReferences(field, refToPut);
+			field.linkReferences(refToPut);
 		}
 
 		logger.log(
@@ -1003,8 +1002,7 @@ public abstract class BaseInstructionsAnalysisVisitor extends EmptyVisitor {
 
 			detectPutStaticBug(refToPut);
 			// link reference to put with an external reference
-			ReferenceSlot.linkReferences(ReferenceSlot.getExternalInstance(),
-					refToPut);
+			ReferenceSlot.getExternalInstance().linkReferences(refToPut);
 		}
 
 		// write log

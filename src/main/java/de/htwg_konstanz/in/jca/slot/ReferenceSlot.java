@@ -4,7 +4,6 @@ import java.util.HashSet;
 import java.util.Set;
 
 public class ReferenceSlot extends Slot {
-
 	private static ReferenceSlot thisReference;
 	private static ReferenceSlot nullReference;
 
@@ -13,6 +12,18 @@ public class ReferenceSlot extends Slot {
 	private static Set<RefContainer> alreadyVisited;
 	private static boolean somethingChanged;
 	private static ReferenceSlot currentStartElement;
+
+	private final Set<ReferenceSlot> referedBy = new HashSet<ReferenceSlot>();
+	private final Set<ReferenceSlot> references = new HashSet<ReferenceSlot>();
+
+	private final boolean isExternal;
+
+	private boolean refersThis = false;
+	private boolean referedByThis = false;
+	private boolean refersExternal = false;
+	private boolean referedByExternal = false;
+	private boolean refersField = false;
+	private boolean referedByField = false;
 
 	public static class RefContainer {
 		private final ReferenceSlot caller;
@@ -77,18 +88,6 @@ public class ReferenceSlot extends Slot {
 
 	}
 
-	private final boolean isExternal;
-
-	private final Set<ReferenceSlot> referedBy = new HashSet<ReferenceSlot>();
-	private final Set<ReferenceSlot> references = new HashSet<ReferenceSlot>();
-
-	private boolean refersThis = false;
-	private boolean referedByThis = false;
-	private boolean refersExternal = false;
-	private boolean referedByExternal = false;
-	private boolean refersField = false;
-	private boolean referedByField = false;
-
 	private String text = "someReference";
 
 	private ReferenceSlot(boolean isExternal) {
@@ -121,98 +120,94 @@ public class ReferenceSlot extends Slot {
 		return nullReference;
 	}
 
-	public static void linkWithSubdependencies(ReferenceSlot parent,
-			ReferenceSlot target) {
-		for (ReferenceSlot referenced : parent.references) {
+	public void linkWithSubdependencies(ReferenceSlot target) {
+		for (ReferenceSlot referenced : this.references) {
 			target.references.add(referenced);
 			referenced.referedBy.add(target);
 		}
-		linkReferences(parent, target);
+		this.linkReferences(target);
 	}
 
-	public static void linkReferences(ReferenceSlot parent, ReferenceSlot child) {
-		if (parent.references.add(child) | child.referedBy.add(parent)) {
+	public void linkReferences(ReferenceSlot child) {
+		if (this.references.add(child) | child.referedBy.add(this)) {
 			rootElements = new HashSet<ReferenceSlot>();
 			leafElements = new HashSet<ReferenceSlot>();
 			alreadyVisited = new HashSet<RefContainer>();
 			somethingChanged = false;
 
-			parentToChild(parent, child);
-			visitReferenceTree(child);
+			this.parentToChild(child);
+			child.visitReferenceTree();
 		}
 	}
 
-	private static void visitReferenceTree(ReferenceSlot child) {
-		currentStartElement = child;
-		bottomUp(child);
+	private void visitReferenceTree() {
+		currentStartElement = this;
+		this.bottomUp();
 		do {
 			somethingChanged = false;
 			alreadyVisited.clear();
 			for (ReferenceSlot rootElement : rootElements) {
 				currentStartElement = rootElement;
-				topDown(rootElement);
+				rootElement.topDown();
 			}
 			alreadyVisited.clear();
 			for (ReferenceSlot leafElement : leafElements) {
 				currentStartElement = leafElement;
-				bottomUp(leafElement);
+				leafElement.bottomUp();
 			}
 		} while (somethingChanged);
 	}
 
-	private static void bottomUp(ReferenceSlot current) {
-		if (current.referedBy.isEmpty()) {
-			rootElements.add(current);
+	private void bottomUp() {
+		if (this.referedBy.isEmpty()) {
+			rootElements.add(this);
 		} else {
-			for (ReferenceSlot parent : current.referedBy) {
-				if (alreadyVisited.add(new RefContainer(current, parent,
-						currentStartElement)) && !current.equals(nullReference)) {
-					childToParent(parent, current);
-					bottomUp(parent);
+			for (ReferenceSlot parent : this.referedBy) {
+				if (alreadyVisited.add(new RefContainer(this, parent,
+						currentStartElement)) && !this.equals(nullReference)) {
+					parent.childToParent(this);
+					parent.bottomUp();
 				}
 			}
 		}
 	}
 
-	private static void topDown(ReferenceSlot current) {
-		if (current.references.isEmpty()) {
-			leafElements.add(current);
+	private void topDown() {
+		if (this.references.isEmpty()) {
+			leafElements.add(this);
 		} else {
-			for (ReferenceSlot child : current.references) {
-				if (alreadyVisited.add(new RefContainer(current, child,
+			for (ReferenceSlot child : this.references) {
+				if (alreadyVisited.add(new RefContainer(this, child,
 						currentStartElement)) && !child.equals(nullReference)) {
-					parentToChild(current, child);
-					topDown(child);
+					this.parentToChild(child);
+					child.topDown();
 				}
 			}
 		}
 	}
 
-	private static void childToParent(ReferenceSlot parent, ReferenceSlot child) {
-		boolean newRefersThis = (parent.refersThis
-				|| child.equals(thisReference) || child.refersThis);
-		boolean newRefersExternal = (parent.refersExternal || child.isExternal
+	private void childToParent(ReferenceSlot child) {
+		boolean newRefersThis = (this.refersThis || child.equals(thisReference) || child.refersThis);
+		boolean newRefersExternal = (this.refersExternal || child.isExternal
 				|| child.refersExternal || child.referedByExternal);
-		boolean newRefersField = (parent.refersField || child.refersField);
+		boolean newRefersField = (this.refersField || child.refersField);
 		if (!somethingChanged
-				&& (newRefersThis != parent.refersThis
-						|| newRefersExternal != parent.refersExternal || newRefersField != parent.refersField)) {
+				&& (newRefersThis != this.refersThis
+						|| newRefersExternal != this.refersExternal || newRefersField != this.refersField)) {
 			somethingChanged = true;
 		}
-		parent.refersThis = newRefersThis;
-		parent.refersExternal = newRefersExternal;
-		parent.refersField = newRefersField;
+		this.refersThis = newRefersThis;
+		this.refersExternal = newRefersExternal;
+		this.refersField = newRefersField;
 	}
 
-	private static void parentToChild(ReferenceSlot parent, ReferenceSlot child) {
-
+	private void parentToChild(ReferenceSlot child) {
 		boolean newReferedByThis = child.referedByThis
-				|| parent.equals(ReferenceSlot.getThisReference())
-				|| parent.referedByThis;
+				|| this.equals(ReferenceSlot.getThisReference())
+				|| this.referedByThis;
 		boolean newReferedByExternal = child.referedByExternal
-				|| parent.isExternal || parent.referedByExternal;
-		boolean newReferedByField = child.referedByField
-				|| parent.referedByField;
+				|| this.isExternal || this.referedByExternal;
+		boolean newReferedByField = child.referedByField || this.referedByField;
 		if (!somethingChanged
 				&& (newReferedByThis != child.referedByThis
 						|| newReferedByExternal != child.referedByExternal || newReferedByField != child.referedByField)) {
