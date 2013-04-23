@@ -152,9 +152,6 @@ public abstract class BaseMethodAnalyzer {
 			numSlots += Slot.getDefaultSlotInstance(type).getNumSlots();
 		}
 
-		// if non static method +1 because of hidden 'this' reference
-		numSlots = method.isStatic() ? numSlots : numSlots + 1;
-
 		Frame calleeFrame = new Frame(method.getCode().getMaxLocals(),
 				callerStack, numSlots);
 		return calleeFrame;
