@@ -32,7 +32,7 @@ public class ReferenceSlot extends Slot {
 		return possibleObjects;
 	}
 
-	public void addToPossibleObjects(UUID object) {
+	public void addPossibleObject(UUID object) {
 		possibleObjects.add(object);
 	}
 }

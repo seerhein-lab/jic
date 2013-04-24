@@ -82,7 +82,7 @@ public class Heap {
 	public void registerObject(ReferenceSlot container, HeapObject object) {
 		objects.add(object);
 		set.add(new Container(object.getId(), container));
-		container.addToPossibleObjects(object.getId());
+		container.addPossibleObject(object.getId());
 	}
 
 	public ReferenceSlot getContainer(UUID object) {
