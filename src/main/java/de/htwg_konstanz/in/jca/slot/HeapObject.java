@@ -11,7 +11,7 @@ public class HeapObject {
 
 	private final UUID id;
 	private Set<UUID> refers = new HashSet<UUID>();
-	private Set<UUID> referedBy = new HashSet<UUID>();
+	private Set<UUID> referredBy = new HashSet<UUID>();
 
 	public HeapObject() {
 		id = UUID.randomUUID();
@@ -20,7 +20,7 @@ public class HeapObject {
 	public HeapObject(HeapObject original) {
 		id = original.id;
 		refers.addAll(original.refers);
-		referedBy.addAll(original.referedBy);
+		referredBy.addAll(original.referredBy);
 	}
 
 	/**
