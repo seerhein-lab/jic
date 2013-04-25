@@ -3,6 +3,7 @@ package de.htwg_konstanz.in.jca.analyzer;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.UUID;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -1173,7 +1174,10 @@ public abstract class BaseInstructionsAnalysisVisitor extends EmptyVisitor {
 	public void visitNEW(NEW obj) {
 		logger.log(Level.FINE, indentation + obj.toString(false));
 
-		frame.getStack().push(ReferenceSlot.getInternalInstance());
+		UUID id = frame.getHeap().newHeapObject();
+		ReferenceSlot slot = new ReferenceSlot(id);
+
+		frame.getStack().push(slot);
 
 		instructionHandle = instructionHandle.getNext();
 		instructionHandle.accept(this);

@@ -60,4 +60,11 @@ public class Heap {
 		return externalID;
 	}
 
+	public UUID newHeapObject() {
+		HeapObject object = new HeapObject();
+		UUID id = object.getId();
+		objects.put(id, object);
+		return id;
+	}
+
 }
