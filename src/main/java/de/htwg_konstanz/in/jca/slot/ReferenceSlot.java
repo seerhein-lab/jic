@@ -25,7 +25,7 @@ public class ReferenceSlot extends Slot {
 
 	@Override
 	public Slot copy() {
-		return new ReferenceSlot(this);
+		return this;
 	}
 
 	/**
