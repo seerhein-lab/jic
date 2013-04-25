@@ -1,13 +1,15 @@
 package de.htwg_konstanz.in.jca.heap;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 
 public class Heap {
 
 	private final Map<UUID, HeapObject> objects = new HashMap<UUID, HeapObject>();
-	private final Map<UUID, UUID> replacedBy = new HashMap<UUID, UUID>();
+	private final Set<UUID> publishedObjects = new HashSet<UUID>();
 
 	private final UUID thisID;
 	private final UUID externalID;
@@ -37,7 +39,7 @@ public class Heap {
 			objects.put(id, new HeapObject(original.objects.get(id)));
 		}
 
-		replacedBy.putAll(original.replacedBy);
+		publishedObjects.addAll(original.publishedObjects);
 
 		thisID = original.thisID;
 		externalID = original.externalID;
@@ -46,8 +48,8 @@ public class Heap {
 	}
 
 	public HeapObject get(UUID id) {
-		id = replacedBy.containsKey(id) ? replacedBy.get(id) : id;
-		return objects.get(id);
+		return publishedObjects.contains(id) ? objects.get(externalID)
+				: objects.get(id);
 	}
 
 	// public void linkReferences(ReferenceSlot left, ReferenceSlot right) {
