@@ -3,7 +3,6 @@ package de.htwg_konstanz.in.jca.slot;
 import java.util.UUID;
 
 public class ReferenceSlot extends Slot {
-
 	private final UUID objectID;
 
 	public ReferenceSlot() {
@@ -12,10 +11,6 @@ public class ReferenceSlot extends Slot {
 
 	public ReferenceSlot(UUID objectID) {
 		this.objectID = objectID;
-	}
-
-	private ReferenceSlot(ReferenceSlot original) {
-		objectID = original.objectID;
 	}
 
 	@Override

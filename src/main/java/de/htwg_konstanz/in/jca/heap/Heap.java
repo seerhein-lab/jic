@@ -66,6 +66,10 @@ public class Heap {
 		return externalID;
 	}
 
+	public UUID getNullID() {
+		return nullID;
+	}
+
 	public UUID newHeapObject() {
 		HeapObject object = new HeapObject();
 		UUID id = object.getId();
@@ -79,7 +83,12 @@ public class Heap {
 		HeapObject object = objects.get(id);
 		HeapObject external = objects.get(externalID);
 
-		external.getReferringObjects().addAll(object.getReferringObjects());
+		for (UUID referringObject : object.getReferringObjects()) {
+			get(referringObject).getReferredObjects().remove(id);
+			get(referringObject).getReferredObjects().add(externalID);
+
+			external.getReferringObjects().add(referringObject);
+		}
 
 		for (UUID referredObject : object.getReferredObjects()) {
 			publish(referredObject);

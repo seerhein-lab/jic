@@ -465,7 +465,8 @@ public abstract class BaseInstructionsAnalysisVisitor extends EmptyVisitor {
 	public void visitACONST_NULL(ACONST_NULL obj) {
 		logger.log(Level.FINE, indentation + obj.toString(false));
 		// push NULL onto stack
-		frame.getStack().push(ReferenceSlot.getNullReference());
+
+		frame.getStack().push(new ReferenceSlot(frame.getHeap().getNullID()));
 		instructionHandle = instructionHandle.getNext();
 		instructionHandle.accept(this);
 	}
