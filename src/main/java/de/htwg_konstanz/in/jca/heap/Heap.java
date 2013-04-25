@@ -4,7 +4,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
-
 public class Heap {
 
 	private final Map<UUID, HeapObject> objects = new HashMap<UUID, HeapObject>();
@@ -13,6 +12,7 @@ public class Heap {
 	private final UUID thisID;
 	private final UUID externalID;
 	private final UUID nullID;
+	private final UUID unknownID;
 
 	public Heap() {
 		HeapObject thisObject = new HeapObject();
@@ -26,6 +26,10 @@ public class Heap {
 		HeapObject nullObject = new HeapObject();
 		nullID = nullObject.getId();
 		objects.put(nullID, nullObject);
+
+		HeapObject unknownObject = new HeapObject();
+		unknownID = unknownObject.getId();
+		objects.put(nullID, unknownObject);
 	}
 
 	public Heap(Heap original) {
@@ -38,6 +42,7 @@ public class Heap {
 		thisID = original.thisID;
 		externalID = original.externalID;
 		nullID = original.nullID;
+		unknownID = original.unknownID;
 	}
 
 	public HeapObject get(UUID id) {

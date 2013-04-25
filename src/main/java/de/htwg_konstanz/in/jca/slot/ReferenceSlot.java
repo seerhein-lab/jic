@@ -1,22 +1,21 @@
 package de.htwg_konstanz.in.jca.slot;
 
-import java.util.HashSet;
-import java.util.Set;
 import java.util.UUID;
 
 public class ReferenceSlot extends Slot {
 
-	private final Set<UUID> possibleObjects = new HashSet<UUID>();
+	private final UUID objectID;
 
 	public ReferenceSlot() {
+		objectID = null;
 	}
 
 	public ReferenceSlot(UUID objectID) {
-		possibleObjects.add(objectID);
+		this.objectID = objectID;
 	}
 
 	private ReferenceSlot(ReferenceSlot original) {
-		possibleObjects.addAll(original.possibleObjects);
+		objectID = original.objectID;
 	}
 
 	@Override
@@ -32,11 +31,8 @@ public class ReferenceSlot extends Slot {
 	/**
 	 * @return the possibleObjects
 	 */
-	public Set<UUID> getPossibleObjects() {
-		return possibleObjects;
+	public UUID getID() {
+		return objectID;
 	}
 
-	public void addPossibleObject(UUID object) {
-		possibleObjects.add(object);
-	}
 }
