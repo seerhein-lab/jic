@@ -1,10 +1,9 @@
-package de.htwg_konstanz.in.jca;
+package de.htwg_konstanz.in.jca.heap;
 
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
-import de.htwg_konstanz.in.jca.slot.HeapObject;
 
 public class Heap {
 

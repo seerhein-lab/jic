@@ -9,9 +9,9 @@ import org.apache.bcel.generic.MethodGen;
 import org.apache.bcel.generic.Type;
 
 import de.htwg_konstanz.in.jca.Frame;
-import de.htwg_konstanz.in.jca.Heap;
 import de.htwg_konstanz.in.jca.analyzer.BaseInstructionsAnalysisVisitor;
 import de.htwg_konstanz.in.jca.analyzer.BaseMethodAnalyzer;
+import de.htwg_konstanz.in.jca.heap.Heap;
 import de.htwg_konstanz.in.jca.slot.ReferenceSlot;
 import de.htwg_konstanz.in.jca.slot.Slot;
 import edu.umd.cs.findbugs.ba.ClassContext;

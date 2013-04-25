@@ -1,4 +1,4 @@
-package de.htwg_konstanz.in.jca.slot;
+package de.htwg_konstanz.in.jca.heap;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -9,7 +9,7 @@ public class HeapObject {
 	private Set<UUID> refers = new HashSet<UUID>();
 	private Set<UUID> referredBy = new HashSet<UUID>();
 
-	public HeapObject() {
+	HeapObject() {
 		id = UUID.randomUUID();
 	}
 

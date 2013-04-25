@@ -2,6 +2,7 @@ package de.htwg_konstanz.in.jca;
 
 import java.util.Stack;
 
+import de.htwg_konstanz.in.jca.heap.Heap;
 import de.htwg_konstanz.in.jca.slot.Slot;
 
 /**
