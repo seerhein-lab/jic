@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<BugCollection version="2.0.2" sequence="0" timestamp="1362126207000" analysisTimestamp="1362126508730" release="">
+  <Project projectName="lightning">
+    <Jar>/Users/haase/Documents/workspace/jca/target/test-classes/lightningtalk</Jar>
+    <SrcDir>/Users/haase/Documents/workspace/jca/src/test/java</SrcDir>
+  </Project>
+  <BugInstance type="PROPER_CONSTRUCTION_BUG" priority="1" abbrev="PC" category="Multithreaded correctness">
+    <String value="Warning: &apos;this&apos; reference is passed into an alien method and might escape."/>
+    <Class classname="lightningtalk.SimpleEventListener">
+      <SourceLine classname="lightningtalk.SimpleEventListener" sourcefile="SimpleEventListener.java" sourcepath="lightningtalk/SimpleEventListener.java"/>
+    </Class>
+    <SourceLine classname="lightningtalk.SimpleEventListener" start="7" end="7" startBytecode="6" endBytecode="6" sourcefile="SimpleEventListener.java" sourcepath="lightningtalk/SimpleEventListener.java"/>
+  </BugInstance>
+  <Errors errors="0" missingClasses="0"></Errors>
+  <FindBugsSummary timestamp="Fri, 1 Mar 2013 09:23:27 +0100" total_classes="8" referenced_classes="17" total_bugs="1" total_size="68" num_packages="1" vm_version="20.14-b01-445" cpu_seconds="14.68" clock_seconds="371.14" peak_mbytes="89.89" alloc_mbytes="759.69" gc_seconds="0.05" priority_1="1">
+    <PackageStats package="lightningtalk" total_bugs="1" total_types="8" total_size="68" priority_1="1">
+      <ClassStats class="lightningtalk.ConcreteEventSource" sourceFile="ConcreteEventSource.java" interface="false" size="10" bugs="0"/>
+      <ClassStats class="lightningtalk.CorrectWithStaticFactory" sourceFile="CorrectWithStaticFactory.java" interface="false" size="16" bugs="0"/>
+      <ClassStats class="lightningtalk.CorrectWithStaticFactory$1" sourceFile="CorrectWithStaticFactory.java" interface="false" size="8" bugs="0"/>
+      <ClassStats class="lightningtalk.EventListener" sourceFile="EventListener.java" interface="true" size="2" bugs="0"/>
+      <ClassStats class="lightningtalk.EventSource" sourceFile="EventSource.java" interface="true" size="2" bugs="0"/>
+      <ClassStats class="lightningtalk.HiddenThis" sourceFile="HiddenThis.java" interface="false" size="11" bugs="0"/>
+      <ClassStats class="lightningtalk.HiddenThis$1" sourceFile="HiddenThis.java" interface="false" size="8" bugs="0"/>
+      <ClassStats class="lightningtalk.SimpleEventListener" sourceFile="SimpleEventListener.java" interface="false" size="11" bugs="1" priority_1="1"/>
+    </PackageStats>
+    <FindBugsProfile>
+      <ClassProfile name="edu.umd.cs.findbugs.FindBugs2" totalMilliseconds="125" invocations="2" avgMicrosecondsPerInvocation="62866" maxMicrosecondsPerInvocation="95766" standardDeviationMircosecondsPerInvocation="32900"/>
+      <ClassProfile name="edu.umd.cs.findbugs.classfile.engine.ClassInfoAnalysisEngine" totalMilliseconds="101" invocations="283" avgMicrosecondsPerInvocation="358" maxMicrosecondsPerInvocation="11067" standardDeviationMircosecondsPerInvocation="865"/>
+      <ClassProfile name="edu.umd.cs.findbugs.classfile.engine.ClassDataAnalysisEngine" totalMilliseconds="75" invocations="285" avgMicrosecondsPerInvocation="263" maxMicrosecondsPerInvocation="6694" standardDeviationMircosecondsPerInvocation="393"/>
+      <ClassProfile name="edu.umd.cs.findbugs.detect.FieldItemSummary" totalMilliseconds="47" invocations="17" avgMicrosecondsPerInvocation="2783" maxMicrosecondsPerInvocation="18593" standardDeviationMircosecondsPerInvocation="4628"/>
+      <ClassProfile name="edu.umd.cs.findbugs.DetectorToDetector2Adapter" totalMilliseconds="25" invocations="938" avgMicrosecondsPerInvocation="26" maxMicrosecondsPerInvocation="5047" standardDeviationMircosecondsPerInvocation="247"/>
+      <ClassProfile name="edu.umd.cs.findbugs.detect.NoteDirectlyRelevantTypeQualifiers" totalMilliseconds="20" invocations="17" avgMicrosecondsPerInvocation="1218" maxMicrosecondsPerInvocation="7992" standardDeviationMircosecondsPerInvocation="2208"/>
+      <ClassProfile name="edu.umd.cs.findbugs.util.TopologicalSort" totalMilliseconds="18" invocations="244" avgMicrosecondsPerInvocation="77" maxMicrosecondsPerInvocation="1776" standardDeviationMircosecondsPerInvocation="154"/>
+      <ClassProfile name="edu.umd.cs.findbugs.OpcodeStack$JumpInfoFactory" totalMilliseconds="16" invocations="44" avgMicrosecondsPerInvocation="379" maxMicrosecondsPerInvocation="1830" standardDeviationMircosecondsPerInvocation="388"/>
+      <ClassProfile name="edu.umd.cs.findbugs.detect.FunctionsThatMightBeMistakenForProcedures" totalMilliseconds="13" invocations="17" avgMicrosecondsPerInvocation="764" maxMicrosecondsPerInvocation="3973" standardDeviationMircosecondsPerInvocation="1367"/>
+      <ClassProfile name="edu.umd.cs.findbugs.detect.BuildObligationPolicyDatabase" totalMilliseconds="12" invocations="17" avgMicrosecondsPerInvocation="760" maxMicrosecondsPerInvocation="4296" standardDeviationMircosecondsPerInvocation="1228"/>
+    </FindBugsProfile>
+  </FindBugsSummary>
+  <ClassFeatures></ClassFeatures>
+  <History></History>
+</BugCollection>
