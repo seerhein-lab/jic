@@ -11,6 +11,10 @@ public class ReferenceSlot extends Slot {
 	public ReferenceSlot() {
 	}
 
+	public ReferenceSlot(UUID objectID) {
+		possibleObjects.add(objectID);
+	}
+
 	private ReferenceSlot(ReferenceSlot original) {
 		possibleObjects.addAll(original.possibleObjects);
 	}

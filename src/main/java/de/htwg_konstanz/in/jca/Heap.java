@@ -1,103 +1,63 @@
 package de.htwg_konstanz.in.jca;
 
-import java.util.HashSet;
-import java.util.Set;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.UUID;
 
 import de.htwg_konstanz.in.jca.slot.HeapObject;
-import de.htwg_konstanz.in.jca.slot.ReferenceSlot;
 
 public class Heap {
 
-	private final Set<HeapObject> objects = new HashSet<HeapObject>();
-	private final Set<Container> set = new HashSet<Container>();
+	private final Map<UUID, HeapObject> objects = new HashMap<UUID, HeapObject>();
+	private final Map<UUID, UUID> replacedBy = new HashMap<UUID, UUID>();
 
-	private static class Container {
-		private final UUID object;
-		private final ReferenceSlot referenceSlot;
-
-		public Container(UUID object, ReferenceSlot referenceSlot) {
-			this.object = object;
-			this.referenceSlot = referenceSlot;
-		}
-
-		/**
-		 * @return the object
-		 */
-		public UUID getObject() {
-			return object;
-		}
-
-		/**
-		 * @return the referenceSlot
-		 */
-		public ReferenceSlot getReferenceSlot() {
-			return referenceSlot;
-		}
-
-		@Override
-		public int hashCode() {
-			final int prime = 31;
-			int result = 1;
-			result = prime * result
-					+ ((object == null) ? 0 : object.hashCode());
-			result = prime * result
-					+ ((referenceSlot == null) ? 0 : referenceSlot.hashCode());
-			return result;
-		}
-
-		@Override
-		public boolean equals(Object obj) {
-			if (this == obj)
-				return true;
-			if (obj == null)
-				return false;
-			if (!(obj instanceof Container))
-				return false;
-			Container other = (Container) obj;
-			if (object == null) {
-				if (other.object != null)
-					return false;
-			} else if (!object.equals(other.object))
-				return false;
-			if (referenceSlot == null) {
-				if (other.referenceSlot != null)
-					return false;
-			} else if (!referenceSlot.equals(other.referenceSlot))
-				return false;
-			return true;
-		}
-	}
+	private final UUID thisID;
+	private final UUID externalID;
+	private final UUID nullID;
 
 	public Heap() {
+		HeapObject thisObject = new HeapObject();
+		thisID = thisObject.getId();
+		objects.put(thisID, thisObject);
+
+		HeapObject externalObject = new HeapObject();
+		externalID = externalObject.getId();
+		objects.put(externalID, externalObject);
+
+		HeapObject nullObject = new HeapObject();
+		nullID = nullObject.getId();
+		objects.put(nullID, nullObject);
 	}
 
 	public Heap(Heap original) {
-		for (HeapObject object : original.objects) {
-			objects.add(new HeapObject(object));
+		for (UUID id : original.objects.keySet()) {
+			objects.put(id, new HeapObject(original.objects.get(id)));
 		}
-		set.addAll(original.set);
+
+		replacedBy.putAll(original.replacedBy);
+
+		thisID = original.thisID;
+		externalID = original.externalID;
+		nullID = original.nullID;
 	}
 
-	public void registerObject(ReferenceSlot container, HeapObject object) {
-		objects.add(object);
-		set.add(new Container(object.getId(), container));
-		container.addPossibleObject(object.getId());
+	public HeapObject get(UUID id) {
+		id = replacedBy.containsKey(id) ? replacedBy.get(id) : id;
+		return objects.get(id);
 	}
 
-	public ReferenceSlot getContainer(UUID object) {
-		for (Container container : set) {
-			if (container.object.equals(object)) {
-				return container.referenceSlot;
-			}
-		}
-		return null;
+	// public void linkReferences(ReferenceSlot left, ReferenceSlot right) {
+	// for (UUID possibleObject : left.getPossibleObjects()) {
+	//
+	// }
+	// }
+	//
+	public UUID getThisID() {
+		return thisID;
 	}
 
-	public void linkReferences(ReferenceSlot left, ReferenceSlot right) {
-		for (UUID possibleObject : left.getPossibleObjects()) {
-
-		}
+	public UUID getExternalID() {
+		return externalID;
 	}
 
 }

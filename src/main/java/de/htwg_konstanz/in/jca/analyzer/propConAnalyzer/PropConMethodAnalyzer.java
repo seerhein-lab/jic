@@ -12,7 +12,6 @@ import de.htwg_konstanz.in.jca.Frame;
 import de.htwg_konstanz.in.jca.Heap;
 import de.htwg_konstanz.in.jca.analyzer.BaseInstructionsAnalysisVisitor;
 import de.htwg_konstanz.in.jca.analyzer.BaseMethodAnalyzer;
-import de.htwg_konstanz.in.jca.slot.HeapObject;
 import de.htwg_konstanz.in.jca.slot.ReferenceSlot;
 import de.htwg_konstanz.in.jca.slot.Slot;
 import edu.umd.cs.findbugs.ba.ClassContext;
@@ -42,12 +41,9 @@ public class PropConMethodAnalyzer extends BaseMethodAnalyzer {
 		Stack<Slot> callerStack = new Stack<Slot>();
 		Heap callerHeap = new Heap();
 
-		// set up this and external reference
-		ReferenceSlot thisReference = new ReferenceSlot();
-		callerHeap.registerObject(thisReference, HeapObject.THIS_REFERENCE);
-		ReferenceSlot externalReference = new ReferenceSlot();
-		callerHeap.registerObject(externalReference,
-				HeapObject.EXTERNAL_REFERENCE);
+		ReferenceSlot thisReference = new ReferenceSlot(callerHeap.getThisID());
+		ReferenceSlot externalReference = new ReferenceSlot(
+				callerHeap.getExternalID());
 
 		// push this + args onto the stack
 		callerStack.push(thisReference);
@@ -62,7 +58,6 @@ public class PropConMethodAnalyzer extends BaseMethodAnalyzer {
 			for (int i = 0; i < argument.getNumSlots(); i++) {
 				callerStack.push(argument);
 			}
-
 		}
 
 		Frame callerFrame = new Frame(0, callerStack, 0, callerHeap);
