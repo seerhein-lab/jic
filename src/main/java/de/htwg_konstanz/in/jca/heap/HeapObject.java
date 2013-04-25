@@ -19,6 +19,14 @@ public class HeapObject {
 		referredBy.addAll(original.referredBy);
 	}
 
+	Set<UUID> getReferredObjects() {
+		return refers;
+	}
+
+	Set<UUID> getReferringObjects() {
+		return referredBy;
+	}
+
 	/**
 	 * @return the id
 	 */

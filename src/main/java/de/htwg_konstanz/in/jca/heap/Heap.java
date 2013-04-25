@@ -73,4 +73,16 @@ public class Heap {
 		return id;
 	}
 
+	public void publish(UUID id) {
+		publishedObjects.add(id);
+
+		HeapObject object = objects.get(id);
+		HeapObject external = objects.get(externalID);
+
+		external.getReferringObjects().addAll(object.getReferringObjects());
+
+		for (UUID referredObject : object.getReferredObjects()) {
+			publish(referredObject);
+		}
+	}
 }

@@ -81,7 +81,6 @@ import de.htwg_konstanz.in.jca.ResultValue;
 import de.htwg_konstanz.in.jca.ResultValue.Kind;
 import de.htwg_konstanz.in.jca.Utils;
 import de.htwg_konstanz.in.jca.analyzer.BaseMethodAnalyzer.AlreadyVisitedMethod;
-import de.htwg_konstanz.in.jca.heap.HeapObject;
 import de.htwg_konstanz.in.jca.slot.DoubleSlot;
 import de.htwg_konstanz.in.jca.slot.IntSlot;
 import de.htwg_konstanz.in.jca.slot.LongSlot;
@@ -318,7 +317,7 @@ public abstract class BaseInstructionsAnalysisVisitor extends EmptyVisitor {
 			logger.log(Level.FINE, indentation
 					+ "Recursion found: Method already analyzed.");
 			// if already visited then do not analyze again
-			handleMethodThatIsNotAnalyzed(obj);
+			handleVirtualMethod(obj);
 			return;
 		}
 
@@ -359,7 +358,7 @@ public abstract class BaseInstructionsAnalysisVisitor extends EmptyVisitor {
 	 * @param obj
 	 *            node to be visited
 	 */
-	protected void handleMethodThatIsNotAnalyzed(InvokeInstruction obj) {
+	protected void handleVirtualMethod(InvokeInstruction obj) {
 		logger.log(Level.FINE, indentation + obj.toString(false));
 		logger.log(Level.FINEST,
 				indentation + "\t" + obj.getSignature(constantPoolGen));
@@ -367,28 +366,26 @@ public abstract class BaseInstructionsAnalysisVisitor extends EmptyVisitor {
 		Type[] type = obj.getArgumentTypes(constantPoolGen);
 		// get return value
 
-		Slot returnValue = Slot.getDefaultSlotInstance(obj
-				.getReturnType(constantPoolGen));
-
-		// TODO CHECK THIS
-		ReferenceSlot externalReference = frame.getHeap().getContainer(
-				HeapObject.EXTERNAL_REFERENCE.getId());
 		Slot argument;
-		// pop a value for each arg and 1 for the hidden reference
+		// pop a value for each arg and 1 for the hidden 'this' reference
+
 		for (int i = 0; i < type.length + 1; i++) {
 			argument = frame.popStackByRequiredSlots();
 			if (argument instanceof ReferenceSlot) {
+				ReferenceSlot reference = (ReferenceSlot) argument;
 				// check for bugs
-				detectMethodThatIsNotAnalyzedBug((ReferenceSlot) argument);
-				// add each reference to evilReference
-				frame.getHeap().linkReferences(externalReference,
-						(ReferenceSlot) argument);
+				detectMethodThatIsNotAnalyzedBug(reference);
+				frame.getHeap().publish(reference.getID());
+
 			}
 		}
 
-		// return evilReference if returnType reference is expected
+		Slot returnValue = Slot.getDefaultSlotInstance(obj
+				.getReturnType(constantPoolGen));
+
+		// return external reference if returnType reference is expected
 		if (returnValue instanceof ReferenceSlot)
-			returnValue = externalReference;
+			returnValue = new ReferenceSlot(frame.getHeap().getExternalID());
 
 		// works also for void results, because number of required slots = 0
 		frame.pushStackByRequiredSlots(returnValue);
@@ -1034,7 +1031,7 @@ public abstract class BaseInstructionsAnalysisVisitor extends EmptyVisitor {
 	 */
 	@Override
 	public void visitINVOKEINTERFACE(INVOKEINTERFACE obj) {
-		handleMethodThatIsNotAnalyzed(obj);
+		handleVirtualMethod(obj);
 	}
 
 	/**
@@ -1077,7 +1074,7 @@ public abstract class BaseInstructionsAnalysisVisitor extends EmptyVisitor {
 	 */
 	@Override
 	public void visitINVOKEVIRTUAL(INVOKEVIRTUAL obj) {
-		handleMethodThatIsNotAnalyzed(obj);
+		handleVirtualMethod(obj);
 	}
 
 	/**
