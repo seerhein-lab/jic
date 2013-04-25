@@ -821,11 +821,14 @@ public abstract class BaseInstructionsAnalysisVisitor extends EmptyVisitor {
 	public void visitANEWARRAY(ANEWARRAY obj) {
 		logger.log(Level.FINE, indentation + obj.toString(false));
 
-		// pops the length
+		// pop the length
 		frame.getStack().pop();
 
-		// pushes the array reference
-		frame.getStack().push(ReferenceSlot.getInternalInstance());
+		// push the array reference
+		UUID id = frame.getHeap().newHeapObject();
+		ReferenceSlot slot = new ReferenceSlot(id);
+
+		frame.getStack().push(slot);
 
 		instructionHandle = instructionHandle.getNext();
 		instructionHandle.accept(this);
@@ -1152,12 +1155,15 @@ public abstract class BaseInstructionsAnalysisVisitor extends EmptyVisitor {
 		logger.log(Level.FINEST, indentation + log);
 
 		for (int i = 0; i < obj.consumeStack(constantPoolGen); i++) {
-			// pop the 2nd dimension as integer value
+			// pop count values for each dimension
 			frame.getStack().pop();
 		}
 
 		// push array reference onto stack
-		frame.getStack().push(ReferenceSlot.getInternalInstance());
+		UUID id = frame.getHeap().newHeapObject();
+		ReferenceSlot slot = new ReferenceSlot(id);
+
+		frame.getStack().push(slot);
 
 		instructionHandle = instructionHandle.getNext();
 		instructionHandle.accept(this);
@@ -1427,7 +1433,10 @@ public abstract class BaseInstructionsAnalysisVisitor extends EmptyVisitor {
 		frame.getStack().pop();
 
 		// push reference to new array onto the stack
-		frame.getStack().push(ReferenceSlot.getInternalInstance());
+		UUID id = frame.getHeap().newHeapObject();
+		ReferenceSlot slot = new ReferenceSlot(id);
+
+		frame.getStack().push(slot);
 
 		instructionHandle = instructionHandle.getNext();
 		instructionHandle.accept(this);
