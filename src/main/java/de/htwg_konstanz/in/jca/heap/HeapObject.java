@@ -1,12 +1,15 @@
 package de.htwg_konstanz.in.jca.heap;
 
+import java.util.Collection;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 
 public class HeapObject {
 	private final UUID id;
-	private Set<UUID> refers = new HashSet<UUID>();
+	private Map<String, UUID> refers = new HashMap<String, UUID>();
 	private Set<UUID> referredBy = new HashSet<UUID>();
 
 	HeapObject() {
@@ -15,12 +18,12 @@ public class HeapObject {
 
 	public HeapObject(HeapObject original) {
 		id = original.id;
-		refers.addAll(original.refers);
+		refers.putAll(original.refers);
 		referredBy.addAll(original.referredBy);
 	}
 
-	Set<UUID> getReferredObjects() {
-		return refers;
+	Collection<UUID> getReferredObjects() {
+		return refers.values();
 	}
 
 	void addReferringObject(UUID id) {
@@ -28,8 +31,9 @@ public class HeapObject {
 	}
 
 	void replaceReferredObject(UUID oldID, UUID newID) {
-		refers.remove(oldID);
-		refers.add(newID);
+		for (String field : refers.keySet())
+			if (refers.get(field).equals(oldID))
+				refers.put(field, newID);
 	}
 
 	Set<UUID> getReferringObjects() {
