@@ -23,6 +23,15 @@ public class HeapObject {
 		return refers;
 	}
 
+	void addReferringObject(UUID id) {
+		referredBy.add(id);
+	}
+
+	void replaceReferredObject(UUID oldID, UUID newID) {
+		refers.remove(oldID);
+		refers.add(newID);
+	}
+
 	Set<UUID> getReferringObjects() {
 		return referredBy;
 	}

@@ -84,10 +84,8 @@ public class Heap {
 		HeapObject external = objects.get(externalID);
 
 		for (UUID referringObject : object.getReferringObjects()) {
-			get(referringObject).getReferredObjects().remove(id);
-			get(referringObject).getReferredObjects().add(externalID);
-
-			external.getReferringObjects().add(referringObject);
+			get(referringObject).replaceReferredObject(id, externalID);
+			external.addReferringObject(referringObject);
 		}
 
 		for (UUID referredObject : object.getReferredObjects()) {
