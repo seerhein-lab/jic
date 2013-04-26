@@ -13,7 +13,7 @@ public class Heap {
 
 	private final UUID thisID;
 	private final UUID externalID;
-	private final UUID nullID;
+	// private final UUID nullID;
 	private final UUID unknownID;
 
 	public Heap() {
@@ -25,13 +25,13 @@ public class Heap {
 		externalID = externalObject.getId();
 		objects.put(externalID, externalObject);
 
-		HeapObject nullObject = new HeapObject();
-		nullID = nullObject.getId();
-		objects.put(nullID, nullObject);
+		// HeapObject nullObject = new HeapObject();
+		// nullID = nullObject.getId();
+		// objects.put(nullID, nullObject);
 
 		HeapObject unknownObject = new HeapObject();
 		unknownID = unknownObject.getId();
-		objects.put(nullID, unknownObject);
+		objects.put(unknownID, unknownObject);
 	}
 
 	public Heap(Heap original) {
@@ -43,7 +43,7 @@ public class Heap {
 
 		thisID = original.thisID;
 		externalID = original.externalID;
-		nullID = original.nullID;
+		// nullID = original.nullID;
 		unknownID = original.unknownID;
 	}
 
@@ -66,9 +66,9 @@ public class Heap {
 		return externalID;
 	}
 
-	public UUID getNullID() {
-		return nullID;
-	}
+	// public UUID getNullID() {
+	// return nullID;
+	// }
 
 	public UUID newHeapObject() {
 		HeapObject object = new HeapObject();
