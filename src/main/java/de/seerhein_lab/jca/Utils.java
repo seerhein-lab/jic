@@ -1,4 +1,4 @@
-package de.htwg_konstanz.in.jca;
+package de.seerhein_lab.jca;
 
 import java.io.IOException;
 import java.util.logging.FileHandler;
@@ -8,8 +8,6 @@ import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import java.util.logging.StreamHandler;
-
-
 
 public class Utils {
 
@@ -50,5 +48,4 @@ public class Utils {
 		}
 
 	}
-
 }
