@@ -1,6 +1,7 @@
 package de.seerhein_lab.jca.analyzer.propConAnalyzer;
 
 import java.util.Set;
+import java.util.UUID;
 
 import org.apache.bcel.classfile.Method;
 import org.apache.bcel.generic.CodeExceptionGen;
@@ -12,6 +13,7 @@ import de.seerhein_lab.jca.Frame;
 import de.seerhein_lab.jca.analyzer.BaseInstructionsAnalysisVisitor;
 import de.seerhein_lab.jca.analyzer.BaseMethodAnalyzer;
 import de.seerhein_lab.jca.analyzer.BaseMethodAnalyzer.AlreadyVisitedMethod;
+import de.seerhein_lab.jca.heap.HeapObject;
 import de.seerhein_lab.jca.slot.ReferenceSlot;
 import edu.umd.cs.findbugs.annotations.Confidence;
 import edu.umd.cs.findbugs.ba.ClassContext;
@@ -65,52 +67,46 @@ public class PropConInstructionsAnalysisVisitor extends
 
 	@Override
 	protected void detectVirtualMethodBug(ReferenceSlot argument) {
-		if (argument.equals(ReferenceSlot.getThisReference())) {
+		if (argument.getID().equals(frame.getHeap().getThisID())) {
 			// this is passed to a method that can not be analyzed
-			addBug(Confidence.MEDIUM,
-					"this reference is passed to a method that can not be analyzed by static analyzis and might escape",
+			addBug(Confidence.HIGH,
+					"this reference is passed to a method that can not be analyzed by static analyzis and escapes",
 					instructionHandle);
 		}
-		if (argument.isRefersThis()) {
+		if (refersThis(frame.getHeap().get(argument.getID()))) {
 			// the reference contains this and it might be published
-			addBug(Confidence.MEDIUM,
+			addBug(Confidence.HIGH,
 					"a reference containing this is passed to a method that can not be analyzed by static analyzis and this might escape",
 					instructionHandle);
 		}
-		if (argument.isReferedByThis()
-				&& (!argument.isExternal() || !argument.isReferedByExternal())) {
-			// the reference belongs to this and was not externally known before
-			addBug(Confidence.MEDIUM,
-					"a reference referenced by this is passed to a method that can not be analyzed by static analyzis "
-							+ "and other objects may see an inconsistent state",
-					instructionHandle);
+	}
+
+	boolean refersThis(HeapObject obj) {
+		for (UUID refered : obj.getReferredObjects()) {
+			if (refered.equals(frame.getHeap().getThisID())) {
+				return true;
+			}
+			return refersThis(frame.getHeap().get(refered));
 		}
+		return false;
 	}
 
 	@Override
 	protected void detectAAStoreBug(ReferenceSlot arrayReference,
 			ReferenceSlot referenceToStore) {
-		if (arrayReference.isExternal() || arrayReference.isReferedByExternal()) {
+		if (arrayReference.getID().equals(frame.getHeap().getExternalID())) {
 			// the array is externally known
-			if (referenceToStore.equals(ReferenceSlot.getThisReference())) {
+			if (referenceToStore.equals(referenceToStore.getID().equals(
+					frame.getHeap().getThisID()))) {
 				// this is assigned to the array
 				addBug(Confidence.HIGH,
 						"this reference is assigned to an external array and escapes",
 						instructionHandle);
 			}
-			if (referenceToStore.isRefersThis()) {
+			if (refersThis(frame.getHeap().get(referenceToStore.getID()))) {
 				// a reference containing this is assigned to the array
 				addBug(Confidence.HIGH,
 						"a reference containing this is assigned to an external array and this escapes",
-						instructionHandle);
-			}
-			if (referenceToStore.isReferedByThis()
-					&& (!referenceToStore.isExternal() || !referenceToStore
-							.isReferedByExternal())) {
-				// the reference is contained by this and was not externally
-				// known before
-				addBug(Confidence.MEDIUM,
-						"a field of this object is published to an externally known array and other objects may see an inconsistent state",
 						instructionHandle);
 			}
 		}
@@ -119,29 +115,18 @@ public class PropConInstructionsAnalysisVisitor extends
 	@Override
 	protected void detectPutFieldBug(ReferenceSlot targetReference,
 			ReferenceSlot referenceToPut) {
-
-		if (targetReference.isExternal()
-				|| targetReference.isReferedByExternal()) {
+		if (targetReference.getID().equals(frame.getHeap().getExternalID())) {
 			// the left side of the assignment is externally known
-			if (referenceToPut.equals(ReferenceSlot.getThisReference())) {
+			if (referenceToPut.getID().equals(frame.getHeap().getThisID())) {
 				// this is on the right side
 				addBug(Confidence.HIGH,
 						"this reference is assigned to an external field and escapes",
 						instructionHandle);
 			}
-			if (referenceToPut.isRefersThis()) {
+			if (refersThis(frame.getHeap().get(referenceToPut.getID()))) {
 				// this is contained in the right side
 				addBug(Confidence.HIGH,
 						"a reference containing this is assigned to an external field and this escapes",
-						instructionHandle);
-			}
-			if (referenceToPut.isReferedByThis()
-					&& (!referenceToPut.isReferedByExternal() || !referenceToPut
-							.isExternal())) {
-				// the reference is contained by this and was not externally
-				// known before
-				addBug(Confidence.MEDIUM,
-						"a field of this object is published to an externally known field and other objects may see an inconsistent state",
 						instructionHandle);
 			}
 		}
@@ -149,26 +134,17 @@ public class PropConInstructionsAnalysisVisitor extends
 
 	@Override
 	protected void detectPutStaticBug(ReferenceSlot referenceToPut) {
-		if (referenceToPut.equals(ReferenceSlot.getThisReference())) {
+		if (referenceToPut.getID().equals(frame.getHeap().getThisID())) {
 			addBug(Confidence.HIGH,
 					"this reference is assigned to a static field and escapes",
 					instructionHandle);
 		}
-		if (!(referenceToPut.isExternal() || referenceToPut
-				.isReferedByExternal())) {
-			// the reference was not externally known before
-			if (referenceToPut.isRefersThis()) {
-				// the reference contains this
-				addBug(Confidence.HIGH,
-						"a reference containing this is assigned to a static field and this escapes",
-						instructionHandle);
-			}
-			if (referenceToPut.isReferedByThis()) {
-				// the reference is contained by this
-				addBug(Confidence.MEDIUM,
-						"a field of of this object is published via a static field and other objects may see an inconsistent state",
-						instructionHandle);
-			}
+		if (refersThis(frame.getHeap().get(referenceToPut.getID()))) {
+			// the reference contains this
+			addBug(Confidence.HIGH,
+					"a reference containing this is assigned to a static field and this escapes",
+					instructionHandle);
+
 		}
 	}
 

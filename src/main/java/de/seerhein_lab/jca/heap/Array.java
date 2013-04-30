@@ -23,7 +23,7 @@ public class Array extends HeapObject {
 	}
 
 	@Override
-	Collection<UUID> getReferredObjects() {
+	public Collection<UUID> getReferredObjects() {
 		return refers;
 	}
 

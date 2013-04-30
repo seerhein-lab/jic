@@ -30,7 +30,7 @@ public class ClassInstance extends HeapObject {
 	}
 
 	@Override
-	Collection<UUID> getReferredObjects() {
+	public Collection<UUID> getReferredObjects() {
 		return refers.values();
 	}
 

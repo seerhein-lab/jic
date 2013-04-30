@@ -22,7 +22,7 @@ public class HeapObject {
 		throw new AssertionError("Must not be called on a HeapObject instance");
 	}
 
-	Collection<UUID> getReferredObjects() {
+	public Collection<UUID> getReferredObjects() {
 		throw new AssertionError("Must not be called on a HeapObject instance");
 	}
 
