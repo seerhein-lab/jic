@@ -2,8 +2,7 @@ package de.seerhein_lab.jca;
 
 import org.apache.bcel.classfile.JavaClass;
 
-import de.htwg_konstanz.in.jca.analyzer.ClassAnalyzer;
-
+import de.seerhein_lab.jca.analyzer.ClassAnalyzer;
 import edu.umd.cs.findbugs.BugCollection;
 import edu.umd.cs.findbugs.BugInstance;
 import edu.umd.cs.findbugs.BugReporter;
