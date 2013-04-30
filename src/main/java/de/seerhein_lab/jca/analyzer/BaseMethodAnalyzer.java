@@ -13,9 +13,9 @@ import org.apache.bcel.generic.InstructionList;
 import org.apache.bcel.generic.MethodGen;
 import org.apache.bcel.generic.Type;
 
-import de.htwg_konstanz.in.jca.Utils;
 import de.seerhein_lab.jca.Frame;
 import de.seerhein_lab.jca.ResultValue;
+import de.seerhein_lab.jca.Utils;
 import de.seerhein_lab.jca.slot.Slot;
 import edu.umd.cs.findbugs.BugCollection;
 import edu.umd.cs.findbugs.ba.ClassContext;
