@@ -65,22 +65,6 @@ public class PropConInstructionsAnalysisVisitor extends
 	// Bug detection section //
 	// ******************************************************************//
 
-	@Override
-	protected void detectVirtualMethodBug(ReferenceSlot argument) {
-		if (argument.getID().equals(frame.getHeap().getThisID())) {
-			// this is passed to a method that can not be analyzed
-			addBug(Confidence.HIGH,
-					"this reference is passed to a method that can not be analyzed by static analyzis and escapes",
-					instructionHandle);
-		}
-		if (refersThis(frame.getHeap().get(argument.getID()))) {
-			// the reference contains this and it might be published
-			addBug(Confidence.HIGH,
-					"a reference containing this is passed to a method that can not be analyzed by static analyzis and this might escape",
-					instructionHandle);
-		}
-	}
-
 	boolean refersThis(HeapObject obj) {
 		for (UUID refered : obj.getReferredObjects()) {
 			if (refered.equals(frame.getHeap().getThisID())) {
@@ -89,6 +73,21 @@ public class PropConInstructionsAnalysisVisitor extends
 			return refersThis(frame.getHeap().get(refered));
 		}
 		return false;
+	}
+
+	@Override
+	protected void detectVirtualMethodBug(ReferenceSlot argument) {
+		if (argument.getID().equals(frame.getHeap().getThisID())) {
+			// this is passed to a method that can not be analyzed
+			addBug(Confidence.HIGH,
+					"this reference is passed to a method that can not be analyzed by static analyzis and escapes",
+					instructionHandle);
+		} else if (refersThis(frame.getHeap().get(argument.getID()))) {
+			// the reference contains this and it might be published
+			addBug(Confidence.HIGH,
+					"a reference containing this is passed to a method that can not be analyzed by static analyzis and this might escape",
+					instructionHandle);
+		}
 	}
 
 	@Override
@@ -102,8 +101,7 @@ public class PropConInstructionsAnalysisVisitor extends
 				addBug(Confidence.HIGH,
 						"this reference is assigned to an external array and escapes",
 						instructionHandle);
-			}
-			if (refersThis(frame.getHeap().get(referenceToStore.getID()))) {
+			} else if (refersThis(frame.getHeap().get(referenceToStore.getID()))) {
 				// a reference containing this is assigned to the array
 				addBug(Confidence.HIGH,
 						"a reference containing this is assigned to an external array and this escapes",
@@ -122,13 +120,13 @@ public class PropConInstructionsAnalysisVisitor extends
 				addBug(Confidence.HIGH,
 						"this reference is assigned to an external field and escapes",
 						instructionHandle);
-			}
-			if (refersThis(frame.getHeap().get(referenceToPut.getID()))) {
+			} else if (refersThis(frame.getHeap().get(referenceToPut.getID()))) {
 				// this is contained in the right side
 				addBug(Confidence.HIGH,
 						"a reference containing this is assigned to an external field and this escapes",
 						instructionHandle);
 			}
+
 		}
 	}
 
@@ -138,14 +136,11 @@ public class PropConInstructionsAnalysisVisitor extends
 			addBug(Confidence.HIGH,
 					"this reference is assigned to a static field and escapes",
 					instructionHandle);
-		}
-		if (refersThis(frame.getHeap().get(referenceToPut.getID()))) {
+		} else if (refersThis(frame.getHeap().get(referenceToPut.getID()))) {
 			// the reference contains this
 			addBug(Confidence.HIGH,
 					"a reference containing this is assigned to a static field and this escapes",
 					instructionHandle);
-
 		}
 	}
-
 }
