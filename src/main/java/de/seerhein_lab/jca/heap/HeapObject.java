@@ -5,7 +5,7 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
 
-public abstract class HeapObject {
+public class HeapObject {
 	protected final UUID id;
 	protected Set<UUID> referredBy = new HashSet<UUID>();
 
@@ -18,9 +18,13 @@ public abstract class HeapObject {
 		referredBy.addAll(original.referredBy);
 	}
 
-	abstract void replaceReferredObject(UUID oldID, UUID newID);
+	void replaceReferredObject(UUID oldID, UUID newID) {
+		throw new AssertionError("Must not be called on a HeapObject instance");
+	}
 
-	abstract Collection<UUID> getReferredObjects();
+	Collection<UUID> getReferredObjects() {
+		throw new AssertionError("Must not be called on a HeapObject instance");
+	}
 
 	void addReferringObject(UUID id) {
 		referredBy.add(id);
@@ -37,6 +41,8 @@ public abstract class HeapObject {
 		return id;
 	}
 
-	abstract HeapObject copy();
+	HeapObject copy() {
+		return this;
+	}
 
 }

@@ -21,7 +21,7 @@ public class Heap {
 		thisID = thisObject.getId();
 		objects.put(thisID, thisObject);
 
-		HeapObject externalObject = new ClassInstance();
+		HeapObject externalObject = new HeapObject();
 		externalID = externalObject.getId();
 		objects.put(externalID, externalObject);
 
