@@ -182,14 +182,13 @@ public abstract class BaseInstructionsAnalysisVisitor extends EmptyVisitor {
 			MethodGen targetMethodGen);
 
 	// methods for bug detection
-	protected abstract void detectVirtualMethodBug(
-			ReferenceSlot argument);
+	protected abstract void detectVirtualMethodBug(ReferenceSlot argument);
 
-	protected abstract void detectAAStoreBug(ReferenceSlot arrayReference,
-			ReferenceSlot referenceToStore);
+	protected abstract void detectAStoreBug(ReferenceSlot arrayReference,
+			Slot valueToStore);
 
 	protected abstract void detectPutFieldBug(ReferenceSlot targetReference,
-			ReferenceSlot referenceToPut);
+			Slot valueToPut);
 
 	protected abstract void detectPutStaticBug(ReferenceSlot referenceToPut);
 
@@ -557,19 +556,20 @@ public abstract class BaseInstructionsAnalysisVisitor extends EmptyVisitor {
 				arrayReference = (ReferenceSlot) frame.getStack().pop();
 				// XXX TO Check
 
-				detectAAStoreBug(arrayReference, refToStore);
+				detectAStoreBug(arrayReference, refToStore);
 
 				// link reference to array
 				arrayReference.linkReferences(refToStore);
 			} else {
-				// all other ASTORE instructions, we do not care
+				// all other ASTORE instructions
 
 				// pop value
-				frame.popStackByRequiredSlots();
+				Slot value = frame.popStackByRequiredSlots();
 				// pop array index
 				frame.getStack().pop();
 				// pop array reference
-				frame.getStack().pop();
+				ReferenceSlot array = (ReferenceSlot) frame.getStack().pop();
+				detectAStoreBug(array, value);
 			}
 		}
 		instructionHandle = instructionHandle.getNext();
@@ -958,10 +958,10 @@ public abstract class BaseInstructionsAnalysisVisitor extends EmptyVisitor {
 
 		// pop left side of assignment off the stack, too
 		ReferenceSlot field = (ReferenceSlot) frame.getStack().pop();
+		detectPutFieldBug(field, valueToPut);
 		if (valueToPut instanceof ReferenceSlot) {
 			ReferenceSlot refToPut = (ReferenceSlot) valueToPut;
 
-			detectPutFieldBug(field, refToPut);
 			// TODO set refersField, referedByField??
 
 			// link them together

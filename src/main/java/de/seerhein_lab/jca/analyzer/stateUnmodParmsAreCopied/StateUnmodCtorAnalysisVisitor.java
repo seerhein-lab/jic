@@ -15,6 +15,7 @@ import de.seerhein_lab.jca.analyzer.BaseMethodAnalyzer;
 import de.seerhein_lab.jca.analyzer.BaseMethodAnalyzer.AlreadyVisitedMethod;
 import de.seerhein_lab.jca.heap.HeapObject;
 import de.seerhein_lab.jca.slot.ReferenceSlot;
+import de.seerhein_lab.jca.slot.Slot;
 import edu.umd.cs.findbugs.annotations.Confidence;
 import edu.umd.cs.findbugs.ba.ClassContext;
 
@@ -71,7 +72,7 @@ public class StateUnmodCtorAnalysisVisitor extends
 			if (referring.equals(frame.getHeap().getThisID())) {
 				return true;
 			}
-			return refersExternal(frame.getHeap().get(referring));
+			return referredByThis(frame.getHeap().get(referring));
 		}
 		return false;
 	}
@@ -98,8 +99,14 @@ public class StateUnmodCtorAnalysisVisitor extends
 	}
 
 	@Override
-	protected void detectAAStoreBug(ReferenceSlot arrayReference,
-			ReferenceSlot referenceToStore) {
+	protected void detectAStoreBug(ReferenceSlot arrayReference,
+			Slot valueToStore) {
+		if (!(valueToStore instanceof ReferenceSlot)) {
+			// if the value is not a reference we do not analyze
+			return;
+		}
+
+		ReferenceSlot referenceToStore = (ReferenceSlot) valueToStore;
 		if (referredByThis(frame.getHeap().get(arrayReference.getID()))) {
 			// array is referred by this
 			if (referenceToStore.getID()
@@ -121,7 +128,13 @@ public class StateUnmodCtorAnalysisVisitor extends
 
 	@Override
 	protected void detectPutFieldBug(ReferenceSlot targetReference,
-			ReferenceSlot referenceToPut) {
+			Slot valueToPut) {
+		if (!(valueToPut instanceof ReferenceSlot)) {
+			// if the value is not a reference we do not analyze
+			return;
+		}
+
+		ReferenceSlot referenceToPut = (ReferenceSlot) valueToPut;
 		if (targetReference.getID().equals(frame.getHeap().getThisID())) {
 			// left side is this
 			if (referenceToPut.getID().equals(frame.getHeap().getExternalID())) {
