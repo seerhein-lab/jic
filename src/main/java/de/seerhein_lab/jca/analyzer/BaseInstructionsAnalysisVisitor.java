@@ -544,32 +544,19 @@ public abstract class BaseInstructionsAnalysisVisitor extends EmptyVisitor {
 			}
 		} else {
 			// all ASTORE instructions
+
+			// pop value
+			Slot value = frame.popStackByRequiredSlots();
+			// pop array index
+			frame.getStack().pop();
+			// pop array reference
+			arrayReference = (ReferenceSlot) frame.getStack().pop();
+			detectAStoreBug(arrayReference, value);
+
 			if (opcode == 0x53) {
-				// AASTORE, something can happen to the reference
-
-				// pop value
-				ReferenceSlot refToStore = (ReferenceSlot) frame
-						.popStackByRequiredSlots();
-				// pop array index
-				frame.getStack().pop();
-				// pop array reference
-				arrayReference = (ReferenceSlot) frame.getStack().pop();
-				// XXX TO Check
-
-				detectAStoreBug(arrayReference, refToStore);
-
-				// link reference to array
-				arrayReference.linkReferences(refToStore);
-			} else {
-				// all other ASTORE instructions
-
-				// pop value
-				Slot value = frame.popStackByRequiredSlots();
-				// pop array index
-				frame.getStack().pop();
-				// pop array reference
-				ReferenceSlot array = (ReferenceSlot) frame.getStack().pop();
-				detectAStoreBug(array, value);
+				// AASTORE, link reference to array
+				frame.getHeap().linkObjects(arrayReference.getID(), null,
+						((ReferenceSlot) value).getID());
 			}
 		}
 		instructionHandle = instructionHandle.getNext();

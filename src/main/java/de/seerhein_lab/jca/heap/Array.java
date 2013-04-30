@@ -33,4 +33,8 @@ public class Array extends HeapObject {
 		refers.add(newID);
 	}
 
+	void addReferredObject(UUID id) {
+		refers.add(id);
+	}
+
 }

@@ -24,6 +24,14 @@ public class ClassInstance extends HeapObject {
 				refers.put(field, newID);
 	}
 
+	void addReferredObject(Heap heap, String field, UUID id) {
+		if (refers.containsKey(field)) {
+			// remove the old assignment
+			heap.get(refers.get(field)).referredBy.remove(id);
+		}
+		refers.put(field, id);
+	}
+
 	@Override
 	HeapObject copy() {
 		return new ClassInstance(this);

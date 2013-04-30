@@ -99,4 +99,15 @@ public class Heap {
 			publish(referredObject);
 		}
 	}
+
+	public void linkObjects(UUID left, String field, UUID right) {
+		get(right).addReferringObject(left);
+
+		HeapObject leftSide = get(left);
+		if (leftSide instanceof Array) {
+			((Array) leftSide).addReferredObject(right);
+		} else if (leftSide instanceof ClassInstance) {
+			((ClassInstance) leftSide).addReferredObject(this, field, right);
+		}
+	}
 }
