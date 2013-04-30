@@ -59,7 +59,7 @@ public class StateUnmodRefPublishedAnalysisVisitor extends
 	}
 
 	@Override
-	protected void detectMethodThatIsNotAnalyzedBug(ReferenceSlot argument) {
+	protected void detectVirtualMethodBug(ReferenceSlot argument) {
 		// TODO Auto-generated method stub
 
 	}

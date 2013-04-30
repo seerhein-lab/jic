@@ -76,11 +76,10 @@ import org.apache.bcel.generic.Select;
 import org.apache.bcel.generic.StoreInstruction;
 import org.apache.bcel.generic.Type;
 
-import de.htwg_konstanz.in.jca.Utils;
-import de.htwg_konstanz.in.jca.analyzer.ClassAnalyzer;
 import de.seerhein_lab.jca.Frame;
 import de.seerhein_lab.jca.ResultValue;
 import de.seerhein_lab.jca.ResultValue.Kind;
+import de.seerhein_lab.jca.Utils;
 import de.seerhein_lab.jca.analyzer.BaseMethodAnalyzer.AlreadyVisitedMethod;
 import de.seerhein_lab.jca.slot.DoubleSlot;
 import de.seerhein_lab.jca.slot.IntSlot;
@@ -183,7 +182,7 @@ public abstract class BaseInstructionsAnalysisVisitor extends EmptyVisitor {
 			MethodGen targetMethodGen);
 
 	// methods for bug detection
-	protected abstract void detectMethodThatIsNotAnalyzedBug(
+	protected abstract void detectVirtualMethodBug(
 			ReferenceSlot argument);
 
 	protected abstract void detectAAStoreBug(ReferenceSlot arrayReference,
@@ -375,7 +374,7 @@ public abstract class BaseInstructionsAnalysisVisitor extends EmptyVisitor {
 			if (argument instanceof ReferenceSlot) {
 				ReferenceSlot reference = (ReferenceSlot) argument;
 				// check for bugs
-				detectMethodThatIsNotAnalyzedBug(reference);
+				detectVirtualMethodBug(reference);
 				frame.getHeap().publish(reference.getID());
 
 			}
@@ -1179,7 +1178,7 @@ public abstract class BaseInstructionsAnalysisVisitor extends EmptyVisitor {
 	public void visitNEW(NEW obj) {
 		logger.log(Level.FINE, indentation + obj.toString(false));
 
-		UUID id = frame.getHeap().newHeapObject();
+		UUID id = frame.getHeap().newClassInstance();
 		ReferenceSlot slot = new ReferenceSlot(id);
 
 		frame.getStack().push(slot);
@@ -1432,7 +1431,7 @@ public abstract class BaseInstructionsAnalysisVisitor extends EmptyVisitor {
 		frame.getStack().pop();
 
 		// push reference to new array onto the stack
-		UUID id = frame.getHeap().newHeapObject();
+		UUID id = frame.getHeap().newArray();
 		ReferenceSlot slot = new ReferenceSlot(id);
 
 		frame.getStack().push(slot);

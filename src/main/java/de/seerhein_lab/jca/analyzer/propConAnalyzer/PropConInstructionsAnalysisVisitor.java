@@ -64,7 +64,7 @@ public class PropConInstructionsAnalysisVisitor extends
 	// ******************************************************************//
 
 	@Override
-	protected void detectMethodThatIsNotAnalyzedBug(ReferenceSlot argument) {
+	protected void detectVirtualMethodBug(ReferenceSlot argument) {
 		if (argument.equals(ReferenceSlot.getThisReference())) {
 			// this is passed to a method that can not be analyzed
 			addBug(Confidence.MEDIUM,
