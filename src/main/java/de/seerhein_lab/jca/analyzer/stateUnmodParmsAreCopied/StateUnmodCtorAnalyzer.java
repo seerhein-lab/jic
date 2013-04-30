@@ -1,6 +1,6 @@
 package de.seerhein_lab.jca.analyzer.stateUnmodParmsAreCopied;
 
-import java.util.ArrayList;
+import java.util.Set;
 
 import org.apache.bcel.generic.ConstantPoolGen;
 import org.apache.bcel.generic.InstructionHandle;
@@ -19,7 +19,7 @@ public class StateUnmodCtorAnalyzer extends BaseMethodAnalyzer {
 
 	public StateUnmodCtorAnalyzer(ClassContext classContext,
 			MethodGen methodGen,
-			ArrayList<AlreadyVisitedMethod> alreadyVisitedMethods, int depth) {
+			Set<AlreadyVisitedMethod> alreadyVisitedMethods, int depth) {
 		super(classContext, methodGen, alreadyVisitedMethods, depth);
 	}
 

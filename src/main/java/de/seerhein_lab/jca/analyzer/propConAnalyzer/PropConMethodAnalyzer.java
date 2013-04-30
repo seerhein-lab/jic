@@ -1,6 +1,6 @@
 package de.seerhein_lab.jca.analyzer.propConAnalyzer;
 
-import java.util.ArrayList;
+import java.util.Set;
 import java.util.Stack;
 
 import org.apache.bcel.generic.ConstantPoolGen;
@@ -24,7 +24,7 @@ public class PropConMethodAnalyzer extends BaseMethodAnalyzer {
 
 	public PropConMethodAnalyzer(ClassContext classContext,
 			MethodGen methodGen,
-			ArrayList<AlreadyVisitedMethod> alreadyVisitedMethods, int depth) {
+			Set<AlreadyVisitedMethod> alreadyVisitedMethods, int depth) {
 		super(classContext, methodGen, alreadyVisitedMethods, depth);
 	}
 

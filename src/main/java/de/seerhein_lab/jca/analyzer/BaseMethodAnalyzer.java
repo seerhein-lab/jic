@@ -1,7 +1,7 @@
 package de.seerhein_lab.jca.analyzer;
 
-import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -27,7 +27,7 @@ public abstract class BaseMethodAnalyzer {
 	protected static final Logger logger = Logger
 			.getLogger("BaseMethodAnalyzer");
 	protected final ClassContext classContext;
-	protected final ArrayList<AlreadyVisitedMethod> alreadyVisitedMethods;
+	protected final Set<AlreadyVisitedMethod> alreadyVisitedMethods;
 	protected final int depth;
 	protected final String indentation;
 
@@ -86,11 +86,11 @@ public abstract class BaseMethodAnalyzer {
 	 * 
 	 */
 	public BaseMethodAnalyzer(ClassContext classContext, MethodGen methodGen) {
-		this(classContext, methodGen, new ArrayList<AlreadyVisitedMethod>(), -1);
+		this(classContext, methodGen, new HashSet<AlreadyVisitedMethod>(), -1);
 	}
 
 	public BaseMethodAnalyzer(ClassContext classContext, MethodGen methodGen,
-			ArrayList<AlreadyVisitedMethod> alreadyVisitedMethods, int depth) {
+			Set<AlreadyVisitedMethod> alreadyVisitedMethods, int depth) {
 		this.classContext = classContext;
 		this.method = methodGen.getMethod();
 		// this.exceptionHandlers = new ExceptionHandlers(methodGen);

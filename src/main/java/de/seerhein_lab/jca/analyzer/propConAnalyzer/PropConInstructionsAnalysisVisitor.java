@@ -1,6 +1,6 @@
 package de.seerhein_lab.jca.analyzer.propConAnalyzer;
 
-import java.util.ArrayList;
+import java.util.Set;
 
 import org.apache.bcel.classfile.Method;
 import org.apache.bcel.generic.CodeExceptionGen;
@@ -21,8 +21,8 @@ public class PropConInstructionsAnalysisVisitor extends
 
 	protected PropConInstructionsAnalysisVisitor(ClassContext classContext,
 			Method method, Frame frame, ConstantPoolGen constantPoolGen,
-			ArrayList<AlreadyVisitedIfInstruction> alreadyVisited,
-			ArrayList<AlreadyVisitedMethod> alreadyVisitedMethods,
+			Set<AlreadyVisitedIfInstruction> alreadyVisited,
+			Set<AlreadyVisitedMethod> alreadyVisitedMethods,
 			InstructionHandle instructionHandle,
 			CodeExceptionGen[] exceptionHandlers, int depth) {
 		super(classContext, method, frame, constantPoolGen, alreadyVisited,
@@ -34,14 +34,14 @@ public class PropConInstructionsAnalysisVisitor extends
 			Method method, Frame frame, ConstantPoolGen constantPoolGen,
 			InstructionHandle instructionHandle,
 			CodeExceptionGen[] exceptionHandlers,
-			ArrayList<AlreadyVisitedMethod> alreadyVisitedMethods, int depth) {
+			Set<AlreadyVisitedMethod> alreadyVisitedMethods, int depth) {
 		super(classContext, method, frame, constantPoolGen, instructionHandle,
 				exceptionHandlers, alreadyVisitedMethods, depth);
 	}
 
 	@Override
 	protected BaseInstructionsAnalysisVisitor getInstructionsAnalysisVisitor(
-			Frame frame, ArrayList<AlreadyVisitedIfInstruction> alreadyVisited,
+			Frame frame, Set<AlreadyVisitedIfInstruction> alreadyVisited,
 			InstructionHandle instructionHandle) {
 		return new PropConInstructionsAnalysisVisitor(classContext, method,
 				frame, constantPoolGen, alreadyVisited, alreadyVisitedMethods,

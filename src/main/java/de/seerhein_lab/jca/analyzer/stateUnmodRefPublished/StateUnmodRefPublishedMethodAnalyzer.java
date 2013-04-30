@@ -1,6 +1,6 @@
 package de.seerhein_lab.jca.analyzer.stateUnmodRefPublished;
 
-import java.util.ArrayList;
+import java.util.Set;
 
 import org.apache.bcel.generic.ConstantPoolGen;
 import org.apache.bcel.generic.InstructionHandle;
@@ -20,7 +20,7 @@ public class StateUnmodRefPublishedMethodAnalyzer extends BaseMethodAnalyzer {
 
 	public StateUnmodRefPublishedMethodAnalyzer(ClassContext classContext,
 			MethodGen methodGen,
-			ArrayList<AlreadyVisitedMethod> alreadyVisitedMethods, int depth) {
+			Set<AlreadyVisitedMethod> alreadyVisitedMethods, int depth) {
 		super(classContext, methodGen, alreadyVisitedMethods, depth);
 	}
 
