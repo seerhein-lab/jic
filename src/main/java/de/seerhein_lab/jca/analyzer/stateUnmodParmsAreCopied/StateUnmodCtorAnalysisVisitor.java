@@ -1,6 +1,7 @@
 package de.seerhein_lab.jca.analyzer.stateUnmodParmsAreCopied;
 
 import java.util.Set;
+import java.util.UUID;
 
 import org.apache.bcel.classfile.Method;
 import org.apache.bcel.generic.CodeExceptionGen;
@@ -12,7 +13,9 @@ import de.seerhein_lab.jca.Frame;
 import de.seerhein_lab.jca.analyzer.BaseInstructionsAnalysisVisitor;
 import de.seerhein_lab.jca.analyzer.BaseMethodAnalyzer;
 import de.seerhein_lab.jca.analyzer.BaseMethodAnalyzer.AlreadyVisitedMethod;
+import de.seerhein_lab.jca.heap.HeapObject;
 import de.seerhein_lab.jca.slot.ReferenceSlot;
+import edu.umd.cs.findbugs.annotations.Confidence;
 import edu.umd.cs.findbugs.ba.ClassContext;
 
 public class StateUnmodCtorAnalysisVisitor extends
@@ -55,33 +58,118 @@ public class StateUnmodCtorAnalysisVisitor extends
 
 	@Override
 	protected String getBugType() {
+		// TODO
 		return "to be defined";
+	}
+
+	// ******************************************************************//
+	// Bug detection section //
+	// ******************************************************************//
+
+	boolean referredByThis(HeapObject obj) {
+		for (UUID referring : obj.getReferringObjects()) {
+			if (referring.equals(frame.getHeap().getThisID())) {
+				return true;
+			}
+			return refersExternal(frame.getHeap().get(referring));
+		}
+		return false;
+	}
+
+	boolean refersExternal(HeapObject obj) {
+		for (UUID refered : obj.getReferredObjects()) {
+			if (refered.equals(frame.getHeap().getExternalID())) {
+				return true;
+			}
+			return refersExternal(frame.getHeap().get(refered));
+		}
+		return false;
 	}
 
 	@Override
 	protected void detectVirtualMethodBug(ReferenceSlot argument) {
-		// TODO Auto-generated method stub
-
+		if (referredByThis(frame.getHeap().get(argument.getID()))) {
+			// an object referred by this is passed to a method that can not be
+			// analyzed
+			addBug(Confidence.HIGH,
+					"this reference is passed to a method that can not be analyzed by static analyzis and escapes",
+					instructionHandle);
+		}
 	}
 
 	@Override
 	protected void detectAAStoreBug(ReferenceSlot arrayReference,
 			ReferenceSlot referenceToStore) {
-		// TODO Auto-generated method stub
-
+		if (referredByThis(frame.getHeap().get(arrayReference.getID()))) {
+			// array is referred by this
+			if (referenceToStore.getID()
+					.equals(frame.getHeap().getExternalID())) {
+				// external reference is assigned to an array referred by this
+				addBug(Confidence.HIGH,
+						"an external reference is assigned to an array referred by this",
+						instructionHandle);
+			} else if (refersExternal(frame.getHeap().get(
+					referenceToStore.getID()))) {
+				// a reference containing an external reference is assigned to
+				// an array referred by this
+				addBug(Confidence.HIGH,
+						"a reference containing an external reference is assigned to an array referred by this",
+						instructionHandle);
+			}
+		}
 	}
 
 	@Override
 	protected void detectPutFieldBug(ReferenceSlot targetReference,
 			ReferenceSlot referenceToPut) {
-		// TODO Auto-generated method stub
-
+		if (targetReference.getID().equals(frame.getHeap().getThisID())) {
+			// left side is this
+			if (referenceToPut.getID().equals(frame.getHeap().getExternalID())) {
+				// right is external
+				addBug(Confidence.HIGH,
+						"an external object is assigned to this",
+						instructionHandle);
+			} else if (refersExternal(frame.getHeap().get(
+					referenceToPut.getID()))) {
+				// right refers external
+				addBug(Confidence.HIGH,
+						"an object containing an external reference is assigned to this",
+						instructionHandle);
+			}
+		}
+		if (referredByThis(frame.getHeap().get(targetReference.getID()))) {
+			// left is referred by this
+			if (referenceToPut.getID().equals(frame.getHeap().getExternalID())) {
+				// right is external
+				addBug(Confidence.HIGH,
+						"an external reference is assigned to an object referred by this",
+						instructionHandle);
+			} else if (refersExternal(frame.getHeap().get(
+					referenceToPut.getID()))) {
+				// right refers external
+				addBug(Confidence.HIGH,
+						"a reference containing an external reference is assigned to an object referred by this",
+						instructionHandle);
+			}
+		}
 	}
 
 	@Override
 	protected void detectPutStaticBug(ReferenceSlot referenceToPut) {
-		// TODO Auto-generated method stub
+		// XXX this assigned to a static field?? Only starting class?!?
+		if (referenceToPut.getID().equals(frame.getHeap().getThisID())) {
+			// this is published
+			addBug(Confidence.HIGH,
+					"this is published by assignment to a static field",
+					instructionHandle);
+		}
 
+		if (referredByThis(frame.getHeap().get(referenceToPut.getID()))) {
+			// a field referred by this is published
+			addBug(Confidence.HIGH,
+					"an object referred by this is published by assignment to a static field",
+					instructionHandle);
+		}
 	}
 
 }

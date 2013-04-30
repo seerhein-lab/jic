@@ -1,14 +1,19 @@
 package de.seerhein_lab.jca.analyzer.stateUnmodParmsAreCopied;
 
 import java.util.Set;
+import java.util.Stack;
 
 import org.apache.bcel.generic.ConstantPoolGen;
 import org.apache.bcel.generic.InstructionHandle;
 import org.apache.bcel.generic.MethodGen;
+import org.apache.bcel.generic.Type;
 
 import de.seerhein_lab.jca.Frame;
 import de.seerhein_lab.jca.analyzer.BaseInstructionsAnalysisVisitor;
 import de.seerhein_lab.jca.analyzer.BaseMethodAnalyzer;
+import de.seerhein_lab.jca.heap.Heap;
+import de.seerhein_lab.jca.slot.ReferenceSlot;
+import de.seerhein_lab.jca.slot.Slot;
 import edu.umd.cs.findbugs.ba.ClassContext;
 
 public class StateUnmodCtorAnalyzer extends BaseMethodAnalyzer {
@@ -32,23 +37,30 @@ public class StateUnmodCtorAnalyzer extends BaseMethodAnalyzer {
 	}
 
 	public void analyze() {
-		System.err.println("analyze not implemented yet!");
-		// TODO remove comment add specific "external" marker to all external
-		// references
-		// Stack<SlotOld> callerStack = new Stack<SlotOld>();
-		//
-		// // push this + args onto the stack
-		// callerStack.push(SlotOld.thisReference);
-		//
-		// Type[] argTypes = method.getArgumentTypes();
-		//
-		// for (Type argType : argTypes) {
-		// DataType dataType = DataType.getDataType(argType);
-		// for (int i = 0; i < dataType.getNumSlots(); i++) {
-		// callerStack.push(SlotOld.getDefaultInstance(dataType));
-		// }
-		//
-		// }
-		// analyze(callerStack);
+		Stack<Slot> callerStack = new Stack<Slot>();
+		Heap callerHeap = new Heap();
+
+		ReferenceSlot thisReference = new ReferenceSlot(callerHeap.getThisID());
+		ReferenceSlot externalReference = new ReferenceSlot(
+				callerHeap.getExternalID());
+
+		// push this + args onto the stack
+		callerStack.push(thisReference);
+
+		Type[] argTypes = method.getArgumentTypes();
+
+		for (Type argType : argTypes) {
+			Slot argument = Slot.getDefaultSlotInstance(argType);
+			if (argument instanceof ReferenceSlot) {
+				argument = externalReference;
+			}
+			for (int i = 0; i < argument.getNumSlots(); i++) {
+				callerStack.push(argument);
+			}
+		}
+
+		Frame callerFrame = new Frame(0, callerStack, 0, callerHeap);
+
+		analyze(callerFrame);
 	}
 }

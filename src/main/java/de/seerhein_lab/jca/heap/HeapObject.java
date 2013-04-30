@@ -30,7 +30,7 @@ public class HeapObject {
 		referredBy.add(id);
 	}
 
-	Set<UUID> getReferringObjects() {
+	public Set<UUID> getReferringObjects() {
 		return referredBy;
 	}
 
