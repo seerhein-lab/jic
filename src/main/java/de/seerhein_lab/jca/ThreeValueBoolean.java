@@ -1,4 +1,4 @@
-package de.htwg_konstanz.in.jca;
+package de.seerhein_lab.jca;
 
 public enum ThreeValueBoolean {
 	yes, no, unknown;

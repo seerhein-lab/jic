@@ -7,17 +7,17 @@ import org.apache.bcel.generic.INSTANCEOF;
 import org.apache.bcel.generic.Type;
 import org.junit.Test;
 
-import de.htwg_konstanz.in.jca.slot.BooleanSlot;
-import de.htwg_konstanz.in.jca.slot.ByteSlot;
-import de.htwg_konstanz.in.jca.slot.CharSlot;
-import de.htwg_konstanz.in.jca.slot.DoubleSlot;
-import de.htwg_konstanz.in.jca.slot.FloatSlot;
-import de.htwg_konstanz.in.jca.slot.IntSlot;
-import de.htwg_konstanz.in.jca.slot.LongSlot;
-import de.htwg_konstanz.in.jca.slot.ReferenceSlot;
-import de.htwg_konstanz.in.jca.slot.ShortSlot;
-import de.htwg_konstanz.in.jca.slot.Slot;
-import de.htwg_konstanz.in.jca.slot.VoidSlot;
+import de.seerhein_lab.jca.slot.BooleanSlot;
+import de.seerhein_lab.jca.slot.ByteSlot;
+import de.seerhein_lab.jca.slot.CharSlot;
+import de.seerhein_lab.jca.slot.DoubleSlot;
+import de.seerhein_lab.jca.slot.FloatSlot;
+import de.seerhein_lab.jca.slot.IntSlot;
+import de.seerhein_lab.jca.slot.LongSlot;
+import de.seerhein_lab.jca.slot.ReferenceSlot;
+import de.seerhein_lab.jca.slot.ShortSlot;
+import de.seerhein_lab.jca.slot.Slot;
+import de.seerhein_lab.jca.slot.VoidSlot;
 
 public class UtilsTest {
 

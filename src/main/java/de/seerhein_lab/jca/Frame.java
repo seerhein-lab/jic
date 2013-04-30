@@ -1,9 +1,9 @@
-package de.htwg_konstanz.in.jca;
+package de.seerhein_lab.jca;
 
 import java.util.Stack;
 
-import de.htwg_konstanz.in.jca.heap.Heap;
-import de.htwg_konstanz.in.jca.slot.Slot;
+import de.seerhein_lab.jca.heap.Heap;
+import de.seerhein_lab.jca.slot.Slot;
 
 /**
  * Class representing a method frame. Contains LocalVars and a method stack.

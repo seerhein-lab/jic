@@ -1,6 +1,6 @@
-package de.htwg_konstanz.in.jca;
+package de.seerhein_lab.jca;
 
-import de.htwg_konstanz.in.jca.slot.Slot;
+import de.seerhein_lab.jca.slot.Slot;
 
 /**
  * This class is used for the return values of called methods or results of

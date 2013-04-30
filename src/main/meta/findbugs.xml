@@ -1,9 +1,9 @@
 <FindbugsPlugin xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
         xsi:noNamespaceSchemaLocation="findbugsplugin.xsd" 
-        pluginid="de.htwg_konstanz.in.jca.ProperConstructionDetector"
+        pluginid="de.seerhein_lab.jca.ProperConstructionDetector"
         provider="Seerheinlab" 
         website="http://findbugs.sourceforge.net">
 
-        <Detector class="de.htwg_konstanz.in.jca.ProperConstructionDetector" reports="PROPER_CONSTRUCTION_BUG" />
+        <Detector class="de.seerhein_lab.jca.ProperConstructionDetector" reports="PROPER_CONSTRUCTION_BUG" />
         <BugPattern type="PROPER_CONSTRUCTION_BUG" abbrev="PC" category="MT_CORRECTNESS"/>
 </FindbugsPlugin>

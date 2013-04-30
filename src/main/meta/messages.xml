@@ -8,7 +8,7 @@
                 	escape during construction.</Details>
         </Plugin>
 
-        <Detector class="de.htwg_konstanz.in.jca.ProperConstructionDetector">
+        <Detector class="de.seerhein_lab.jca.ProperConstructionDetector">
                 <Details>
                         Starts proper construction check for class under inspection.
                 </Details>
