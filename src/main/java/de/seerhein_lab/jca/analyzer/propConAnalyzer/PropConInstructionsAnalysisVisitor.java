@@ -66,16 +66,6 @@ public class PropConInstructionsAnalysisVisitor extends
 	// Bug detection section //
 	// ******************************************************************//
 
-	boolean refersThis(HeapObject obj) {
-		for (UUID refered : obj.getReferredObjects()) {
-			if (refered.equals(frame.getHeap().getThisID())) {
-				return true;
-			}
-			return refersThis(frame.getHeap().get(refered));
-		}
-		return false;
-	}
-
 	@Override
 	protected void detectVirtualMethodBug(ReferenceSlot argument) {
 		if (argument.getID().equals(frame.getHeap().getThisID())) {
@@ -89,6 +79,16 @@ public class PropConInstructionsAnalysisVisitor extends
 					"a reference that refers to 'this' is passed into a virtual method letting 'this' escape",
 					instructionHandle);
 		}
+	}
+
+	boolean refersThis(HeapObject obj) {
+		for (UUID referred : obj.getReferredObjects()) {
+			if (referred.equals(frame.getHeap().getThisID())
+					|| refersThis(frame.getHeap().get(referred))) {
+				return true;
+			}
+		}
+		return false;
 	}
 
 	@Override
