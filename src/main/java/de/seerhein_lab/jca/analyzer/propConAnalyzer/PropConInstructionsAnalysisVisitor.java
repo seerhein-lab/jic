@@ -79,14 +79,14 @@ public class PropConInstructionsAnalysisVisitor extends
 	@Override
 	protected void detectVirtualMethodBug(ReferenceSlot argument) {
 		if (argument.getID().equals(frame.getHeap().getThisID())) {
-			// this is passed to a method that can not be analyzed
+			// 'this' is passed into a virtual method
 			addBug(Confidence.HIGH,
-					"this reference is passed to a method that can not be analyzed by static analyzis and escapes",
+					"this reference is passed into a virtual method and escapes",
 					instructionHandle);
 		} else if (refersThis(frame.getHeap().get(argument.getID()))) {
-			// the reference contains this and it might be published
+			// argument that refers to 'this' is passed into a virtual method
 			addBug(Confidence.HIGH,
-					"a reference containing this is passed to a method that can not be analyzed by static analyzis and this might escape",
+					"a reference that refers to 'this' is passed into a virtual method letting 'this' escape",
 					instructionHandle);
 		}
 	}
