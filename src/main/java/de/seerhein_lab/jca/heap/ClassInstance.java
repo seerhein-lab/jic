@@ -2,6 +2,7 @@ package de.seerhein_lab.jca.heap;
 
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.UUID;
 
@@ -42,4 +43,44 @@ public class ClassInstance extends HeapObject {
 		return refers.values();
 	}
 
+	@Override
+	boolean refers(UUID toSearch, Heap heap,
+			HashSet<AlreadyVisited> alreadyVisited) {
+		for (UUID field : refers.values()) {
+			if (alreadyVisited.add(new AlreadyVisited(this, heap.get(field)))) {
+				// if was not visited before
+				if (field.equals(toSearch)
+						|| heap.get(field).refers(toSearch, heap,
+								alreadyVisited)) {
+					return true;
+				}
+			}
+		}
+		return false;
+	}
+
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = super.hashCode();
+		result = prime * result + ((refers == null) ? 0 : refers.hashCode());
+		return result;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (!super.equals(obj))
+			return false;
+		if (!(obj instanceof ClassInstance))
+			return false;
+		ClassInstance other = (ClassInstance) obj;
+		if (refers == null) {
+			if (other.refers != null)
+				return false;
+		} else if (!refers.equals(other.refers))
+			return false;
+		return true;
+	}
 }
