@@ -1,7 +1,6 @@
 package de.seerhein_lab.jca.analyzer.stateUnmodRefPublished;
 
 import java.util.Set;
-import java.util.UUID;
 
 import org.apache.bcel.classfile.Method;
 import org.apache.bcel.generic.CodeExceptionGen;
@@ -13,7 +12,7 @@ import de.seerhein_lab.jca.Frame;
 import de.seerhein_lab.jca.analyzer.BaseInstructionsAnalysisVisitor;
 import de.seerhein_lab.jca.analyzer.BaseMethodAnalyzer;
 import de.seerhein_lab.jca.analyzer.BaseMethodAnalyzer.AlreadyVisitedMethod;
-import de.seerhein_lab.jca.heap.HeapObject;
+import de.seerhein_lab.jca.heap.Heap;
 import de.seerhein_lab.jca.slot.ReferenceSlot;
 import de.seerhein_lab.jca.slot.Slot;
 import edu.umd.cs.findbugs.annotations.Confidence;
@@ -67,26 +66,18 @@ public class StateUnmodRefPublishedAnalysisVisitor extends
 	// Bug detection section //
 	// ******************************************************************//
 
-	boolean referredByThis(HeapObject obj) {
-		for (UUID referring : obj.getReferringObjects()) {
-			if (referring.equals(frame.getHeap().getThisID())) {
-				return true;
-			}
-			return referredByThis(frame.getHeap().get(referring));
-		}
-		return false;
-	}
-
 	@Override
 	protected void detectVirtualMethodBug(ReferenceSlot argument) {
-		if (argument.getID().equals(frame.getHeap().getThisID())) {
+		Heap heap = frame.getHeap();
+		if (argument.getID().equals(heap.getThisID())) {
 			// XXX problem or not?? Inheritance?!?
 			addBug(Confidence.HIGH,
-					"this is passed to a virtual method and published",
+					"'this' is passed to a virtual method and published",
 					instructionHandle);
-		} else if (referredByThis(frame.getHeap().get(argument.getID()))) {
+		} else if (heap.get(argument.getID())
+				.referredBy(heap.getThisID(), heap)) {
 			addBug(Confidence.HIGH,
-					"a field of this is passed to a virtual mehtod and published",
+					"a field of 'this' is passed to a virtual mehtod and published",
 					instructionHandle);
 		}
 	}
@@ -100,11 +91,13 @@ public class StateUnmodRefPublishedAnalysisVisitor extends
 		}
 
 		ReferenceSlot referenceToStore = (ReferenceSlot) valueToStore;
-		if (arrayReference.getID().equals(frame.getHeap().getExternalID())
-				&& referredByThis(frame.getHeap().get(referenceToStore.getID()))) {
+		Heap heap = frame.getHeap();
+		if (arrayReference.getID().equals(heap.getExternalID())
+				&& heap.get(referenceToStore.getID()).referredBy(
+						heap.getThisID(), heap)) {
 			// a field of this is assigned to an external object
 			addBug(Confidence.HIGH,
-					"field of this is published by assignment to an external array",
+					"field of 'this' is published by assignment to an external array",
 					instructionHandle);
 		}
 	}
@@ -118,26 +111,30 @@ public class StateUnmodRefPublishedAnalysisVisitor extends
 		}
 
 		ReferenceSlot referenceToPut = (ReferenceSlot) valueToPut;
-		if (targetReference.getID().equals(frame.getHeap().getExternalID())
-				&& referredByThis(frame.getHeap().get(referenceToPut.getID()))) {
+		Heap heap = frame.getHeap();
+		if (targetReference.getID().equals(heap.getExternalID())
+				&& heap.get(referenceToPut.getID()).referredBy(
+						heap.getThisID(), heap)) {
 			// a field of this is assigned to an external object
 			addBug(Confidence.HIGH,
-					"a field of this is published by assignment to an external object",
+					"a field of 'this' is published by assignment to an external object",
 					instructionHandle);
 		}
 	}
 
 	@Override
 	protected void detectPutStaticBug(ReferenceSlot referenceToPut) {
-		if (referenceToPut.getID().equals(frame.getHeap().getThisID())) {
+		Heap heap = frame.getHeap();
+		if (referenceToPut.getID().equals(heap.getThisID())) {
 			// XXX only a problem if it is a static field of the class we
 			// analyze
 			addBug(Confidence.HIGH,
-					"this is published by assignment to a static field",
+					"'this' is published by assignment to a static field",
 					instructionHandle);
-		} else if (referredByThis(frame.getHeap().get(referenceToPut.getID()))) {
+		} else if (heap.get(referenceToPut.getID()).referredBy(
+				heap.getThisID(), heap)) {
 			addBug(Confidence.HIGH,
-					"a field of this is published by assignment to a static field",
+					"a field of 'this' is published by assignment to a static field",
 					instructionHandle);
 		}
 	}
