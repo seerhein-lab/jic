@@ -1,7 +1,6 @@
 package de.seerhein_lab.jca.analyzer.stateUnmodFieldsModify;
 
 import java.util.Set;
-import java.util.UUID;
 
 import org.apache.bcel.classfile.Method;
 import org.apache.bcel.generic.CodeExceptionGen;
@@ -13,7 +12,7 @@ import de.seerhein_lab.jca.Frame;
 import de.seerhein_lab.jca.analyzer.BaseInstructionsAnalysisVisitor;
 import de.seerhein_lab.jca.analyzer.BaseMethodAnalyzer;
 import de.seerhein_lab.jca.analyzer.BaseMethodAnalyzer.AlreadyVisitedMethod;
-import de.seerhein_lab.jca.heap.HeapObject;
+import de.seerhein_lab.jca.heap.Heap;
 import de.seerhein_lab.jca.slot.ReferenceSlot;
 import de.seerhein_lab.jca.slot.Slot;
 import edu.umd.cs.findbugs.annotations.Confidence;
@@ -67,22 +66,13 @@ public class StateUnmodFieldsModifyAnalysisVisitor extends
 	// Bug detection section //
 	// ******************************************************************//
 
-	boolean referredByThis(HeapObject obj) {
-		for (UUID referring : obj.getReferringObjects()) {
-			if (referring.equals(frame.getHeap().getThisID())) {
-				return true;
-			}
-			return referredByThis(frame.getHeap().get(referring));
-		}
-		return false;
-	}
-
 	@Override
 	protected void detectVirtualMethodBug(ReferenceSlot argument) {
+		Heap heap = frame.getHeap();
 		// an object referred by a field of this is passed to a virtual method
-		if (referredByThis(frame.getHeap().get(argument.getID()))) {
+		if (heap.get(argument.getID()).referredBy(heap.getThisID(), heap)) {
 			addBug(Confidence.HIGH,
-					"an object referred by a field of this is passed to a virtual method and might be modified",
+					"an object referred by a field of 'this' is passed to a virtual method and might be modified",
 					instructionHandle);
 		}
 
@@ -91,10 +81,11 @@ public class StateUnmodFieldsModifyAnalysisVisitor extends
 	@Override
 	protected void detectAStoreBug(ReferenceSlot arrayReference,
 			Slot valueToStore) {
+		Heap heap = frame.getHeap();
 		// array is referred by a field of this
-		if (referredByThis(frame.getHeap().get(arrayReference.getID()))) {
+		if (heap.get(arrayReference.getID()).referredBy(heap.getThisID(), heap)) {
 			addBug(Confidence.HIGH,
-					"the value of an array referred by a field of this is modified",
+					"the value of an array referred by a field of 'this' is modified",
 					instructionHandle);
 		}
 	}
@@ -102,10 +93,12 @@ public class StateUnmodFieldsModifyAnalysisVisitor extends
 	@Override
 	protected void detectPutFieldBug(ReferenceSlot targetReference,
 			Slot valueToPut) {
+		Heap heap = frame.getHeap();
 		// left side is referred by a field of this
-		if (referredByThis(frame.getHeap().get(targetReference.getID()))) {
+		if (heap.get(targetReference.getID())
+				.referredBy(heap.getThisID(), heap)) {
 			addBug(Confidence.HIGH,
-					"the value of an object referred by a field of this is modified",
+					"the value of an object referred by a field of 'this' is modified",
 					instructionHandle);
 		}
 	}
