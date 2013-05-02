@@ -1,7 +1,6 @@
 package de.seerhein_lab.jca.analyzer.stateUnmodParmsAreCopied;
 
 import java.util.Set;
-import java.util.UUID;
 
 import org.apache.bcel.classfile.Method;
 import org.apache.bcel.generic.CodeExceptionGen;
@@ -13,7 +12,7 @@ import de.seerhein_lab.jca.Frame;
 import de.seerhein_lab.jca.analyzer.BaseInstructionsAnalysisVisitor;
 import de.seerhein_lab.jca.analyzer.BaseMethodAnalyzer;
 import de.seerhein_lab.jca.analyzer.BaseMethodAnalyzer.AlreadyVisitedMethod;
-import de.seerhein_lab.jca.heap.HeapObject;
+import de.seerhein_lab.jca.heap.Heap;
 import de.seerhein_lab.jca.slot.ReferenceSlot;
 import de.seerhein_lab.jca.slot.Slot;
 import edu.umd.cs.findbugs.annotations.Confidence;
@@ -67,33 +66,12 @@ public class StateUnmodCtorAnalysisVisitor extends
 	// Bug detection section //
 	// ******************************************************************//
 
-	boolean referredByThis(HeapObject obj) {
-		for (UUID referring : obj.getReferringObjects()) {
-			if (referring.equals(frame.getHeap().getThisID())) {
-				return true;
-			}
-			return referredByThis(frame.getHeap().get(referring));
-		}
-		return false;
-	}
-
-	boolean refersExternal(HeapObject obj) {
-		for (UUID refered : obj.getReferredObjects()) {
-			if (refered.equals(frame.getHeap().getExternalID())) {
-				return true;
-			}
-			return refersExternal(frame.getHeap().get(refered));
-		}
-		return false;
-	}
-
 	@Override
 	protected void detectVirtualMethodBug(ReferenceSlot argument) {
-		if (referredByThis(frame.getHeap().get(argument.getID()))) {
-			// an object referred by this is passed to a method that can not be
-			// analyzed
+		Heap heap = frame.getHeap();
+		if (heap.get(argument.getID()).referredBy(heap.getThisID(), heap)) {
 			addBug(Confidence.HIGH,
-					"this reference is passed to a method that can not be analyzed by static analyzis and escapes",
+					"a field of 'this' is passed to a virtual method and escapes",
 					instructionHandle);
 		}
 	}
@@ -107,20 +85,21 @@ public class StateUnmodCtorAnalysisVisitor extends
 		}
 
 		ReferenceSlot referenceToStore = (ReferenceSlot) valueToStore;
-		if (referredByThis(frame.getHeap().get(arrayReference.getID()))) {
+		Heap heap = frame.getHeap();
+		if (heap.get(arrayReference.getID()).referredBy(heap.getThisID(), heap)) {
 			// array is referred by this
 			if (referenceToStore.getID()
 					.equals(frame.getHeap().getExternalID())) {
 				// external reference is assigned to an array referred by this
 				addBug(Confidence.HIGH,
-						"an external reference is assigned to an array referred by this",
+						"an external reference is assigned to an array referred by 'this'",
 						instructionHandle);
-			} else if (refersExternal(frame.getHeap().get(
-					referenceToStore.getID()))) {
+			} else if (heap.get(referenceToStore.getID()).refers(
+					heap.getExternalID(), heap)) {
 				// a reference containing an external reference is assigned to
 				// an array referred by this
 				addBug(Confidence.HIGH,
-						"a reference containing an external reference is assigned to an array referred by this",
+						"a reference containing an external reference is assigned to an array referred by 'this'",
 						instructionHandle);
 			}
 		}
@@ -135,33 +114,35 @@ public class StateUnmodCtorAnalysisVisitor extends
 		}
 
 		ReferenceSlot referenceToPut = (ReferenceSlot) valueToPut;
-		if (targetReference.getID().equals(frame.getHeap().getThisID())) {
+		Heap heap = frame.getHeap();
+		if (targetReference.getID().equals(heap.getThisID())) {
 			// left side is this
-			if (referenceToPut.getID().equals(frame.getHeap().getExternalID())) {
+			if (referenceToPut.getID().equals(heap.getExternalID())) {
 				// right is external
 				addBug(Confidence.HIGH,
-						"an external object is assigned to this",
+						"an external object is assigned to 'this'",
 						instructionHandle);
-			} else if (refersExternal(frame.getHeap().get(
-					referenceToPut.getID()))) {
+			} else if (heap.get(referenceToPut.getID()).refers(
+					heap.getExternalID(), heap)) {
 				// right refers external
 				addBug(Confidence.HIGH,
-						"an object containing an external reference is assigned to this",
+						"an object containing an external reference is assigned to 'this'",
 						instructionHandle);
 			}
 		}
-		if (referredByThis(frame.getHeap().get(targetReference.getID()))) {
+		if (heap.get(targetReference.getID())
+				.referredBy(heap.getThisID(), heap)) {
 			// left is referred by this
-			if (referenceToPut.getID().equals(frame.getHeap().getExternalID())) {
+			if (referenceToPut.getID().equals(heap.getExternalID())) {
 				// right is external
 				addBug(Confidence.HIGH,
-						"an external reference is assigned to an object referred by this",
+						"an external reference is assigned to an object referred by 'this'",
 						instructionHandle);
-			} else if (refersExternal(frame.getHeap().get(
-					referenceToPut.getID()))) {
+			} else if (heap.get(referenceToPut.getID()).refers(
+					heap.getExternalID(), heap)) {
 				// right refers external
 				addBug(Confidence.HIGH,
-						"a reference containing an external reference is assigned to an object referred by this",
+						"a reference containing an external reference is assigned to an object referred by 'this'",
 						instructionHandle);
 			}
 		}
@@ -169,18 +150,19 @@ public class StateUnmodCtorAnalysisVisitor extends
 
 	@Override
 	protected void detectPutStaticBug(ReferenceSlot referenceToPut) {
+		Heap heap = frame.getHeap();
 		// XXX this assigned to a static field?? Only starting class?!?
-		if (referenceToPut.getID().equals(frame.getHeap().getThisID())) {
+		if (referenceToPut.getID().equals(heap.getThisID())) {
 			// this is published
 			addBug(Confidence.HIGH,
-					"this is published by assignment to a static field",
+					"'this' is published by assignment to a static field",
 					instructionHandle);
 		}
 
-		if (referredByThis(frame.getHeap().get(referenceToPut.getID()))) {
+		if (heap.get(referenceToPut.getID()).referredBy(heap.getThisID(), heap)) {
 			// a field referred by this is published
 			addBug(Confidence.HIGH,
-					"an object referred by this is published by assignment to a static field",
+					"an object referred by 'this' is published by assignment to a static field",
 					instructionHandle);
 		}
 	}
