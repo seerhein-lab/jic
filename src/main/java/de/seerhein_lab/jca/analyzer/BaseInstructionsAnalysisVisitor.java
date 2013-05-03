@@ -810,8 +810,7 @@ public abstract class BaseInstructionsAnalysisVisitor extends EmptyVisitor {
 		frame.getStack().pop();
 
 		// push the array reference
-		UUID id = frame.getHeap().newHeapObject();
-		ReferenceSlot slot = new ReferenceSlot(id);
+		ReferenceSlot slot = new ReferenceSlot(frame.getHeap().newArray());
 
 		frame.getStack().push(slot);
 
