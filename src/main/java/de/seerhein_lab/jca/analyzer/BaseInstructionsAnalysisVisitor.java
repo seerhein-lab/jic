@@ -914,7 +914,7 @@ public abstract class BaseInstructionsAnalysisVisitor extends EmptyVisitor {
 			// TODO CHECK THIS
 
 			// static values are externally known, we do not know more about it
-			valueToGet = ReferenceSlot.getExternalInstance();
+			valueToGet = new ReferenceSlot(frame.getHeap().getExternalID());
 		}
 
 		log.append((valueToGet instanceof DoubleSlot || valueToGet instanceof LongSlot) ? valueToGet
