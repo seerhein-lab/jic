@@ -1,6 +1,5 @@
 package de.seerhein_lab.jca.analyzer;
 
-import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
@@ -645,11 +644,9 @@ public abstract class BaseInstructionsAnalysisVisitor extends EmptyVisitor {
 				+ ".else  (condition might be inverted!) ------------------");
 		AlreadyVisitedIfInstruction elseBranch = new AlreadyVisitedIfInstruction(
 				instructionHandle, false);
-		if (!alreadyVisited.contains(elseBranch)) {
-			@SuppressWarnings("unchecked")
-			ArrayList<AlreadyVisitedIfInstruction> newAlreadyVisited = (ArrayList<AlreadyVisitedIfInstruction>) alreadyVisited
-					.clone();
-			newAlreadyVisited.add(elseBranch);
+		if (alreadyVisited.add(elseBranch)) {
+			Set<AlreadyVisitedIfInstruction> newAlreadyVisited = new HashSet<AlreadyVisitedIfInstruction>();
+			newAlreadyVisited.addAll(alreadyVisited);
 			BaseInstructionsAnalysisVisitor elseBranchVisitor = getInstructionsAnalysisVisitor(
 					new Frame(frame), newAlreadyVisited,
 					instructionHandle.getNext());
@@ -665,11 +662,10 @@ public abstract class BaseInstructionsAnalysisVisitor extends EmptyVisitor {
 				+ ".then  (condition might be inverted!) ------------------");
 		AlreadyVisitedIfInstruction thenBranch = new AlreadyVisitedIfInstruction(
 				instructionHandle, true);
-		if (!alreadyVisited.contains(thenBranch)) {
-			@SuppressWarnings("unchecked")
-			ArrayList<AlreadyVisitedIfInstruction> newAlreadyVisited = (ArrayList<AlreadyVisitedIfInstruction>) alreadyVisited
-					.clone();
-			newAlreadyVisited.add(thenBranch);
+		if (alreadyVisited.add(thenBranch)) {
+
+			Set<AlreadyVisitedIfInstruction> newAlreadyVisited = new HashSet<AlreadyVisitedIfInstruction>();
+			newAlreadyVisited.addAll(alreadyVisited);
 
 			BaseInstructionsAnalysisVisitor thenBranchVisitor = getInstructionsAnalysisVisitor(
 					new Frame(frame), newAlreadyVisited, obj.getTarget());
