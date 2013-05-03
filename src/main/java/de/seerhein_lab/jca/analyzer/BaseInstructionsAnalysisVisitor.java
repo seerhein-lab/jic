@@ -947,12 +947,15 @@ public abstract class BaseInstructionsAnalysisVisitor extends EmptyVisitor {
 		ReferenceSlot field = (ReferenceSlot) frame.getStack().pop();
 		detectPutFieldBug(field, valueToPut);
 		if (valueToPut instanceof ReferenceSlot) {
-			ReferenceSlot refToPut = (ReferenceSlot) valueToPut;
-
-			// TODO set refersField, referedByField??
-
-			// link them together
-			field.linkReferences(refToPut);
+			UUID rightID = ((ReferenceSlot) valueToPut).getID();
+			if (field.getID().equals(frame.getHeap().getExternalID())) {
+				// left side is external, publish right
+				frame.getHeap().publish(rightID);
+			} else {
+				// link them together
+				frame.getHeap().linkObjects(field.getID(),
+						obj.getFieldName(constantPoolGen), rightID);
+			}
 		}
 
 		logger.log(
