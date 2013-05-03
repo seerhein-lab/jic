@@ -43,6 +43,10 @@ public class ClassInstance extends HeapObject {
 		return refers.values();
 	}
 
+	public UUID getField(String name) {
+		return refers.get(name);
+	}
+
 	@Override
 	boolean refers(UUID toSearch, Heap heap,
 			HashSet<AlreadyVisited> alreadyVisited) {

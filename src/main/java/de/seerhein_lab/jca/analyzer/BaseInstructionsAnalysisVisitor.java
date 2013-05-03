@@ -81,6 +81,7 @@ import de.seerhein_lab.jca.ResultValue;
 import de.seerhein_lab.jca.ResultValue.Kind;
 import de.seerhein_lab.jca.Utils;
 import de.seerhein_lab.jca.analyzer.BaseMethodAnalyzer.AlreadyVisitedMethod;
+import de.seerhein_lab.jca.heap.ClassInstance;
 import de.seerhein_lab.jca.slot.DoubleSlot;
 import de.seerhein_lab.jca.slot.IntSlot;
 import de.seerhein_lab.jca.slot.LongSlot;
@@ -868,17 +869,16 @@ public abstract class BaseInstructionsAnalysisVisitor extends EmptyVisitor {
 
 		// obj.getSignature() refers to desired field
 		Slot target = Slot.getDefaultSlotInstance(obj.getType(constantPoolGen));
-		// field might contain this-reference, type permitting
 		if (target instanceof ReferenceSlot) {
-			// save temporary copy of boolean flags for bug detection
-			ReferenceSlot targetReference = ref.copyWithoutDependencies();
-			// add all sub-dependencies from ref to targetReference and link it
-			// to ref
-			ref.linkWithSubdependencies(targetReference);
-
-			// XXX targetReference: refersField, referedByField???
-
-			target = targetReference;
+			if (ref.getID().equals(frame.getHeap().getExternalID())) {
+				// if left side is external return external
+				target = new ReferenceSlot(frame.getHeap().getExternalID());
+			} else {
+				// get the ClassInstance linked to the desired field
+				target = new ReferenceSlot(((ClassInstance) frame.getHeap()
+						.get(ref.getID())).getField(obj
+						.getFieldName(constantPoolGen)));
+			}
 		}
 		frame.pushStackByRequiredSlots(target);
 
