@@ -849,7 +849,7 @@ public abstract class BaseInstructionsAnalysisVisitor extends EmptyVisitor {
 		result.addAll(regularCaseVisitor.getResult());
 
 		// 2nd case: type cast is invalid, throw ClassCastException
-		handleException(ReferenceSlot.getInternalInstance());
+		handleException(new ReferenceSlot(frame.getHeap().newClassInstance()));
 	}
 
 	/**
