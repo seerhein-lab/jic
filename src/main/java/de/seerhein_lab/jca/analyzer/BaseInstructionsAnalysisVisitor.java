@@ -989,12 +989,9 @@ public abstract class BaseInstructionsAnalysisVisitor extends EmptyVisitor {
 
 		// a reference is assigned to a static field
 		if (toPut instanceof ReferenceSlot) {
-			// TODO CHECK THIS
-			ReferenceSlot refToPut = (ReferenceSlot) toPut;
-
-			detectPutStaticBug(refToPut);
-			// link reference to put with an external reference
-			ReferenceSlot.getExternalInstance().linkReferences(refToPut);
+			detectPutStaticBug((ReferenceSlot) toPut);
+			// make it external
+			frame.getHeap().publish(((ReferenceSlot) toPut).getID());
 		}
 
 		// write log
