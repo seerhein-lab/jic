@@ -119,7 +119,10 @@ public class HeapObject {
 
 	boolean refers(UUID toSearch, Heap heap,
 			HashSet<AlreadyVisited> alreadyVisited) {
-		throw new AssertionError("Must not be called on a HeapObject instance");
+		if (toSearch.equals(heap.getExternalID())
+				&& id.equals(heap.getExternalID()))
+			return true;
+		throw new AssertionError("Must not be called in this context");
 	}
 
 	@Override
