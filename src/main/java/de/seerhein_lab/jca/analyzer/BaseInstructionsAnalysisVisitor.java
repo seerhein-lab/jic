@@ -693,7 +693,8 @@ public abstract class BaseInstructionsAnalysisVisitor extends EmptyVisitor {
 				"Untested Code Warning: Executing JSR instruction");
 		bugs.add(new BugInstance(
 				"Untested Code Warning: Executing JSR instruction", 1));
-		frame.getStack().push(ReferenceSlot.getInternalInstance());
+		frame.getStack().push(
+				new ReferenceSlot(frame.getHeap().newClassInstance()));
 		InstructionHandle savedInstructionHandle = instructionHandle;
 		instructionHandle = obj.getTarget();
 		instructionHandle.accept(this);
