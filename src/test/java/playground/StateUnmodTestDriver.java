@@ -7,8 +7,8 @@ import java.util.logging.Logger;
 import org.apache.bcel.Repository;
 import org.apache.bcel.classfile.JavaClass;
 
-import de.htwg_konstanz.in.jca.Utils;
-import de.htwg_konstanz.in.jca.analyzer.ClassAnalyzer;
+import de.seerhein_lab.jca.Utils;
+import de.seerhein_lab.jca.analyzer.ClassAnalyzer;
 import edu.umd.cs.findbugs.BugInstance;
 import edu.umd.cs.findbugs.SortedBugCollection;
 

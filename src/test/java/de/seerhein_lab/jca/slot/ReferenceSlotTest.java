@@ -1,4 +1,4 @@
-package de.htwg_konstanz.in.jca.slot;
+package de.seerhein_lab.jca.slot;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;

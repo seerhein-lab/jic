@@ -1,4 +1,4 @@
-package de.htwg_konstanz.in.jca;
+package de.seerhein_lab.jca;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -8,11 +8,11 @@ import javax.swing.JButton;
 
 import org.junit.runner.RunWith;
 
-import de.htwg_konstanz.in.jca.analyzer.ClassAnalyzer;
-import de.htwg_konstanz.in.jca.testutils.ClassAnalyzerRunner;
-import de.htwg_konstanz.in.jca.testutils.ClassAnalyzerRunner.BindAnalyzerMethod;
-import de.htwg_konstanz.in.jca.testutils.ImproperlyConstructed;
-import de.htwg_konstanz.in.jca.testutils.ProperlyConstructed;
+import de.seerhein_lab.jca.analyzer.ClassAnalyzer;
+import de.seerhein_lab.jca.testutils.ClassAnalyzerRunner;
+import de.seerhein_lab.jca.testutils.ImproperlyConstructed;
+import de.seerhein_lab.jca.testutils.ProperlyConstructed;
+import de.seerhein_lab.jca.testutils.ClassAnalyzerRunner.BindAnalyzerMethod;
 import edu.umd.cs.findbugs.BugCollection;
 
 /**

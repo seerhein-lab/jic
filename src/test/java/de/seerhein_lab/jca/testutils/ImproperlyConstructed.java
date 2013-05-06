@@ -1,4 +1,4 @@
-package de.htwg_konstanz.in.jca.testutils;
+package de.seerhein_lab.jca.testutils;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;

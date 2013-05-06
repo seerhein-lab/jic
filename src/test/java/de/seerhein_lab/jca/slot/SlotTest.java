@@ -1,4 +1,4 @@
-package de.htwg_konstanz.in.jca.slot;
+package de.seerhein_lab.jca.slot;
 
 import java.util.Arrays;
 import java.util.Collection;

@@ -1,4 +1,4 @@
-package de.htwg_konstanz.in.jca;
+package de.seerhein_lab.jca;
 
 import static org.junit.Assert.assertEquals;
 

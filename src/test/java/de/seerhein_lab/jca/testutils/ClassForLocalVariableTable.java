@@ -1,4 +1,4 @@
-package de.htwg_konstanz.in.jca.testutils;
+package de.seerhein_lab.jca.testutils;
 
 /**
  * This is an example class which provides a LocalVariables table for the

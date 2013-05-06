@@ -1,4 +1,4 @@
-package de.htwg_konstanz.in.jca.testclasses;
+package de.seerhein_lab.jca.testclasses;
 
 public class UtilsTestClass {
 
