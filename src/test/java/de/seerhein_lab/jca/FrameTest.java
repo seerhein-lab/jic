@@ -5,10 +5,11 @@ import static org.junit.Assert.assertEquals;
 import java.util.EmptyStackException;
 import java.util.Stack;
 
+import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import de.seerhein_lab.jca.Frame;
+import de.seerhein_lab.jca.heap.Heap;
 import de.seerhein_lab.jca.slot.BooleanSlot;
 import de.seerhein_lab.jca.slot.ByteSlot;
 import de.seerhein_lab.jca.slot.CharSlot;
@@ -25,23 +26,31 @@ import de.seerhein_lab.jca.slot.VoidSlot;
  * JUnit test for Frame class. Does not test simple getters and setters.
  */
 public class FrameTest {
-	 Slot bool = BooleanSlot.getInstance();
-	 Slot bytE = ByteSlot.getInstance();
-	 Slot chaR = CharSlot.getInstance();
-	 Slot doublE = DoubleSlot.getInstance();
-	 Slot floaT = FloatSlot.getInstance();
-	 Slot inT = IntSlot.getInstance();
-	 Slot lonG = LongSlot.getInstance();
-	 Slot thiS = ReferenceSlot.getThisReference();
-	 Slot someRef = ReferenceSlot.getInternalInstance();
-	 Slot someOtherRef = ReferenceSlot.getInternalInstance();
-	 Slot shorT = ShortSlot.getInstance();
-	 Slot voiD = VoidSlot.getInstance();
-	 
-	 @BeforeClass
-	 public static void beforeTest(){
-		 ReferenceSlot.initSpecialReferences();
-	 }
+	Slot bool = BooleanSlot.getInstance();
+	Slot bytE = ByteSlot.getInstance();
+	Slot chaR = CharSlot.getInstance();
+	Slot doublE = DoubleSlot.getInstance();
+	Slot floaT = FloatSlot.getInstance();
+	Slot inT = IntSlot.getInstance();
+	Slot lonG = LongSlot.getInstance();
+	Slot shorT = ShortSlot.getInstance();
+	Slot voiD = VoidSlot.getInstance();
+	Slot thiS;
+	Slot someRef;
+	Slot someOtherRef;
+	Heap heap;
+
+	@BeforeClass
+	public static void beforeTest() {
+	}
+
+	@Before
+	public void setUp() {
+		heap = new Heap();
+		thiS = new ReferenceSlot(heap.getThisID());
+		someRef = new ReferenceSlot(heap.newClassInstance());
+		someOtherRef = new ReferenceSlot(heap.newArray());
+	}
 
 	/**
 	 * Tests constructor with negative maxLocals. Expects
@@ -64,7 +73,16 @@ public class FrameTest {
 		callerStack.push(voiD);
 
 		@SuppressWarnings("unused")
-		Frame frame = new Frame(-1, callerStack, 12);
+		Frame frame = new Frame(-1, callerStack, 12, heap);
+	}
+
+	@Test
+	public void testFrameConstructor() {
+		Frame frame = new Frame(0, new Stack<Slot>(), 0, heap);
+		frame.getStack().push(thiS);
+		Frame newFrame = new Frame(1, frame, 1);
+		assertEquals(newFrame.getHeap(), heap);
+		assertEquals(newFrame.getLocalVars()[0], thiS);
 	}
 
 	/**
@@ -74,7 +92,7 @@ public class FrameTest {
 	public void testFrameIntStackOfSlotInt1() {
 
 		@SuppressWarnings("unused")
-		Frame frame = new Frame(12, null, 12);
+		Frame frame = new Frame(12, null, 12, heap);
 	}
 
 	/**
@@ -96,11 +114,12 @@ public class FrameTest {
 		callerStack.push(someOtherRef);
 		callerStack.push(voiD);
 
-		Frame frame = new Frame(12, callerStack, 12);
+		Frame frame = new Frame(12, callerStack, 12, heap);
 
 		assertEquals(12, frame.getLocalVars().length);
 
 		assertEquals(0, callerStack.size());
+		assertEquals(heap, frame.getHeap());
 
 		assertEquals(thiS, frame.getLocalVars()[0]);
 		assertEquals(someRef, frame.getLocalVars()[1]);
@@ -135,7 +154,7 @@ public class FrameTest {
 		callerStack.push(someOtherRef);
 		callerStack.push(voiD);
 
-		Frame frame = new Frame(12, callerStack, 6);
+		Frame frame = new Frame(12, callerStack, 6, heap);
 
 		assertEquals(12, frame.getLocalVars().length);
 
@@ -174,7 +193,7 @@ public class FrameTest {
 		callerStack.push(someOtherRef);
 		callerStack.push(voiD);
 
-		Frame frame = new Frame(12, callerStack, 0);
+		Frame frame = new Frame(12, callerStack, 0, heap);
 
 		assertEquals(12, frame.getLocalVars().length);
 
@@ -215,7 +234,7 @@ public class FrameTest {
 		callerStack.push(voiD);
 
 		@SuppressWarnings("unused")
-		Frame frame = new Frame(5, callerStack, 12);
+		Frame frame = new Frame(5, callerStack, 12, heap);
 	}
 
 	/**
@@ -236,7 +255,7 @@ public class FrameTest {
 		Stack<Slot> callerStack = new Stack<Slot>();
 		callerStack.add(bool);
 		callerStack.add(floaT);
-		Frame frameToCopy = new Frame(5, callerStack, 2);
+		Frame frameToCopy = new Frame(5, callerStack, 2, heap);
 		frameToCopy.getStack().push(doublE);
 
 		Frame frame = new Frame(frameToCopy);
@@ -257,7 +276,7 @@ public class FrameTest {
 	 */
 	@Test
 	public void testPushStackByRequiredSlots() {
-		Frame frame = new Frame(0, null, 0);
+		Frame frame = new Frame(0, null, 0, heap);
 
 		frame.pushStackByRequiredSlots(someOtherRef);
 		assertEquals(1, frame.getStack().size());
@@ -314,7 +333,7 @@ public class FrameTest {
 	 */
 	@Test
 	public void testPopStackByRequiredSlots0() {
-		Frame frame = new Frame(0, null, 0);
+		Frame frame = new Frame(0, null, 0, heap);
 		frame.getStack().push(bool);
 		frame.getStack().push(floaT);
 
@@ -328,7 +347,7 @@ public class FrameTest {
 	 */
 	@Test
 	public void testPopStackByRequiredSlots1() {
-		Frame frame = new Frame(0, null, 0);
+		Frame frame = new Frame(0, null, 0, heap);
 		frame.getStack().push(bool);
 		frame.getStack().push(doublE);
 
@@ -342,7 +361,7 @@ public class FrameTest {
 	 */
 	@Test(expected = EmptyStackException.class)
 	public void testPopStackByRequiredSlots2() {
-		Frame frame = new Frame(0, null, 0);
+		Frame frame = new Frame(0, null, 0, heap);
 		frame.getStack().push(doublE);
 
 		frame.popStackByRequiredSlots();
