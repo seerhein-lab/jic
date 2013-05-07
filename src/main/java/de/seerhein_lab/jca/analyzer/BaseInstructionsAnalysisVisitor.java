@@ -283,7 +283,7 @@ public abstract class BaseInstructionsAnalysisVisitor extends EmptyVisitor {
 	 * @param obj
 	 *            node to be visited
 	 */
-	protected void handleMethodThatIsAnalyzed(InvokeInstruction obj) {
+	protected void handleNonVirtualMethod(InvokeInstruction obj) {
 		logger.log(Level.FINE, indentation + obj.toString(false));
 		logger.log(
 				Level.FINEST,
@@ -1028,7 +1028,7 @@ public abstract class BaseInstructionsAnalysisVisitor extends EmptyVisitor {
 	 */
 	@Override
 	public void visitINVOKESPECIAL(INVOKESPECIAL obj) {
-		handleMethodThatIsAnalyzed(obj);
+		handleNonVirtualMethod(obj);
 	}
 
 	/**
@@ -1041,7 +1041,7 @@ public abstract class BaseInstructionsAnalysisVisitor extends EmptyVisitor {
 	 */
 	@Override
 	public void visitINVOKESTATIC(INVOKESTATIC obj) {
-		handleMethodThatIsAnalyzed(obj);
+		handleNonVirtualMethod(obj);
 	}
 
 	/**
