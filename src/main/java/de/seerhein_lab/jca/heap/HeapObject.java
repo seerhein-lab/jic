@@ -7,7 +7,7 @@ import java.util.UUID;
 
 public class HeapObject {
 	protected final UUID id;
-	protected Set<UUID> referredBy = new HashSet<UUID>();
+	protected final Set<UUID> referredBy = new HashSet<UUID>();
 
 	static class AlreadyVisited {
 		private final HeapObject from;
