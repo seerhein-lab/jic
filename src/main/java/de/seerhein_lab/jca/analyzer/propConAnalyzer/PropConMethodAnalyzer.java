@@ -60,7 +60,7 @@ public class PropConMethodAnalyzer extends BaseMethodAnalyzer {
 			}
 		}
 
-		Frame callerFrame = new Frame(0, callerStack, 0, callerHeap);
+		Frame callerFrame = new Frame(callerStack, callerHeap);
 
 		analyze(callerFrame);
 	}

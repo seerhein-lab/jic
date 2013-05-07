@@ -60,6 +60,10 @@ public class Frame {
 	 *            The frame to copy.
 	 */
 	public Frame(Frame frame) {
+		this(frame, new Heap(frame.getHeap()));
+	}
+
+	public Frame(Frame frame, Heap heap) {
 		this.localVars = new Slot[frame.getLocalVars().length];
 		for (int i = 0; i < frame.getLocalVars().length; i++) {
 			this.localVars[i] = (frame.getLocalVars()[i] == null) ? null
@@ -70,7 +74,13 @@ public class Frame {
 		for (Slot slot : stackArray) {
 			stack.add(slot.copy());
 		}
-		heap = new Heap(frame.getHeap());
+		this.heap = heap;
+	}
+
+	public Frame(Stack<Slot> callerStack, Heap callerHeap) {
+		this.stack = callerStack;
+		this.localVars = new Slot[0];
+		this.heap = callerHeap;
 	}
 
 	public Stack<Slot> getStack() {

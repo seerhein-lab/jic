@@ -80,6 +80,7 @@ import de.seerhein_lab.jca.ResultValue;
 import de.seerhein_lab.jca.ResultValue.Kind;
 import de.seerhein_lab.jca.Utils;
 import de.seerhein_lab.jca.analyzer.BaseMethodAnalyzer.AlreadyVisitedMethod;
+import de.seerhein_lab.jca.heap.Array;
 import de.seerhein_lab.jca.heap.ClassInstance;
 import de.seerhein_lab.jca.slot.DoubleSlot;
 import de.seerhein_lab.jca.slot.IntSlot;
@@ -254,6 +255,33 @@ public abstract class BaseInstructionsAnalysisVisitor extends EmptyVisitor {
 	// Visit section //
 	// ******************************************************************//
 
+	protected void handleBasicStackOperations(Instruction obj, Slot targetType) {
+		logger.log(Level.FINE, indentation + obj.toString(false));
+		StringBuilder log = new StringBuilder();
+		log.append("\t" + "(");
+
+		int consumed = obj.consumeStack(constantPoolGen);
+		int produced = obj.produceStack(constantPoolGen);
+		Slot entry;
+
+		for (int i = 0; i < consumed; i++) {
+			entry = frame.getStack().pop();
+			log.append((i == 0) ? entry : ", " + entry);
+		}
+		log.append(") -> (");
+
+		for (int i = 0; i < produced; i++) {
+			frame.getStack().push(targetType);
+			log.append((i == 0) ? targetType : ", " + targetType);
+		}
+
+		log.append(")");
+		logger.log(Level.FINEST, indentation + log);
+
+		instructionHandle = instructionHandle.getNext();
+		instructionHandle.accept(this);
+	}
+
 	protected void handleException(ReferenceSlot exception) {
 		frame.getStack().clear();
 		frame.getStack().push(exception);
@@ -273,8 +301,7 @@ public abstract class BaseInstructionsAnalysisVisitor extends EmptyVisitor {
 						+ exceptionHandler.toString() + ": end ^^^^^");
 			}
 		}
-		// XXX DO WE HAVE TO COPY IT? exception was copied before...
-		result.add(new ResultValue(Kind.EXCEPTION, exception));
+		result.add(new ResultValue(Kind.EXCEPTION, exception, frame.getHeap()));
 	}
 
 	/**
@@ -324,18 +351,16 @@ public abstract class BaseInstructionsAnalysisVisitor extends EmptyVisitor {
 
 		bugs.addAll(targetMethodAnalyzer.getBugs().getCollection());
 
-		// XXX Combine?
 		Set<ResultValue> calleeResults = targetMethodAnalyzer.getResult();
 
 		for (ResultValue calleeResult : calleeResults) {
 			if (calleeResult.getKind().equals(Kind.REGULAR)) {
 				BaseInstructionsAnalysisVisitor specificCalleeResultVisitor = getInstructionsAnalysisVisitor(
-						new Frame(frame), alreadyVisited,
-						instructionHandle.getNext());
+						new Frame(frame, calleeResult.getHeap()),
+						alreadyVisited, instructionHandle.getNext());
 
 				specificCalleeResultVisitor.frame
 						.pushStackByRequiredSlots(calleeResult.getSlot());
-
 				instructionHandle.getNext().accept(specificCalleeResultVisitor);
 
 				bugs.addAll(specificCalleeResultVisitor.getBugs()
@@ -346,9 +371,7 @@ public abstract class BaseInstructionsAnalysisVisitor extends EmptyVisitor {
 				handleException((ReferenceSlot) calleeResult.getSlot());
 				frame = savedFrame;
 			}
-
 		}
-
 	}
 
 	/**
@@ -393,67 +416,6 @@ public abstract class BaseInstructionsAnalysisVisitor extends EmptyVisitor {
 		instructionHandle.accept(this);
 	}
 
-	/**
-	 * used by all CMPG instructions <br>
-	 * Pops two values from the stack, compares them and pushes the integer
-	 * result onto the stack. If value1 is greater than value2 the result is 1,
-	 * if value1 is equal to value2 the result is 0 and if value1 is smaller
-	 * than value2 the result is -1. If value1 or value2 is NaN the result is 1.
-	 * 
-	 * @param obj
-	 *            the instruction
-	 */
-	protected void handleCMPG(Instruction obj) {
-		logger.log(Level.FINE, indentation + obj.toString(false));
-
-		// pop value2
-		frame.popStackByRequiredSlots();
-		// pop value1
-		frame.popStackByRequiredSlots();
-		// check if value1 or value2 is NaN then push 1 and return
-		// compare them and get result
-		frame.getStack().push(IntSlot.getInstance());
-
-		instructionHandle = instructionHandle.getNext();
-		instructionHandle.accept(this);
-	}
-
-	/**
-	 * used by all CMPL instructions <br>
-	 * Called when a DCMPG operation occurs. Pops two values from the stack,
-	 * compares them and pushes the integer result onto the stack. If value1 is
-	 * greater than value2 the result is 1, if value1 is equal to value2 the
-	 * result is 0 and if value1 is smaller than value2 the result is -1. If
-	 * value1 or value2 is NaN the result is -1.
-	 */
-	protected void handleCMPL(Instruction obj) {
-		logger.log(Level.FINE, indentation + obj.toString(false));
-		// pop value2
-		frame.popStackByRequiredSlots();
-		// pop value1
-		frame.popStackByRequiredSlots();
-		// check if value1 or value2 is NaN then push -1 and return
-		// compare them and get result
-		frame.getStack().push(IntSlot.getInstance());
-
-		instructionHandle = instructionHandle.getNext();
-		instructionHandle.accept(this);
-	}
-
-	/**
-	 * used by all CONST instruction. Pushes a constant value of Type targetType
-	 * onto the stack.
-	 * 
-	 * @param targetType
-	 *            the Type to push
-	 */
-	protected void handleCONST(Type targetType) {
-		frame.pushStackByRequiredSlots(Slot.getDefaultSlotInstance(targetType));
-
-		instructionHandle = instructionHandle.getNext();
-		instructionHandle.accept(this);
-	}
-
 	// -----------------------------------------------------------------
 	/**
 	 * 1. ACONST_NULL<br>
@@ -462,12 +424,7 @@ public abstract class BaseInstructionsAnalysisVisitor extends EmptyVisitor {
 	 */
 	@Override
 	public void visitACONST_NULL(ACONST_NULL obj) {
-		logger.log(Level.FINE, indentation + obj.toString(false));
-		// push NULL onto stack
-		frame.getStack().push(new ReferenceSlot());
-
-		instructionHandle = instructionHandle.getNext();
-		instructionHandle.accept(this);
+		handleBasicStackOperations(obj, new ReferenceSlot());
 	}
 
 	// -----------------------------------------------------------------
@@ -479,32 +436,8 @@ public abstract class BaseInstructionsAnalysisVisitor extends EmptyVisitor {
 	 */
 	@Override
 	public void visitArithmeticInstruction(ArithmeticInstruction obj) {
-		logger.log(Level.FINE, indentation + obj.toString(false));
-		StringBuilder log = new StringBuilder();
-		log.append("\t" + "(");
-
-		Slot targetType = Slot.getDefaultSlotInstance(obj
-				.getType(constantPoolGen));
-		int consumed = obj.consumeStack(constantPoolGen);
-		int produced = obj.produceStack(constantPoolGen);
-		Slot entry;
-
-		for (int i = 0; i < consumed; i++) {
-			entry = frame.getStack().pop();
-			log.append((i == 0) ? entry : ", " + entry);
-		}
-		log.append(") -> (");
-
-		for (int i = 0; i < produced; i++) {
-			frame.getStack().push(targetType);
-			log.append((i == 0) ? targetType : ", " + targetType);
-		}
-
-		log.append(")");
-		logger.log(Level.FINEST, indentation + log);
-
-		instructionHandle = instructionHandle.getNext();
-		instructionHandle.accept(this);
+		handleBasicStackOperations(obj,
+				Slot.getDefaultSlotInstance(obj.getType(constantPoolGen)));
 	}
 
 	// -----------------------------------------------------------------
@@ -528,19 +461,26 @@ public abstract class BaseInstructionsAnalysisVisitor extends EmptyVisitor {
 			arrayReference = (ReferenceSlot) frame.getStack().pop();
 			if (opcode == 0x32) {
 				// AALoad
+				Array array = (Array) frame.getHeap().get(
+						arrayReference.getID());
 
-				// XXX CHECK THIS
-				// get a reference containing the flags of arrayRef and its
-				// sub-dependencies and link it to arrayRef
-				ReferenceSlot refToGet = arrayReference
-						.copyWithoutDependencies();
-				arrayReference.linkWithSubdependencies(refToGet);
+				for (UUID referred : array.getReferredObjects()) {
 
-				frame.pushStackByRequiredSlots(refToGet);
+					Frame newFrame = new Frame(frame);
+					newFrame.getStack().push(new ReferenceSlot(referred));
+					BaseInstructionsAnalysisVisitor visitor = getInstructionsAnalysisVisitor(
+							newFrame, alreadyVisited,
+							instructionHandle.getNext());
+					instructionHandle.getNext().accept(visitor);
+					bugs.addAll(visitor.getBugs().getCollection());
+					result.addAll(visitor.getResult());
+				}
 			} else {
 				// all other ALOAD instructions
 				frame.pushStackByRequiredSlots(Slot.getDefaultSlotInstance(obj
 						.getType(constantPoolGen)));
+				instructionHandle = instructionHandle.getNext();
+				instructionHandle.accept(this);
 			}
 		} else {
 			// all ASTORE instructions
@@ -551,6 +491,7 @@ public abstract class BaseInstructionsAnalysisVisitor extends EmptyVisitor {
 			frame.getStack().pop();
 			// pop array reference
 			arrayReference = (ReferenceSlot) frame.getStack().pop();
+
 			detectAStoreBug(arrayReference, value);
 
 			if (opcode == 0x53) {
@@ -558,9 +499,9 @@ public abstract class BaseInstructionsAnalysisVisitor extends EmptyVisitor {
 				frame.getHeap().linkObjects(arrayReference.getID(), null,
 						((ReferenceSlot) value).getID());
 			}
+			instructionHandle = instructionHandle.getNext();
+			instructionHandle.accept(this);
 		}
-		instructionHandle = instructionHandle.getNext();
-		instructionHandle.accept(this);
 	}
 
 	// -----------------------------------------------------------------
@@ -572,13 +513,7 @@ public abstract class BaseInstructionsAnalysisVisitor extends EmptyVisitor {
 	 */
 	@Override
 	public void visitARRAYLENGTH(ARRAYLENGTH obj) {
-		logger.log(Level.FINE, indentation + obj.toString(false));
-		// pops array reference
-		frame.getStack().pop();
-		// pushes length
-		frame.getStack().push(IntSlot.getInstance());
-		instructionHandle = instructionHandle.getNext();
-		instructionHandle.accept(this);
+		handleBasicStackOperations(obj, IntSlot.getInstance());
 	}
 
 	// -----------------------------------------------------------------
@@ -602,11 +537,7 @@ public abstract class BaseInstructionsAnalysisVisitor extends EmptyVisitor {
 	 */
 	@Override
 	public void visitBIPUSH(BIPUSH obj) {
-		logger.log(Level.FINE, indentation + obj.toString(false));
-		// pushes the integer value onto the stack
-		frame.getStack().push(IntSlot.getInstance());
-		instructionHandle = instructionHandle.getNext();
-		instructionHandle.accept(this);
+		handleBasicStackOperations(obj, IntSlot.getInstance());
 	}
 
 	// -----------------------------------------------------------------
@@ -741,7 +672,6 @@ public abstract class BaseInstructionsAnalysisVisitor extends EmptyVisitor {
 		bugs.addAll(caseToFollow.getBugs().getCollection());
 		// adding result of the case to a result-list
 		result.addAll(caseToFollow.getResult());
-
 	}
 
 	// -----------------------------------------------------------------
@@ -765,31 +695,8 @@ public abstract class BaseInstructionsAnalysisVisitor extends EmptyVisitor {
 	 */
 	@Override
 	public void visitConversionInstruction(ConversionInstruction obj) {
-		logger.log(Level.FINE, indentation + obj.toString(false));
-		StringBuilder log = new StringBuilder();
-		log.append("\t" + "(");
-
-		// pop the consumed values
-		for (int i = 0; i < obj.consumeStack(constantPoolGen); i++) {
-			log.append((i == 0) ? frame.getStack().pop() : ", "
-					+ frame.getStack().pop());
-		}
-
-		log.append(") -> (");
-
-		// push the produced values
-		Slot targetValue = Slot.getDefaultSlotInstance(obj
-				.getType(constantPoolGen));
-		for (int i = 0; i < obj.produceStack(constantPoolGen); i++) {
-			log.append((i == 0) ? targetValue : ", " + targetValue);
-			frame.getStack().push(targetValue);
-		}
-
-		log.append(")");
-		logger.log(Level.FINEST, indentation + log);
-
-		instructionHandle = instructionHandle.getNext();
-		instructionHandle.accept(this);
+		handleBasicStackOperations(obj,
+				Slot.getDefaultSlotInstance(obj.getType(constantPoolGen)));
 	}
 
 	// ---CPInstruction-------------------------------------------------
@@ -802,18 +709,9 @@ public abstract class BaseInstructionsAnalysisVisitor extends EmptyVisitor {
 	 */
 	@Override
 	public void visitANEWARRAY(ANEWARRAY obj) {
-		logger.log(Level.FINE, indentation + obj.toString(false));
-
-		// pop the length
-		frame.getStack().pop();
-
-		// push the array reference
-		ReferenceSlot slot = new ReferenceSlot(frame.getHeap().newArray());
-
-		frame.getStack().push(slot);
-
-		instructionHandle = instructionHandle.getNext();
-		instructionHandle.accept(this);
+		// pops length, pushes new array reference
+		handleBasicStackOperations(obj, new ReferenceSlot(frame.getHeap()
+				.newArray()));
 	}
 
 	/**
@@ -859,28 +757,28 @@ public abstract class BaseInstructionsAnalysisVisitor extends EmptyVisitor {
 	@Override
 	public void visitGETFIELD(GETFIELD obj) {
 		logger.log(Level.FINEST, indentation + obj.toString(false));
+		// Notation: gets o.f
 
 		// pop object reference
-		ReferenceSlot ref = (ReferenceSlot) frame.getStack().pop();
+		ReferenceSlot o = (ReferenceSlot) frame.getStack().pop();
 
 		// obj.getSignature() refers to desired field
-		Slot target = Slot.getDefaultSlotInstance(obj.getType(constantPoolGen));
-		if (target instanceof ReferenceSlot) {
-			if (ref.getID().equals(frame.getHeap().getExternalID())) {
+		Slot f = Slot.getDefaultSlotInstance(obj.getType(constantPoolGen));
+		if (f instanceof ReferenceSlot) {
+			if (o.getID().equals(frame.getHeap().getExternalID())) {
 				// if left side is external return external
-				target = new ReferenceSlot(frame.getHeap().getExternalID());
+				f = new ReferenceSlot(frame.getHeap().getExternalID());
 			} else {
 				// get the ClassInstance linked to the desired field
-				target = new ReferenceSlot(((ClassInstance) frame.getHeap()
-						.get(ref.getID())).getField(obj
-						.getFieldName(constantPoolGen)));
+				f = new ReferenceSlot(((ClassInstance) frame.getHeap().get(
+						o.getID())).getField(obj.getFieldName(constantPoolGen)));
 			}
 		}
-		frame.pushStackByRequiredSlots(target);
+		frame.pushStackByRequiredSlots(f);
 
 		logger.log(
 				Level.FINEST,
-				indentation + "\t" + ref + "."
+				indentation + "\t" + o + "."
 						+ obj.getFieldName(constantPoolGen));
 
 		instructionHandle = instructionHandle.getNext();
@@ -897,26 +795,23 @@ public abstract class BaseInstructionsAnalysisVisitor extends EmptyVisitor {
 	@Override
 	public void visitGETSTATIC(GETSTATIC obj) {
 		logger.log(Level.FINEST, indentation + obj.toString(false));
+		// Notation: gets f
 
 		StringBuilder log = new StringBuilder();
 		log.append(indentation + "\t");
 		log.append(obj.getLoadClassType(constantPoolGen) + "."
 				+ obj.getFieldName(constantPoolGen) + " (");
 
-		Slot valueToGet = Slot.getDefaultSlotInstance(obj
-				.getFieldType(constantPoolGen));
+		Slot f = Slot.getDefaultSlotInstance(obj.getFieldType(constantPoolGen));
 		// if a reference is expected
-		if (valueToGet instanceof ReferenceSlot) {
-			// TODO CHECK THIS
-
-			// static values are externally known, we do not know more about it
-			valueToGet = new ReferenceSlot(frame.getHeap().getExternalID());
+		if (f instanceof ReferenceSlot) {
+			// static values are always external
+			f = new ReferenceSlot(frame.getHeap().getExternalID());
 		}
 
-		log.append((valueToGet instanceof DoubleSlot || valueToGet instanceof LongSlot) ? valueToGet
-				+ ", " + valueToGet
-				: valueToGet);
-		frame.pushStackByRequiredSlots(valueToGet);
+		log.append((f instanceof DoubleSlot || f instanceof LongSlot) ? f
+				+ ", " + f : f);
+		frame.pushStackByRequiredSlots(f);
 		log.append(")");
 		logger.log(Level.FINEST, indentation + log);
 
@@ -935,35 +830,36 @@ public abstract class BaseInstructionsAnalysisVisitor extends EmptyVisitor {
 	@Override
 	public void visitPUTFIELD(PUTFIELD obj) {
 		logger.log(Level.FINEST, indentation + obj.toString(false));
+		// Notation: puts o.f = v
 
 		// right side of assignment
-		Slot valueToPut = frame.popStackByRequiredSlots();
+		Slot v = frame.popStackByRequiredSlots();
 
 		// pop left side of assignment off the stack, too
-		ReferenceSlot field = (ReferenceSlot) frame.getStack().pop();
-		detectPutFieldBug(field, valueToPut);
-		if (valueToPut instanceof ReferenceSlot) {
-			UUID rightID = ((ReferenceSlot) valueToPut).getID();
-			if (field.getID().equals(frame.getHeap().getExternalID())) {
+		ReferenceSlot o = (ReferenceSlot) frame.getStack().pop();
+		detectPutFieldBug(o, v);
+		if (v instanceof ReferenceSlot) {
+			UUID vID = ((ReferenceSlot) v).getID();
+			if (o.getID().equals(frame.getHeap().getExternalID())) {
 				// left side is external, publish right
-				frame.getHeap().publish(rightID);
+				frame.getHeap().publish(vID);
 			} else {
 				// link them together
-				frame.getHeap().linkObjects(field.getID(),
-						obj.getFieldName(constantPoolGen), rightID);
+				frame.getHeap().linkObjects(o.getID(),
+						obj.getFieldName(constantPoolGen), vID);
 			}
 		}
 
 		logger.log(
 				Level.FINEST,
 				indentation
-						+ field
+						+ o
 						+ "."
 						+ obj.getFieldName(constantPoolGen)
 						+ " <--"
-						+ ((valueToPut instanceof DoubleSlot || valueToPut instanceof LongSlot) ? valueToPut
-								+ ", " + valueToPut
-								: valueToPut));
+						+ ((v instanceof DoubleSlot || v instanceof LongSlot) ? v
+								+ ", " + v
+								: v));
 
 		instructionHandle = instructionHandle.getNext();
 		instructionHandle.accept(this);
@@ -979,21 +875,22 @@ public abstract class BaseInstructionsAnalysisVisitor extends EmptyVisitor {
 	@Override
 	public void visitPUTSTATIC(PUTSTATIC obj) {
 		logger.log(Level.FINE, indentation + obj.toString(false));
+		// Notation: f = v
 
 		// popping value from stack
-		Slot toPut = frame.popStackByRequiredSlots();
+		Slot v = frame.popStackByRequiredSlots();
 
 		// a reference is assigned to a static field
-		if (toPut instanceof ReferenceSlot) {
-			detectPutStaticBug((ReferenceSlot) toPut);
+		if (v instanceof ReferenceSlot) {
+			detectPutStaticBug((ReferenceSlot) v);
 			// make it external
-			frame.getHeap().publish(((ReferenceSlot) toPut).getID());
+			frame.getHeap().publish(((ReferenceSlot) v).getID());
 		}
 
 		// write log
 		String log = "\t" + obj.getReferenceType(constantPoolGen) + "."
 				+ obj.getName(constantPoolGen) + " <-- "
-				+ ((toPut.getNumSlots() == 2) ? toPut + ", " + toPut : toPut);
+				+ ((v.getNumSlots() == 2) ? v + ", " + v : v);
 
 		logger.log(Level.FINEST, indentation + log);
 
@@ -1073,13 +970,7 @@ public abstract class BaseInstructionsAnalysisVisitor extends EmptyVisitor {
 	 */
 	@Override
 	public void visitINSTANCEOF(INSTANCEOF obj) {
-		logger.log(Level.FINE, indentation + obj.toString(false));
-
-		frame.getStack().pop();
-		frame.getStack().push(IntSlot.getInstance());
-
-		instructionHandle = instructionHandle.getNext();
-		instructionHandle.accept(this);
+		handleBasicStackOperations(obj, IntSlot.getInstance());
 	}
 
 	/**
@@ -1090,14 +981,13 @@ public abstract class BaseInstructionsAnalysisVisitor extends EmptyVisitor {
 	 */
 	@Override
 	public void visitLDC(LDC obj) {
-		logger.log(Level.FINE, indentation + obj.toString(false));
-
 		Slot value = Slot.getDefaultSlotInstance(obj.getType(constantPoolGen));
 		// pushes an integer, a float or String (notThis) onto the stack
-		frame.getStack().push(value);
-
-		instructionHandle = instructionHandle.getNext();
-		instructionHandle.accept(this);
+		if (value instanceof ReferenceSlot) {
+			// it is a String
+			value = new ReferenceSlot(frame.getHeap().newClassInstance());
+		}
+		handleBasicStackOperations(obj, value);
 	}
 
 	/**
@@ -1135,15 +1025,26 @@ public abstract class BaseInstructionsAnalysisVisitor extends EmptyVisitor {
 		log += "[" + obj.getDimensions() + "][]";
 		logger.log(Level.FINEST, indentation + log);
 
+		ReferenceSlot slot = null;
+		Array array = null;
+
 		for (int i = 0; i < obj.consumeStack(constantPoolGen); i++) {
 			// pop count values for each dimension
 			frame.getStack().pop();
+
+			Array newArray = (Array) frame.getHeap().get(
+					frame.getHeap().newArray());
+
+			if (i == 0) {
+				slot = new ReferenceSlot(newArray.getId());
+			} else {
+				frame.getHeap().linkObjects(array.getId(), null,
+						newArray.getId());
+			}
+			array = newArray;
 		}
 
 		// push array reference onto stack
-		UUID id = frame.getHeap().newHeapObject();
-		ReferenceSlot slot = new ReferenceSlot(id);
-
 		frame.getStack().push(slot);
 
 		instructionHandle = instructionHandle.getNext();
@@ -1181,7 +1082,8 @@ public abstract class BaseInstructionsAnalysisVisitor extends EmptyVisitor {
 	 */
 	@Override
 	public void visitDCMPG(DCMPG obj) {
-		handleCMPG(obj);
+		handleBasicStackOperations(obj,
+				Slot.getDefaultSlotInstance(obj.getType(constantPoolGen)));
 	}
 
 	// -----------------------------------------------------------------
@@ -1195,7 +1097,8 @@ public abstract class BaseInstructionsAnalysisVisitor extends EmptyVisitor {
 	 */
 	@Override
 	public void visitDCMPL(DCMPL obj) {
-		handleCMPL(obj);
+		handleBasicStackOperations(obj,
+				Slot.getDefaultSlotInstance(obj.getType(constantPoolGen)));
 	}
 
 	// -----------------------------------------------------------------
@@ -1206,8 +1109,8 @@ public abstract class BaseInstructionsAnalysisVisitor extends EmptyVisitor {
 	 * */
 	@Override
 	public void visitDCONST(DCONST obj) {
-		logger.log(Level.FINE, indentation + obj.toString(false));
-		handleCONST(obj.getType(constantPoolGen));
+		handleBasicStackOperations(obj,
+				Slot.getDefaultSlotInstance(obj.getType(constantPoolGen)));
 	}
 
 	// -----------------------------------------------------------------
@@ -1222,7 +1125,8 @@ public abstract class BaseInstructionsAnalysisVisitor extends EmptyVisitor {
 	 */
 	@Override
 	public void visitFCMPG(FCMPG obj) {
-		handleCMPG(obj);
+		handleBasicStackOperations(obj,
+				Slot.getDefaultSlotInstance(obj.getType(constantPoolGen)));
 	}
 
 	// -----------------------------------------------------------------
@@ -1237,7 +1141,8 @@ public abstract class BaseInstructionsAnalysisVisitor extends EmptyVisitor {
 	 */
 	@Override
 	public void visitFCMPL(FCMPL obj) {
-		handleCMPL(obj);
+		handleBasicStackOperations(obj,
+				Slot.getDefaultSlotInstance(obj.getType(constantPoolGen)));
 	}
 
 	// -----------------------------------------------------------------
@@ -1248,8 +1153,8 @@ public abstract class BaseInstructionsAnalysisVisitor extends EmptyVisitor {
 	 */
 	@Override
 	public void visitFCONST(FCONST obj) {
-		logger.log(Level.FINE, indentation + obj.toString(false));
-		handleCONST(obj.getType(constantPoolGen));
+		handleBasicStackOperations(obj,
+				Slot.getDefaultSlotInstance(obj.getType(constantPoolGen)));
 	}
 
 	// -----------------------------------------------------------------
@@ -1260,8 +1165,8 @@ public abstract class BaseInstructionsAnalysisVisitor extends EmptyVisitor {
 	 */
 	@Override
 	public void visitICONST(ICONST obj) {
-		logger.log(Level.FINE, indentation + obj.toString(false));
-		handleCONST(obj.getType(constantPoolGen));
+		handleBasicStackOperations(obj,
+				Slot.getDefaultSlotInstance(obj.getType(constantPoolGen)));
 	}
 
 	// -----------------------------------------------------------------
@@ -1300,7 +1205,8 @@ public abstract class BaseInstructionsAnalysisVisitor extends EmptyVisitor {
 	 */
 	@Override
 	public void visitLCMP(LCMP obj) {
-		handleCMPL(obj);
+		handleBasicStackOperations(obj,
+				Slot.getDefaultSlotInstance(obj.getType(constantPoolGen)));
 	}
 
 	// -----------------------------------------------------------------
@@ -1311,8 +1217,8 @@ public abstract class BaseInstructionsAnalysisVisitor extends EmptyVisitor {
 	 */
 	@Override
 	public void visitLCONST(LCONST obj) {
-		logger.log(Level.FINE, indentation + obj.toString(false));
-		handleCONST(obj.getType(constantPoolGen));
+		handleBasicStackOperations(obj,
+				Slot.getDefaultSlotInstance(obj.getType(constantPoolGen)));
 	}
 
 	// ---LocalVariableInstruction--------------------------------------
@@ -1464,10 +1370,11 @@ public abstract class BaseInstructionsAnalysisVisitor extends EmptyVisitor {
 		logger.log(Level.FINEST, indentation + "\t" + returnType);
 
 		if (returnType instanceof VoidSlot)
-			result.add(new ResultValue(Kind.REGULAR, returnType));
+			result.add(new ResultValue(Kind.REGULAR, returnType, frame
+					.getHeap()));
 		else
 			result.add(new ResultValue(Kind.REGULAR, frame
-					.popStackByRequiredSlots()));
+					.popStackByRequiredSlots(), frame.getHeap()));
 	}
 
 	// -----------------------------------------------------------------

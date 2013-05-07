@@ -7,7 +7,7 @@ import org.apache.bcel.generic.Type;
 
 public abstract class Slot {
 	private final static Map<Type, Slot> map = new HashMap<Type, Slot>();
-	{
+	static {
 		map.put(Type.INT, IntSlot.getInstance());
 		map.put(Type.LONG, LongSlot.getInstance());
 		map.put(Type.CHAR, CharSlot.getInstance());

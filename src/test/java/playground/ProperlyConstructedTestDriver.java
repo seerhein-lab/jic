@@ -13,12 +13,13 @@ import edu.umd.cs.findbugs.BugCollection;
 import edu.umd.cs.findbugs.BugInstance;
 
 public class ProperlyConstructedTestDriver {
-	private static final String LOGFILEPATH = "/Users/haase/Desktop/log.txt";
+	private static final String LOGFILEPATH = "log.txt";
 
 	public static void main(String[] args) throws ClassNotFoundException,
 			SecurityException, IOException {
 
-		Logger logger = Utils.setUpLogger("ProperlyConstructedTestDriver", LOGFILEPATH);
+		Logger logger = Utils.setUpLogger("ProperlyConstructedTestDriver",
+				LOGFILEPATH);
 
 		JavaClass clazz = Repository
 				.lookupClass("playground.PropConstTestClass");

@@ -13,8 +13,6 @@ public class Heap {
 
 	private final UUID thisID;
 	private final UUID externalID;
-	// private final UUID nullID;
-	private final UUID unknownID;
 
 	public Heap() {
 		HeapObject thisObject = new ClassInstance();
@@ -24,14 +22,6 @@ public class Heap {
 		HeapObject externalObject = new HeapObject();
 		externalID = externalObject.getId();
 		objects.put(externalID, externalObject);
-
-		// HeapObject nullObject = new ClassInstance();
-		// nullID = nullObject.getId();
-		// objects.put(nullID, nullObject);
-
-		HeapObject unknownObject = new ClassInstance();
-		unknownID = unknownObject.getId();
-		objects.put(unknownID, unknownObject);
 	}
 
 	public Heap(Heap original) {
@@ -43,8 +33,6 @@ public class Heap {
 
 		thisID = original.thisID;
 		externalID = original.externalID;
-		// nullID = original.nullID;
-		unknownID = original.unknownID;
 	}
 
 	public HeapObject get(UUID id) {
@@ -85,6 +73,11 @@ public class Heap {
 	}
 
 	public void publish(UUID id) {
+		if (id.equals(thisID)) {
+			// do not publish 'this' in order not to cover further bugs
+			return;
+		}
+
 		publishedObjects.add(id);
 
 		HeapObject object = objects.get(id);

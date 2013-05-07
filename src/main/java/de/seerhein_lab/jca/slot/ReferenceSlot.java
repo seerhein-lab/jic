@@ -29,5 +29,4 @@ public class ReferenceSlot extends Slot {
 	public UUID getID() {
 		return objectID;
 	}
-
 }

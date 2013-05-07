@@ -1,5 +1,6 @@
 package de.seerhein_lab.jca;
 
+import de.seerhein_lab.jca.heap.Heap;
 import de.seerhein_lab.jca.slot.Slot;
 
 /**
@@ -20,6 +21,7 @@ public class ResultValue {
 
 	private final Kind kind;
 	private final Slot slot;
+	private final Heap heap;
 
 	/**
 	 * Simple constructor.
@@ -29,25 +31,31 @@ public class ResultValue {
 	 * @param slot
 	 *            The returned value represented by a Slot.
 	 */
-	public ResultValue(Kind kind, Slot slot) {
+	public ResultValue(Kind kind, Slot slot, Heap heap) {
 		this.kind = kind;
 		this.slot = slot;
+		this.heap = heap;
 	}
 
-	/**
-	 * Simple auto-generated hashCode method.
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see java.lang.Object#hashCode()
 	 */
 	@Override
 	public int hashCode() {
 		final int prime = 31;
 		int result = 1;
+		result = prime * result + ((heap == null) ? 0 : heap.hashCode());
 		result = prime * result + ((kind == null) ? 0 : kind.hashCode());
 		result = prime * result + ((slot == null) ? 0 : slot.hashCode());
 		return result;
 	}
 
-	/**
-	 * Simple auto.generated equals method.
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see java.lang.Object#equals(java.lang.Object)
 	 */
 	@Override
 	public boolean equals(Object obj) {
@@ -58,46 +66,20 @@ public class ResultValue {
 		if (!(obj instanceof ResultValue))
 			return false;
 		ResultValue other = (ResultValue) obj;
+		if (heap == null) {
+			if (other.heap != null)
+				return false;
+		} else if (!heap.equals(other.heap))
+			return false;
 		if (kind != other.kind)
 			return false;
-		if (slot != other.slot)
+		if (slot == null) {
+			if (other.slot != null)
+				return false;
+		} else if (!slot.equals(other.slot))
 			return false;
 		return true;
 	}
-
-	// public static Set<ResultValue> combineReferences(
-	// Set<ResultValue> resultValues) {
-	// Set<ResultValue> correctedSet = new HashSet<ResultValue>();
-	//
-	// // values to compare
-	// ResultValue notThisValue = new ResultValue(Kind.REGULAR,
-	// Slot.notThisReference);
-	// ResultValue maybeThisValue = new ResultValue(Kind.REGULAR,
-	// Slot.maybeThisReference);
-	// ResultValue thisValue = new ResultValue(Kind.REGULAR,
-	// Slot.thisReference);
-	//
-	// for (ResultValue value : resultValues) {
-	// ResultValue correctedValue = value;
-	// if (value.kind.equals(ResultValue.Kind.REGULAR)
-	// && value.slot.getDataType().equals(DataType.referenceType)) {
-	// if (value.slot.equals(Slot.notThisReference)) {
-	// if (resultValues.contains(maybeThisValue)
-	// || resultValues.contains(thisValue))
-	// correctedValue = maybeThisValue;
-	// }
-	//
-	// if (value.slot.equals(Slot.thisReference)) {
-	// if (resultValues.contains(notThisValue)
-	// || resultValues.contains(maybeThisValue))
-	// correctedValue = maybeThisValue;
-	// }
-	// }
-	//
-	// correctedSet.add(correctedValue);
-	// }
-	// return correctedSet;
-	// }
 
 	public Kind getKind() {
 		return kind;
@@ -107,4 +89,7 @@ public class ResultValue {
 		return slot;
 	}
 
+	public Heap getHeap() {
+		return heap;
+	}
 }
