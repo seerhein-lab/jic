@@ -91,6 +91,8 @@ public class HeapObject {
 	}
 
 	HeapObject copy() {
+		// there is only the 'external' instance of this class, hence returning
+		// that instance suffices.
 		return this;
 	}
 
