@@ -1,41 +1,26 @@
 package de.seerhein_lab.jca.slot;
 
-import java.util.Arrays;
-import java.util.Collection;
+import static org.junit.Assert.assertTrue;
 
 import org.apache.bcel.generic.Type;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
-import org.junit.runners.Parameterized.Parameters;
+import org.junit.Test;
 
-@RunWith(Parameterized.class)
 public class SlotTest {
 
-	private Type[] types;
-	private int expectedSlots;
-
-	public SlotTest(Type[] types, int expectedSlots) {
-		this.types = types;
-		this.expectedSlots = expectedSlots;
+	@Test
+	public void testGetDefaultSlotInstanceType() {
+		assertTrue(Slot.getDefaultSlotInstance(Type.INT) instanceof IntSlot);
+		assertTrue(Slot.getDefaultSlotInstance(Type.LONG) instanceof LongSlot);
+		assertTrue(Slot.getDefaultSlotInstance(Type.CHAR) instanceof CharSlot);
+		assertTrue(Slot.getDefaultSlotInstance(Type.BYTE) instanceof ByteSlot);
+		assertTrue(Slot.getDefaultSlotInstance(Type.BOOLEAN) instanceof BooleanSlot);
+		assertTrue(Slot.getDefaultSlotInstance(Type.SHORT) instanceof ShortSlot);
+		assertTrue(Slot.getDefaultSlotInstance(Type.FLOAT) instanceof FloatSlot);
+		assertTrue(Slot.getDefaultSlotInstance(Type.DOUBLE) instanceof DoubleSlot);
+		assertTrue(Slot.getDefaultSlotInstance(Type.VOID) instanceof VoidSlot);
+		assertTrue(Slot.getDefaultSlotInstance(Type.OBJECT) instanceof ReferenceSlot);
+		assertTrue(Slot.getDefaultSlotInstance(Type.THROWABLE) instanceof ReferenceSlot);
+		assertTrue(Slot.getDefaultSlotInstance(Type.UNKNOWN) instanceof ReferenceSlot);
 	}
-
-	@Parameters
-	public static Collection<Object[]> testInstanceTypes() {
-		return Arrays.asList(new Object[][] {
-				{ new Type[] {}, 0 },
-				{ new Type[] { Type.INT }, 1 },
-				{ new Type[] { Type.DOUBLE }, 2 },
-				{ new Type[] { Type.INT, Type.DOUBLE }, 3 },
-				{
-						new Type[] { Type.INT, Type.LONG, Type.CHAR, Type.BYTE,
-								Type.BOOLEAN, Type.SHORT, Type.FLOAT,
-								Type.DOUBLE, Type.VOID }, 10 } });
-	}
-
-	// @Test
-	// public void testNumRequiredSlots() {
-	// int actual = Slot.numRequiredSlots(types);
-	// assertEquals(expectedSlots, actual);
-	// }
 
 }
