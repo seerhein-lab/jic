@@ -1,6 +1,7 @@
 package de.seerhein_lab.jca.analyzer;
 
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 import java.util.logging.Level;
@@ -9,6 +10,8 @@ import java.util.logging.Logger;
 import org.apache.bcel.Repository;
 import org.apache.bcel.classfile.JavaClass;
 import org.apache.bcel.classfile.Method;
+import org.apache.bcel.generic.AALOAD;
+import org.apache.bcel.generic.AASTORE;
 import org.apache.bcel.generic.ACONST_NULL;
 import org.apache.bcel.generic.ANEWARRAY;
 import org.apache.bcel.generic.ARRAYLENGTH;
@@ -17,19 +20,15 @@ import org.apache.bcel.generic.ArithmeticInstruction;
 import org.apache.bcel.generic.ArrayInstruction;
 import org.apache.bcel.generic.BIPUSH;
 import org.apache.bcel.generic.BREAKPOINT;
+import org.apache.bcel.generic.BranchInstruction;
 import org.apache.bcel.generic.CHECKCAST;
+import org.apache.bcel.generic.CPInstruction;
 import org.apache.bcel.generic.CodeExceptionGen;
 import org.apache.bcel.generic.ConstantPoolGen;
 import org.apache.bcel.generic.ConversionInstruction;
 import org.apache.bcel.generic.DCMPG;
 import org.apache.bcel.generic.DCMPL;
 import org.apache.bcel.generic.DCONST;
-import org.apache.bcel.generic.DUP;
-import org.apache.bcel.generic.DUP2;
-import org.apache.bcel.generic.DUP2_X1;
-import org.apache.bcel.generic.DUP2_X2;
-import org.apache.bcel.generic.DUP_X1;
-import org.apache.bcel.generic.DUP_X2;
 import org.apache.bcel.generic.EmptyVisitor;
 import org.apache.bcel.generic.FCMPG;
 import org.apache.bcel.generic.FCMPL;
@@ -38,14 +37,8 @@ import org.apache.bcel.generic.GETFIELD;
 import org.apache.bcel.generic.GETSTATIC;
 import org.apache.bcel.generic.GotoInstruction;
 import org.apache.bcel.generic.ICONST;
-import org.apache.bcel.generic.IINC;
 import org.apache.bcel.generic.IMPDEP1;
 import org.apache.bcel.generic.IMPDEP2;
-import org.apache.bcel.generic.INSTANCEOF;
-import org.apache.bcel.generic.INVOKEINTERFACE;
-import org.apache.bcel.generic.INVOKESPECIAL;
-import org.apache.bcel.generic.INVOKESTATIC;
-import org.apache.bcel.generic.INVOKEVIRTUAL;
 import org.apache.bcel.generic.IfInstruction;
 import org.apache.bcel.generic.Instruction;
 import org.apache.bcel.generic.InstructionHandle;
@@ -53,9 +46,8 @@ import org.apache.bcel.generic.InvokeInstruction;
 import org.apache.bcel.generic.JsrInstruction;
 import org.apache.bcel.generic.LCMP;
 import org.apache.bcel.generic.LCONST;
-import org.apache.bcel.generic.LDC;
-import org.apache.bcel.generic.LDC2_W;
 import org.apache.bcel.generic.LoadInstruction;
+import org.apache.bcel.generic.LocalVariableInstruction;
 import org.apache.bcel.generic.MONITORENTER;
 import org.apache.bcel.generic.MONITOREXIT;
 import org.apache.bcel.generic.MULTIANEWARRAY;
@@ -63,15 +55,13 @@ import org.apache.bcel.generic.MethodGen;
 import org.apache.bcel.generic.NEW;
 import org.apache.bcel.generic.NEWARRAY;
 import org.apache.bcel.generic.NOP;
-import org.apache.bcel.generic.POP;
-import org.apache.bcel.generic.POP2;
 import org.apache.bcel.generic.PUTFIELD;
 import org.apache.bcel.generic.PUTSTATIC;
 import org.apache.bcel.generic.RET;
 import org.apache.bcel.generic.ReturnInstruction;
 import org.apache.bcel.generic.SIPUSH;
-import org.apache.bcel.generic.SWAP;
 import org.apache.bcel.generic.Select;
+import org.apache.bcel.generic.StackInstruction;
 import org.apache.bcel.generic.StoreInstruction;
 import org.apache.bcel.generic.Type;
 
@@ -83,10 +73,8 @@ import de.seerhein_lab.jca.analyzer.BaseMethodAnalyzer.AlreadyVisitedMethod;
 import de.seerhein_lab.jca.heap.Array;
 import de.seerhein_lab.jca.heap.ClassInstance;
 import de.seerhein_lab.jca.slot.DoubleSlot;
-import de.seerhein_lab.jca.slot.IntSlot;
 import de.seerhein_lab.jca.slot.LongSlot;
 import de.seerhein_lab.jca.slot.ReferenceSlot;
-import de.seerhein_lab.jca.slot.ShortSlot;
 import de.seerhein_lab.jca.slot.Slot;
 import de.seerhein_lab.jca.slot.VoidSlot;
 import edu.umd.cs.findbugs.BugCollection;
@@ -135,6 +123,9 @@ public abstract class BaseInstructionsAnalysisVisitor extends EmptyVisitor {
 	protected final Set<AlreadyVisitedMethod> alreadyVisitedMethods;
 	protected SortedBugCollection bugs = new SortedBugCollection();
 	protected Set<ResultValue> result = new HashSet<ResultValue>();
+
+	protected Map<Short, Slot> simpleInstructions = SimpleInstructions
+			.getSimpleInstructions();
 
 	protected static class AlreadyVisitedIfInstruction {
 		private final InstructionHandle ifInstruction;
@@ -251,11 +242,13 @@ public abstract class BaseInstructionsAnalysisVisitor extends EmptyVisitor {
 
 	}
 
-	// ******************************************************************//
-	// Visit section //
-	// ******************************************************************//
+	// handle section
 
-	protected void handleBasicStackOperations(Instruction obj, Slot targetType) {
+	protected void handleSimpleInstruction(Instruction obj) {
+		if (!simpleInstructions.containsKey(obj.getOpcode())) {
+			// instruction is not handled with this method
+			return;
+		}
 		logger.log(Level.FINE, indentation + obj.toString(false));
 		StringBuilder log = new StringBuilder();
 		log.append("\t" + "(");
@@ -270,9 +263,10 @@ public abstract class BaseInstructionsAnalysisVisitor extends EmptyVisitor {
 		}
 		log.append(") -> (");
 
+		entry = simpleInstructions.get(obj.getOpcode());
 		for (int i = 0; i < produced; i++) {
-			frame.getStack().push(targetType);
-			log.append((i == 0) ? targetType : ", " + targetType);
+			frame.getStack().push(entry);
+			log.append((i == 0) ? entry : ", " + entry);
 		}
 
 		log.append(")");
@@ -416,18 +410,10 @@ public abstract class BaseInstructionsAnalysisVisitor extends EmptyVisitor {
 		instructionHandle.accept(this);
 	}
 
-	// -----------------------------------------------------------------
-	/**
-	 * 1. ACONST_NULL<br>
-	 * Called when an ACONST_NULL operation occurs. Pushes a null reference onto
-	 * the stack.
-	 */
-	@Override
-	public void visitACONST_NULL(ACONST_NULL obj) {
-		handleBasicStackOperations(obj, new ReferenceSlot());
-	}
+	// ******************************************************************//
+	// Visit section //
+	// ******************************************************************//
 
-	// -----------------------------------------------------------------
 	/**
 	 * 2. ArithmeticInstruction <br>
 	 * Called when an ArithmeticInstruction occurs and handles all
@@ -436,8 +422,7 @@ public abstract class BaseInstructionsAnalysisVisitor extends EmptyVisitor {
 	 */
 	@Override
 	public void visitArithmeticInstruction(ArithmeticInstruction obj) {
-		handleBasicStackOperations(obj,
-				Slot.getDefaultSlotInstance(obj.getType(constantPoolGen)));
+		handleSimpleInstruction(obj);
 	}
 
 	// -----------------------------------------------------------------
@@ -449,59 +434,63 @@ public abstract class BaseInstructionsAnalysisVisitor extends EmptyVisitor {
 	 */
 	@Override
 	public void visitArrayInstruction(ArrayInstruction obj) {
-		logger.log(Level.FINE, indentation + obj.toString(false));
+		handleSimpleInstruction(obj);
 
-		short opcode = obj.getOpcode();
-		ReferenceSlot arrayReference;
-		if (opcode >= 0x2E && opcode <= 0x35) {
-			// all ALOAD instructions
-			// pop array index
-			frame.getStack().pop();
-			// pop array reference
-			arrayReference = (ReferenceSlot) frame.getStack().pop();
-			if (opcode == 0x32) {
-				// AALoad
-				Array array = (Array) frame.getHeap().get(
-						arrayReference.getID());
-
-				for (UUID referred : array.getReferredObjects()) {
-
-					Frame newFrame = new Frame(frame);
-					newFrame.getStack().push(new ReferenceSlot(referred));
-					BaseInstructionsAnalysisVisitor visitor = getInstructionsAnalysisVisitor(
-							newFrame, alreadyVisited,
-							instructionHandle.getNext());
-					instructionHandle.getNext().accept(visitor);
-					bugs.addAll(visitor.getBugs().getCollection());
-					result.addAll(visitor.getResult());
-				}
-			} else {
-				// all other ALOAD instructions
-				frame.pushStackByRequiredSlots(Slot.getDefaultSlotInstance(obj
-						.getType(constantPoolGen)));
-				instructionHandle = instructionHandle.getNext();
-				instructionHandle.accept(this);
-			}
-		} else {
-			// all ASTORE instructions
-
-			// pop value
-			Slot value = frame.popStackByRequiredSlots();
-			// pop array index
-			frame.getStack().pop();
-			// pop array reference
-			arrayReference = (ReferenceSlot) frame.getStack().pop();
-
-			detectAStoreBug(arrayReference, value);
-
-			if (opcode == 0x53) {
-				// AASTORE, link reference to array
-				frame.getHeap().linkObjects(arrayReference.getID(), null,
-						((ReferenceSlot) value).getID());
-			}
-			instructionHandle = instructionHandle.getNext();
-			instructionHandle.accept(this);
-		}
+		// TODO
+		// logger.log(Level.FINE, indentation + obj.toString(false));
+		//
+		// short opcode = obj.getOpcode();
+		// ReferenceSlot arrayReference;
+		// if (opcode >= 0x2E && opcode <= 0x35) {
+		// // all ALOAD instructions
+		// // pop array index
+		// frame.getStack().pop();
+		// // pop array reference
+		// arrayReference = (ReferenceSlot) frame.getStack().pop();
+		// if (opcode == 0x32) {
+		// // AALoad
+		// Array array = (Array) frame.getHeap().get(
+		// arrayReference.getID());
+		//
+		// for (UUID referred : array.getReferredObjects()) {
+		//
+		// Frame newFrame = new Frame(frame);
+		// newFrame.getStack().push(new ReferenceSlot(referred));
+		// BaseInstructionsAnalysisVisitor visitor =
+		// getInstructionsAnalysisVisitor(
+		// newFrame, alreadyVisited,
+		// instructionHandle.getNext());
+		// instructionHandle.getNext().accept(visitor);
+		// bugs.addAll(visitor.getBugs().getCollection());
+		// result.addAll(visitor.getResult());
+		// }
+		// } else {
+		// // all other ALOAD instructions
+		// frame.pushStackByRequiredSlots(Slot.getDefaultSlotInstance(obj
+		// .getType(constantPoolGen)));
+		// instructionHandle = instructionHandle.getNext();
+		// instructionHandle.accept(this);
+		// }
+		// } else {
+		// // all ASTORE instructions
+		//
+		// // pop value
+		// Slot value = frame.popStackByRequiredSlots();
+		// // pop array index
+		// frame.getStack().pop();
+		// // pop array reference
+		// arrayReference = (ReferenceSlot) frame.getStack().pop();
+		//
+		// detectAStoreBug(arrayReference, value);
+		//
+		// if (opcode == 0x53) {
+		// // AASTORE, link reference to array
+		// frame.getHeap().linkObjects(arrayReference.getID(), null,
+		// ((ReferenceSlot) value).getID());
+		// }
+		// instructionHandle = instructionHandle.getNext();
+		// instructionHandle.accept(this);
+		// }
 	}
 
 	// -----------------------------------------------------------------
@@ -513,7 +502,512 @@ public abstract class BaseInstructionsAnalysisVisitor extends EmptyVisitor {
 	 */
 	@Override
 	public void visitARRAYLENGTH(ARRAYLENGTH obj) {
-		handleBasicStackOperations(obj, IntSlot.getInstance());
+		handleSimpleInstruction(obj);
+	}
+
+	// -----------------------------------------------------------------
+	/**
+	 * 6. BIPUSH<br>
+	 * Called when a BIPUSH operation occurs. Pushes a byte onto the stack as an
+	 * integer value.
+	 */
+	@Override
+	public void visitBIPUSH(BIPUSH obj) {
+		handleSimpleInstruction(obj);
+	}
+
+	// -----------------------------------------------------------------
+
+	@Override
+	public void visitBranchInstruction(BranchInstruction obj) {
+		handleSimpleInstruction(obj);
+	}
+
+	// -----------------------------------------------------------------
+	/**
+	 * 8. BREAKPOINT<br>
+	 * Called when a BREAKPOINT operation occurs. The BREAKPOINT operation is
+	 * reserved for Java debuggers and should not appear in any class file.
+	 */
+	@Override
+	public void visitBREAKPOINT(BREAKPOINT obj) {
+		throw new AssertionError(
+				"The BREAKPOINT operation is reserved for Java debuggers and should not appear in any class file");
+	}
+
+	// -----------------------------------------------------------------
+	/**
+	 * 9. ConversionInstruction <br>
+	 * Called when a ConversionInstruction operation occurs.Converts the type of
+	 * a value to another one. Therefore a value is popped, converted and the
+	 * new one pushed back onto the stack.
+	 */
+	@Override
+	public void visitConversionInstruction(ConversionInstruction obj) {
+		handleSimpleInstruction(obj);
+	}
+
+	// ---CPInstruction-------------------------------------------------
+
+	@Override
+	public void visitCPInstruction(CPInstruction obj) {
+		handleSimpleInstruction(obj);
+		switch (obj.getOpcode()) {
+		case 0xb9:
+			// INVOKEINTERFACE
+		case 0xb6:
+			// INVOKEVIRTUAL
+			handleVirtualMethod((InvokeInstruction) obj);
+			break;
+		case 0xb7:
+			// INVOKESPECIAL
+		case 0xb8:
+			// INVOKESTATIC
+			handleNonVirtualMethod((InvokeInstruction) obj);
+			break;
+		case 0x12:
+			// LDC
+		case 0x13:
+			// LDC_W
+		case 0x14:
+			// LDC2_W
+			logger.log(Level.FINE, indentation + obj.toString(false));
+			Slot value = Slot.getDefaultSlotInstance(obj
+					.getType(constantPoolGen));
+			// pushes an integer, a float, a long, a double or a String
+			// (notThis) onto the stack
+			if (value instanceof ReferenceSlot) {
+				// it is a String
+				value = new ReferenceSlot(frame.getHeap().newClassInstance());
+			}
+			frame.pushStackByRequiredSlots(value);
+
+			logger.log(Level.FINEST, indentation + "\t" + value);
+
+			instructionHandle = instructionHandle.getNext();
+			instructionHandle.accept(this);
+			break;
+		}
+	}
+
+	// -----------------------------------------------------------------
+	/**
+	 * 11. DCMPG <br>
+	 * Called when a DCMPG operation occurs. Pops two double values from the
+	 * stack, compares them and pushes the integer result onto the stack. If
+	 * value1 is greater than value2 the result is 1, if value1 is equal to
+	 * value2 the result is 0 and if value1 is smaller than value2 the result is
+	 * -1. If value1 or value2 is NaN the result is 1.
+	 */
+	@Override
+	public void visitDCMPG(DCMPG obj) {
+		handleSimpleInstruction(obj);
+	}
+
+	// -----------------------------------------------------------------
+	/**
+	 * 12. DCMPL <br>
+	 * Called when a DCMPG operation occurs. Pops two double values from the
+	 * stack, compares them and pushes the integer result onto the stack. If
+	 * value1 is greater than value2 the result is 1, if value1 is equal to
+	 * value2 the result is 0 and if value1 is smaller than value2 the result is
+	 * -1. If value1 or value2 is NaN the result is -1.
+	 */
+	@Override
+	public void visitDCMPL(DCMPL obj) {
+		handleSimpleInstruction(obj);
+	}
+
+	// -----------------------------------------------------------------
+	/**
+	 * 13. DCONST <br>
+	 * Called when a DECONST operation occurs. Pushes the double constant 0.0 or
+	 * 1.0 onto the stack.
+	 * */
+	@Override
+	public void visitDCONST(DCONST obj) {
+		handleSimpleInstruction(obj);
+	}
+
+	// -----------------------------------------------------------------
+
+	/**
+	 * 14. FCMPG <br>
+	 * Called when a FCMPG operation occurs. Pops two float values from the
+	 * stack, compares them and pushes the integer result onto the stack. If
+	 * value1 is greater than value2 the result is 1, if value1 is equal to
+	 * value2 the result is 0 and if value1 is smaller than value2 the result is
+	 * -1. If value1 or value2 is NaN the result is 1.
+	 */
+	@Override
+	public void visitFCMPG(FCMPG obj) {
+		handleSimpleInstruction(obj);
+	}
+
+	// -----------------------------------------------------------------
+
+	/**
+	 * 15. FCMPL <br>
+	 * Called when a DCMPG operation occurs. Pops two float values from the
+	 * stack, compares them and pushes the integer result onto the stack. If
+	 * value1 is greater than value2 the result is 1, if value1 is equal to
+	 * value2 the result is 0 and if value1 is smaller than value2 the result is
+	 * -1. If value1 or value2 is NaN the result is -1.
+	 */
+	@Override
+	public void visitFCMPL(FCMPL obj) {
+		handleSimpleInstruction(obj);
+	}
+
+	// -----------------------------------------------------------------
+	/**
+	 * 16. FCONST <br>
+	 * Called when a FCONST operation occurs. Pushes 0.0f, 1.0f or 2.0f on the
+	 * stack.
+	 */
+	@Override
+	public void visitFCONST(FCONST obj) {
+		handleSimpleInstruction(obj);
+	}
+
+	// -----------------------------------------------------------------
+	/**
+	 * 17. ICONST <br>
+	 * Called when an ICONST operation occurs. Loads the integer value -1, 0, 1,
+	 * 2, 3, 4 or 5 onto the stack.
+	 */
+	@Override
+	public void visitICONST(ICONST obj) {
+		handleSimpleInstruction(obj);
+	}
+
+	// -----------------------------------------------------------------
+	/**
+	 * 18. IMPDEP1 <br>
+	 * Called when an IMPDEP1 operation occurs. This method is reserved for
+	 * implementation-dependent operations within debuggers and should not
+	 * appear in any class file.
+	 */
+	@Override
+	public void visitIMPDEP1(IMPDEP1 obj) {
+		throw new AssertionError(
+				"IMPDEP1 is reserved for implementation-dependent operations within debuggers "
+						+ "and should not appear in any class file.");
+	}
+
+	// -----------------------------------------------------------------
+	/**
+	 * 19. IMPDEP2 <br>
+	 * Called when an IMPDEP2 operation occurs. This method is reserved for
+	 * implementation-dependent operations within debuggers and should not
+	 * appear in any class file.
+	 */
+	@Override
+	public void visitIMPDEP2(IMPDEP2 obj) {
+		throw new AssertionError(
+				"IMPDEP2 is reserved for implementation-dependent operations within debuggers "
+						+ "and should not appear in any class file.");
+	}
+
+	// -----------------------------------------------------------------
+	/**
+	 * 20. LCMP <br>
+	 * Called when a LCMP operation occurs. Pops two long values from the stack,
+	 * compares them and pushes the integer result onto the stack.
+	 */
+	@Override
+	public void visitLCMP(LCMP obj) {
+		handleSimpleInstruction(obj);
+	}
+
+	// -----------------------------------------------------------------
+	/**
+	 * 21. LCONST <br>
+	 * Called when a LCONST operation occurs. Pushes the long 0L or 1L onto the
+	 * stack.
+	 */
+	@Override
+	public void visitLCONST(LCONST obj) {
+		handleSimpleInstruction(obj);
+	}
+
+	// ---LocalVariableInstruction--------------------------------------
+
+	@Override
+	public void visitLocalVariableInstruction(LocalVariableInstruction obj) {
+		// called only for IINC
+		handleSimpleInstruction(obj);
+
+	}
+
+	/**
+	 * 22. LocalVariableInstruction <br>
+	 * 22.2. LoadInstruction <br>
+	 * Called when a LoadInstruction occurs. Loads a value from a local variable
+	 * and pushes it onto the stack.
+	 */
+	@Override
+	public void visitLoadInstruction(LoadInstruction obj) {
+		logger.log(Level.FINE, indentation + obj.toString(false));
+		frame.pushStackByRequiredSlots(frame.getLocalVars()[obj.getIndex()]);
+		instructionHandle = instructionHandle.getNext();
+		instructionHandle.accept(this);
+	}
+
+	/**
+	 * 22. LocalVariableInstruction <br>
+	 * 22.3. StoreInstruction<br>
+	 * Called when a StoreInstruction occurs. Pops a value from the stack and
+	 * stores it in a local variable.
+	 */
+	@Override
+	public void visitStoreInstruction(StoreInstruction obj) {
+		logger.log(Level.FINE, indentation + obj.toString(false));
+		for (int i = 0; i < obj.consumeStack(constantPoolGen); i++) {
+			frame.getLocalVars()[obj.getIndex() + i] = frame.getStack().pop();
+		}
+
+		instructionHandle = instructionHandle.getNext();
+		instructionHandle.accept(this);
+	}
+
+	// -----------------------------------------------------------------
+	/**
+	 * 23. MONITORENTER<br>
+	 * Called when a MONITORENTER occurs. Pops an object reference from the
+	 * stack and holds it as a lock for synchronization.
+	 */
+	@Override
+	public void visitMONITORENTER(MONITORENTER obj) {
+		handleSimpleInstruction(obj);
+	}
+
+	// -----------------------------------------------------------------
+	/**
+	 * 24. MONITOREXIT<br>
+	 * Called when a MONITOREXIT operation occurs. Releases the lock from a
+	 * synchronized section for a popped object reference.
+	 */
+	@Override
+	public void visitMONITOREXIT(MONITOREXIT obj) {
+		handleSimpleInstruction(obj);
+	}
+
+	// -----------------------------------------------------------------
+	/**
+	 * 26. NOP <br>
+	 * Called when a NOP operation occurs. Performs no operation.
+	 */
+	@Override
+	public void visitNOP(NOP obj) {
+		handleSimpleInstruction(obj);
+	}
+
+	// -----------------------------------------------------------------
+	/**
+	 * 27. RET <br>
+	 * Continues execution from address taken from a local variable #index (the
+	 * asymmetry with jsr is intentional).
+	 */
+	@Override
+	public void visitRET(RET obj) {
+		logger.log(Level.FINE, indentation + obj.toString(false));
+	}
+
+	// -----------------------------------------------------------------
+	/**
+	 * 28. ReturnInstruction<br>
+	 * Called when a ReturnInstruction occurs. Returns a value (or nothing if
+	 * void) from a method.
+	 */
+	@Override
+	public void visitReturnInstruction(ReturnInstruction obj) {
+		// opcodes for Benjamin
+		// return 0xb1 (void)
+		// areturn 0xb0
+		// dreturn 0xaf
+		// freturn 0xae
+		// ireturn 0xac
+		// lreturn 0xad
+
+		logger.log(Level.FINE, indentation + obj.toString(false));
+		Slot returnType = Slot.getDefaultSlotInstance(obj
+				.getType(constantPoolGen));
+		logger.log(Level.FINEST, indentation + "\t" + returnType);
+
+		if (returnType instanceof VoidSlot)
+			result.add(new ResultValue(Kind.REGULAR, returnType, frame
+					.getHeap()));
+		else
+			result.add(new ResultValue(Kind.REGULAR, frame
+					.popStackByRequiredSlots(), frame.getHeap()));
+	}
+
+	// -----------------------------------------------------------------
+	/**
+	 * 29. SIPUSH<br>
+	 * Called when a SIPUSH operation occurs. Pushes a short identified by 2
+	 * index bytes onto the stack.
+	 */
+	@Override
+	public void visitSIPUSH(SIPUSH obj) {
+		handleSimpleInstruction(obj);
+	}
+
+	// ---StackInstruction----------------------------------------------
+
+	@Override
+	public void visitStackInstruction(StackInstruction obj) {
+		logger.log(Level.FINE, indentation + obj.toString(false));
+		Slot slot1, slot2, slot3, slot4;
+		switch (obj.getOpcode()) {
+		case 0x59:
+			// DUB
+			slot1 = frame.getStack().pop();
+
+			frame.getStack().push(slot1);
+			frame.getStack().push(slot1);
+			break;
+		case 0x5a:
+			// DUB_X1
+			slot1 = frame.getStack().pop();
+			slot2 = frame.getStack().pop();
+
+			frame.getStack().push(slot1);
+			frame.getStack().push(slot2);
+			frame.getStack().push(slot1);
+			break;
+		case 0x5b:
+			// DUB_X2
+			// pop values
+			slot1 = frame.getStack().pop();
+			slot2 = frame.getStack().pop();
+			slot3 = frame.getStack().pop();
+
+			// push them again (stack: s1, s3, s2, s1)
+			frame.getStack().push(slot1);
+			frame.getStack().push(slot3);
+			frame.getStack().push(slot2);
+			frame.getStack().push(slot1);
+			break;
+		case 0x5c:
+			// DUB2
+			// pop slots
+			slot1 = frame.getStack().pop();
+			slot2 = frame.getStack().pop();
+
+			// push them again (stack: s2, s1, s2, s1
+			frame.getStack().push(slot2);
+			frame.getStack().push(slot1);
+			frame.getStack().push(slot2);
+			frame.getStack().push(slot1);
+			break;
+		case 0x5d:
+			// DUB2_X2
+			// pop the slots
+			slot1 = frame.getStack().pop();
+			slot2 = frame.getStack().pop();
+			slot3 = frame.getStack().pop();
+
+			// push them again (stack: s2, s1, s3, s2, s1)
+			frame.getStack().push(slot2);
+			frame.getStack().push(slot1);
+			frame.getStack().push(slot3);
+			frame.getStack().push(slot2);
+			frame.getStack().push(slot1);
+			break;
+		case 0x5e:
+			// DUB2_X2
+			// pop the slots
+			slot1 = frame.getStack().pop();
+			slot2 = frame.getStack().pop();
+			slot3 = frame.getStack().pop();
+			slot4 = frame.getStack().pop();
+
+			// push them again (stack: s2, s1, s4, s3, s2, s1)
+			frame.getStack().push(slot2);
+			frame.getStack().push(slot1);
+			frame.getStack().push(slot4);
+			frame.getStack().push(slot3);
+			frame.getStack().push(slot2);
+			frame.getStack().push(slot1);
+			break;
+		case 0x5f:
+			// SWAP
+			// pop the values
+			slot1 = frame.getStack().pop();
+			slot2 = frame.getStack().pop();
+
+			// reorder them
+			frame.getStack().push(slot1);
+			frame.getStack().push(slot2);
+			break;
+
+		default:
+			// POP or POP2
+			handleSimpleInstruction(obj);
+		}
+		instructionHandle = instructionHandle.getNext();
+		instructionHandle.accept(this);
+	}
+
+	// -----------------------------------------------------------------
+	// XXX Methods of interest
+	// -----------------------------------------------------------------
+
+	/**
+	 * 1. ACONST_NULL<br>
+	 * Called when an ACONST_NULL operation occurs. Pushes a null reference onto
+	 * the stack.
+	 */
+	@Override
+	public void visitACONST_NULL(ACONST_NULL obj) {
+		logger.log(Level.FINE, indentation + obj.toString(false));
+
+		// push 'null' onto the stack
+		frame.getStack().push(new ReferenceSlot());
+
+		instructionHandle = instructionHandle.getNext();
+		instructionHandle.accept(this);
+	}
+
+	// -----------------------------------------------------------------
+
+	@Override
+	public void visitAALOAD(AALOAD obj) {
+		// pop array index
+		frame.getStack().pop();
+		// pop array reference
+		ReferenceSlot arrayReference = (ReferenceSlot) frame.getStack().pop();
+		Array array = (Array) frame.getHeap().get(arrayReference.getID());
+
+		for (UUID referred : array.getReferredObjects()) {
+			Frame newFrame = new Frame(frame);
+			newFrame.getStack().push(new ReferenceSlot(referred));
+			BaseInstructionsAnalysisVisitor visitor = getInstructionsAnalysisVisitor(
+					newFrame, alreadyVisited, instructionHandle.getNext());
+			instructionHandle.getNext().accept(visitor);
+			bugs.addAll(visitor.getBugs().getCollection());
+			result.addAll(visitor.getResult());
+		}
+	}
+
+	@Override
+	public void visitAASTORE(AASTORE obj) {
+		// pop value
+		Slot value = frame.popStackByRequiredSlots();
+		// pop array index
+		frame.getStack().pop();
+		// pop array reference
+		ReferenceSlot arrayReference = (ReferenceSlot) frame.getStack().pop();
+
+		detectAStoreBug(arrayReference, value);
+
+		// AASTORE, link reference to array
+		frame.getHeap().linkObjects(arrayReference.getID(), null,
+				((ReferenceSlot) value).getID());
+		instructionHandle = instructionHandle.getNext();
+		instructionHandle.accept(this);
 	}
 
 	// -----------------------------------------------------------------
@@ -529,18 +1023,6 @@ public abstract class BaseInstructionsAnalysisVisitor extends EmptyVisitor {
 		handleException(exception);
 	}
 
-	// -----------------------------------------------------------------
-	/**
-	 * 6. BIPUSH<br>
-	 * Called when a BIPUSH operation occurs. Pushes a byte onto the stack as an
-	 * integer value.
-	 */
-	@Override
-	public void visitBIPUSH(BIPUSH obj) {
-		handleBasicStackOperations(obj, IntSlot.getInstance());
-	}
-
-	// -----------------------------------------------------------------
 	/**
 	 * 7. BranchInstruction<br>
 	 * 7.1. GotoInstruction<br>
@@ -674,32 +1156,6 @@ public abstract class BaseInstructionsAnalysisVisitor extends EmptyVisitor {
 		result.addAll(caseToFollow.getResult());
 	}
 
-	// -----------------------------------------------------------------
-	/**
-	 * 8. BREAKPOINT<br>
-	 * Called when a BREAKPOINT operation occurs. The BREAKPOINT operation is
-	 * reserved for Java debuggers and should not appear in any class file.
-	 */
-	@Override
-	public void visitBREAKPOINT(BREAKPOINT obj) {
-		throw new AssertionError(
-				"The BREAKPOINT operation is reserved for Java debuggers and should not appear in any class file");
-	}
-
-	// -----------------------------------------------------------------
-	/**
-	 * 9. ConversionInstruction <br>
-	 * Called when a ConversionInstruction operation occurs.Converts the type of
-	 * a value to another one. Therefore a value is popped, converted and the
-	 * new one pushed back onto the stack.
-	 */
-	@Override
-	public void visitConversionInstruction(ConversionInstruction obj) {
-		handleBasicStackOperations(obj,
-				Slot.getDefaultSlotInstance(obj.getType(constantPoolGen)));
-	}
-
-	// ---CPInstruction-------------------------------------------------
 	/**
 	 * 10. CPInstruction <br>
 	 * 10.1. ANEWARRAY<br>
@@ -709,9 +1165,16 @@ public abstract class BaseInstructionsAnalysisVisitor extends EmptyVisitor {
 	 */
 	@Override
 	public void visitANEWARRAY(ANEWARRAY obj) {
-		// pops length, pushes new array reference
-		handleBasicStackOperations(obj, new ReferenceSlot(frame.getHeap()
-				.newArray()));
+		logger.log(Level.FINE, indentation + obj.toString(false));
+
+		// pops length,
+		frame.getStack().pop();
+
+		// pushes new array reference
+		frame.getStack().push(new ReferenceSlot(frame.getHeap().newArray()));
+
+		instructionHandle = instructionHandle.getNext();
+		instructionHandle.accept(this);
 	}
 
 	/**
@@ -900,116 +1363,6 @@ public abstract class BaseInstructionsAnalysisVisitor extends EmptyVisitor {
 
 	/**
 	 * 10. CPInstruction <br>
-	 * 10.4. InvokeInstruction <br>
-	 * 10.4.1. INVOKEINTERFACE<br>
-	 * Called when an INVOKEINTERFACE instruction occurs. Due to static analysis
-	 * this instruction cannot check late binding. It pulls the arguments (and
-	 * the hidden reference) passed to the method to invoke from the stack and
-	 * checks whether they are of type "maybeThis"/"this" or not and pushes the
-	 * return value onto the stack. If the arguments are of type "maybeThis" or
-	 * "this" an error is added and the result "maybeThis" is pushed. If void no
-	 * value is pushed.
-	 */
-	@Override
-	public void visitINVOKEINTERFACE(INVOKEINTERFACE obj) {
-		handleVirtualMethod(obj);
-	}
-
-	/**
-	 * 10. CPInstruction <br>
-	 * 10.4. InvokeInstruction <br>
-	 * 10.4.2. INVOKESPECIAL<br>
-	 * Called when an INVOKESPECIAL operation occurs. Invokes instance method on
-	 * object object reference, where the method is identified by method
-	 * reference index in the constant pool.
-	 */
-	@Override
-	public void visitINVOKESPECIAL(INVOKESPECIAL obj) {
-		handleNonVirtualMethod(obj);
-	}
-
-	/**
-	 * 10. CPInstruction <br>
-	 * 10.4. InvokeInstruction <br>
-	 * 10.4.3. INVOKESTATIC <br>
-	 * Called when an INVOKESTATIC instruction occurs. Invokes a static method,
-	 * where the method is identified by the constant pool. For the method to
-	 * invoke a new framework is created.
-	 */
-	@Override
-	public void visitINVOKESTATIC(INVOKESTATIC obj) {
-		handleNonVirtualMethod(obj);
-	}
-
-	/**
-	 * 10. CPInstruction <br>
-	 * 10.4. InvokeInstruction <br>
-	 * 10.4.4. INVOKEVIRTUAL <br>
-	 * Called when an INVOKEVIRTUAL instruction occurs. Due to static analysis
-	 * this instruction cannot check late binding. It pulls the arguments (and
-	 * the hidden reference) passed to the method to invoke from the stack and
-	 * checks whether they are of type "maybeThis"/"this" or not and pushes the
-	 * return value onto the stack. If the arguments are of type "maybeThis" or
-	 * "this" an error is added and the result "maybeThis" is pushed. If void no
-	 * value is pushed.
-	 */
-	@Override
-	public void visitINVOKEVIRTUAL(INVOKEVIRTUAL obj) {
-		handleVirtualMethod(obj);
-	}
-
-	/**
-	 * 10. CPInstruction <br>
-	 * 10.5. INSTANCEOF
-	 * <p>
-	 * Determines if an object objectref is of a given type, identified by class
-	 * reference index in constant pool (indexbyte1 << 8 + indexbyte2).
-	 * <p>
-	 * Stack: objectref result <br>
-	 * Note: 2 other bytes (indexbyte1, indexbyte2)
-	 */
-	@Override
-	public void visitINSTANCEOF(INSTANCEOF obj) {
-		handleBasicStackOperations(obj, IntSlot.getInstance());
-	}
-
-	/**
-	 * 10. CPInstruction <br>
-	 * 10.6. LDC<br>
-	 * Called when a LDC instruction occurs. Pushes a constant of type String,
-	 * integer or float from the constant pool onto the stack.
-	 */
-	@Override
-	public void visitLDC(LDC obj) {
-		Slot value = Slot.getDefaultSlotInstance(obj.getType(constantPoolGen));
-		// pushes an integer, a float or String (notThis) onto the stack
-		if (value instanceof ReferenceSlot) {
-			// it is a String
-			value = new ReferenceSlot(frame.getHeap().newClassInstance());
-		}
-		handleBasicStackOperations(obj, value);
-	}
-
-	/**
-	 * 10. CPInstruction <br>
-	 * 10.7. LDC2_W <br>
-	 * Called when a LDC2_W instruction occurs. Pushes a constant of type double
-	 * or long from the constant pool onto the stack.
-	 * */
-	@Override
-	public void visitLDC2_W(LDC2_W obj) {
-		logger.log(Level.FINE, indentation + obj.toString(false));
-
-		Slot value = Slot.getDefaultSlotInstance(obj.getType(constantPoolGen));
-		// pushes two halfDoubles or two halfLongs onto the stack
-		frame.pushStackByRequiredSlots(value);
-
-		instructionHandle = instructionHandle.getNext();
-		instructionHandle.accept(this);
-	}
-
-	/**
-	 * 10. CPInstruction <br>
 	 * 10.8. MULTIANEWARRAY<br>
 	 * Called when a MULTIANEWARRAY operation occurs. Creates a new array of
 	 * dimensions (index byte) with elements of type identified by class
@@ -1071,237 +1424,6 @@ public abstract class BaseInstructionsAnalysisVisitor extends EmptyVisitor {
 		instructionHandle.accept(this);
 	}
 
-	// -----------------------------------------------------------------
-	/**
-	 * 11. DCMPG <br>
-	 * Called when a DCMPG operation occurs. Pops two double values from the
-	 * stack, compares them and pushes the integer result onto the stack. If
-	 * value1 is greater than value2 the result is 1, if value1 is equal to
-	 * value2 the result is 0 and if value1 is smaller than value2 the result is
-	 * -1. If value1 or value2 is NaN the result is 1.
-	 */
-	@Override
-	public void visitDCMPG(DCMPG obj) {
-		handleBasicStackOperations(obj,
-				Slot.getDefaultSlotInstance(obj.getType(constantPoolGen)));
-	}
-
-	// -----------------------------------------------------------------
-	/**
-	 * 12. DCMPL <br>
-	 * Called when a DCMPG operation occurs. Pops two double values from the
-	 * stack, compares them and pushes the integer result onto the stack. If
-	 * value1 is greater than value2 the result is 1, if value1 is equal to
-	 * value2 the result is 0 and if value1 is smaller than value2 the result is
-	 * -1. If value1 or value2 is NaN the result is -1.
-	 */
-	@Override
-	public void visitDCMPL(DCMPL obj) {
-		handleBasicStackOperations(obj,
-				Slot.getDefaultSlotInstance(obj.getType(constantPoolGen)));
-	}
-
-	// -----------------------------------------------------------------
-	/**
-	 * 13. DCONST <br>
-	 * Called when a DECONST operation occurs. Pushes the double constant 0.0 or
-	 * 1.0 onto the stack.
-	 * */
-	@Override
-	public void visitDCONST(DCONST obj) {
-		handleBasicStackOperations(obj,
-				Slot.getDefaultSlotInstance(obj.getType(constantPoolGen)));
-	}
-
-	// -----------------------------------------------------------------
-
-	/**
-	 * 14. FCMPG <br>
-	 * Called when a FCMPG operation occurs. Pops two float values from the
-	 * stack, compares them and pushes the integer result onto the stack. If
-	 * value1 is greater than value2 the result is 1, if value1 is equal to
-	 * value2 the result is 0 and if value1 is smaller than value2 the result is
-	 * -1. If value1 or value2 is NaN the result is 1.
-	 */
-	@Override
-	public void visitFCMPG(FCMPG obj) {
-		handleBasicStackOperations(obj,
-				Slot.getDefaultSlotInstance(obj.getType(constantPoolGen)));
-	}
-
-	// -----------------------------------------------------------------
-
-	/**
-	 * 15. FCMPL <br>
-	 * Called when a DCMPG operation occurs. Pops two float values from the
-	 * stack, compares them and pushes the integer result onto the stack. If
-	 * value1 is greater than value2 the result is 1, if value1 is equal to
-	 * value2 the result is 0 and if value1 is smaller than value2 the result is
-	 * -1. If value1 or value2 is NaN the result is -1.
-	 */
-	@Override
-	public void visitFCMPL(FCMPL obj) {
-		handleBasicStackOperations(obj,
-				Slot.getDefaultSlotInstance(obj.getType(constantPoolGen)));
-	}
-
-	// -----------------------------------------------------------------
-	/**
-	 * 16. FCONST <br>
-	 * Called when a FCONST operation occurs. Pushes 0.0f, 1.0f or 2.0f on the
-	 * stack.
-	 */
-	@Override
-	public void visitFCONST(FCONST obj) {
-		handleBasicStackOperations(obj,
-				Slot.getDefaultSlotInstance(obj.getType(constantPoolGen)));
-	}
-
-	// -----------------------------------------------------------------
-	/**
-	 * 17. ICONST <br>
-	 * Called when an ICONST operation occurs. Loads the integer value -1, 0, 1,
-	 * 2, 3, 4 or 5 onto the stack.
-	 */
-	@Override
-	public void visitICONST(ICONST obj) {
-		handleBasicStackOperations(obj,
-				Slot.getDefaultSlotInstance(obj.getType(constantPoolGen)));
-	}
-
-	// -----------------------------------------------------------------
-	/**
-	 * 18. IMPDEP1 <br>
-	 * Called when an IMPDEP1 operation occurs. This method is reserved for
-	 * implementation-dependent operations within debuggers and should not
-	 * appear in any class file.
-	 */
-	@Override
-	public void visitIMPDEP1(IMPDEP1 obj) {
-		throw new AssertionError(
-				"IMPDEP1 is reserved for implementation-dependent operations within debuggers "
-						+ "and should not appear in any class file.");
-	}
-
-	// -----------------------------------------------------------------
-	/**
-	 * 19. IMPDEP2 <br>
-	 * Called when an IMPDEP2 operation occurs. This method is reserved for
-	 * implementation-dependent operations within debuggers and should not
-	 * appear in any class file.
-	 */
-	@Override
-	public void visitIMPDEP2(IMPDEP2 obj) {
-		throw new AssertionError(
-				"IMPDEP2 is reserved for implementation-dependent operations within debuggers "
-						+ "and should not appear in any class file.");
-	}
-
-	// -----------------------------------------------------------------
-	/**
-	 * 20. LCMP <br>
-	 * Called when a LCMP operation occurs. Pops two long values from the stack,
-	 * compares them and pushes the integer result onto the stack.
-	 */
-	@Override
-	public void visitLCMP(LCMP obj) {
-		handleBasicStackOperations(obj,
-				Slot.getDefaultSlotInstance(obj.getType(constantPoolGen)));
-	}
-
-	// -----------------------------------------------------------------
-	/**
-	 * 21. LCONST <br>
-	 * Called when a LCONST operation occurs. Pushes the long 0L or 1L onto the
-	 * stack.
-	 */
-	@Override
-	public void visitLCONST(LCONST obj) {
-		handleBasicStackOperations(obj,
-				Slot.getDefaultSlotInstance(obj.getType(constantPoolGen)));
-	}
-
-	// ---LocalVariableInstruction--------------------------------------
-
-	/**
-	 * 22. LocalVariableInstruction<br>
-	 * 22.1. IINC<br>
-	 * Called when a IINC operation occurs. Increments a local variable by
-	 * signed byte constant.
-	 */
-	@Override
-	public void visitIINC(IINC obj) {
-		logger.log(Level.FINE, indentation + obj.toString(false));
-		// no change on the stack, operates on the localVariables
-		instructionHandle = instructionHandle.getNext();
-		instructionHandle.accept(this);
-	}
-
-	/**
-	 * 22. LocalVariableInstruction <br>
-	 * 22.2. LoadInstruction <br>
-	 * Called when a LoadInstruction occurs. Loads a value from a local variable
-	 * and pushes it onto the stack.
-	 */
-	@Override
-	public void visitLoadInstruction(LoadInstruction obj) {
-		logger.log(Level.FINE, indentation + obj.toString(false));
-		frame.pushStackByRequiredSlots(frame.getLocalVars()[obj.getIndex()]);
-		instructionHandle = instructionHandle.getNext();
-		instructionHandle.accept(this);
-	}
-
-	/**
-	 * 22. LocalVariableInstruction <br>
-	 * 22.3. StoreInstruction<br>
-	 * Called when a StoreInstruction occurs. Pops a value from the stack and
-	 * stores it in a local variable.
-	 */
-	@Override
-	public void visitStoreInstruction(StoreInstruction obj) {
-		logger.log(Level.FINE, indentation + obj.toString(false));
-		for (int i = 0; i < obj.consumeStack(constantPoolGen); i++) {
-			frame.getLocalVars()[obj.getIndex() + i] = frame.getStack().pop();
-		}
-
-		instructionHandle = instructionHandle.getNext();
-		instructionHandle.accept(this);
-	}
-
-	// -----------------------------------------------------------------
-	/**
-	 * 23. MONITORENTER<br>
-	 * Called when a MONITORENTER occurs. Pops an object reference from the
-	 * stack and holds it as a lock for synchronization.
-	 */
-	@Override
-	public void visitMONITORENTER(MONITORENTER obj) {
-		logger.log(Level.FINE, indentation + "MONITORENTER " + ": No Escape");
-
-		// pop a reference
-		frame.getStack().pop();
-
-		instructionHandle = instructionHandle.getNext();
-		instructionHandle.accept(this);
-	}
-
-	// -----------------------------------------------------------------
-	/**
-	 * 24. MONITOREXIT<br>
-	 * Called when a MONITOREXIT operation occurs. Releases the lock from a
-	 * synchronized section for a popped object reference.
-	 */
-	@Override
-	public void visitMONITOREXIT(MONITOREXIT obj) {
-		logger.log(Level.FINE, indentation + "MONITOREXIT " + ": No Escape");
-		// pop a reference
-		frame.getStack().pop();
-
-		instructionHandle = instructionHandle.getNext();
-		instructionHandle.accept(this);
-	}
-
-	// -----------------------------------------------------------------
 	/**
 	 * 25. NEWARRAY<br>
 	 * Called when a NEWARRAY operation occurs. Creates a new array with
@@ -1328,275 +1450,4 @@ public abstract class BaseInstructionsAnalysisVisitor extends EmptyVisitor {
 		instructionHandle = instructionHandle.getNext();
 		instructionHandle.accept(this);
 	}
-
-	// -----------------------------------------------------------------
-	/**
-	 * 26. NOP <br>
-	 * Called when a NOP operation occurs. Performs no operation.
-	 */
-	@Override
-	public void visitNOP(NOP obj) {
-		logger.log(Level.FINE, indentation + obj.toString(false));
-
-		instructionHandle = instructionHandle.getNext();
-		instructionHandle.accept(this);
-	}
-
-	// -----------------------------------------------------------------
-	/**
-	 * 27. RET
-	 * <p>
-	 * Continues execution from address taken from a local variable #index (the
-	 * asymmetry with jsr is intentional).
-	 * <p>
-	 * Stack: No change.
-	 */
-	@Override
-	public void visitRET(RET obj) {
-		logger.log(Level.FINE, indentation + obj.toString(false));
-	}
-
-	// -----------------------------------------------------------------
-	/**
-	 * 28. ReturnInstruction<br>
-	 * Called when a ReturnInstruction occurs. Returns a value (or nothing if
-	 * void) from a method.
-	 */
-	@Override
-	public void visitReturnInstruction(ReturnInstruction obj) {
-		logger.log(Level.FINE, indentation + obj.toString(false));
-		Slot returnType = Slot.getDefaultSlotInstance(obj
-				.getType(constantPoolGen));
-		logger.log(Level.FINEST, indentation + "\t" + returnType);
-
-		if (returnType instanceof VoidSlot)
-			result.add(new ResultValue(Kind.REGULAR, returnType, frame
-					.getHeap()));
-		else
-			result.add(new ResultValue(Kind.REGULAR, frame
-					.popStackByRequiredSlots(), frame.getHeap()));
-	}
-
-	// -----------------------------------------------------------------
-	/**
-	 * 29. SIPUSH<br>
-	 * Called when a SIPUSH operation occurs. Pushes a short identified by 2
-	 * index bytes onto the stack.
-	 */
-	@Override
-	public void visitSIPUSH(SIPUSH obj) {
-		logger.log(Level.FINE, indentation + obj.toString(false));
-		logger.log(Level.FINEST, indentation + "\t" + obj.getValue());
-
-		frame.getStack().push(ShortSlot.getInstance());
-
-		instructionHandle = instructionHandle.getNext();
-		instructionHandle.accept(this);
-	}
-
-	// ---StackInstruction----------------------------------------------
-	/**
-	 * 30. StackInstructions <br>
-	 * 30.1. DUP <br>
-	 * Called when a DUP operation occurs. Duplicates the value on top of the
-	 * stack.
-	 */
-	@Override
-	public void visitDUP(DUP obj) {
-		logger.log(Level.FINE, indentation + obj.toString(false));
-
-		Slot entry = frame.getStack().pop();
-		frame.getStack().push(entry);
-		frame.getStack().push(entry);
-
-		instructionHandle = instructionHandle.getNext();
-		instructionHandle.accept(this);
-	}
-
-	/**
-	 * 30. StackInstructions <br>
-	 * 30.2. DUP_X1 <br>
-	 * Called when a DUP_X1 operation occurs. Inserts a copy of the top value
-	 * into the stack two values from the top. value1 and value2 must not be of
-	 * the type double or long.
-	 */
-	@Override
-	public void visitDUP_X1(DUP_X1 obj) {
-		logger.log(Level.FINE, indentation + obj.toString(false));
-
-		Slot value1 = frame.getStack().pop();
-		Slot value2 = frame.getStack().pop();
-
-		frame.getStack().push(value1);
-		frame.getStack().push(value2);
-		frame.getStack().push(value1);
-
-		instructionHandle = instructionHandle.getNext();
-		instructionHandle.accept(this);
-	}
-
-	/**
-	 * 30. StackInstructions <br>
-	 * 30.3. DUP_X2 <br>
-	 * Called when a DUP_X2 operation occurs. Inserts a copy of the top value
-	 * into the stack two (if value2 is double or long it takes up the entry of
-	 * value3, too) or three values (if value2 is neither double nor long) from
-	 * the top.
-	 */
-	@Override
-	public void visitDUP_X2(DUP_X2 obj) {
-		logger.log(Level.FINE, indentation + obj.toString(false));
-
-		// pop values
-		Slot slot1 = frame.getStack().pop();
-		Slot slot2 = frame.getStack().pop();
-		Slot slot3 = frame.getStack().pop();
-
-		// push them again (stack: s1, s3, s2, s1)
-		frame.getStack().push(slot1);
-		frame.getStack().push(slot3);
-		frame.getStack().push(slot2);
-		frame.getStack().push(slot1);
-
-		instructionHandle = instructionHandle.getNext();
-		instructionHandle.accept(this);
-	}
-
-	/**
-	 * 30. StackInstructions <br>
-	 * 30.4. DUP2 <br>
-	 * Called when a DUP2 operation occurs. Duplicates top two stack words (two
-	 * values, if value1 is not double nor long; a single value, if value1 is
-	 * double or long).
-	 */
-	@Override
-	public void visitDUP2(DUP2 obj) {
-		logger.log(Level.FINE, indentation + obj.toString(false));
-
-		// pop slots
-		Slot slot1 = frame.getStack().pop();
-		Slot slot2 = frame.getStack().pop();
-
-		// push them again (stack: s2, s1, s2, s1
-		frame.getStack().push(slot2);
-		frame.getStack().push(slot1);
-		frame.getStack().push(slot2);
-		frame.getStack().push(slot1);
-
-		instructionHandle = instructionHandle.getNext();
-		instructionHandle.accept(this);
-	}
-
-	/**
-	 * 30. StackInstructions <br>
-	 * 30.5. DUP2_X1 <br>
-	 * Called when a DUP2_X1 operation occurs. Duplicates top two words and
-	 * insert beneath third word (see explanation 30.4.).
-	 */
-	@Override
-	public void visitDUP2_X1(DUP2_X1 obj) {
-		logger.log(Level.FINE, indentation + obj.toString(false));
-
-		// pop the slots
-		Slot slot1 = frame.getStack().pop();
-		Slot slot2 = frame.getStack().pop();
-		Slot slot3 = frame.getStack().pop();
-
-		// push them again (stack: s2, s1, s3, s2, s1)
-		frame.getStack().push(slot2);
-		frame.getStack().push(slot1);
-		frame.getStack().push(slot3);
-		frame.getStack().push(slot2);
-		frame.getStack().push(slot1);
-
-		instructionHandle = instructionHandle.getNext();
-		instructionHandle.accept(this);
-	}
-
-	/**
-	 * 30. StackInstructions <br>
-	 * 30.5. DUP2_X2 <br>
-	 * Called when a DUP2_X2 operation occurs. Duplicates two words and insert
-	 * beneath fourth word (see explanation 30.4.).
-	 */
-	@Override
-	public void visitDUP2_X2(DUP2_X2 obj) {
-		logger.log(Level.FINE, indentation + obj.toString(false));
-
-		// pop the slots
-		Slot slot1 = frame.getStack().pop();
-		Slot slot2 = frame.getStack().pop();
-		Slot slot3 = frame.getStack().pop();
-		Slot slot4 = frame.getStack().pop();
-
-		// push them again (stack: s2, s1, s4, s3, s2, s1)
-		frame.getStack().push(slot2);
-		frame.getStack().push(slot1);
-		frame.getStack().push(slot4);
-		frame.getStack().push(slot3);
-		frame.getStack().push(slot2);
-		frame.getStack().push(slot1);
-
-		instructionHandle = instructionHandle.getNext();
-		instructionHandle.accept(this);
-	}
-
-	/**
-	 * 30. StackInstructions <br>
-	 * 30.6. POP <br>
-	 * Called when a POP operation occurs. Discards the top value/word on the
-	 * stack.
-	 */
-	@Override
-	public void visitPOP(POP obj) {
-		logger.log(Level.FINE, indentation + obj.toString(false));
-
-		// may not be called for long or double
-		frame.getStack().pop();
-
-		instructionHandle = instructionHandle.getNext();
-		instructionHandle.accept(this);
-	}
-
-	/**
-	 * 30. StackInstructions <br>
-	 * 30.7. POP2 <br>
-	 * Called when a POP2 operation occurs. Discards the top two values on the
-	 * stack (or one value, if it is a double or long).
-	 */
-	@Override
-	public void visitPOP2(POP2 obj) {
-		logger.log(Level.FINE, indentation + obj.toString(false));
-
-		// pop two slots
-		frame.getStack().pop();
-		frame.getStack().pop();
-
-		instructionHandle = instructionHandle.getNext();
-		instructionHandle.accept(this);
-	}
-
-	/**
-	 * 30. StackInstructions <br>
-	 * 30.8. SWAP <br>
-	 * Called when a SWAP operation occurs. Swaps two top words on the stack
-	 * (note that value1 and value2 must not be double or long).
-	 */
-	@Override
-	public void visitSWAP(SWAP obj) {
-		logger.log(Level.FINE, indentation + obj.toString(false));
-
-		// pop the values
-		Slot slot1 = frame.getStack().pop();
-		Slot slot2 = frame.getStack().pop();
-
-		// reorder them
-		frame.getStack().push(slot1);
-		frame.getStack().push(slot2);
-
-		instructionHandle = instructionHandle.getNext();
-		instructionHandle.accept(this);
-	}
-	// -----------------------------------------------------------------
-
 }
