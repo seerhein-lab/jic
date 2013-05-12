@@ -9,12 +9,12 @@ import java.util.UUID;
 public class ClassInstance extends HeapObject {
 	private Map<String, UUID> refers = new HashMap<String, UUID>();
 
-	public ClassInstance() {
-		super();
+	public ClassInstance(Heap heap) {
+		super(heap);
 	}
 
-	ClassInstance(ClassInstance original) {
-		super(original);
+	ClassInstance(ClassInstance original, Heap heap) {
+		super(original, heap);
 		refers.putAll(original.refers);
 	}
 
@@ -34,8 +34,8 @@ public class ClassInstance extends HeapObject {
 	}
 
 	@Override
-	HeapObject copy() {
-		return new ClassInstance(this);
+	HeapObject copy(Heap heap) {
+		return new ClassInstance(this, heap);
 	}
 
 	@Override

@@ -8,18 +8,18 @@ import java.util.UUID;
 public class Array extends HeapObject {
 	private Set<UUID> refers = new HashSet<UUID>();
 
-	public Array() {
-		super();
+	public Array(Heap heap) {
+		super(heap);
 	}
 
-	public Array(Array original) {
-		super(original);
+	public Array(Array original, Heap heap) {
+		super(original, heap);
 		refers.addAll(original.getReferredObjects());
 	}
 
 	@Override
-	HeapObject copy() {
-		return new Array(this);
+	HeapObject copy(Heap heap) {
+		return new Array(this, heap);
 	}
 
 	@Override

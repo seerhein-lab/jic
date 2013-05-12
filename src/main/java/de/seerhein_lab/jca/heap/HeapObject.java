@@ -8,6 +8,7 @@ import java.util.UUID;
 public class HeapObject {
 	protected final UUID id;
 	protected final Set<UUID> referredBy = new HashSet<UUID>();
+	protected final Heap heap;
 
 	static class AlreadyVisited {
 		private final HeapObject from;
@@ -58,13 +59,15 @@ public class HeapObject {
 
 	}
 
-	HeapObject() {
+	HeapObject(Heap heap) {
 		id = UUID.randomUUID();
+		this.heap = heap;
 	}
 
-	HeapObject(HeapObject original) {
+	HeapObject(HeapObject original, Heap heap) {
 		id = original.id;
 		referredBy.addAll(original.referredBy);
+		this.heap = heap;
 	}
 
 	void replaceReferredObject(UUID oldID, UUID newID) {
@@ -90,10 +93,8 @@ public class HeapObject {
 		return id;
 	}
 
-	HeapObject copy() {
-		// there is only the 'external' instance of this class, hence returning
-		// that instance suffices.
-		return this;
+	HeapObject copy(Heap heap) {
+		return new HeapObject(this, heap);
 	}
 
 	public boolean referredBy(UUID toSearch, Heap heap) {

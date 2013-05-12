@@ -15,18 +15,18 @@ public class Heap {
 	private final UUID externalID;
 
 	public Heap() {
-		HeapObject thisObject = new ClassInstance();
+		HeapObject thisObject = new ClassInstance(this);
 		thisID = thisObject.getId();
 		objects.put(thisID, thisObject);
 
-		HeapObject externalObject = new HeapObject();
+		HeapObject externalObject = new HeapObject(this);
 		externalID = externalObject.getId();
 		objects.put(externalID, externalObject);
 	}
 
 	public Heap(Heap original) {
 		for (UUID id : original.objects.keySet()) {
-			objects.put(id, original.objects.get(id).copy());
+			objects.put(id, original.objects.get(id).copy(this));
 		}
 
 		publishedObjects.addAll(original.publishedObjects);
@@ -59,14 +59,14 @@ public class Heap {
 	// }
 
 	public UUID newClassInstance() {
-		ClassInstance object = new ClassInstance();
+		ClassInstance object = new ClassInstance(this);
 		UUID id = object.getId();
 		objects.put(id, object);
 		return id;
 	}
 
 	public UUID newArray() {
-		Array object = new Array();
+		Array object = new Array(this);
 		UUID id = object.getId();
 		objects.put(id, object);
 		return id;
