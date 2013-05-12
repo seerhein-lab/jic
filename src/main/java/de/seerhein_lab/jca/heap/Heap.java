@@ -2,6 +2,7 @@ package de.seerhein_lab.jca.heap;
 
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
@@ -83,7 +84,9 @@ public class Heap {
 		HeapObject object = objects.get(id);
 		HeapObject external = objects.get(externalID);
 
-		for (UUID referringObject : object.getReferringObjects()) {
+		for (Iterator<HeapObject> iterator = object.getReferringIterator(); iterator
+				.hasNext();) {
+			UUID referringObject = iterator.next().getId();
 			get(referringObject).replaceReferredObject(id, externalID);
 			external.addReferringObject(referringObject);
 		}

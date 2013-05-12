@@ -2,6 +2,7 @@ package de.seerhein_lab.jca.heap;
 
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.Set;
 import java.util.UUID;
 
@@ -82,8 +83,29 @@ public class HeapObject {
 		referredBy.add(id);
 	}
 
-	public Set<UUID> getReferringObjects() {
-		return referredBy;
+	// public Set<UUID> getReferringObjects() {
+	// return referredBy;
+	// }
+
+	public Iterator<HeapObject> getReferringIterator() {
+		return new Iterator<HeapObject>() {
+			Iterator<UUID> idIterator = referredBy.iterator();
+
+			@Override
+			public boolean hasNext() {
+				return idIterator.hasNext();
+			}
+
+			@Override
+			public HeapObject next() {
+				return heap.get(idIterator.next());
+			}
+
+			@Override
+			public void remove() {
+				idIterator.remove();
+			}
+		};
 	}
 
 	/**
