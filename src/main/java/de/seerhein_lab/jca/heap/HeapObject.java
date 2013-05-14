@@ -79,8 +79,8 @@ public class HeapObject {
 		throw new AssertionError("Must not be called on a HeapObject instance");
 	}
 
-	void addReferringObject(UUID id) {
-		referredBy.add(id);
+	void addReferringObject(HeapObject obj) {
+		referredBy.add(obj.getId());
 	}
 
 	// public Set<UUID> getReferringObjects() {

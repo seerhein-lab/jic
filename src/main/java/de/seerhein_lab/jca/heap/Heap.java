@@ -88,7 +88,7 @@ public class Heap {
 				.hasNext();) {
 			UUID referringObject = iterator.next().getId();
 			get(referringObject).replaceReferredObject(id, externalID);
-			external.addReferringObject(referringObject);
+			external.addReferringObject(get(referringObject));
 		}
 
 		for (UUID referredObject : object.getReferredObjects()) {
@@ -97,7 +97,7 @@ public class Heap {
 	}
 
 	public void linkObjects(UUID left, String field, UUID right) {
-		get(right).addReferringObject(left);
+		get(right).addReferringObject(get(left));
 
 		HeapObject leftSide = get(left);
 		if (leftSide instanceof Array) {
