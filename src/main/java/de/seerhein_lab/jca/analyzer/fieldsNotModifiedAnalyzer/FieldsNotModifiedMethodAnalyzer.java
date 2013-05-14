@@ -1,4 +1,4 @@
-package de.seerhein_lab.jca.analyzer.fieldsNotPublished;
+package de.seerhein_lab.jca.analyzer.fieldsNotModifiedAnalyzer;
 
 import java.util.Set;
 
@@ -11,14 +11,14 @@ import de.seerhein_lab.jca.analyzer.BaseInstructionsAnalysisVisitor;
 import de.seerhein_lab.jca.analyzer.BaseMethodAnalyzer;
 import edu.umd.cs.findbugs.ba.ClassContext;
 
-public class FieldsNotPublishedMethodAnalyzer extends BaseMethodAnalyzer {
+public class FieldsNotModifiedMethodAnalyzer extends BaseMethodAnalyzer {
 
-	public FieldsNotPublishedMethodAnalyzer(ClassContext classContext,
+	public FieldsNotModifiedMethodAnalyzer(ClassContext classContext,
 			MethodGen methodGen) {
 		super(classContext, methodGen);
 	}
 
-	public FieldsNotPublishedMethodAnalyzer(ClassContext classContext,
+	public FieldsNotModifiedMethodAnalyzer(ClassContext classContext,
 			MethodGen methodGen,
 			Set<AlreadyVisitedMethod> alreadyVisitedMethods, int depth) {
 		super(classContext, methodGen, alreadyVisitedMethods, depth);
@@ -26,7 +26,7 @@ public class FieldsNotPublishedMethodAnalyzer extends BaseMethodAnalyzer {
 
 	protected BaseInstructionsAnalysisVisitor getInstructionAnalysisVisitor(
 			Frame frame, InstructionHandle instructionHandle) {
-		return new FieldsNotPublishedAnalysisVisitor(classContext, method,
+		return new FieldsNotModifiedAnalysisVisitor(classContext, method,
 				frame, new ConstantPoolGen(method.getConstantPool()),
 				instructionHandle, exceptionHandlers, alreadyVisitedMethods,
 				depth);
@@ -34,8 +34,7 @@ public class FieldsNotPublishedMethodAnalyzer extends BaseMethodAnalyzer {
 
 	public void analyze() {
 		System.err.println("analyze not implemented yet!");
-		// TODO remove comment add specific "field" marker to all external
-		// references
+		// TODO remove comment add specific "field" marker to all references
 		// Stack<SlotOld> callerStack = new Stack<SlotOld>();
 		//
 		// // push this + args onto the stack

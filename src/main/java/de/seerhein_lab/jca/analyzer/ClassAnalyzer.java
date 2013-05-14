@@ -14,9 +14,9 @@ import org.apache.bcel.generic.MethodGen;
 import org.apache.bcel.generic.Type;
 
 import de.seerhein_lab.jca.ThreeValueBoolean;
-import de.seerhein_lab.jca.analyzer.ctorArgsCopied.CtorArgsCopiedAnalyzer;
-import de.seerhein_lab.jca.analyzer.fieldsNotModified.FieldsNotModifiedMethodAnalyzer;
-import de.seerhein_lab.jca.analyzer.fieldsNotPublished.FieldsNotPublishedMethodAnalyzer;
+import de.seerhein_lab.jca.analyzer.ctorArgsCopiedAnalyzer.CtorArgsCopiedAnalyzer;
+import de.seerhein_lab.jca.analyzer.fieldsNotModifiedAnalyzer.FieldsNotModifiedMethodAnalyzer;
+import de.seerhein_lab.jca.analyzer.fieldsNotPublishedAnalyzer.FieldsNotPublishedMethodAnalyzer;
 import de.seerhein_lab.jca.analyzer.propConAnalyzer.PropConMethodAnalyzer;
 import edu.umd.cs.findbugs.BugCollection;
 import edu.umd.cs.findbugs.BugInstance;

@@ -1,4 +1,4 @@
-package de.seerhein_lab.jca.analyzer.fieldsNotPublished;
+package de.seerhein_lab.jca.analyzer.ctorArgsCopiedAnalyzer;
 
 import java.util.Set;
 
@@ -18,10 +18,10 @@ import de.seerhein_lab.jca.slot.Slot;
 import edu.umd.cs.findbugs.annotations.Confidence;
 import edu.umd.cs.findbugs.ba.ClassContext;
 
-public class FieldsNotPublishedAnalysisVisitor extends
+public class CtorArgsCopiedAnalysisVisitor extends
 		BaseInstructionsAnalysisVisitor {
 
-	protected FieldsNotPublishedAnalysisVisitor(ClassContext classContext,
+	protected CtorArgsCopiedAnalysisVisitor(ClassContext classContext,
 			Method method, Frame frame, ConstantPoolGen constantPoolGen,
 			Set<AlreadyVisitedIfInstruction> alreadyVisited,
 			Set<AlreadyVisitedMethod> alreadyVisitedMethods,
@@ -32,7 +32,7 @@ public class FieldsNotPublishedAnalysisVisitor extends
 				depth);
 	}
 
-	public FieldsNotPublishedAnalysisVisitor(ClassContext classContext,
+	public CtorArgsCopiedAnalysisVisitor(ClassContext classContext,
 			Method method, Frame frame, ConstantPoolGen constantPoolGen,
 			InstructionHandle instructionHandle,
 			CodeExceptionGen[] exceptionHandlers,
@@ -45,15 +45,15 @@ public class FieldsNotPublishedAnalysisVisitor extends
 	protected BaseInstructionsAnalysisVisitor getInstructionsAnalysisVisitor(
 			Frame frame, Set<AlreadyVisitedIfInstruction> alreadyVisited,
 			InstructionHandle instructionHandle) {
-		return new FieldsNotPublishedAnalysisVisitor(classContext, method,
-				frame, constantPoolGen, alreadyVisited, alreadyVisitedMethods,
+		return new CtorArgsCopiedAnalysisVisitor(classContext, method, frame,
+				constantPoolGen, alreadyVisited, alreadyVisitedMethods,
 				instructionHandle, exceptionHandlers, depth);
 	}
 
 	@Override
 	protected BaseMethodAnalyzer getMethodAnalyzer(MethodGen targetMethodGen) {
-		return new FieldsNotPublishedMethodAnalyzer(classContext,
-				targetMethodGen, alreadyVisitedMethods, depth);
+		return new CtorArgsCopiedAnalyzer(classContext, targetMethodGen,
+				alreadyVisitedMethods, depth);
 	}
 
 	@Override
@@ -69,15 +69,9 @@ public class FieldsNotPublishedAnalysisVisitor extends
 	@Override
 	protected void detectVirtualMethodBug(ReferenceSlot argument) {
 		Heap heap = frame.getHeap();
-		if (argument.getID().equals(heap.getThisID())) {
-			// XXX problem or not?? Inheritance?!?
+		if (heap.get(argument.getID()).referredBy(heap.getThisID(), heap)) {
 			addBug(Confidence.HIGH,
-					"'this' is passed to a virtual method and published",
-					instructionHandle);
-		} else if (heap.get(argument.getID())
-				.referredBy(heap.getThisID(), heap)) {
-			addBug(Confidence.HIGH,
-					"a field of 'this' is passed to a virtual mehtod and published",
+					"a field of 'this' is passed to a virtual method and escapes",
 					instructionHandle);
 		}
 	}
@@ -92,13 +86,22 @@ public class FieldsNotPublishedAnalysisVisitor extends
 
 		ReferenceSlot referenceToStore = (ReferenceSlot) valueToStore;
 		Heap heap = frame.getHeap();
-		if (arrayReference.getID().equals(heap.getExternalID())
-				&& heap.get(referenceToStore.getID()).referredBy(
-						heap.getThisID(), heap)) {
-			// a field of this is assigned to an external object
-			addBug(Confidence.HIGH,
-					"field of 'this' is published by assignment to an external array",
-					instructionHandle);
+		if (heap.get(arrayReference.getID()).referredBy(heap.getThisID(), heap)) {
+			// array is referred by this
+			if (referenceToStore.getID()
+					.equals(frame.getHeap().getExternalID())) {
+				// external reference is assigned to an array referred by this
+				addBug(Confidence.HIGH,
+						"an external reference is assigned to an array referred by 'this'",
+						instructionHandle);
+			} else if (heap.get(referenceToStore.getID()).refers(
+					heap.getExternalID(), heap)) {
+				// a reference containing an external reference is assigned to
+				// an array referred by this
+				addBug(Confidence.HIGH,
+						"a reference containing an external reference is assigned to an array referred by 'this'",
+						instructionHandle);
+			}
 		}
 	}
 
@@ -112,30 +115,56 @@ public class FieldsNotPublishedAnalysisVisitor extends
 
 		ReferenceSlot referenceToPut = (ReferenceSlot) valueToPut;
 		Heap heap = frame.getHeap();
-		if (targetReference.getID().equals(heap.getExternalID())
-				&& heap.get(referenceToPut.getID()).referredBy(
-						heap.getThisID(), heap)) {
-			// a field of this is assigned to an external object
-			addBug(Confidence.HIGH,
-					"a field of 'this' is published by assignment to an external object",
-					instructionHandle);
+		if (targetReference.getID().equals(heap.getThisID())) {
+			// left side is this
+			if (referenceToPut.getID().equals(heap.getExternalID())) {
+				// right is external
+				addBug(Confidence.HIGH,
+						"an external object is assigned to 'this'",
+						instructionHandle);
+			} else if (heap.get(referenceToPut.getID()).refers(
+					heap.getExternalID(), heap)) {
+				// right refers external
+				addBug(Confidence.HIGH,
+						"an object containing an external reference is assigned to 'this'",
+						instructionHandle);
+			}
+		}
+		if (heap.get(targetReference.getID())
+				.referredBy(heap.getThisID(), heap)) {
+			// left is referred by this
+			if (referenceToPut.getID().equals(heap.getExternalID())) {
+				// right is external
+				addBug(Confidence.HIGH,
+						"an external reference is assigned to an object referred by 'this'",
+						instructionHandle);
+			} else if (heap.get(referenceToPut.getID()).refers(
+					heap.getExternalID(), heap)) {
+				// right refers external
+				addBug(Confidence.HIGH,
+						"a reference containing an external reference is assigned to an object referred by 'this'",
+						instructionHandle);
+			}
 		}
 	}
 
 	@Override
 	protected void detectPutStaticBug(ReferenceSlot referenceToPut) {
 		Heap heap = frame.getHeap();
+		// XXX this assigned to a static field?? Only starting class?!?
 		if (referenceToPut.getID().equals(heap.getThisID())) {
-			// XXX only a problem if it is a static field of the class we
-			// analyze
+			// this is published
 			addBug(Confidence.HIGH,
 					"'this' is published by assignment to a static field",
 					instructionHandle);
-		} else if (heap.get(referenceToPut.getID()).referredBy(
-				heap.getThisID(), heap)) {
+		}
+
+		if (heap.get(referenceToPut.getID()).referredBy(heap.getThisID(), heap)) {
+			// a field referred by this is published
 			addBug(Confidence.HIGH,
-					"a field of 'this' is published by assignment to a static field",
+					"an object referred by 'this' is published by assignment to a static field",
 					instructionHandle);
 		}
 	}
+
 }
