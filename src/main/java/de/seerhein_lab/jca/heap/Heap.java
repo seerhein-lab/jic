@@ -106,4 +106,37 @@ public class Heap {
 			((ClassInstance) leftSide).addReferredObject(this, field, right);
 		}
 	}
+
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + ((objects == null) ? 0 : objects.hashCode());
+		result = prime
+				* result
+				+ ((publishedObjects == null) ? 0 : publishedObjects.hashCode());
+		return result;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (!(obj instanceof Heap))
+			return false;
+		Heap other = (Heap) obj;
+		if (objects == null) {
+			if (other.objects != null)
+				return false;
+		} else if (!objects.equals(other.objects))
+			return false;
+		if (publishedObjects == null) {
+			if (other.publishedObjects != null)
+				return false;
+		} else if (!publishedObjects.equals(other.publishedObjects))
+			return false;
+		return true;
+	}
 }
