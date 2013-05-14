@@ -1,4 +1,4 @@
-package de.seerhein_lab.jca.analyzer.stateUnmodFieldsModify;
+package de.seerhein_lab.jca.analyzer.fieldsNotModified;
 
 import java.util.Set;
 
@@ -11,14 +11,14 @@ import de.seerhein_lab.jca.analyzer.BaseInstructionsAnalysisVisitor;
 import de.seerhein_lab.jca.analyzer.BaseMethodAnalyzer;
 import edu.umd.cs.findbugs.ba.ClassContext;
 
-public class StateUnmodFieldsModifyMethodAnalyzer extends BaseMethodAnalyzer {
+public class FieldsNotModifiedMethodAnalyzer extends BaseMethodAnalyzer {
 
-	public StateUnmodFieldsModifyMethodAnalyzer(ClassContext classContext,
+	public FieldsNotModifiedMethodAnalyzer(ClassContext classContext,
 			MethodGen methodGen) {
 		super(classContext, methodGen);
 	}
 
-	public StateUnmodFieldsModifyMethodAnalyzer(ClassContext classContext,
+	public FieldsNotModifiedMethodAnalyzer(ClassContext classContext,
 			MethodGen methodGen,
 			Set<AlreadyVisitedMethod> alreadyVisitedMethods, int depth) {
 		super(classContext, methodGen, alreadyVisitedMethods, depth);
@@ -26,7 +26,7 @@ public class StateUnmodFieldsModifyMethodAnalyzer extends BaseMethodAnalyzer {
 
 	protected BaseInstructionsAnalysisVisitor getInstructionAnalysisVisitor(
 			Frame frame, InstructionHandle instructionHandle) {
-		return new StateUnmodFieldsModifyAnalysisVisitor(classContext, method,
+		return new FieldsNotModifiedAnalysisVisitor(classContext, method,
 				frame, new ConstantPoolGen(method.getConstantPool()),
 				instructionHandle, exceptionHandlers, alreadyVisitedMethods,
 				depth);

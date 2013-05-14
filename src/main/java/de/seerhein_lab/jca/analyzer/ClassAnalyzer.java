@@ -14,10 +14,10 @@ import org.apache.bcel.generic.MethodGen;
 import org.apache.bcel.generic.Type;
 
 import de.seerhein_lab.jca.ThreeValueBoolean;
+import de.seerhein_lab.jca.analyzer.ctorArgsCopied.CtorArgsCopiedAnalyzer;
+import de.seerhein_lab.jca.analyzer.fieldsNotModified.FieldsNotModifiedMethodAnalyzer;
+import de.seerhein_lab.jca.analyzer.fieldsNotPublished.FieldsNotPublishedMethodAnalyzer;
 import de.seerhein_lab.jca.analyzer.propConAnalyzer.PropConMethodAnalyzer;
-import de.seerhein_lab.jca.analyzer.stateUnmodFieldsModify.StateUnmodFieldsModifyMethodAnalyzer;
-import de.seerhein_lab.jca.analyzer.stateUnmodParmsAreCopied.StateUnmodCtorAnalyzer;
-import de.seerhein_lab.jca.analyzer.stateUnmodRefPublished.StateUnmodRefPublishedMethodAnalyzer;
 import edu.umd.cs.findbugs.BugCollection;
 import edu.umd.cs.findbugs.BugInstance;
 import edu.umd.cs.findbugs.SortedBugCollection;
@@ -106,7 +106,7 @@ public class ClassAnalyzer {
 			MethodGen ctorGen = new MethodGen(ctor, clazz.getClassName(),
 					new ConstantPoolGen(clazz.getConstantPool()));
 
-			BaseMethodAnalyzer ctorAnalyzer = new StateUnmodCtorAnalyzer(
+			BaseMethodAnalyzer ctorAnalyzer = new CtorArgsCopiedAnalyzer(
 					classContext, ctorGen);
 			ctorAnalyzer.analyze();
 			bugs.addAll(ctorAnalyzer.getBugs().getCollection());
@@ -123,7 +123,7 @@ public class ClassAnalyzer {
 			MethodGen methodGen = new MethodGen(method, clazz.getClassName(),
 					new ConstantPoolGen(clazz.getConstantPool()));
 
-			BaseMethodAnalyzer methodAnalyzer = new StateUnmodRefPublishedMethodAnalyzer(
+			BaseMethodAnalyzer methodAnalyzer = new FieldsNotPublishedMethodAnalyzer(
 					classContext, methodGen);
 			methodAnalyzer.analyze();
 			bugs.addAll(methodAnalyzer.getBugs().getCollection());
@@ -140,7 +140,7 @@ public class ClassAnalyzer {
 			MethodGen methodGen = new MethodGen(method, clazz.getClassName(),
 					new ConstantPoolGen(clazz.getConstantPool()));
 
-			BaseMethodAnalyzer methodAnalyzer = new StateUnmodFieldsModifyMethodAnalyzer(
+			BaseMethodAnalyzer methodAnalyzer = new FieldsNotModifiedMethodAnalyzer(
 					classContext, methodGen);
 			methodAnalyzer.analyze();
 			bugs.addAll(methodAnalyzer.getBugs().getCollection());

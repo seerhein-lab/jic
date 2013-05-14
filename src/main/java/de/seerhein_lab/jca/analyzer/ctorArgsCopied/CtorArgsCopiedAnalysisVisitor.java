@@ -1,4 +1,4 @@
-package de.seerhein_lab.jca.analyzer.stateUnmodParmsAreCopied;
+package de.seerhein_lab.jca.analyzer.ctorArgsCopied;
 
 import java.util.Set;
 
@@ -18,10 +18,10 @@ import de.seerhein_lab.jca.slot.Slot;
 import edu.umd.cs.findbugs.annotations.Confidence;
 import edu.umd.cs.findbugs.ba.ClassContext;
 
-public class StateUnmodCtorAnalysisVisitor extends
+public class CtorArgsCopiedAnalysisVisitor extends
 		BaseInstructionsAnalysisVisitor {
 
-	protected StateUnmodCtorAnalysisVisitor(ClassContext classContext,
+	protected CtorArgsCopiedAnalysisVisitor(ClassContext classContext,
 			Method method, Frame frame, ConstantPoolGen constantPoolGen,
 			Set<AlreadyVisitedIfInstruction> alreadyVisited,
 			Set<AlreadyVisitedMethod> alreadyVisitedMethods,
@@ -32,7 +32,7 @@ public class StateUnmodCtorAnalysisVisitor extends
 				depth);
 	}
 
-	public StateUnmodCtorAnalysisVisitor(ClassContext classContext,
+	public CtorArgsCopiedAnalysisVisitor(ClassContext classContext,
 			Method method, Frame frame, ConstantPoolGen constantPoolGen,
 			InstructionHandle instructionHandle,
 			CodeExceptionGen[] exceptionHandlers,
@@ -45,14 +45,14 @@ public class StateUnmodCtorAnalysisVisitor extends
 	protected BaseInstructionsAnalysisVisitor getInstructionsAnalysisVisitor(
 			Frame frame, Set<AlreadyVisitedIfInstruction> alreadyVisited,
 			InstructionHandle instructionHandle) {
-		return new StateUnmodCtorAnalysisVisitor(classContext, method, frame,
+		return new CtorArgsCopiedAnalysisVisitor(classContext, method, frame,
 				constantPoolGen, alreadyVisited, alreadyVisitedMethods,
 				instructionHandle, exceptionHandlers, depth);
 	}
 
 	@Override
 	protected BaseMethodAnalyzer getMethodAnalyzer(MethodGen targetMethodGen) {
-		return new StateUnmodCtorAnalyzer(classContext, targetMethodGen,
+		return new CtorArgsCopiedAnalyzer(classContext, targetMethodGen,
 				alreadyVisitedMethods, depth);
 	}
 

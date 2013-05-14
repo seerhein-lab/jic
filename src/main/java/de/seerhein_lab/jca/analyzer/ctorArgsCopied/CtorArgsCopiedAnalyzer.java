@@ -1,4 +1,4 @@
-package de.seerhein_lab.jca.analyzer.stateUnmodParmsAreCopied;
+package de.seerhein_lab.jca.analyzer.ctorArgsCopied;
 
 import java.util.Set;
 import java.util.Stack;
@@ -16,13 +16,13 @@ import de.seerhein_lab.jca.slot.ReferenceSlot;
 import de.seerhein_lab.jca.slot.Slot;
 import edu.umd.cs.findbugs.ba.ClassContext;
 
-public class StateUnmodCtorAnalyzer extends BaseMethodAnalyzer {
+public class CtorArgsCopiedAnalyzer extends BaseMethodAnalyzer {
 
-	public StateUnmodCtorAnalyzer(ClassContext classContext, MethodGen methodGen) {
+	public CtorArgsCopiedAnalyzer(ClassContext classContext, MethodGen methodGen) {
 		super(classContext, methodGen);
 	}
 
-	public StateUnmodCtorAnalyzer(ClassContext classContext,
+	public CtorArgsCopiedAnalyzer(ClassContext classContext,
 			MethodGen methodGen,
 			Set<AlreadyVisitedMethod> alreadyVisitedMethods, int depth) {
 		super(classContext, methodGen, alreadyVisitedMethods, depth);
@@ -30,7 +30,7 @@ public class StateUnmodCtorAnalyzer extends BaseMethodAnalyzer {
 
 	protected BaseInstructionsAnalysisVisitor getInstructionAnalysisVisitor(
 			Frame frame, InstructionHandle instructionHandle) {
-		return new StateUnmodCtorAnalysisVisitor(classContext, method, frame,
+		return new CtorArgsCopiedAnalysisVisitor(classContext, method, frame,
 				new ConstantPoolGen(method.getConstantPool()),
 				instructionHandle, exceptionHandlers, alreadyVisitedMethods,
 				depth);

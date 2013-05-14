@@ -1,4 +1,4 @@
-package de.seerhein_lab.jca.analyzer.stateUnmodFieldsModify;
+package de.seerhein_lab.jca.analyzer.fieldsNotModified;
 
 import java.util.Set;
 
@@ -18,10 +18,10 @@ import de.seerhein_lab.jca.slot.Slot;
 import edu.umd.cs.findbugs.annotations.Confidence;
 import edu.umd.cs.findbugs.ba.ClassContext;
 
-public class StateUnmodFieldsModifyAnalysisVisitor extends
+public class FieldsNotModifiedAnalysisVisitor extends
 		BaseInstructionsAnalysisVisitor {
 
-	protected StateUnmodFieldsModifyAnalysisVisitor(ClassContext classContext,
+	protected FieldsNotModifiedAnalysisVisitor(ClassContext classContext,
 			Method method, Frame frame, ConstantPoolGen constantPoolGen,
 			Set<AlreadyVisitedIfInstruction> alreadyVisited,
 			Set<AlreadyVisitedMethod> alreadyVisitedMethods,
@@ -32,7 +32,7 @@ public class StateUnmodFieldsModifyAnalysisVisitor extends
 				depth);
 	}
 
-	public StateUnmodFieldsModifyAnalysisVisitor(ClassContext classContext,
+	public FieldsNotModifiedAnalysisVisitor(ClassContext classContext,
 			Method method, Frame frame, ConstantPoolGen constantPoolGen,
 			InstructionHandle instructionHandle,
 			CodeExceptionGen[] exceptionHandlers,
@@ -45,14 +45,14 @@ public class StateUnmodFieldsModifyAnalysisVisitor extends
 	protected BaseInstructionsAnalysisVisitor getInstructionsAnalysisVisitor(
 			Frame frame, Set<AlreadyVisitedIfInstruction> alreadyVisited,
 			InstructionHandle instructionHandle) {
-		return new StateUnmodFieldsModifyAnalysisVisitor(classContext, method,
+		return new FieldsNotModifiedAnalysisVisitor(classContext, method,
 				frame, constantPoolGen, alreadyVisited, alreadyVisitedMethods,
 				instructionHandle, exceptionHandlers, depth);
 	}
 
 	@Override
 	protected BaseMethodAnalyzer getMethodAnalyzer(MethodGen targetMethodGen) {
-		return new StateUnmodFieldsModifyMethodAnalyzer(classContext,
+		return new FieldsNotModifiedMethodAnalyzer(classContext,
 				targetMethodGen, alreadyVisitedMethods, depth);
 	}
 
