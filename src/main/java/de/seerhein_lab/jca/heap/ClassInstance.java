@@ -19,10 +19,10 @@ public class ClassInstance extends HeapObject {
 	}
 
 	@Override
-	void replaceReferredObject(UUID oldID, UUID newID) {
+	void replaceReferredObject(HeapObject oldObject, HeapObject newObject) {
 		for (String field : refers.keySet())
-			if (refers.get(field).equals(oldID))
-				refers.put(field, newID);
+			if (refers.get(field).equals(oldObject.id))
+				refers.put(field, newObject.id);
 	}
 
 	void addReferredObject(Heap heap, String field, UUID id) {

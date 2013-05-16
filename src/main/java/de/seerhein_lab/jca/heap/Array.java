@@ -50,9 +50,9 @@ public class Array extends HeapObject {
 	}
 
 	@Override
-	void replaceReferredObject(UUID oldID, UUID newID) {
-		refers.remove(oldID);
-		refers.add(newID);
+	void replaceReferredObject(HeapObject oldObject, HeapObject newObject) {
+		refers.remove(oldObject.id);
+		refers.add(newObject.id);
 	}
 
 	void addReferredObject(UUID id) {

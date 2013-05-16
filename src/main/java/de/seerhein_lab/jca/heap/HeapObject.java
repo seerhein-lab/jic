@@ -70,7 +70,7 @@ public class HeapObject {
 		this.heap = heap;
 	}
 
-	void replaceReferredObject(UUID oldID, UUID newID) {
+	void replaceReferredObject(HeapObject oldObject, HeapObject newObject) {
 		throw new AssertionError("Must not be called on a HeapObject instance");
 	}
 
@@ -85,10 +85,6 @@ public class HeapObject {
 	void addReferringObject(HeapObject obj) {
 		referredBy.add(obj.getId());
 	}
-
-	// public Set<UUID> getReferringObjects() {
-	// return referredBy;
-	// }
 
 	public Iterator<HeapObject> getReferringIterator() {
 		return new Iterator<HeapObject>() {

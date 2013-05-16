@@ -84,9 +84,9 @@ public class Heap {
 
 		for (Iterator<HeapObject> iterator = object.getReferringIterator(); iterator
 				.hasNext();) {
-			UUID referringObject = iterator.next().getId();
-			get(referringObject).replaceReferredObject(id, externalID);
-			external.addReferringObject(get(referringObject));
+			HeapObject referringObject = iterator.next();
+			referringObject.replaceReferredObject(object, external);
+			external.addReferringObject(referringObject);
 		}
 
 		for (Iterator<HeapObject> iterator = object.getReferredIterator(); iterator
