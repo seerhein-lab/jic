@@ -1,6 +1,5 @@
 package de.seerhein_lab.jca.heap;
 
-import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
@@ -75,7 +74,11 @@ public class HeapObject {
 		throw new AssertionError("Must not be called on a HeapObject instance");
 	}
 
-	public Collection<UUID> getReferredObjects() {
+	// public Collection<UUID> getReferredObjects() {
+	// throw new AssertionError("Must not be called on a HeapObject instance");
+	// }
+
+	public Iterator<HeapObject> getReferredIterator() {
 		throw new AssertionError("Must not be called on a HeapObject instance");
 	}
 
@@ -144,8 +147,8 @@ public class HeapObject {
 
 	boolean refers(UUID toSearch, Heap heap,
 			HashSet<AlreadyVisited> alreadyVisited) {
-		if (toSearch.equals(heap.getExternalID())
-				&& id.equals(heap.getExternalID()))
+		if (toSearch.equals(heap.getExternalObject())
+				&& id.equals(heap.getExternalObject()))
 			return true;
 		throw new AssertionError("Must not be called in this context");
 	}

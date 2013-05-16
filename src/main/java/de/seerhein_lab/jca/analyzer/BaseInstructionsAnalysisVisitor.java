@@ -1,6 +1,7 @@
 package de.seerhein_lab.jca.analyzer;
 
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
@@ -50,6 +51,7 @@ import de.seerhein_lab.jca.ResultValue.Kind;
 import de.seerhein_lab.jca.analyzer.BaseMethodAnalyzer.AlreadyVisitedMethod;
 import de.seerhein_lab.jca.heap.Array;
 import de.seerhein_lab.jca.heap.ClassInstance;
+import de.seerhein_lab.jca.heap.HeapObject;
 import de.seerhein_lab.jca.slot.DoubleSlot;
 import de.seerhein_lab.jca.slot.LongSlot;
 import de.seerhein_lab.jca.slot.ReferenceSlot;
@@ -340,7 +342,7 @@ public abstract class BaseInstructionsAnalysisVisitor extends
 
 		// return external reference if returnType reference is expected
 		if (returnValue instanceof ReferenceSlot)
-			returnValue = new ReferenceSlot(frame.getHeap().getExternalID());
+			returnValue = new ReferenceSlot(frame.getHeap().getExternalObject());
 
 		// works also for void results, because number of required slots = 0
 		frame.pushStackByRequiredSlots(returnValue);
@@ -532,9 +534,10 @@ public abstract class BaseInstructionsAnalysisVisitor extends
 		ReferenceSlot arrayReference = (ReferenceSlot) frame.getStack().pop();
 		Array array = (Array) frame.getHeap().get(arrayReference.getID());
 
-		for (UUID referred : array.getReferredObjects()) {
+		for (Iterator<HeapObject> iterator = array.getReferredIterator(); iterator
+				.hasNext();) {
 			Frame newFrame = new Frame(frame);
-			newFrame.getStack().push(new ReferenceSlot(referred));
+			newFrame.getStack().push(new ReferenceSlot(iterator.next()));
 			BaseInstructionsAnalysisVisitor visitor = getInstructionsAnalysisVisitor(
 					newFrame, alreadyVisited, instructionHandle.getNext());
 			instructionHandle.getNext().accept(visitor);
@@ -779,9 +782,9 @@ public abstract class BaseInstructionsAnalysisVisitor extends
 		// obj.getSignature() refers to desired field
 		Slot f = Slot.getDefaultSlotInstance(obj.getType(constantPoolGen));
 		if (f instanceof ReferenceSlot) {
-			if (o.getID().equals(frame.getHeap().getExternalID())) {
+			if (o.getID().equals(frame.getHeap().getExternalObject())) {
 				// if left side is external return external
-				f = new ReferenceSlot(frame.getHeap().getExternalID());
+				f = new ReferenceSlot(frame.getHeap().getExternalObject());
 			} else {
 				// get the ClassInstance linked to the desired field
 				f = new ReferenceSlot(((ClassInstance) frame.getHeap().get(
@@ -820,7 +823,7 @@ public abstract class BaseInstructionsAnalysisVisitor extends
 		// if a reference is expected
 		if (f instanceof ReferenceSlot) {
 			// static values are always external
-			f = new ReferenceSlot(frame.getHeap().getExternalID());
+			f = new ReferenceSlot(frame.getHeap().getExternalObject());
 		}
 
 		log.append((f instanceof DoubleSlot || f instanceof LongSlot) ? f
@@ -854,7 +857,7 @@ public abstract class BaseInstructionsAnalysisVisitor extends
 		detectPutFieldBug(o, v);
 		if (v instanceof ReferenceSlot) {
 			UUID vID = ((ReferenceSlot) v).getID();
-			if (o.getID().equals(frame.getHeap().getExternalID())) {
+			if (o.getID().equals(frame.getHeap().getExternalObject())) {
 				// left side is external, publish right
 				frame.getHeap().publish(vID);
 			} else {
@@ -1020,11 +1023,10 @@ public abstract class BaseInstructionsAnalysisVisitor extends
 			// pop count values for each dimension
 			frame.getStack().pop();
 
-			Array newArray = (Array) frame.getHeap().get(
-					frame.getHeap().newArray());
+			Array newArray = frame.getHeap().newArray();
 
 			if (i == 0) {
-				slot = new ReferenceSlot(newArray.getId());
+				slot = new ReferenceSlot(newArray);
 			} else {
 				frame.getHeap().linkObjects(array.getId(), null,
 						newArray.getId());
@@ -1050,8 +1052,8 @@ public abstract class BaseInstructionsAnalysisVisitor extends
 	public void visitNEW(NEW obj) {
 		logger.log(Level.FINE, indentation + obj.toString(false));
 
-		UUID id = frame.getHeap().newClassInstance();
-		ReferenceSlot slot = new ReferenceSlot(id);
+		ClassInstance instance = frame.getHeap().newClassInstance();
+		ReferenceSlot slot = new ReferenceSlot(instance);
 
 		frame.getStack().push(slot);
 
@@ -1077,8 +1079,7 @@ public abstract class BaseInstructionsAnalysisVisitor extends
 		frame.getStack().pop();
 
 		// push reference to new array onto the stack
-		UUID id = frame.getHeap().newArray();
-		ReferenceSlot slot = new ReferenceSlot(id);
+		ReferenceSlot slot = new ReferenceSlot(frame.getHeap().newArray());
 
 		frame.getStack().push(slot);
 

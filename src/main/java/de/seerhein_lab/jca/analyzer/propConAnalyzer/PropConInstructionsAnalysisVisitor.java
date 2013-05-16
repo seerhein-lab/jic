@@ -68,12 +68,13 @@ public class PropConInstructionsAnalysisVisitor extends
 	@Override
 	protected void detectVirtualMethodBug(ReferenceSlot argument) {
 		Heap heap = frame.getHeap();
-		if (argument.getID().equals(heap.getThisID())) {
+		if (argument.getID().equals(heap.getThisInstance())) {
 			// 'this' is passed into a virtual method
 			addBug(Confidence.HIGH,
 					"'this' is passed into a virtual method and escapes",
 					instructionHandle);
-		} else if (heap.get(argument.getID()).refers(heap.getThisID(), heap)) {
+		} else if (heap.get(argument.getID()).refers(
+				heap.getThisInstance().getId(), heap)) {
 			// argument that refers to 'this' is passed into a virtual method
 			addBug(Confidence.HIGH,
 					"a reference that refers to 'this' is passed into a virtual method letting 'this' escape",
@@ -91,15 +92,15 @@ public class PropConInstructionsAnalysisVisitor extends
 
 		ReferenceSlot referenceToStore = (ReferenceSlot) valueToStore;
 		Heap heap = frame.getHeap();
-		if (arrayReference.getID().equals(heap.getExternalID())) {
+		if (arrayReference.getID().equals(heap.getExternalObject())) {
 			// the array is externally known
-			if (referenceToStore.equals(heap.getThisID())) {
+			if (referenceToStore.equals(heap.getThisInstance())) {
 				// this is assigned to the array
 				addBug(Confidence.HIGH,
 						"'this' is assigned to an external array and escapes",
 						instructionHandle);
 			} else if (heap.get(arrayReference.getID()).refers(
-					heap.getThisID(), heap)) {
+					heap.getThisInstance().getId(), heap)) {
 				// a reference containing this is assigned to the array
 				addBug(Confidence.HIGH,
 						"a reference containing 'this' is assigned to an external array and 'this' escapes",
@@ -117,15 +118,15 @@ public class PropConInstructionsAnalysisVisitor extends
 		}
 		ReferenceSlot referenceToPut = (ReferenceSlot) valueToPut;
 		Heap heap = frame.getHeap();
-		if (targetReference.getID().equals(heap.getExternalID())) {
+		if (targetReference.getID().equals(heap.getExternalObject())) {
 			// the left side of the assignment is externally known
-			if (referenceToPut.getID().equals(heap.getThisID())) {
+			if (referenceToPut.getID().equals(heap.getThisInstance())) {
 				// this is on the right side
 				addBug(Confidence.HIGH,
 						"'this' is assigned to an external field and escapes",
 						instructionHandle);
 			} else if (heap.get(referenceToPut.getID()).refers(
-					heap.getThisID(), heap)) {
+					heap.getThisInstance().getId(), heap)) {
 				// this is contained in the right side
 				addBug(Confidence.HIGH,
 						"a reference containing 'this' is assigned to an external field and 'this' escapes",
@@ -138,12 +139,12 @@ public class PropConInstructionsAnalysisVisitor extends
 	@Override
 	protected void detectPutStaticBug(ReferenceSlot referenceToPut) {
 		Heap heap = frame.getHeap();
-		if (referenceToPut.getID().equals(heap.getThisID())) {
+		if (referenceToPut.getID().equals(heap.getThisInstance())) {
 			addBug(Confidence.HIGH,
 					"'this' is assigned to a static field and escapes",
 					instructionHandle);
-		} else if (heap.get(referenceToPut.getID()).refers(heap.getThisID(),
-				heap)) {
+		} else if (heap.get(referenceToPut.getID()).refers(
+				heap.getThisInstance().getId(), heap)) {
 			// the reference contains this
 			addBug(Confidence.HIGH,
 					"a reference containing 'this' is assigned to a static field and 'this' escapes",

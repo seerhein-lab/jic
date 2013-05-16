@@ -41,9 +41,10 @@ public class PropConMethodAnalyzer extends BaseMethodAnalyzer {
 		Stack<Slot> callerStack = new Stack<Slot>();
 		Heap callerHeap = new Heap();
 
-		ReferenceSlot thisReference = new ReferenceSlot(callerHeap.getThisID());
+		ReferenceSlot thisReference = new ReferenceSlot(
+				callerHeap.getThisInstance());
 		ReferenceSlot externalReference = new ReferenceSlot(
-				callerHeap.getExternalID());
+				callerHeap.getExternalObject());
 
 		// push this + args onto the stack
 		callerStack.push(thisReference);

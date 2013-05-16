@@ -69,7 +69,8 @@ public class CtorArgsCopiedAnalysisVisitor extends
 	@Override
 	protected void detectVirtualMethodBug(ReferenceSlot argument) {
 		Heap heap = frame.getHeap();
-		if (heap.get(argument.getID()).referredBy(heap.getThisID(), heap)) {
+		if (heap.get(argument.getID()).referredBy(
+				heap.getThisInstance().getId(), heap)) {
 			addBug(Confidence.HIGH,
 					"a field of 'this' is passed to a virtual method and escapes",
 					instructionHandle);
@@ -86,16 +87,17 @@ public class CtorArgsCopiedAnalysisVisitor extends
 
 		ReferenceSlot referenceToStore = (ReferenceSlot) valueToStore;
 		Heap heap = frame.getHeap();
-		if (heap.get(arrayReference.getID()).referredBy(heap.getThisID(), heap)) {
+		if (heap.get(arrayReference.getID()).referredBy(
+				heap.getThisInstance().getId(), heap)) {
 			// array is referred by this
-			if (referenceToStore.getID()
-					.equals(frame.getHeap().getExternalID())) {
+			if (referenceToStore.getID().equals(
+					frame.getHeap().getExternalObject())) {
 				// external reference is assigned to an array referred by this
 				addBug(Confidence.HIGH,
 						"an external reference is assigned to an array referred by 'this'",
 						instructionHandle);
 			} else if (heap.get(referenceToStore.getID()).refers(
-					heap.getExternalID(), heap)) {
+					heap.getExternalObject().getId(), heap)) {
 				// a reference containing an external reference is assigned to
 				// an array referred by this
 				addBug(Confidence.HIGH,
@@ -115,31 +117,31 @@ public class CtorArgsCopiedAnalysisVisitor extends
 
 		ReferenceSlot referenceToPut = (ReferenceSlot) valueToPut;
 		Heap heap = frame.getHeap();
-		if (targetReference.getID().equals(heap.getThisID())) {
+		if (targetReference.getID().equals(heap.getThisInstance())) {
 			// left side is this
-			if (referenceToPut.getID().equals(heap.getExternalID())) {
+			if (referenceToPut.getID().equals(heap.getExternalObject())) {
 				// right is external
 				addBug(Confidence.HIGH,
 						"an external object is assigned to 'this'",
 						instructionHandle);
 			} else if (heap.get(referenceToPut.getID()).refers(
-					heap.getExternalID(), heap)) {
+					heap.getExternalObject().getId(), heap)) {
 				// right refers external
 				addBug(Confidence.HIGH,
 						"an object containing an external reference is assigned to 'this'",
 						instructionHandle);
 			}
 		}
-		if (heap.get(targetReference.getID())
-				.referredBy(heap.getThisID(), heap)) {
+		if (heap.get(targetReference.getID()).referredBy(
+				heap.getThisInstance().getId(), heap)) {
 			// left is referred by this
-			if (referenceToPut.getID().equals(heap.getExternalID())) {
+			if (referenceToPut.getID().equals(heap.getExternalObject())) {
 				// right is external
 				addBug(Confidence.HIGH,
 						"an external reference is assigned to an object referred by 'this'",
 						instructionHandle);
 			} else if (heap.get(referenceToPut.getID()).refers(
-					heap.getExternalID(), heap)) {
+					heap.getExternalObject().getId(), heap)) {
 				// right refers external
 				addBug(Confidence.HIGH,
 						"a reference containing an external reference is assigned to an object referred by 'this'",
@@ -152,14 +154,15 @@ public class CtorArgsCopiedAnalysisVisitor extends
 	protected void detectPutStaticBug(ReferenceSlot referenceToPut) {
 		Heap heap = frame.getHeap();
 		// XXX this assigned to a static field?? Only starting class?!?
-		if (referenceToPut.getID().equals(heap.getThisID())) {
+		if (referenceToPut.getID().equals(heap.getThisInstance())) {
 			// this is published
 			addBug(Confidence.HIGH,
 					"'this' is published by assignment to a static field",
 					instructionHandle);
 		}
 
-		if (heap.get(referenceToPut.getID()).referredBy(heap.getThisID(), heap)) {
+		if (heap.get(referenceToPut.getID()).referredBy(
+				heap.getThisInstance().getId(), heap)) {
 			// a field referred by this is published
 			addBug(Confidence.HIGH,
 					"an object referred by 'this' is published by assignment to a static field",

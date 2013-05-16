@@ -69,13 +69,13 @@ public class FieldsNotPublishedAnalysisVisitor extends
 	@Override
 	protected void detectVirtualMethodBug(ReferenceSlot argument) {
 		Heap heap = frame.getHeap();
-		if (argument.getID().equals(heap.getThisID())) {
+		if (argument.getID().equals(heap.getThisInstance())) {
 			// XXX problem or not?? Inheritance?!?
 			addBug(Confidence.HIGH,
 					"'this' is passed to a virtual method and published",
 					instructionHandle);
-		} else if (heap.get(argument.getID())
-				.referredBy(heap.getThisID(), heap)) {
+		} else if (heap.get(argument.getID()).referredBy(
+				heap.getThisInstance().getId(), heap)) {
 			addBug(Confidence.HIGH,
 					"a field of 'this' is passed to a virtual mehtod and published",
 					instructionHandle);
@@ -92,9 +92,9 @@ public class FieldsNotPublishedAnalysisVisitor extends
 
 		ReferenceSlot referenceToStore = (ReferenceSlot) valueToStore;
 		Heap heap = frame.getHeap();
-		if (arrayReference.getID().equals(heap.getExternalID())
+		if (arrayReference.getID().equals(heap.getExternalObject())
 				&& heap.get(referenceToStore.getID()).referredBy(
-						heap.getThisID(), heap)) {
+						heap.getThisInstance().getId(), heap)) {
 			// a field of this is assigned to an external object
 			addBug(Confidence.HIGH,
 					"field of 'this' is published by assignment to an external array",
@@ -112,9 +112,9 @@ public class FieldsNotPublishedAnalysisVisitor extends
 
 		ReferenceSlot referenceToPut = (ReferenceSlot) valueToPut;
 		Heap heap = frame.getHeap();
-		if (targetReference.getID().equals(heap.getExternalID())
+		if (targetReference.getID().equals(heap.getExternalObject())
 				&& heap.get(referenceToPut.getID()).referredBy(
-						heap.getThisID(), heap)) {
+						heap.getThisInstance().getId(), heap)) {
 			// a field of this is assigned to an external object
 			addBug(Confidence.HIGH,
 					"a field of 'this' is published by assignment to an external object",
@@ -125,14 +125,14 @@ public class FieldsNotPublishedAnalysisVisitor extends
 	@Override
 	protected void detectPutStaticBug(ReferenceSlot referenceToPut) {
 		Heap heap = frame.getHeap();
-		if (referenceToPut.getID().equals(heap.getThisID())) {
+		if (referenceToPut.getID().equals(heap.getThisInstance())) {
 			// XXX only a problem if it is a static field of the class we
 			// analyze
 			addBug(Confidence.HIGH,
 					"'this' is published by assignment to a static field",
 					instructionHandle);
 		} else if (heap.get(referenceToPut.getID()).referredBy(
-				heap.getThisID(), heap)) {
+				heap.getThisInstance().getId(), heap)) {
 			addBug(Confidence.HIGH,
 					"a field of 'this' is published by assignment to a static field",
 					instructionHandle);

@@ -70,7 +70,8 @@ public class FieldsNotModifiedAnalysisVisitor extends
 	protected void detectVirtualMethodBug(ReferenceSlot argument) {
 		Heap heap = frame.getHeap();
 		// an object referred by a field of this is passed to a virtual method
-		if (heap.get(argument.getID()).referredBy(heap.getThisID(), heap)) {
+		if (heap.get(argument.getID()).referredBy(
+				heap.getThisInstance().getId(), heap)) {
 			addBug(Confidence.HIGH,
 					"an object referred by a field of 'this' is passed to a virtual method and might be modified",
 					instructionHandle);
@@ -83,7 +84,8 @@ public class FieldsNotModifiedAnalysisVisitor extends
 			Slot valueToStore) {
 		Heap heap = frame.getHeap();
 		// array is referred by a field of this
-		if (heap.get(arrayReference.getID()).referredBy(heap.getThisID(), heap)) {
+		if (heap.get(arrayReference.getID()).referredBy(
+				heap.getThisInstance().getId(), heap)) {
 			addBug(Confidence.HIGH,
 					"the value of an array referred by a field of 'this' is modified",
 					instructionHandle);
@@ -95,8 +97,8 @@ public class FieldsNotModifiedAnalysisVisitor extends
 			Slot valueToPut) {
 		Heap heap = frame.getHeap();
 		// left side is referred by a field of this
-		if (heap.get(targetReference.getID())
-				.referredBy(heap.getThisID(), heap)) {
+		if (heap.get(targetReference.getID()).referredBy(
+				heap.getThisInstance().getId(), heap)) {
 			addBug(Confidence.HIGH,
 					"the value of an object referred by a field of 'this' is modified",
 					instructionHandle);

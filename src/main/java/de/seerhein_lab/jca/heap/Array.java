@@ -1,7 +1,7 @@
 package de.seerhein_lab.jca.heap;
 
-import java.util.Collection;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.Set;
 import java.util.UUID;
 
@@ -14,7 +14,7 @@ public class Array extends HeapObject {
 
 	public Array(Array original, Heap heap) {
 		super(original, heap);
-		refers.addAll(original.getReferredObjects());
+		refers.addAll(original.refers);
 	}
 
 	@Override
@@ -22,9 +22,31 @@ public class Array extends HeapObject {
 		return new Array(this, heap);
 	}
 
+	// @Override
+	// public Collection<UUID> getReferredObjects() {
+	// return refers;
+	// }
+
 	@Override
-	public Collection<UUID> getReferredObjects() {
-		return refers;
+	public Iterator<HeapObject> getReferredIterator() {
+		return new Iterator<HeapObject>() {
+			Iterator<UUID> idIterator = refers.iterator();
+
+			@Override
+			public boolean hasNext() {
+				return idIterator.hasNext();
+			}
+
+			@Override
+			public HeapObject next() {
+				return heap.get(idIterator.next());
+			}
+
+			@Override
+			public void remove() {
+				idIterator.remove();
+			}
+		};
 	}
 
 	@Override

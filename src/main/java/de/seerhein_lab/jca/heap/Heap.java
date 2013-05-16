@@ -47,30 +47,28 @@ public class Heap {
 	// }
 	// }
 	//
-	public UUID getThisID() {
-		return thisID;
+	public ClassInstance getThisInstance() {
+		return (ClassInstance) get(thisID);
 	}
 
-	public UUID getExternalID() {
-		return externalID;
+	public HeapObject getExternalObject() {
+		return get(externalID);
 	}
 
 	// public UUID getNullID() {
 	// return nullID;
 	// }
 
-	public UUID newClassInstance() {
+	public ClassInstance newClassInstance() {
 		ClassInstance object = new ClassInstance(this);
-		UUID id = object.getId();
-		objects.put(id, object);
-		return id;
+		objects.put(object.getId(), object);
+		return object;
 	}
 
-	public UUID newArray() {
+	public Array newArray() {
 		Array object = new Array(this);
-		UUID id = object.getId();
-		objects.put(id, object);
-		return id;
+		objects.put(object.getId(), object);
+		return object;
 	}
 
 	public void publish(UUID id) {
@@ -91,8 +89,9 @@ public class Heap {
 			external.addReferringObject(get(referringObject));
 		}
 
-		for (UUID referredObject : object.getReferredObjects()) {
-			publish(referredObject);
+		for (Iterator<HeapObject> iterator = object.getReferredIterator(); iterator
+				.hasNext();) {
+			publish(iterator.next().getId());
 		}
 	}
 

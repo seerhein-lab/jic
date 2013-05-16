@@ -1,8 +1,8 @@
 package de.seerhein_lab.jca.heap;
 
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.UUID;
 
@@ -38,13 +38,35 @@ public class ClassInstance extends HeapObject {
 		return new ClassInstance(this, heap);
 	}
 
+	// @Override
+	// public Collection<UUID> getReferredObjects() {
+	// return refers.values();
+	// }
+
 	@Override
-	public Collection<UUID> getReferredObjects() {
-		return refers.values();
+	public Iterator<HeapObject> getReferredIterator() {
+		return new Iterator<HeapObject>() {
+			Iterator<UUID> idIterator = refers.values().iterator();
+
+			@Override
+			public boolean hasNext() {
+				return idIterator.hasNext();
+			}
+
+			@Override
+			public HeapObject next() {
+				return heap.get(idIterator.next());
+			}
+
+			@Override
+			public void remove() {
+				idIterator.remove();
+			}
+		};
 	}
 
-	public UUID getField(String name) {
-		return refers.get(name);
+	public HeapObject getField(String name) {
+		return heap.get(refers.get(name));
 	}
 
 	@Override

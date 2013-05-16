@@ -2,6 +2,8 @@ package de.seerhein_lab.jca.slot;
 
 import java.util.UUID;
 
+import de.seerhein_lab.jca.heap.HeapObject;
+
 public class ReferenceSlot extends Slot {
 	private final UUID objectID;
 
@@ -9,8 +11,8 @@ public class ReferenceSlot extends Slot {
 		objectID = null;
 	}
 
-	public ReferenceSlot(UUID objectID) {
-		this.objectID = objectID;
+	public ReferenceSlot(HeapObject object) {
+		this.objectID = object.getId();
 	}
 
 	@Override
