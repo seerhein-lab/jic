@@ -21,15 +21,18 @@ import edu.umd.cs.findbugs.ba.ClassContext;
 public class FieldsNotModifiedAnalysisVisitor extends
 		BaseInstructionsAnalysisVisitor {
 
-	protected FieldsNotModifiedAnalysisVisitor(ClassContext classContext,
-			Method method, Frame frame, ConstantPoolGen constantPoolGen,
-			Set<AlreadyVisitedIfInstruction> alreadyVisited,
+	protected FieldsNotModifiedAnalysisVisitor(
+			ClassContext classContext,
+			Method method,
+			Frame frame,
+			ConstantPoolGen constantPoolGen,
+			Set<AlreadyVisited<InstructionHandle, Boolean>> alreadyVisitedIfBranch,
 			Set<AlreadyVisited<Method, Slot[]>> alreadyVisitedMethods,
 			InstructionHandle instructionHandle,
 			CodeExceptionGen[] exceptionHandlers, int depth) {
-		super(classContext, method, frame, constantPoolGen, alreadyVisited,
-				alreadyVisitedMethods, instructionHandle, exceptionHandlers,
-				depth);
+		super(classContext, method, frame, constantPoolGen,
+				alreadyVisitedIfBranch, alreadyVisitedMethods,
+				instructionHandle, exceptionHandlers, depth);
 	}
 
 	public FieldsNotModifiedAnalysisVisitor(ClassContext classContext,
@@ -43,11 +46,13 @@ public class FieldsNotModifiedAnalysisVisitor extends
 
 	@Override
 	protected BaseInstructionsAnalysisVisitor getInstructionsAnalysisVisitor(
-			Frame frame, Set<AlreadyVisitedIfInstruction> alreadyVisited,
+			Frame frame,
+			Set<AlreadyVisited<InstructionHandle, Boolean>> alreadyVisitedIfBranch,
 			InstructionHandle instructionHandle) {
 		return new FieldsNotModifiedAnalysisVisitor(classContext, method,
-				frame, constantPoolGen, alreadyVisited, alreadyVisitedMethods,
-				instructionHandle, exceptionHandlers, depth);
+				frame, constantPoolGen, alreadyVisitedIfBranch,
+				alreadyVisitedMethods, instructionHandle, exceptionHandlers,
+				depth);
 	}
 
 	@Override

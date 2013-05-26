@@ -95,7 +95,7 @@ public abstract class BaseInstructionsAnalysisVisitor extends
 	protected final Method method;
 
 	protected final CodeExceptionGen[] exceptionHandlers;
-	protected Set<AlreadyVisitedIfInstruction> alreadyVisited;
+	protected Set<AlreadyVisited<InstructionHandle, Boolean>> alreadyVisitedIfBranch;
 	protected final Set<AlreadyVisited<Method, Slot[]>> alreadyVisitedMethods;
 	protected SortedBugCollection bugs = new SortedBugCollection();
 	protected Set<ResultValue> result = new HashSet<ResultValue>();
@@ -103,47 +103,48 @@ public abstract class BaseInstructionsAnalysisVisitor extends
 	protected Map<Short, Slot> simpleInstructions = SimpleInstructions
 			.getSimpleInstructions();
 
-	protected static class AlreadyVisitedIfInstruction {
-		private final InstructionHandle ifInstruction;
-		private final boolean thenBranchVisited;
-
-		public AlreadyVisitedIfInstruction(InstructionHandle ifInstruction,
-				boolean thenBranchVisited) {
-			this.ifInstruction = ifInstruction;
-			this.thenBranchVisited = thenBranchVisited;
-		}
-
-		@Override
-		public int hashCode() {
-			final int prime = 31;
-			int result = 1;
-			result = prime * result
-					+ ((ifInstruction == null) ? 0 : ifInstruction.hashCode());
-			result = prime * result + (thenBranchVisited ? 1231 : 1237);
-			return result;
-		}
-
-		@Override
-		public boolean equals(Object obj) {
-			if (this == obj)
-				return true;
-			if (!(obj instanceof AlreadyVisitedIfInstruction))
-				return false;
-			AlreadyVisitedIfInstruction other = (AlreadyVisitedIfInstruction) obj;
-			if (ifInstruction == null) {
-				if (other.ifInstruction != null)
-					return false;
-			} else if (!ifInstruction.equals(other.ifInstruction))
-				return false;
-			if (thenBranchVisited != other.thenBranchVisited)
-				return false;
-			return true;
-		}
-
-	}
+	// protected static class AlreadyVisitedIfInstruction {
+	// private final InstructionHandle ifInstruction;
+	// private final boolean thenBranchVisited;
+	//
+	// public AlreadyVisitedIfInstruction(InstructionHandle ifInstruction,
+	// boolean thenBranchVisited) {
+	// this.ifInstruction = ifInstruction;
+	// this.thenBranchVisited = thenBranchVisited;
+	// }
+	//
+	// @Override
+	// public int hashCode() {
+	// final int prime = 31;
+	// int result = 1;
+	// result = prime * result
+	// + ((ifInstruction == null) ? 0 : ifInstruction.hashCode());
+	// result = prime * result + (thenBranchVisited ? 1231 : 1237);
+	// return result;
+	// }
+	//
+	// @Override
+	// public boolean equals(Object obj) {
+	// if (this == obj)
+	// return true;
+	// if (!(obj instanceof AlreadyVisitedIfInstruction))
+	// return false;
+	// AlreadyVisitedIfInstruction other = (AlreadyVisitedIfInstruction) obj;
+	// if (ifInstruction == null) {
+	// if (other.ifInstruction != null)
+	// return false;
+	// } else if (!ifInstruction.equals(other.ifInstruction))
+	// return false;
+	// if (thenBranchVisited != other.thenBranchVisited)
+	// return false;
+	// return true;
+	// }
+	//
+	// }
 
 	protected abstract BaseInstructionsAnalysisVisitor getInstructionsAnalysisVisitor(
-			Frame frame, Set<AlreadyVisitedIfInstruction> alreadyVisited,
+			Frame frame,
+			Set<AlreadyVisited<InstructionHandle, Boolean>> alreadyVisited,
 			InstructionHandle instructionHandle);
 
 	protected abstract BaseMethodAnalyzer getMethodAnalyzer(
@@ -168,14 +169,14 @@ public abstract class BaseInstructionsAnalysisVisitor extends
 			CodeExceptionGen[] exceptionHandlers,
 			Set<AlreadyVisited<Method, Slot[]>> alreadyVisitedMethods, int depth) {
 		this(classContext, method, frame, constantPoolGen,
-				new HashSet<AlreadyVisitedIfInstruction>(),
+				new HashSet<AlreadyVisited<InstructionHandle, Boolean>>(),
 				alreadyVisitedMethods, instructionHandle, exceptionHandlers,
 				depth);
 	}
 
 	protected BaseInstructionsAnalysisVisitor(ClassContext classContext,
 			Method method, Frame frame, ConstantPoolGen constantPoolGen,
-			Set<AlreadyVisitedIfInstruction> alreadyVisited,
+			Set<AlreadyVisited<InstructionHandle, Boolean>> alreadyVisited,
 			Set<AlreadyVisited<Method, Slot[]>> alreadyVisitedMethods,
 			InstructionHandle instructionHandle,
 			CodeExceptionGen[] exceptionHandlers, int depth) {
@@ -183,7 +184,7 @@ public abstract class BaseInstructionsAnalysisVisitor extends
 
 		this.classContext = classContext;
 		this.method = method;
-		this.alreadyVisited = alreadyVisited;
+		this.alreadyVisitedIfBranch = alreadyVisited;
 		this.alreadyVisitedMethods = alreadyVisitedMethods;
 		this.exceptionHandlers = exceptionHandlers;
 	}
@@ -227,7 +228,7 @@ public abstract class BaseInstructionsAnalysisVisitor extends
 				logger.log(Level.FINE, indentation + "vvvvv "
 						+ exceptionHandler.toString() + ": start vvvvv");
 				BaseInstructionsAnalysisVisitor excepHandlerVisitor = getInstructionsAnalysisVisitor(
-						new Frame(frame), alreadyVisited,
+						new Frame(frame), alreadyVisitedIfBranch,
 						exceptionHandler.getHandlerPC());
 				exceptionHandler.getHandlerPC().accept(excepHandlerVisitor);
 				bugs.addAll(excepHandlerVisitor.getBugs().getCollection());
@@ -292,7 +293,7 @@ public abstract class BaseInstructionsAnalysisVisitor extends
 			if (calleeResult.getKind().equals(Kind.REGULAR)) {
 				BaseInstructionsAnalysisVisitor specificCalleeResultVisitor = getInstructionsAnalysisVisitor(
 						new Frame(frame, calleeResult.getHeap()),
-						alreadyVisited, instructionHandle.getNext());
+						alreadyVisitedIfBranch, instructionHandle.getNext());
 
 				specificCalleeResultVisitor.frame
 						.pushStackByRequiredSlots(calleeResult.getSlot());
@@ -539,7 +540,8 @@ public abstract class BaseInstructionsAnalysisVisitor extends
 			Frame newFrame = new Frame(frame);
 			newFrame.getStack().push(new ReferenceSlot(iterator.next()));
 			BaseInstructionsAnalysisVisitor visitor = getInstructionsAnalysisVisitor(
-					newFrame, alreadyVisited, instructionHandle.getNext());
+					newFrame, alreadyVisitedIfBranch,
+					instructionHandle.getNext());
 			instructionHandle.getNext().accept(visitor);
 			bugs.addAll(visitor.getBugs().getCollection());
 			result.addAll(visitor.getResult());
@@ -607,13 +609,13 @@ public abstract class BaseInstructionsAnalysisVisitor extends
 		}
 
 		logger.log(Level.FINEST, indentation + "------------------  "
-				+ alreadyVisited.size()
+				+ alreadyVisitedIfBranch.size()
 				+ ".else  (condition might be inverted!) ------------------");
-		AlreadyVisitedIfInstruction elseBranch = new AlreadyVisitedIfInstruction(
+		AlreadyVisited<InstructionHandle, Boolean> elseBranch = new AlreadyVisited<InstructionHandle, Boolean>(
 				instructionHandle, false);
-		if (alreadyVisited.add(elseBranch)) {
-			Set<AlreadyVisitedIfInstruction> newAlreadyVisited = new HashSet<AlreadyVisitedIfInstruction>();
-			newAlreadyVisited.addAll(alreadyVisited);
+		if (alreadyVisitedIfBranch.add(elseBranch)) {
+			Set<AlreadyVisited<InstructionHandle, Boolean>> newAlreadyVisited = new HashSet<AlreadyVisited<InstructionHandle, Boolean>>();
+			newAlreadyVisited.addAll(alreadyVisitedIfBranch);
 			BaseInstructionsAnalysisVisitor elseBranchVisitor = getInstructionsAnalysisVisitor(
 					new Frame(frame), newAlreadyVisited,
 					instructionHandle.getNext());
@@ -625,14 +627,14 @@ public abstract class BaseInstructionsAnalysisVisitor extends
 					+ "Loop detected, do not re-enter.");
 		}
 		logger.log(Level.FINEST, indentation + "------------------  "
-				+ alreadyVisited.size()
+				+ alreadyVisitedIfBranch.size()
 				+ ".then  (condition might be inverted!) ------------------");
-		AlreadyVisitedIfInstruction thenBranch = new AlreadyVisitedIfInstruction(
+		AlreadyVisited<InstructionHandle, Boolean> thenBranch = new AlreadyVisited<InstructionHandle, Boolean>(
 				instructionHandle, true);
-		if (alreadyVisited.add(thenBranch)) {
+		if (alreadyVisitedIfBranch.add(thenBranch)) {
 
-			Set<AlreadyVisitedIfInstruction> newAlreadyVisited = new HashSet<AlreadyVisitedIfInstruction>();
-			newAlreadyVisited.addAll(alreadyVisited);
+			Set<AlreadyVisited<InstructionHandle, Boolean>> newAlreadyVisited = new HashSet<AlreadyVisited<InstructionHandle, Boolean>>();
+			newAlreadyVisited.addAll(alreadyVisitedIfBranch);
 
 			BaseInstructionsAnalysisVisitor thenBranchVisitor = getInstructionsAnalysisVisitor(
 					new Frame(frame), newAlreadyVisited, obj.getTarget());
@@ -688,7 +690,7 @@ public abstract class BaseInstructionsAnalysisVisitor extends
 			logger.log(Level.FINEST, indentation + "--------------- Line "
 					+ targets[i].getPosition() + " ---------------");
 			caseToFollow = getInstructionsAnalysisVisitor(new Frame(frame),
-					alreadyVisited, targets[i]);
+					alreadyVisitedIfBranch, targets[i]);
 			targets[i].accept(caseToFollow);
 			// adding occurred bugs to bug-collection
 			bugs.addAll(caseToFollow.getBugs().getCollection());
@@ -702,7 +704,7 @@ public abstract class BaseInstructionsAnalysisVisitor extends
 		// NOTE: If the keyword "Default:" is not in the switch the following
 		// target is the end of the switch without executing a case.
 		caseToFollow = getInstructionsAnalysisVisitor(new Frame(frame),
-				alreadyVisited, obj.getTarget());
+				alreadyVisitedIfBranch, obj.getTarget());
 		obj.getTarget().accept(caseToFollow);
 		// adding occurred bugs to bug-collection
 		bugs.addAll(caseToFollow.getBugs().getCollection());
@@ -747,7 +749,8 @@ public abstract class BaseInstructionsAnalysisVisitor extends
 		// 1st case: type cast is valid, continue execution in a separate
 		// visitor
 		BaseInstructionsAnalysisVisitor regularCaseVisitor = getInstructionsAnalysisVisitor(
-				new Frame(frame), alreadyVisited, instructionHandle.getNext());
+				new Frame(frame), alreadyVisitedIfBranch,
+				instructionHandle.getNext());
 
 		regularCaseVisitor.frame.getStack().push(objRef);
 

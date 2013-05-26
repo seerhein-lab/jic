@@ -21,15 +21,18 @@ import edu.umd.cs.findbugs.ba.ClassContext;
 public class CtorArgsCopiedAnalysisVisitor extends
 		BaseInstructionsAnalysisVisitor {
 
-	protected CtorArgsCopiedAnalysisVisitor(ClassContext classContext,
-			Method method, Frame frame, ConstantPoolGen constantPoolGen,
-			Set<AlreadyVisitedIfInstruction> alreadyVisited,
+	protected CtorArgsCopiedAnalysisVisitor(
+			ClassContext classContext,
+			Method method,
+			Frame frame,
+			ConstantPoolGen constantPoolGen,
+			Set<AlreadyVisited<InstructionHandle, Boolean>> alreadyVisitedIfBranch,
 			Set<AlreadyVisited<Method, Slot[]>> alreadyVisitedMethods,
 			InstructionHandle instructionHandle,
 			CodeExceptionGen[] exceptionHandlers, int depth) {
-		super(classContext, method, frame, constantPoolGen, alreadyVisited,
-				alreadyVisitedMethods, instructionHandle, exceptionHandlers,
-				depth);
+		super(classContext, method, frame, constantPoolGen,
+				alreadyVisitedIfBranch, alreadyVisitedMethods,
+				instructionHandle, exceptionHandlers, depth);
 	}
 
 	public CtorArgsCopiedAnalysisVisitor(ClassContext classContext,
@@ -43,10 +46,11 @@ public class CtorArgsCopiedAnalysisVisitor extends
 
 	@Override
 	protected BaseInstructionsAnalysisVisitor getInstructionsAnalysisVisitor(
-			Frame frame, Set<AlreadyVisitedIfInstruction> alreadyVisited,
+			Frame frame,
+			Set<AlreadyVisited<InstructionHandle, Boolean>> alreadyVisitedIfBranch,
 			InstructionHandle instructionHandle) {
 		return new CtorArgsCopiedAnalysisVisitor(classContext, method, frame,
-				constantPoolGen, alreadyVisited, alreadyVisitedMethods,
+				constantPoolGen, alreadyVisitedIfBranch, alreadyVisitedMethods,
 				instructionHandle, exceptionHandlers, depth);
 	}
 
