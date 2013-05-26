@@ -6,6 +6,8 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.UUID;
 
+import de.seerhein_lab.jca.AlreadyVisited;
+
 public class ClassInstance extends HeapObject {
 	private Map<String, UUID> refers = new HashMap<String, UUID>();
 
@@ -71,9 +73,10 @@ public class ClassInstance extends HeapObject {
 
 	@Override
 	boolean refers(UUID toSearch, Heap heap,
-			HashSet<AlreadyVisited> alreadyVisited) {
+			HashSet<AlreadyVisited<HeapObject, HeapObject>> alreadyVisited) {
 		for (UUID field : refers.values()) {
-			if (alreadyVisited.add(new AlreadyVisited(this, heap.get(field)))) {
+			if (alreadyVisited.add(new AlreadyVisited<HeapObject, HeapObject>(
+					this, heap.get(field)))) {
 				// if was not visited before
 				if (field.equals(toSearch)
 						|| heap.get(field).refers(toSearch, heap,

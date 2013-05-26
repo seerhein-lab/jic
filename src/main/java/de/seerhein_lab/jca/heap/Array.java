@@ -5,6 +5,8 @@ import java.util.Iterator;
 import java.util.Set;
 import java.util.UUID;
 
+import de.seerhein_lab.jca.AlreadyVisited;
+
 public class Array extends HeapObject {
 	private Set<UUID> refers = new HashSet<UUID>();
 
@@ -61,9 +63,10 @@ public class Array extends HeapObject {
 
 	@Override
 	boolean refers(UUID toSearch, Heap heap,
-			HashSet<AlreadyVisited> alreadyVisited) {
+			HashSet<AlreadyVisited<HeapObject, HeapObject>> alreadyVisited) {
 		for (UUID entry : refers) {
-			if (alreadyVisited.add(new AlreadyVisited(this, heap.get(entry)))) {
+			if (alreadyVisited.add(new AlreadyVisited<HeapObject, HeapObject>(
+					this, heap.get(entry)))) {
 				// if was not visited before
 				if (entry.equals(toSearch)
 						|| heap.get(entry).refers(toSearch, heap,
