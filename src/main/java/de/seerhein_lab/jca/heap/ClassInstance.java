@@ -8,6 +8,10 @@ import java.util.UUID;
 
 import de.seerhein_lab.jca.AlreadyVisited;
 
+/**
+ * Class representing a ClassInstance. A ClassInstance has an Id, a reference to
+ * the heap where its stored and a set of referring + referred objects.
+ */
 public class ClassInstance extends HeapObject {
 	private Map<String, UUID> refers = new HashMap<String, UUID>();
 
@@ -15,11 +19,22 @@ public class ClassInstance extends HeapObject {
 		super(heap);
 	}
 
+	/**
+	 * Copy-Constructor.
+	 * 
+	 * @param original
+	 *            The ClassInstance to copy from.
+	 * @param heap
+	 *            The heap where the object is stored.
+	 */
 	ClassInstance(ClassInstance original, Heap heap) {
 		super(original, heap);
 		refers.putAll(original.refers);
 	}
 
+	/**
+	 * Replace the oldObject by the newObject.
+	 */
 	@Override
 	void replaceReferredObject(HeapObject oldObject, HeapObject newObject) {
 		for (String field : refers.keySet())
@@ -27,6 +42,13 @@ public class ClassInstance extends HeapObject {
 				refers.put(field, newObject.id);
 	}
 
+	/**
+	 * Adds "obj" as a referred Object in the "field". If the field is already
+	 * set, the old value will be replaced.
+	 * 
+	 * @param obj
+	 *            Obj which refers this.
+	 */
 	void addReferredObject(Heap heap, String field, UUID id) {
 		if (refers.containsKey(field)) {
 			// remove the old assignment

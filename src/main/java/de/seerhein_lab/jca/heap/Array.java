@@ -7,6 +7,10 @@ import java.util.UUID;
 
 import de.seerhein_lab.jca.AlreadyVisited;
 
+/**
+ * Class representing an Array. An Array has an Id, a reference to the heap
+ * where its stored and a set of referring + referred objects.
+ */
 public class Array extends HeapObject {
 	private Set<UUID> refers = new HashSet<UUID>();
 
@@ -14,6 +18,14 @@ public class Array extends HeapObject {
 		super(heap);
 	}
 
+	/**
+	 * Copy-Constructor.
+	 * 
+	 * @param original
+	 *            The Array to copy from.
+	 * @param heap
+	 *            The heap where the object is stored.
+	 */
 	public Array(Array original, Heap heap) {
 		super(original, heap);
 		refers.addAll(original.refers);
@@ -51,6 +63,9 @@ public class Array extends HeapObject {
 		};
 	}
 
+	/**
+	 * Replace the oldObject by the newObject.
+	 */
 	@Override
 	void replaceReferredObject(HeapObject oldObject, HeapObject newObject) {
 		refers.remove(oldObject.id);

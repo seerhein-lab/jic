@@ -7,22 +7,46 @@ import java.util.UUID;
 
 import de.seerhein_lab.jca.AlreadyVisited;
 
+/**
+ * Class representing a heapObject. A HeapObject has an Id, a reference to the
+ * heap where its stored and a set of referring objects. This class should only
+ * be instantiated for "the external" object, for other cases use Array or
+ * ClassInstance.
+ */
 public class HeapObject {
 	protected final UUID id;
 	protected final Set<UUID> referredBy = new HashSet<UUID>();
 	protected final Heap heap;
 
+	/**
+	 * Constructor.
+	 * 
+	 * @param heap
+	 *            The heap where the object is stored.
+	 */
 	HeapObject(Heap heap) {
 		id = UUID.randomUUID();
 		this.heap = heap;
 	}
 
+	/**
+	 * Copy-Constructor.
+	 * 
+	 * @param original
+	 *            The HeapObject to copy from.
+	 * @param heap
+	 *            The heap where the object is stored.
+	 */
 	HeapObject(HeapObject original, Heap heap) {
 		id = original.id;
 		referredBy.addAll(original.referredBy);
 		this.heap = heap;
 	}
 
+	/**
+	 * Must not be called on a HeapObject instance, because a HeapObject can
+	 * only be the "external", which can't refer anything.
+	 */
 	void replaceReferredObject(HeapObject oldObject, HeapObject newObject) {
 		throw new AssertionError("Must not be called on a HeapObject instance");
 	}
@@ -31,10 +55,20 @@ public class HeapObject {
 	// throw new AssertionError("Must not be called on a HeapObject instance");
 	// }
 
+	/**
+	 * Must not be called on a HeapObject instance, because a HeapObject can
+	 * only be the "external", which can't refer anything.
+	 */
 	public Iterator<HeapObject> getReferredIterator() {
 		throw new AssertionError("Must not be called on a HeapObject instance");
 	}
 
+	/**
+	 * Adds "obj" as a referring Object.
+	 * 
+	 * @param obj
+	 *            Obj which refers this.
+	 */
 	void addReferringObject(HeapObject obj) {
 		referredBy.add(obj.getId());
 	}
@@ -71,6 +105,11 @@ public class HeapObject {
 		return new HeapObject(this, heap);
 	}
 
+	/**
+	 * Is this referred by "toSearch" in the "heap".
+	 * 
+	 * @return If this is referred by "toSearch".
+	 */
 	public boolean referredBy(UUID toSearch, Heap heap) {
 		return referredBy(toSearch, heap,
 				new HashSet<AlreadyVisited<HeapObject, HeapObject>>());
@@ -92,6 +131,13 @@ public class HeapObject {
 		return false;
 	}
 
+	/**
+	 * Does this refer "toSearch" in the "heap". Must not be called on a
+	 * HeapObject instance, because a HeapObject can only be the "external",
+	 * which can't refer anything.
+	 * 
+	 * @return If this refers "toSearch".
+	 */
 	public boolean refers(UUID toSearch, Heap heap) {
 		return refers(toSearch, heap,
 				new HashSet<AlreadyVisited<HeapObject, HeapObject>>());
