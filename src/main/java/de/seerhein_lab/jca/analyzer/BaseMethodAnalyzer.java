@@ -1,6 +1,5 @@
 package de.seerhein_lab.jca.analyzer;
 
-import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.logging.Level;
@@ -13,6 +12,7 @@ import org.apache.bcel.generic.InstructionList;
 import org.apache.bcel.generic.MethodGen;
 import org.apache.bcel.generic.Type;
 
+import de.seerhein_lab.jca.AlreadyVisited;
 import de.seerhein_lab.jca.Frame;
 import de.seerhein_lab.jca.ResultValue;
 import de.seerhein_lab.jca.Utils;
@@ -27,7 +27,7 @@ public abstract class BaseMethodAnalyzer {
 	protected static final Logger logger = Logger
 			.getLogger("BaseMethodAnalyzer");
 	protected final ClassContext classContext;
-	protected final Set<AlreadyVisitedMethod> alreadyVisitedMethods;
+	protected final Set<AlreadyVisited<Method, Slot[]>> alreadyVisitedMethods;
 	protected final int depth;
 	protected final String indentation;
 
@@ -39,43 +39,6 @@ public abstract class BaseMethodAnalyzer {
 	/** The visitor which inspects the method's bytecode instructions. */
 	protected BaseInstructionsAnalysisVisitor visitor = null;
 
-	public static class AlreadyVisitedMethod {
-		final Method method;
-		final Slot[] localVars;
-
-		public AlreadyVisitedMethod(Method method, Slot[] localVars) {
-			this.method = method;
-			this.localVars = localVars;
-		}
-
-		@Override
-		public int hashCode() {
-			final int prime = 31;
-			int result = 1;
-			result = prime * result + Arrays.hashCode(localVars);
-			result = prime * result
-					+ ((method == null) ? 0 : method.hashCode());
-			return result;
-		}
-
-		@Override
-		public boolean equals(Object obj) {
-			if (this == obj)
-				return true;
-			if (!(obj instanceof AlreadyVisitedMethod))
-				return false;
-			AlreadyVisitedMethod other = (AlreadyVisitedMethod) obj;
-			if (!Arrays.equals(localVars, other.localVars))
-				return false;
-			if (method == null) {
-				if (other.method != null)
-					return false;
-			} else if (!method.equals(other.method))
-				return false;
-			return true;
-		}
-	}
-
 	/**
 	 * Constructor.
 	 * 
@@ -86,11 +49,12 @@ public abstract class BaseMethodAnalyzer {
 	 * 
 	 */
 	public BaseMethodAnalyzer(ClassContext classContext, MethodGen methodGen) {
-		this(classContext, methodGen, new HashSet<AlreadyVisitedMethod>(), -1);
+		this(classContext, methodGen,
+				new HashSet<AlreadyVisited<Method, Slot[]>>(), -1);
 	}
 
 	public BaseMethodAnalyzer(ClassContext classContext, MethodGen methodGen,
-			Set<AlreadyVisitedMethod> alreadyVisitedMethods, int depth) {
+			Set<AlreadyVisited<Method, Slot[]>> alreadyVisitedMethods, int depth) {
 		this.classContext = classContext;
 		this.method = methodGen.getMethod();
 		// this.exceptionHandlers = new ExceptionHandlers(methodGen);

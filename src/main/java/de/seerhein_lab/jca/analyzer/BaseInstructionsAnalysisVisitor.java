@@ -45,10 +45,10 @@ import org.apache.bcel.generic.StackInstruction;
 import org.apache.bcel.generic.StoreInstruction;
 import org.apache.bcel.generic.Type;
 
+import de.seerhein_lab.jca.AlreadyVisited;
 import de.seerhein_lab.jca.Frame;
 import de.seerhein_lab.jca.ResultValue;
 import de.seerhein_lab.jca.ResultValue.Kind;
-import de.seerhein_lab.jca.analyzer.BaseMethodAnalyzer.AlreadyVisitedMethod;
 import de.seerhein_lab.jca.heap.Array;
 import de.seerhein_lab.jca.heap.ClassInstance;
 import de.seerhein_lab.jca.heap.HeapObject;
@@ -96,7 +96,7 @@ public abstract class BaseInstructionsAnalysisVisitor extends
 
 	protected final CodeExceptionGen[] exceptionHandlers;
 	protected Set<AlreadyVisitedIfInstruction> alreadyVisited;
-	protected final Set<AlreadyVisitedMethod> alreadyVisitedMethods;
+	protected final Set<AlreadyVisited<Method, Slot[]>> alreadyVisitedMethods;
 	protected SortedBugCollection bugs = new SortedBugCollection();
 	protected Set<ResultValue> result = new HashSet<ResultValue>();
 
@@ -166,7 +166,7 @@ public abstract class BaseInstructionsAnalysisVisitor extends
 			Method method, Frame frame, ConstantPoolGen constantPoolGen,
 			InstructionHandle instructionHandle,
 			CodeExceptionGen[] exceptionHandlers,
-			Set<AlreadyVisitedMethod> alreadyVisitedMethods, int depth) {
+			Set<AlreadyVisited<Method, Slot[]>> alreadyVisitedMethods, int depth) {
 		this(classContext, method, frame, constantPoolGen,
 				new HashSet<AlreadyVisitedIfInstruction>(),
 				alreadyVisitedMethods, instructionHandle, exceptionHandlers,
@@ -176,7 +176,7 @@ public abstract class BaseInstructionsAnalysisVisitor extends
 	protected BaseInstructionsAnalysisVisitor(ClassContext classContext,
 			Method method, Frame frame, ConstantPoolGen constantPoolGen,
 			Set<AlreadyVisitedIfInstruction> alreadyVisited,
-			Set<AlreadyVisitedMethod> alreadyVisitedMethods,
+			Set<AlreadyVisited<Method, Slot[]>> alreadyVisitedMethods,
 			InstructionHandle instructionHandle,
 			CodeExceptionGen[] exceptionHandlers, int depth) {
 		super(frame, constantPoolGen, instructionHandle, depth);
@@ -272,7 +272,7 @@ public abstract class BaseInstructionsAnalysisVisitor extends
 		BaseMethodAnalyzer targetMethodAnalyzer = getMethodAnalyzer(targetMethodGen);
 
 		// for detection of recursion
-		AlreadyVisitedMethod thisMethod = new AlreadyVisitedMethod(
+		AlreadyVisited<Method, Slot[]> thisMethod = new AlreadyVisited<Method, Slot[]>(
 				targetMethod, targetMethodAnalyzer.getActualParams(frame));
 		if (!alreadyVisitedMethods.add(thisMethod)) {
 			logger.log(Level.FINE, indentation

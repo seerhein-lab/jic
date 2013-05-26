@@ -8,10 +8,10 @@ import org.apache.bcel.generic.ConstantPoolGen;
 import org.apache.bcel.generic.InstructionHandle;
 import org.apache.bcel.generic.MethodGen;
 
+import de.seerhein_lab.jca.AlreadyVisited;
 import de.seerhein_lab.jca.Frame;
 import de.seerhein_lab.jca.analyzer.BaseInstructionsAnalysisVisitor;
 import de.seerhein_lab.jca.analyzer.BaseMethodAnalyzer;
-import de.seerhein_lab.jca.analyzer.BaseMethodAnalyzer.AlreadyVisitedMethod;
 import de.seerhein_lab.jca.heap.Heap;
 import de.seerhein_lab.jca.slot.ReferenceSlot;
 import de.seerhein_lab.jca.slot.Slot;
@@ -24,7 +24,7 @@ public class FieldsNotPublishedAnalysisVisitor extends
 	protected FieldsNotPublishedAnalysisVisitor(ClassContext classContext,
 			Method method, Frame frame, ConstantPoolGen constantPoolGen,
 			Set<AlreadyVisitedIfInstruction> alreadyVisited,
-			Set<AlreadyVisitedMethod> alreadyVisitedMethods,
+			Set<AlreadyVisited<Method, Slot[]>> alreadyVisitedMethods,
 			InstructionHandle instructionHandle,
 			CodeExceptionGen[] exceptionHandlers, int depth) {
 		super(classContext, method, frame, constantPoolGen, alreadyVisited,
@@ -36,7 +36,7 @@ public class FieldsNotPublishedAnalysisVisitor extends
 			Method method, Frame frame, ConstantPoolGen constantPoolGen,
 			InstructionHandle instructionHandle,
 			CodeExceptionGen[] exceptionHandlers,
-			Set<AlreadyVisitedMethod> alreadyVisitedMethods, int depth) {
+			Set<AlreadyVisited<Method, Slot[]>> alreadyVisitedMethods, int depth) {
 		super(classContext, method, frame, constantPoolGen, instructionHandle,
 				exceptionHandlers, alreadyVisitedMethods, depth);
 	}

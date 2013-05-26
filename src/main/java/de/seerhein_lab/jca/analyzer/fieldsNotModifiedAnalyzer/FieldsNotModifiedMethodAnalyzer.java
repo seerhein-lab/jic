@@ -2,13 +2,16 @@ package de.seerhein_lab.jca.analyzer.fieldsNotModifiedAnalyzer;
 
 import java.util.Set;
 
+import org.apache.bcel.classfile.Method;
 import org.apache.bcel.generic.ConstantPoolGen;
 import org.apache.bcel.generic.InstructionHandle;
 import org.apache.bcel.generic.MethodGen;
 
+import de.seerhein_lab.jca.AlreadyVisited;
 import de.seerhein_lab.jca.Frame;
 import de.seerhein_lab.jca.analyzer.BaseInstructionsAnalysisVisitor;
 import de.seerhein_lab.jca.analyzer.BaseMethodAnalyzer;
+import de.seerhein_lab.jca.slot.Slot;
 import edu.umd.cs.findbugs.ba.ClassContext;
 
 public class FieldsNotModifiedMethodAnalyzer extends BaseMethodAnalyzer {
@@ -20,7 +23,7 @@ public class FieldsNotModifiedMethodAnalyzer extends BaseMethodAnalyzer {
 
 	public FieldsNotModifiedMethodAnalyzer(ClassContext classContext,
 			MethodGen methodGen,
-			Set<AlreadyVisitedMethod> alreadyVisitedMethods, int depth) {
+			Set<AlreadyVisited<Method, Slot[]>> alreadyVisitedMethods, int depth) {
 		super(classContext, methodGen, alreadyVisitedMethods, depth);
 	}
 
