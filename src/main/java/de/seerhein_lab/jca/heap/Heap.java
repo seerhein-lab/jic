@@ -7,6 +7,10 @@ import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 
+/**
+ * Class representing a heap. Contains HeapObjects and has special HeapObjects
+ * for "this" and the "external".
+ */
 public class Heap {
 
 	private final Map<UUID, HeapObject> objects = new HashMap<UUID, HeapObject>();
@@ -15,6 +19,9 @@ public class Heap {
 	private final UUID thisID;
 	private final UUID externalID;
 
+	/**
+	 * Constructor. Initializes the "this" and the "external" HeapObject.
+	 */
 	public Heap() {
 		HeapObject thisObject = new ClassInstance(this);
 		thisID = thisObject.getId();
@@ -25,6 +32,12 @@ public class Heap {
 		objects.put(externalID, externalObject);
 	}
 
+	/**
+	 * Copy-Constructor.
+	 * 
+	 * @param original
+	 *            The heap to copy from.
+	 */
 	public Heap(Heap original) {
 		for (UUID id : original.objects.keySet()) {
 			objects.put(id, original.objects.get(id).copy(this));
@@ -36,17 +49,19 @@ public class Heap {
 		externalID = original.externalID;
 	}
 
+	/**
+	 * Get the HeapObject for the specified UUID. Checks if the id was published
+	 * in this heap, then returns the "external".
+	 * 
+	 * @param id
+	 *            The heap to copy from.
+	 * @return The HeapObject for the id.
+	 */
 	public HeapObject get(UUID id) {
 		return publishedObjects.contains(id) ? objects.get(externalID)
 				: objects.get(id);
 	}
 
-	// public void linkReferences(ReferenceSlot left, ReferenceSlot right) {
-	// for (UUID possibleObject : left.getPossibleObjects()) {
-	//
-	// }
-	// }
-	//
 	public ClassInstance getThisInstance() {
 		return (ClassInstance) get(thisID);
 	}
@@ -59,18 +74,36 @@ public class Heap {
 	// return nullID;
 	// }
 
+	/**
+	 * Creates a new ClassInstance and registers it in the heap.
+	 * 
+	 * @return The created ClassInstance.
+	 */
 	public ClassInstance newClassInstance() {
 		ClassInstance object = new ClassInstance(this);
 		objects.put(object.getId(), object);
 		return object;
 	}
 
+	/**
+	 * Creates a new Array and registers it in the heap.
+	 * 
+	 * @return The created Array.
+	 */
 	public Array newArray() {
 		Array object = new Array(this);
 		objects.put(object.getId(), object);
 		return object;
 	}
 
+	/**
+	 * Publish a Object. The published Object becomes the "external" Object, the
+	 * references of all referring Objects are updated and all referred Objects
+	 * are published recursively.
+	 * 
+	 * @param id
+	 *            The id of the Object to publish.
+	 */
 	public void publish(UUID id) {
 		if (id.equals(thisID)) {
 			// do not publish 'this' in order not to cover further bugs
@@ -85,16 +118,33 @@ public class Heap {
 		for (Iterator<HeapObject> iterator = object.getReferringIterator(); iterator
 				.hasNext();) {
 			HeapObject referringObject = iterator.next();
-			referringObject.replaceReferredObject(object, external);
-			external.addReferringObject(referringObject);
+			if (!referringObject.equals(external)) { // XXX CHECK
+				referringObject.replaceReferredObject(object, external);
+				external.addReferringObject(referringObject);
+			}
 		}
 
 		for (Iterator<HeapObject> iterator = object.getReferredIterator(); iterator
 				.hasNext();) {
-			publish(iterator.next().getId());
+			UUID referred = iterator.next().getId();
+			if (!referred.equals(external.getId())) // XXX CHECK
+				publish(referred);
 		}
 	}
 
+	/**
+	 * Link two HeapObjects. The left object refers the right object (left.field
+	 * = rigtht). If the left object is a ClassInstance "field" is the name of
+	 * the field, if it is a
+	 * 
+	 * @param left
+	 *            The left side of an assignment.
+	 * @param field
+	 *            The fieldname as String. If "left" is an Array this parameter
+	 *            is ignored.
+	 * @param right
+	 *            The right side of an assignment.
+	 */
 	public void linkObjects(UUID left, String field, UUID right) {
 		get(right).addReferringObject(get(left));
 
