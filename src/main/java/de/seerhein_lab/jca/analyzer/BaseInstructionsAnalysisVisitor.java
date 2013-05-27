@@ -785,7 +785,7 @@ public abstract class BaseInstructionsAnalysisVisitor extends
 		// obj.getSignature() refers to desired field
 		Slot f = Slot.getDefaultSlotInstance(obj.getType(constantPoolGen));
 		if (f instanceof ReferenceSlot) {
-			if (o.getID().equals(frame.getHeap().getExternalObject())) {
+			if (o.getID().equals(frame.getHeap().getExternalObject().getId())) {
 				// if left side is external return external
 				f = new ReferenceSlot(frame.getHeap().getExternalObject());
 			} else {
@@ -860,7 +860,7 @@ public abstract class BaseInstructionsAnalysisVisitor extends
 		detectPutFieldBug(o, v);
 		if (v instanceof ReferenceSlot) {
 			UUID vID = ((ReferenceSlot) v).getID();
-			if (o.getID().equals(frame.getHeap().getExternalObject())) {
+			if (o.getID().equals(frame.getHeap().getExternalObject().getId())) {
 				// left side is external, publish right
 				frame.getHeap().publish(vID);
 			} else {
