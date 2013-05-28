@@ -73,7 +73,7 @@ public class PropConInstructionsAnalysisVisitor extends
 	@Override
 	protected void detectVirtualMethodBug(ReferenceSlot argument) {
 		Heap heap = frame.getHeap();
-		if (argument.getID().equals(heap.getThisInstance())) {
+		if (argument.getID().equals(heap.getThisInstance().getId())) {
 			// 'this' is passed into a virtual method
 			addBug(Confidence.HIGH,
 					"'this' is passed into a virtual method and escapes",
@@ -97,9 +97,9 @@ public class PropConInstructionsAnalysisVisitor extends
 
 		ReferenceSlot referenceToStore = (ReferenceSlot) valueToStore;
 		Heap heap = frame.getHeap();
-		if (arrayReference.getID().equals(heap.getExternalObject())) {
+		if (arrayReference.getID().equals(heap.getExternalObject().getId())) {
 			// the array is externally known
-			if (referenceToStore.equals(heap.getThisInstance())) {
+			if (referenceToStore.getID().equals(heap.getThisInstance().getId())) {
 				// this is assigned to the array
 				addBug(Confidence.HIGH,
 						"'this' is assigned to an external array and escapes",
@@ -123,9 +123,9 @@ public class PropConInstructionsAnalysisVisitor extends
 		}
 		ReferenceSlot referenceToPut = (ReferenceSlot) valueToPut;
 		Heap heap = frame.getHeap();
-		if (targetReference.getID().equals(heap.getExternalObject())) {
+		if (targetReference.getID().equals(heap.getExternalObject().getId())) {
 			// the left side of the assignment is externally known
-			if (referenceToPut.getID().equals(heap.getThisInstance())) {
+			if (referenceToPut.getID().equals(heap.getThisInstance().getId())) {
 				// this is on the right side
 				addBug(Confidence.HIGH,
 						"'this' is assigned to an external field and escapes",
@@ -144,7 +144,7 @@ public class PropConInstructionsAnalysisVisitor extends
 	@Override
 	protected void detectPutStaticBug(ReferenceSlot referenceToPut) {
 		Heap heap = frame.getHeap();
-		if (referenceToPut.getID().equals(heap.getThisInstance())) {
+		if (referenceToPut.getID().equals(heap.getThisInstance().getId())) {
 			addBug(Confidence.HIGH,
 					"'this' is assigned to a static field and escapes",
 					instructionHandle);
