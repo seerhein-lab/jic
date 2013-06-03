@@ -106,6 +106,15 @@ public class HeapTest {
 	}
 
 	@Test
+	public void testRepublish() {
+		assertEquals(f, heap.get(f.getId()));
+		heap.publish(heap.get(f.getId()).getId());
+		assertEquals(heap.getExternalObject(), heap.get(f.getId()));
+		heap.publish(heap.get(f.getId()).getId());
+		assertEquals(heap.getExternalObject(), heap.get(f.getId()));
+	}
+
+	@Test
 	public void testCopyConstructor() {
 		Heap heapCopy = new Heap(heap);
 		assertEquals(heap, heapCopy);

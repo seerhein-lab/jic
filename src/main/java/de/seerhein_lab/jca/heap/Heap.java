@@ -97,16 +97,17 @@ public class Heap {
 	}
 
 	/**
-	 * Publish a Object. The published Object becomes the "external" Object, the
-	 * references of all referring Objects are updated and all referred Objects
-	 * are published recursively.
+	 * Publishes an Object. The published Object becomes the "external" Object,
+	 * the references of all referring Objects are updated and all referred
+	 * Objects are published recursively.
 	 * 
 	 * @param id
 	 *            The id of the Object to publish.
 	 */
 	public void publish(UUID id) {
-		if (id.equals(thisID)) {
+		if (id.equals(thisID) || id.equals(externalID)) {
 			// do not publish 'this' in order not to cover further bugs
+			// do not publish 'external', is already published
 			return;
 		}
 
@@ -118,7 +119,7 @@ public class Heap {
 		for (Iterator<HeapObject> iterator = object.getReferringIterator(); iterator
 				.hasNext();) {
 			HeapObject referringObject = iterator.next();
-			if (!referringObject.equals(external)) { // XXX CHECK
+			if (!referringObject.equals(external)) {
 				referringObject.replaceReferredObject(object, external);
 				external.addReferringObject(referringObject);
 			}
@@ -127,7 +128,7 @@ public class Heap {
 		for (Iterator<HeapObject> iterator = object.getReferredIterator(); iterator
 				.hasNext();) {
 			UUID referred = iterator.next().getId();
-			if (!referred.equals(external.getId())) // XXX CHECK
+			if (!referred.equals(external.getId()))
 				publish(referred);
 		}
 	}
