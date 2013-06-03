@@ -395,14 +395,6 @@ public abstract class BaseInstructionsAnalysisVisitor extends
 	 */
 	@Override
 	public void visitReturnInstruction(ReturnInstruction obj) {
-		// opcodes for Benjamin
-		// return 0xb1 (void)
-		// areturn 0xb0
-		// dreturn 0xaf
-		// freturn 0xae
-		// ireturn 0xac
-		// lreturn 0xad
-
 		logger.log(Level.FINE, indentation + obj.toString(false));
 		Slot returnType = Slot.getDefaultSlotInstance(obj
 				.getType(constantPoolGen));
