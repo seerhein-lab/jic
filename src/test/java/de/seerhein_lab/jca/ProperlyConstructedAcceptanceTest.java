@@ -10,9 +10,9 @@ import org.junit.runner.RunWith;
 
 import de.seerhein_lab.jca.analyzer.ClassAnalyzer;
 import de.seerhein_lab.jca.testutils.ClassAnalyzerRunner;
+import de.seerhein_lab.jca.testutils.ClassAnalyzerRunner.BindAnalyzerMethod;
 import de.seerhein_lab.jca.testutils.ImproperlyConstructed;
 import de.seerhein_lab.jca.testutils.ProperlyConstructed;
-import de.seerhein_lab.jca.testutils.ClassAnalyzerRunner.BindAnalyzerMethod;
 import edu.umd.cs.findbugs.BugCollection;
 
 /**
@@ -298,7 +298,7 @@ public class ProperlyConstructedAcceptanceTest {
 	 * Due to combination of the results "UnKnown" and not "ProperlyConstructed"
 	 * must be returned.
 	 */
-	@ImproperlyConstructed
+	@ProperlyConstructed
 	public static class Story021_SimpleClassWithTryCatchNoParm {
 		@SuppressWarnings("unused")
 		private Object obj;

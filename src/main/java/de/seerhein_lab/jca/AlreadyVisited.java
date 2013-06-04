@@ -1,9 +1,9 @@
 package de.seerhein_lab.jca;
 
-public class AlreadyVisited <T, K>{
+public class AlreadyVisited<T, K> {
 	private T value1;
 	private K value2;
-	
+
 	public AlreadyVisited(T value1, K value2) {
 		this.value1 = value1;
 		this.value2 = value2;
@@ -34,10 +34,11 @@ public class AlreadyVisited <T, K>{
 		if (obj == null) {
 			return false;
 		}
-		if (!(obj instanceof AlreadyVisited<?,?>)) {
+		if (!(obj instanceof AlreadyVisited<?, ?>)) {
 			return false;
 		}
-		AlreadyVisited<T, K> other = (AlreadyVisited<T,K>) obj;
+		@SuppressWarnings("unchecked")
+		AlreadyVisited<T, K> other = (AlreadyVisited<T, K>) obj;
 		if (value1 == null) {
 			if (other.value1 != null) {
 				return false;
@@ -54,6 +55,5 @@ public class AlreadyVisited <T, K>{
 		}
 		return true;
 	}
-	
-	
+
 }

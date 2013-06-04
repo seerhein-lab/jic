@@ -145,10 +145,10 @@ public class HeapObject {
 
 	boolean refers(UUID toSearch, Heap heap,
 			HashSet<AlreadyVisited<HeapObject, HeapObject>> alreadyVisited) {
-		if (toSearch.equals(heap.getExternalObject())
-				&& id.equals(heap.getExternalObject()))
+		if (heap.get(toSearch).equals(heap.getExternalObject())
+				&& this.equals(heap.getExternalObject()))
 			return true;
-		throw new AssertionError("Must not be called in this context");
+		return false;
 	}
 
 	@Override

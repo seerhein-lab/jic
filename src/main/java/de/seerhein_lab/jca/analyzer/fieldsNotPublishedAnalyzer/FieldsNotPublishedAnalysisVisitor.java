@@ -138,7 +138,9 @@ public class FieldsNotPublishedAnalysisVisitor extends
 				f = new ReferenceSlot(heap.getExternalObject());
 			} else {
 				// get the ClassInstance linked to the desired field
-				linkNewClassInstance(obj, o, heap);
+				if (((ClassInstance) heap.get(o.getID())).getField(obj
+						.getFieldName(constantPoolGen)) == null)
+					linkNewClassInstance(obj, o, heap);
 				f = new ReferenceSlot(
 						((ClassInstance) heap.get(o.getID())).getField(obj
 								.getFieldName(constantPoolGen)));

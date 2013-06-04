@@ -457,7 +457,7 @@ public abstract class BaseInstructionsAnalysisVisitor extends
 			frame.getStack().push(slot1);
 			break;
 		case 0x5d:
-			// DUB2_X2
+			// DUB2_X1
 			// pop the slots
 			slot1 = frame.getStack().pop();
 			slot2 = frame.getStack().pop();
@@ -496,6 +496,10 @@ public abstract class BaseInstructionsAnalysisVisitor extends
 			frame.getStack().push(slot1);
 			frame.getStack().push(slot2);
 			break;
+		default:
+			// avoid execution of instructions following switch statement for
+			// all other opcodes
+			return;
 		}
 		instructionHandle = instructionHandle.getNext();
 		instructionHandle.accept(this);
