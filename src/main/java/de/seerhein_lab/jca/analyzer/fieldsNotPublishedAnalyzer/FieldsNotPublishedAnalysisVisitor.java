@@ -275,8 +275,10 @@ public class FieldsNotPublishedAnalysisVisitor extends
 
 	protected void detectAReturnBug(ReferenceSlot returnValue) {
 		Heap heap = frame.getHeap();
-		if (heap.get(returnValue.getID()).referredBy(
-				heap.getThisInstance().getId(), heap)) {
+		HeapObject returnObject = heap.get(returnValue.getID());
+		if (returnObject == null)
+			return;
+		if (returnObject.referredBy(heap.getThisInstance().getId(), heap)) {
 			addBug(Confidence.HIGH, "a field of 'this' is published by return",
 					instructionHandle);
 		}
