@@ -6,7 +6,7 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.UUID;
 
-import de.seerhein_lab.jca.AlreadyVisited;
+import de.seerhein_lab.jca.Pair;
 
 /**
  * Class representing a ClassInstance. A ClassInstance has an Id, a reference to
@@ -95,9 +95,9 @@ public class ClassInstance extends HeapObject {
 
 	@Override
 	boolean refers(UUID toSearch, Heap heap,
-			HashSet<AlreadyVisited<HeapObject, HeapObject>> alreadyVisited) {
+			HashSet<Pair<HeapObject, HeapObject>> alreadyVisited) {
 		for (UUID field : refers.values()) {
-			if (alreadyVisited.add(new AlreadyVisited<HeapObject, HeapObject>(
+			if (alreadyVisited.add(new Pair<HeapObject, HeapObject>(
 					this, heap.get(field)))) {
 				// if was not visited before
 				if (field.equals(toSearch)

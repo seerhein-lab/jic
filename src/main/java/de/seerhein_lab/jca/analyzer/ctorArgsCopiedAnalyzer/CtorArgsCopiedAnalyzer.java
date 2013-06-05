@@ -9,7 +9,7 @@ import org.apache.bcel.generic.InstructionHandle;
 import org.apache.bcel.generic.MethodGen;
 import org.apache.bcel.generic.Type;
 
-import de.seerhein_lab.jca.AlreadyVisited;
+import de.seerhein_lab.jca.Pair;
 import de.seerhein_lab.jca.Frame;
 import de.seerhein_lab.jca.analyzer.BaseInstructionsAnalysisVisitor;
 import de.seerhein_lab.jca.analyzer.BaseMethodAnalyzer;
@@ -26,7 +26,7 @@ public class CtorArgsCopiedAnalyzer extends BaseMethodAnalyzer {
 
 	public CtorArgsCopiedAnalyzer(ClassContext classContext,
 			MethodGen methodGen,
-			Set<AlreadyVisited<Method, Slot[]>> alreadyVisitedMethods, int depth) {
+			Set<Pair<Method, Slot[]>> alreadyVisitedMethods, int depth) {
 		super(classContext, methodGen, alreadyVisitedMethods, depth);
 	}
 

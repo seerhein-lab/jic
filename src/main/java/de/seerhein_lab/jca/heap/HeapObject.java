@@ -5,7 +5,7 @@ import java.util.Iterator;
 import java.util.Set;
 import java.util.UUID;
 
-import de.seerhein_lab.jca.AlreadyVisited;
+import de.seerhein_lab.jca.Pair;
 
 /**
  * Class representing a heapObject. A HeapObject has an Id, a reference to the
@@ -112,13 +112,13 @@ public class HeapObject {
 	 */
 	public boolean referredBy(UUID toSearch, Heap heap) {
 		return referredBy(toSearch, heap,
-				new HashSet<AlreadyVisited<HeapObject, HeapObject>>());
+				new HashSet<Pair<HeapObject, HeapObject>>());
 	}
 
 	boolean referredBy(UUID toSearch, Heap heap,
-			HashSet<AlreadyVisited<HeapObject, HeapObject>> alreadyVisited) {
+			HashSet<Pair<HeapObject, HeapObject>> alreadyVisited) {
 		for (UUID object : referredBy) {
-			if (alreadyVisited.add(new AlreadyVisited<HeapObject, HeapObject>(
+			if (alreadyVisited.add(new Pair<HeapObject, HeapObject>(
 					this, heap.get(object)))) {
 				// if it was not in the set
 				if (object.equals(toSearch)
@@ -140,11 +140,11 @@ public class HeapObject {
 	 */
 	public boolean refers(UUID toSearch, Heap heap) {
 		return refers(toSearch, heap,
-				new HashSet<AlreadyVisited<HeapObject, HeapObject>>());
+				new HashSet<Pair<HeapObject, HeapObject>>());
 	}
 
 	boolean refers(UUID toSearch, Heap heap,
-			HashSet<AlreadyVisited<HeapObject, HeapObject>> alreadyVisited) {
+			HashSet<Pair<HeapObject, HeapObject>> alreadyVisited) {
 		if (heap.get(toSearch).equals(heap.getExternalObject())
 				&& this.equals(heap.getExternalObject()))
 			return true;

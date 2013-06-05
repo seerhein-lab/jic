@@ -12,7 +12,7 @@ import org.apache.bcel.generic.InstructionList;
 import org.apache.bcel.generic.MethodGen;
 import org.apache.bcel.generic.Type;
 
-import de.seerhein_lab.jca.AlreadyVisited;
+import de.seerhein_lab.jca.Pair;
 import de.seerhein_lab.jca.Frame;
 import de.seerhein_lab.jca.ResultValue;
 import de.seerhein_lab.jca.Utils;
@@ -27,7 +27,7 @@ public abstract class BaseMethodAnalyzer {
 	protected static final Logger logger = Logger
 			.getLogger("BaseMethodAnalyzer");
 	protected final ClassContext classContext;
-	protected final Set<AlreadyVisited<Method, Slot[]>> alreadyVisitedMethods;
+	protected final Set<Pair<Method, Slot[]>> alreadyVisitedMethods;
 	protected final int depth;
 	protected final String indentation;
 
@@ -50,11 +50,11 @@ public abstract class BaseMethodAnalyzer {
 	 */
 	public BaseMethodAnalyzer(ClassContext classContext, MethodGen methodGen) {
 		this(classContext, methodGen,
-				new HashSet<AlreadyVisited<Method, Slot[]>>(), -1);
+				new HashSet<Pair<Method, Slot[]>>(), -1);
 	}
 
 	public BaseMethodAnalyzer(ClassContext classContext, MethodGen methodGen,
-			Set<AlreadyVisited<Method, Slot[]>> alreadyVisitedMethods, int depth) {
+			Set<Pair<Method, Slot[]>> alreadyVisitedMethods, int depth) {
 		this.classContext = classContext;
 		this.method = methodGen.getMethod();
 		// this.exceptionHandlers = new ExceptionHandlers(methodGen);

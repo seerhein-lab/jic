@@ -1,20 +1,12 @@
 package de.seerhein_lab.jca;
 
-public class AlreadyVisited<T, K> {
+public class Pair<T, K> {
 	private T value1;
 	private K value2;
 
-	public AlreadyVisited(T value1, K value2) {
+	public Pair(T value1, K value2) {
 		this.value1 = value1;
 		this.value2 = value2;
-	}
-
-	public T getValue1() {
-		return value1;
-	}
-
-	public K getValue2() {
-		return value2;
 	}
 
 	@Override
@@ -34,11 +26,10 @@ public class AlreadyVisited<T, K> {
 		if (obj == null) {
 			return false;
 		}
-		if (!(obj instanceof AlreadyVisited<?, ?>)) {
+		if (!(obj instanceof Pair<?, ?>)) {
 			return false;
 		}
-		@SuppressWarnings("unchecked")
-		AlreadyVisited<T, K> other = (AlreadyVisited<T, K>) obj;
+		Pair<?, ?> other = (Pair<?, ?>) obj;
 		if (value1 == null) {
 			if (other.value1 != null) {
 				return false;

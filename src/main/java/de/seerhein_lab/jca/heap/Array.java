@@ -5,7 +5,7 @@ import java.util.Iterator;
 import java.util.Set;
 import java.util.UUID;
 
-import de.seerhein_lab.jca.AlreadyVisited;
+import de.seerhein_lab.jca.Pair;
 
 /**
  * Class representing an Array. An Array has an Id, a reference to the heap
@@ -78,9 +78,9 @@ public class Array extends HeapObject {
 
 	@Override
 	boolean refers(UUID toSearch, Heap heap,
-			HashSet<AlreadyVisited<HeapObject, HeapObject>> alreadyVisited) {
+			HashSet<Pair<HeapObject, HeapObject>> alreadyVisited) {
 		for (UUID entry : refers) {
-			if (alreadyVisited.add(new AlreadyVisited<HeapObject, HeapObject>(
+			if (alreadyVisited.add(new Pair<HeapObject, HeapObject>(
 					this, heap.get(entry)))) {
 				// if was not visited before
 				if (entry.equals(toSearch)

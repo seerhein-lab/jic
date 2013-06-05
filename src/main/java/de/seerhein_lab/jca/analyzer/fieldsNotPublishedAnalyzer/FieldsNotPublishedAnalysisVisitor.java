@@ -14,7 +14,7 @@ import org.apache.bcel.generic.InstructionHandle;
 import org.apache.bcel.generic.MethodGen;
 import org.apache.bcel.generic.ReturnInstruction;
 
-import de.seerhein_lab.jca.AlreadyVisited;
+import de.seerhein_lab.jca.Pair;
 import de.seerhein_lab.jca.Frame;
 import de.seerhein_lab.jca.ResultValue;
 import de.seerhein_lab.jca.ResultValue.Kind;
@@ -38,8 +38,8 @@ public class FieldsNotPublishedAnalysisVisitor extends
 			Method method,
 			Frame frame,
 			ConstantPoolGen constantPoolGen,
-			Set<AlreadyVisited<InstructionHandle, Boolean>> alreadyVisitedIfBranch,
-			Set<AlreadyVisited<Method, Slot[]>> alreadyVisitedMethods,
+			Set<Pair<InstructionHandle, Boolean>> alreadyVisitedIfBranch,
+			Set<Pair<Method, Slot[]>> alreadyVisitedMethods,
 			InstructionHandle instructionHandle,
 			CodeExceptionGen[] exceptionHandlers, int depth) {
 		super(classContext, method, frame, constantPoolGen,
@@ -51,7 +51,7 @@ public class FieldsNotPublishedAnalysisVisitor extends
 			Method method, Frame frame, ConstantPoolGen constantPoolGen,
 			InstructionHandle instructionHandle,
 			CodeExceptionGen[] exceptionHandlers,
-			Set<AlreadyVisited<Method, Slot[]>> alreadyVisitedMethods, int depth) {
+			Set<Pair<Method, Slot[]>> alreadyVisitedMethods, int depth) {
 		super(classContext, method, frame, constantPoolGen, instructionHandle,
 				exceptionHandlers, alreadyVisitedMethods, depth);
 	}
@@ -59,7 +59,7 @@ public class FieldsNotPublishedAnalysisVisitor extends
 	@Override
 	protected BaseInstructionsAnalysisVisitor getInstructionsAnalysisVisitor(
 			Frame frame,
-			Set<AlreadyVisited<InstructionHandle, Boolean>> alreadyVisitedIfBranch,
+			Set<Pair<InstructionHandle, Boolean>> alreadyVisitedIfBranch,
 			InstructionHandle instructionHandle) {
 		return new FieldsNotPublishedAnalysisVisitor(classContext, method,
 				frame, constantPoolGen, alreadyVisitedIfBranch,

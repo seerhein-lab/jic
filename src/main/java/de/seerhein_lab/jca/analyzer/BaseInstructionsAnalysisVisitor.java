@@ -45,7 +45,7 @@ import org.apache.bcel.generic.StackInstruction;
 import org.apache.bcel.generic.StoreInstruction;
 import org.apache.bcel.generic.Type;
 
-import de.seerhein_lab.jca.AlreadyVisited;
+import de.seerhein_lab.jca.Pair;
 import de.seerhein_lab.jca.Frame;
 import de.seerhein_lab.jca.ResultValue;
 import de.seerhein_lab.jca.ResultValue.Kind;
@@ -95,8 +95,8 @@ public abstract class BaseInstructionsAnalysisVisitor extends
 	protected final Method method;
 
 	protected final CodeExceptionGen[] exceptionHandlers;
-	protected Set<AlreadyVisited<InstructionHandle, Boolean>> alreadyVisitedIfBranch;
-	protected final Set<AlreadyVisited<Method, Slot[]>> alreadyVisitedMethods;
+	protected Set<Pair<InstructionHandle, Boolean>> alreadyVisitedIfBranch;
+	protected final Set<Pair<Method, Slot[]>> alreadyVisitedMethods;
 	protected SortedBugCollection bugs = new SortedBugCollection();
 	protected Set<ResultValue> result = new HashSet<ResultValue>();
 
@@ -144,7 +144,7 @@ public abstract class BaseInstructionsAnalysisVisitor extends
 
 	protected abstract BaseInstructionsAnalysisVisitor getInstructionsAnalysisVisitor(
 			Frame frame,
-			Set<AlreadyVisited<InstructionHandle, Boolean>> alreadyVisited,
+			Set<Pair<InstructionHandle, Boolean>> alreadyVisited,
 			InstructionHandle instructionHandle);
 
 	protected abstract BaseMethodAnalyzer getMethodAnalyzer(
@@ -167,17 +167,17 @@ public abstract class BaseInstructionsAnalysisVisitor extends
 			Method method, Frame frame, ConstantPoolGen constantPoolGen,
 			InstructionHandle instructionHandle,
 			CodeExceptionGen[] exceptionHandlers,
-			Set<AlreadyVisited<Method, Slot[]>> alreadyVisitedMethods, int depth) {
+			Set<Pair<Method, Slot[]>> alreadyVisitedMethods, int depth) {
 		this(classContext, method, frame, constantPoolGen,
-				new HashSet<AlreadyVisited<InstructionHandle, Boolean>>(),
+				new HashSet<Pair<InstructionHandle, Boolean>>(),
 				alreadyVisitedMethods, instructionHandle, exceptionHandlers,
 				depth);
 	}
 
 	protected BaseInstructionsAnalysisVisitor(ClassContext classContext,
 			Method method, Frame frame, ConstantPoolGen constantPoolGen,
-			Set<AlreadyVisited<InstructionHandle, Boolean>> alreadyVisited,
-			Set<AlreadyVisited<Method, Slot[]>> alreadyVisitedMethods,
+			Set<Pair<InstructionHandle, Boolean>> alreadyVisited,
+			Set<Pair<Method, Slot[]>> alreadyVisitedMethods,
 			InstructionHandle instructionHandle,
 			CodeExceptionGen[] exceptionHandlers, int depth) {
 		super(frame, constantPoolGen, instructionHandle, depth);
@@ -273,7 +273,7 @@ public abstract class BaseInstructionsAnalysisVisitor extends
 		BaseMethodAnalyzer targetMethodAnalyzer = getMethodAnalyzer(targetMethodGen);
 
 		// for detection of recursion
-		AlreadyVisited<Method, Slot[]> thisMethod = new AlreadyVisited<Method, Slot[]>(
+		Pair<Method, Slot[]> thisMethod = new Pair<Method, Slot[]>(
 				targetMethod, targetMethodAnalyzer.getActualParams(frame));
 		if (!alreadyVisitedMethods.add(thisMethod)) {
 			logger.log(Level.FINE, indentation
@@ -607,10 +607,10 @@ public abstract class BaseInstructionsAnalysisVisitor extends
 		logger.log(Level.FINEST, indentation + "------------------  "
 				+ alreadyVisitedIfBranch.size()
 				+ ".else  (condition might be inverted!) ------------------");
-		AlreadyVisited<InstructionHandle, Boolean> elseBranch = new AlreadyVisited<InstructionHandle, Boolean>(
+		Pair<InstructionHandle, Boolean> elseBranch = new Pair<InstructionHandle, Boolean>(
 				instructionHandle, false);
 		if (alreadyVisitedIfBranch.add(elseBranch)) {
-			Set<AlreadyVisited<InstructionHandle, Boolean>> newAlreadyVisited = new HashSet<AlreadyVisited<InstructionHandle, Boolean>>();
+			Set<Pair<InstructionHandle, Boolean>> newAlreadyVisited = new HashSet<Pair<InstructionHandle, Boolean>>();
 			newAlreadyVisited.addAll(alreadyVisitedIfBranch);
 			BaseInstructionsAnalysisVisitor elseBranchVisitor = getInstructionsAnalysisVisitor(
 					new Frame(frame), newAlreadyVisited,
@@ -625,11 +625,11 @@ public abstract class BaseInstructionsAnalysisVisitor extends
 		logger.log(Level.FINEST, indentation + "------------------  "
 				+ alreadyVisitedIfBranch.size()
 				+ ".then  (condition might be inverted!) ------------------");
-		AlreadyVisited<InstructionHandle, Boolean> thenBranch = new AlreadyVisited<InstructionHandle, Boolean>(
+		Pair<InstructionHandle, Boolean> thenBranch = new Pair<InstructionHandle, Boolean>(
 				instructionHandle, true);
 		if (alreadyVisitedIfBranch.add(thenBranch)) {
 
-			Set<AlreadyVisited<InstructionHandle, Boolean>> newAlreadyVisited = new HashSet<AlreadyVisited<InstructionHandle, Boolean>>();
+			Set<Pair<InstructionHandle, Boolean>> newAlreadyVisited = new HashSet<Pair<InstructionHandle, Boolean>>();
 			newAlreadyVisited.addAll(alreadyVisitedIfBranch);
 
 			BaseInstructionsAnalysisVisitor thenBranchVisitor = getInstructionsAnalysisVisitor(
