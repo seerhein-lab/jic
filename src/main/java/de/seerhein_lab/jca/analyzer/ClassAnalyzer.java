@@ -2,7 +2,6 @@ package de.seerhein_lab.jca.analyzer;
 
 import static org.apache.bcel.Constants.CONSTRUCTOR_NAME;
 
-import java.util.Iterator;
 import java.util.List;
 import java.util.Vector;
 
@@ -13,7 +12,6 @@ import org.apache.bcel.generic.ConstantPoolGen;
 import org.apache.bcel.generic.MethodGen;
 import org.apache.bcel.generic.Type;
 
-import de.seerhein_lab.jca.ThreeValueBoolean;
 import de.seerhein_lab.jca.analyzer.ctorArgsCopiedAnalyzer.CtorArgsCopiedAnalyzer;
 import de.seerhein_lab.jca.analyzer.fieldsNotModifiedAnalyzer.FieldsNotModifiedMethodAnalyzer;
 import de.seerhein_lab.jca.analyzer.fieldsNotPublishedAnalyzer.FieldsNotPublishedMethodAnalyzer;
@@ -167,16 +165,16 @@ public class ClassAnalyzer {
 		return bugs;
 	}
 
-	public static ThreeValueBoolean indicatesSuccess(BugCollection bugs) {
-		if (bugs.getCollection().isEmpty())
-			return ThreeValueBoolean.yes;
-
-		Iterator<BugInstance> iterator = bugs.getCollection().iterator();
-		while (iterator.hasNext())
-			if (iterator.next().getPriority() == 2)
-				return ThreeValueBoolean.no;
-
-		return ThreeValueBoolean.unknown;
-	}
+	// public static ThreeValueBoolean indicatesSuccess(BugCollection bugs) {
+	// if (bugs.getCollection().isEmpty())
+	// return ThreeValueBoolean.yes;
+	//
+	// Iterator<BugInstance> iterator = bugs.getCollection().iterator();
+	// while (iterator.hasNext())
+	// if (iterator.next().getPriority() == 2)
+	// return ThreeValueBoolean.no;
+	//
+	// return ThreeValueBoolean.unknown;
+	// }
 
 }
