@@ -275,6 +275,7 @@ public class FieldsNotPublishedAnalysisVisitor extends
 		}
 	}
 
+	// TODO allgemein: publish Object that refers Object referedBy 'this'
 	protected void detectAReturnBug(ReferenceSlot returnValue) {
 		Heap heap = frame.getHeap();
 		HeapObject returnObject = heap.get(returnValue.getID());

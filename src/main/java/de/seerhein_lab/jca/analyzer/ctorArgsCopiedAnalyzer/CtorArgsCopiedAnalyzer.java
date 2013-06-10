@@ -38,6 +38,7 @@ public class CtorArgsCopiedAnalyzer extends BaseMethodAnalyzer {
 				depth);
 	}
 
+	@Override
 	public void analyze() {
 		Stack<Slot> callerStack = new Stack<Slot>();
 		Heap callerHeap = new Heap();
@@ -62,7 +63,7 @@ public class CtorArgsCopiedAnalyzer extends BaseMethodAnalyzer {
 			}
 		}
 
-		Frame callerFrame = new Frame(0, callerStack, 0, callerHeap);
+		Frame callerFrame = new Frame(callerStack, callerHeap);
 
 		analyze(callerFrame);
 	}
