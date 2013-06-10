@@ -8,8 +8,8 @@ import org.apache.bcel.generic.ConstantPoolGen;
 import org.apache.bcel.generic.InstructionHandle;
 import org.apache.bcel.generic.MethodGen;
 
-import de.seerhein_lab.jca.Pair;
 import de.seerhein_lab.jca.Frame;
+import de.seerhein_lab.jca.Pair;
 import de.seerhein_lab.jca.analyzer.BaseInstructionsAnalysisVisitor;
 import de.seerhein_lab.jca.analyzer.BaseMethodAnalyzer;
 import de.seerhein_lab.jca.heap.Heap;
@@ -21,11 +21,8 @@ import edu.umd.cs.findbugs.ba.ClassContext;
 public class CtorArgsCopiedAnalysisVisitor extends
 		BaseInstructionsAnalysisVisitor {
 
-	protected CtorArgsCopiedAnalysisVisitor(
-			ClassContext classContext,
-			Method method,
-			Frame frame,
-			ConstantPoolGen constantPoolGen,
+	protected CtorArgsCopiedAnalysisVisitor(ClassContext classContext,
+			Method method, Frame frame, ConstantPoolGen constantPoolGen,
 			Set<Pair<InstructionHandle, Boolean>> alreadyVisitedIfBranch,
 			Set<Pair<Method, Slot[]>> alreadyVisitedMethods,
 			InstructionHandle instructionHandle,
@@ -95,7 +92,7 @@ public class CtorArgsCopiedAnalysisVisitor extends
 				heap.getThisInstance().getId(), heap)) {
 			// array is referred by this
 			if (referenceToStore.getID().equals(
-					frame.getHeap().getExternalObject())) {
+					frame.getHeap().getExternalObject().getId())) {
 				// external reference is assigned to an array referred by this
 				addBug(Confidence.HIGH,
 						"an external reference is assigned to an array referred by 'this'",
@@ -121,9 +118,9 @@ public class CtorArgsCopiedAnalysisVisitor extends
 
 		ReferenceSlot referenceToPut = (ReferenceSlot) valueToPut;
 		Heap heap = frame.getHeap();
-		if (targetReference.getID().equals(heap.getThisInstance())) {
+		if (targetReference.getID().equals(heap.getThisInstance().getId())) {
 			// left side is this
-			if (referenceToPut.getID().equals(heap.getExternalObject())) {
+			if (referenceToPut.getID().equals(heap.getExternalObject().getId())) {
 				// right is external
 				addBug(Confidence.HIGH,
 						"an external object is assigned to 'this'",
@@ -139,7 +136,7 @@ public class CtorArgsCopiedAnalysisVisitor extends
 		if (heap.get(targetReference.getID()).referredBy(
 				heap.getThisInstance().getId(), heap)) {
 			// left is referred by this
-			if (referenceToPut.getID().equals(heap.getExternalObject())) {
+			if (referenceToPut.getID().equals(heap.getExternalObject().getId())) {
 				// right is external
 				addBug(Confidence.HIGH,
 						"an external reference is assigned to an object referred by 'this'",
@@ -158,7 +155,7 @@ public class CtorArgsCopiedAnalysisVisitor extends
 	protected void detectPutStaticBug(ReferenceSlot referenceToPut) {
 		Heap heap = frame.getHeap();
 		// XXX this assigned to a static field?? Only starting class?!?
-		if (referenceToPut.getID().equals(heap.getThisInstance())) {
+		if (referenceToPut.getID().equals(heap.getThisInstance().getId())) {
 			// this is published
 			addBug(Confidence.HIGH,
 					"'this' is published by assignment to a static field",

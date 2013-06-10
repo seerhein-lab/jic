@@ -14,8 +14,8 @@ import org.apache.bcel.generic.InstructionHandle;
 import org.apache.bcel.generic.MethodGen;
 import org.apache.bcel.generic.ReturnInstruction;
 
-import de.seerhein_lab.jca.Pair;
 import de.seerhein_lab.jca.Frame;
+import de.seerhein_lab.jca.Pair;
 import de.seerhein_lab.jca.ResultValue;
 import de.seerhein_lab.jca.ResultValue.Kind;
 import de.seerhein_lab.jca.analyzer.BaseInstructionsAnalysisVisitor;
@@ -33,11 +33,8 @@ import edu.umd.cs.findbugs.ba.ClassContext;
 public class FieldsNotPublishedAnalysisVisitor extends
 		BaseInstructionsAnalysisVisitor {
 
-	protected FieldsNotPublishedAnalysisVisitor(
-			ClassContext classContext,
-			Method method,
-			Frame frame,
-			ConstantPoolGen constantPoolGen,
+	protected FieldsNotPublishedAnalysisVisitor(ClassContext classContext,
+			Method method, Frame frame, ConstantPoolGen constantPoolGen,
 			Set<Pair<InstructionHandle, Boolean>> alreadyVisitedIfBranch,
 			Set<Pair<Method, Slot[]>> alreadyVisitedMethods,
 			InstructionHandle instructionHandle,
@@ -205,7 +202,7 @@ public class FieldsNotPublishedAnalysisVisitor extends
 	@Override
 	protected void detectVirtualMethodBug(ReferenceSlot argument) {
 		Heap heap = frame.getHeap();
-		if (argument.getID().equals(heap.getThisInstance())) {
+		if (argument.getID().equals(heap.getThisInstance().getId())) {
 			// XXX problem or not?? Inheritance?!?
 			addBug(Confidence.HIGH,
 					"'this' is passed to a virtual method and published",
@@ -228,7 +225,7 @@ public class FieldsNotPublishedAnalysisVisitor extends
 
 		ReferenceSlot referenceToStore = (ReferenceSlot) valueToStore;
 		Heap heap = frame.getHeap();
-		if (arrayReference.getID().equals(heap.getExternalObject())
+		if (arrayReference.getID().equals(heap.getExternalObject().getId())
 				&& heap.get(referenceToStore.getID()).referredBy(
 						heap.getThisInstance().getId(), heap)) {
 			// a field of this is assigned to an external object
@@ -248,7 +245,7 @@ public class FieldsNotPublishedAnalysisVisitor extends
 
 		ReferenceSlot referenceToPut = (ReferenceSlot) valueToPut;
 		Heap heap = frame.getHeap();
-		if (targetReference.getID().equals(heap.getExternalObject())
+		if (targetReference.getID().equals(heap.getExternalObject().getId())
 				&& heap.get(referenceToPut.getID()).referredBy(
 						heap.getThisInstance().getId(), heap)) {
 			// a field of this is assigned to an external object
@@ -261,7 +258,7 @@ public class FieldsNotPublishedAnalysisVisitor extends
 	@Override
 	protected void detectPutStaticBug(ReferenceSlot referenceToPut) {
 		Heap heap = frame.getHeap();
-		if (referenceToPut.getID().equals(heap.getThisInstance())) {
+		if (referenceToPut.getID().equals(heap.getThisInstance().getId())) {
 			// XXX only a problem if it is a static field of the class we
 			// analyze
 			addBug(Confidence.HIGH,
