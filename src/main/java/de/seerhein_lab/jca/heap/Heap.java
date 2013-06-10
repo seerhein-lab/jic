@@ -7,6 +7,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 
+import de.seerhein_lab.jca.slot.ReferenceSlot;
+
 /**
  * Class representing a heap. Contains HeapObjects and has special HeapObjects
  * for "this" and the "external".
@@ -96,39 +98,42 @@ public class Heap {
 		return object;
 	}
 
+	public HeapObject getObject(ReferenceSlot reference) {
+		return objects.get(reference.getID());
+	}
+
 	/**
 	 * Publishes an Object. The published Object becomes the "external" Object,
 	 * the references of all referring Objects are updated and all referred
 	 * Objects are published recursively.
 	 * 
-	 * @param id
-	 *            The id of the Object to publish.
+	 * @param obj
+	 *            The object to be published
 	 */
-	public void publish(UUID id) {
-		if (id.equals(thisID) || id.equals(externalID)) {
+	public void publish(HeapObject obj) {
+		if (obj.getId().equals(thisID) || obj.getId().equals(externalID)) {
 			// do not publish 'this' in order not to cover further bugs
 			// do not publish 'external', is already published
 			return;
 		}
 
-		publishedObjects.add(id);
+		publishedObjects.add(obj.getId());
 
-		HeapObject object = objects.get(id);
 		HeapObject external = objects.get(externalID);
 
-		for (Iterator<HeapObject> iterator = object.getReferringIterator(); iterator
+		for (Iterator<HeapObject> iterator = obj.getReferringIterator(); iterator
 				.hasNext();) {
 			HeapObject referringObject = iterator.next();
 			if (!referringObject.equals(external)) {
-				referringObject.replaceReferredObject(object, external);
+				referringObject.replaceReferredObject(obj, external);
 				external.addReferringObject(referringObject);
 			}
 		}
 
-		for (Iterator<HeapObject> iterator = object.getReferredIterator(); iterator
+		for (Iterator<HeapObject> iterator = obj.getReferredIterator(); iterator
 				.hasNext();) {
-			UUID referred = iterator.next().getId();
-			if (!referred.equals(external.getId()))
+			HeapObject referred = iterator.next();
+			if (!referred.equals(external))
 				publish(referred);
 		}
 	}

@@ -45,8 +45,8 @@ import org.apache.bcel.generic.StackInstruction;
 import org.apache.bcel.generic.StoreInstruction;
 import org.apache.bcel.generic.Type;
 
-import de.seerhein_lab.jca.Pair;
 import de.seerhein_lab.jca.Frame;
+import de.seerhein_lab.jca.Pair;
 import de.seerhein_lab.jca.ResultValue;
 import de.seerhein_lab.jca.ResultValue.Kind;
 import de.seerhein_lab.jca.heap.Array;
@@ -143,8 +143,7 @@ public abstract class BaseInstructionsAnalysisVisitor extends
 	// }
 
 	protected abstract BaseInstructionsAnalysisVisitor getInstructionsAnalysisVisitor(
-			Frame frame,
-			Set<Pair<InstructionHandle, Boolean>> alreadyVisited,
+			Frame frame, Set<Pair<InstructionHandle, Boolean>> alreadyVisited,
 			InstructionHandle instructionHandle);
 
 	protected abstract BaseMethodAnalyzer getMethodAnalyzer(
@@ -333,8 +332,7 @@ public abstract class BaseInstructionsAnalysisVisitor extends
 				ReferenceSlot reference = (ReferenceSlot) argument;
 				// check for bugs
 				detectVirtualMethodBug(reference);
-				frame.getHeap().publish(reference.getID());
-
+				frame.getHeap().publish(frame.getHeap().getObject(reference));
 			}
 		}
 
@@ -858,7 +856,8 @@ public abstract class BaseInstructionsAnalysisVisitor extends
 			UUID vID = ((ReferenceSlot) v).getID();
 			if (o.getID().equals(frame.getHeap().getExternalObject().getId())) {
 				// left side is external, publish right
-				frame.getHeap().publish(vID);
+				frame.getHeap().publish(
+						frame.getHeap().getObject((ReferenceSlot) v));
 			} else {
 				// link them together
 				frame.getHeap().linkObjects(o.getID(),
@@ -900,7 +899,8 @@ public abstract class BaseInstructionsAnalysisVisitor extends
 		if (v instanceof ReferenceSlot) {
 			detectPutStaticBug((ReferenceSlot) v);
 			// make it external
-			frame.getHeap().publish(((ReferenceSlot) v).getID());
+			frame.getHeap().publish(
+					frame.getHeap().getObject((ReferenceSlot) v));
 		}
 
 		// write log

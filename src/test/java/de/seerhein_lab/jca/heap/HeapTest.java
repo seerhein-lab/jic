@@ -52,7 +52,7 @@ public class HeapTest {
 		assertEquals(e, heap.get(e.getId()));
 		assertEquals(f, heap.get(f.getId()));
 
-		heap.publish(b.getId());
+		heap.publish(b);
 
 		assertEquals(a, heap.get(a.getId()));
 		assertEquals(heap.getExternalObject(), heap.get(b.getId()));
@@ -101,16 +101,16 @@ public class HeapTest {
 	@Test
 	public void testNotPublishThis() {
 		ClassInstance thisInstance = heap.getThisInstance();
-		heap.publish(thisInstance.getId());
+		heap.publish(thisInstance);
 		assertEquals(thisInstance, heap.get(thisInstance.getId()));
 	}
 
 	@Test
 	public void testRepublish() {
 		assertEquals(f, heap.get(f.getId()));
-		heap.publish(heap.get(f.getId()).getId());
+		heap.publish(heap.get(f.getId()));
 		assertEquals(heap.getExternalObject(), heap.get(f.getId()));
-		heap.publish(heap.get(f.getId()).getId());
+		heap.publish(heap.get(f.getId()));
 		assertEquals(heap.getExternalObject(), heap.get(f.getId()));
 	}
 
