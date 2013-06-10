@@ -2,6 +2,8 @@ package de.seerhein_lab.jca.analyzer;
 
 import static org.apache.bcel.Constants.CONSTRUCTOR_NAME;
 
+import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Vector;
 
@@ -12,10 +14,12 @@ import org.apache.bcel.generic.ConstantPoolGen;
 import org.apache.bcel.generic.MethodGen;
 import org.apache.bcel.generic.Type;
 
+import de.seerhein_lab.jca.ResultValue;
 import de.seerhein_lab.jca.analyzer.ctorArgsCopiedAnalyzer.CtorArgsCopiedAnalyzer;
 import de.seerhein_lab.jca.analyzer.fieldsNotModifiedAnalyzer.FieldsNotModifiedMethodAnalyzer;
 import de.seerhein_lab.jca.analyzer.fieldsNotPublishedAnalyzer.FieldsNotPublishedMethodAnalyzer;
 import de.seerhein_lab.jca.analyzer.propConAnalyzer.PropConMethodAnalyzer;
+import de.seerhein_lab.jca.heap.Heap;
 import edu.umd.cs.findbugs.BugCollection;
 import edu.umd.cs.findbugs.BugInstance;
 import edu.umd.cs.findbugs.SortedBugCollection;
@@ -25,10 +29,12 @@ public class ClassAnalyzer {
 
 	private final JavaClass clazz;
 	private final ClassContext classContext;
+	private HashSet<Heap> heaps;
 
 	public ClassAnalyzer(JavaClass clazz, ClassContext classContext) {
 		this.clazz = clazz;
 		this.classContext = classContext;
+		heaps = new HashSet<Heap>();
 	}
 
 	private List<Method> getConstructors() {
@@ -81,7 +87,14 @@ public class ClassAnalyzer {
 			BaseMethodAnalyzer ctorAnalyzer = new PropConMethodAnalyzer(
 					classContext, ctorGen);
 			ctorAnalyzer.analyze();
-			bugs.addAll(ctorAnalyzer.getBugs().getCollection());
+			Collection<BugInstance> currentBugs = ctorAnalyzer.getBugs()
+					.getCollection();
+			bugs.addAll(currentBugs);
+
+			if (currentBugs.isEmpty()) {
+				for (ResultValue result : ctorAnalyzer.getResult())
+					heaps.add(result.getHeap());
+			}
 		}
 		return bugs;
 	}
@@ -107,7 +120,14 @@ public class ClassAnalyzer {
 			BaseMethodAnalyzer ctorAnalyzer = new CtorArgsCopiedAnalyzer(
 					classContext, ctorGen);
 			ctorAnalyzer.analyze();
-			bugs.addAll(ctorAnalyzer.getBugs().getCollection());
+			Collection<BugInstance> currentBugs = ctorAnalyzer.getBugs()
+					.getCollection();
+			bugs.addAll(currentBugs);
+
+			if (currentBugs.isEmpty()) {
+				for (ResultValue result : ctorAnalyzer.getResult())
+					heaps.add(result.getHeap());
+			}
 		}
 		return bugs;
 	}
@@ -122,7 +142,7 @@ public class ClassAnalyzer {
 					new ConstantPoolGen(clazz.getConstantPool()));
 
 			BaseMethodAnalyzer methodAnalyzer = new FieldsNotPublishedMethodAnalyzer(
-					classContext, methodGen);
+					classContext, methodGen, heaps);
 			methodAnalyzer.analyze();
 			bugs.addAll(methodAnalyzer.getBugs().getCollection());
 		}
