@@ -103,45 +103,6 @@ public abstract class BaseInstructionsAnalysisVisitor extends
 	protected Map<Short, Slot> simpleInstructions = SimpleInstructions
 			.getSimpleInstructions();
 
-	// protected static class AlreadyVisitedIfInstruction {
-	// private final InstructionHandle ifInstruction;
-	// private final boolean thenBranchVisited;
-	//
-	// public AlreadyVisitedIfInstruction(InstructionHandle ifInstruction,
-	// boolean thenBranchVisited) {
-	// this.ifInstruction = ifInstruction;
-	// this.thenBranchVisited = thenBranchVisited;
-	// }
-	//
-	// @Override
-	// public int hashCode() {
-	// final int prime = 31;
-	// int result = 1;
-	// result = prime * result
-	// + ((ifInstruction == null) ? 0 : ifInstruction.hashCode());
-	// result = prime * result + (thenBranchVisited ? 1231 : 1237);
-	// return result;
-	// }
-	//
-	// @Override
-	// public boolean equals(Object obj) {
-	// if (this == obj)
-	// return true;
-	// if (!(obj instanceof AlreadyVisitedIfInstruction))
-	// return false;
-	// AlreadyVisitedIfInstruction other = (AlreadyVisitedIfInstruction) obj;
-	// if (ifInstruction == null) {
-	// if (other.ifInstruction != null)
-	// return false;
-	// } else if (!ifInstruction.equals(other.ifInstruction))
-	// return false;
-	// if (thenBranchVisited != other.thenBranchVisited)
-	// return false;
-	// return true;
-	// }
-	//
-	// }
-
 	protected abstract BaseInstructionsAnalysisVisitor getInstructionsAnalysisVisitor(
 			Frame frame, Set<Pair<InstructionHandle, Boolean>> alreadyVisited,
 			InstructionHandle instructionHandle);
