@@ -1,7 +1,9 @@
 package de.seerhein_lab.jca.heap;
 
+import java.util.ArrayDeque;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.Queue;
 import java.util.Set;
 import java.util.UUID;
 
@@ -118,8 +120,8 @@ public class HeapObject {
 	boolean referredBy(UUID toSearch, Heap heap,
 			HashSet<Pair<HeapObject, HeapObject>> alreadyVisited) {
 		for (UUID object : referredBy) {
-			if (alreadyVisited.add(new Pair<HeapObject, HeapObject>(
-					this, heap.get(object)))) {
+			if (alreadyVisited.add(new Pair<HeapObject, HeapObject>(this, heap
+					.get(object)))) {
 				// if it was not in the set
 				if (object.equals(toSearch)
 						|| heap.get(object).referredBy(toSearch, heap,
@@ -149,6 +151,28 @@ public class HeapObject {
 				&& this.equals(heap.getExternalObject()))
 			return true;
 		return false;
+	}
+
+	public Set<HeapObject> getReferringClosure() {
+		Set<HeapObject> closure = new HashSet<HeapObject>();
+
+		Queue<HeapObject> queue = new ArrayDeque<HeapObject>();
+		for (UUID id : referredBy) {
+			queue.add(heap.get(id));
+		}
+
+		while (!queue.isEmpty()) {
+			HeapObject obj = queue.poll();
+
+			for (Iterator<HeapObject> it = obj.getReferringIterator(); it
+					.hasNext();) {
+				HeapObject referring = it.next();
+				if (!queue.contains(referring) && !closure.contains(referring))
+					queue.add(referring);
+			}
+			closure.add(obj);
+		}
+		return closure;
 	}
 
 	@Override
