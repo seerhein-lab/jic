@@ -1,9 +1,12 @@
 package de.seerhein_lab.jca.heap;
 
+import java.util.ArrayDeque;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.Queue;
+import java.util.Set;
 import java.util.UUID;
 
 import de.seerhein_lab.jca.Pair;
@@ -89,6 +92,29 @@ public class ClassInstance extends HeapObject {
 		};
 	}
 
+	@Override
+	public Set<HeapObject> getReferredClosure() {
+		Set<HeapObject> closure = new HashSet<HeapObject>();
+
+		Queue<HeapObject> queue = new ArrayDeque<HeapObject>();
+		for (UUID id : refers.values()) {
+			queue.add(heap.get(id));
+		}
+
+		while (!queue.isEmpty()) {
+			HeapObject obj = queue.poll();
+
+			for (Iterator<HeapObject> it = obj.getReferredIterator(); it
+					.hasNext();) {
+				HeapObject referred = it.next();
+				if (!queue.contains(referred) && !closure.contains(referred))
+					queue.add(referred);
+			}
+			closure.add(obj);
+		}
+		return closure;
+	}
+
 	public HeapObject getField(String name) {
 		return heap.get(refers.get(name));
 	}
@@ -97,8 +123,8 @@ public class ClassInstance extends HeapObject {
 	boolean refers(UUID toSearch, Heap heap,
 			HashSet<Pair<HeapObject, HeapObject>> alreadyVisited) {
 		for (UUID field : refers.values()) {
-			if (alreadyVisited.add(new Pair<HeapObject, HeapObject>(
-					this, heap.get(field)))) {
+			if (alreadyVisited.add(new Pair<HeapObject, HeapObject>(this, heap
+					.get(field)))) {
 				// if was not visited before
 				if (field.equals(toSearch)
 						|| heap.get(field).refers(toSearch, heap,

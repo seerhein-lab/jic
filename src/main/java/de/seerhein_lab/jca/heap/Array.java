@@ -1,7 +1,9 @@
 package de.seerhein_lab.jca.heap;
 
+import java.util.ArrayDeque;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.Queue;
 import java.util.Set;
 import java.util.UUID;
 
@@ -77,11 +79,34 @@ public class Array extends HeapObject {
 	}
 
 	@Override
+	public Set<HeapObject> getReferredClosure() {
+		Set<HeapObject> closure = new HashSet<HeapObject>();
+
+		Queue<HeapObject> queue = new ArrayDeque<HeapObject>();
+		for (UUID id : refers) {
+			queue.add(heap.get(id));
+		}
+
+		while (!queue.isEmpty()) {
+			HeapObject obj = queue.poll();
+
+			for (Iterator<HeapObject> it = obj.getReferredIterator(); it
+					.hasNext();) {
+				HeapObject referred = it.next();
+				if (!queue.contains(referred) && !closure.contains(referred))
+					queue.add(referred);
+			}
+			closure.add(obj);
+		}
+		return closure;
+	}
+
+	@Override
 	boolean refers(UUID toSearch, Heap heap,
 			HashSet<Pair<HeapObject, HeapObject>> alreadyVisited) {
 		for (UUID entry : refers) {
-			if (alreadyVisited.add(new Pair<HeapObject, HeapObject>(
-					this, heap.get(entry)))) {
+			if (alreadyVisited.add(new Pair<HeapObject, HeapObject>(this, heap
+					.get(entry)))) {
 				// if was not visited before
 				if (entry.equals(toSearch)
 						|| heap.get(entry).refers(toSearch, heap,

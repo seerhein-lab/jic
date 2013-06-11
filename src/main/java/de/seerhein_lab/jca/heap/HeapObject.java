@@ -153,6 +153,12 @@ public class HeapObject {
 		return false;
 	}
 
+	public Set<HeapObject> getReferredClosure() {
+		Set<HeapObject> closure = new HashSet<HeapObject>();
+		closure.add(heap.getExternalObject());
+		return closure;
+	}
+
 	public Set<HeapObject> getReferringClosure() {
 		Set<HeapObject> closure = new HashSet<HeapObject>();
 
