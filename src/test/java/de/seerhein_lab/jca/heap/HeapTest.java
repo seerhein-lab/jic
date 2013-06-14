@@ -73,13 +73,13 @@ public class HeapTest {
 		assertTrue(e.refers(f.getId(), heap));
 		assertTrue(f.refers(d.getId(), heap));
 
-		assertTrue(b.referredBy(a.getId(), heap));
-		assertTrue(c.referredBy(b.getId(), heap));
-		assertTrue(d.referredBy(b.getId(), heap));
-		assertTrue(e.referredBy(c.getId(), heap));
-		assertTrue(e.referredBy(d.getId(), heap));
-		assertTrue(f.referredBy(e.getId(), heap));
-		assertTrue(d.referredBy(f.getId(), heap));
+		assertTrue(b.isTransitivelyReferredBy(a));
+		assertTrue(c.isTransitivelyReferredBy(b));
+		assertTrue(d.isTransitivelyReferredBy(b));
+		assertTrue(e.isTransitivelyReferredBy(c));
+		assertTrue(e.isTransitivelyReferredBy(d));
+		assertTrue(f.isTransitivelyReferredBy(e));
+		assertTrue(d.isTransitivelyReferredBy(f));
 	}
 
 	@Test

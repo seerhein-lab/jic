@@ -103,31 +103,31 @@ public class HeapObject {
 		return new HeapObject(this, heap);
 	}
 
-	/**
-	 * Is this referred by "toSearch" in the "heap".
-	 * 
-	 * @return If this is referred by "toSearch".
-	 */
-	public boolean referredBy(UUID toSearch, Heap heap) {
-		return referredBy(toSearch, heap,
-				new HashSet<Pair<HeapObject, HeapObject>>());
-	}
-
-	boolean referredBy(UUID toSearch, Heap heap,
-			HashSet<Pair<HeapObject, HeapObject>> alreadyVisited) {
-		for (UUID object : referredBy) {
-			if (alreadyVisited.add(new Pair<HeapObject, HeapObject>(this, heap
-					.get(object)))) {
-				// if it was not in the set
-				if (object.equals(toSearch)
-						|| heap.get(object).referredBy(toSearch, heap,
-								alreadyVisited)) {
-					return true;
-				}
-			}
-		}
-		return false;
-	}
+	// /**
+	// * Is this referred by "toSearch" in the "heap".
+	// *
+	// * @return If this is referred by "toSearch".
+	// */
+	// public boolean referredBy(UUID toSearch, Heap heap) {
+	// return referredBy(toSearch, heap,
+	// new HashSet<Pair<HeapObject, HeapObject>>());
+	// }
+	//
+	// boolean referredBy(UUID toSearch, Heap heap,
+	// HashSet<Pair<HeapObject, HeapObject>> alreadyVisited) {
+	// for (UUID object : referredBy) {
+	// if (alreadyVisited.add(new Pair<HeapObject, HeapObject>(this, heap
+	// .get(object)))) {
+	// // if it was not in the set
+	// if (object.equals(toSearch)
+	// || heap.get(object).referredBy(toSearch, heap,
+	// alreadyVisited)) {
+	// return true;
+	// }
+	// }
+	// }
+	// return false;
+	// }
 
 	public boolean isTransitivelyReferredBy(HeapObject source) {
 		Set<HeapObject> visited = new HashSet<HeapObject>();

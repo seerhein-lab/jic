@@ -70,8 +70,8 @@ public class CtorArgsCopiedAnalysisVisitor extends
 	@Override
 	protected void detectVirtualMethodBug(ReferenceSlot argument) {
 		Heap heap = frame.getHeap();
-		if (heap.get(argument.getID()).referredBy(
-				heap.getThisInstance().getId(), heap)) {
+		if (heap.get(argument.getID()).isTransitivelyReferredBy(
+				heap.getThisInstance())) {
 			addBug(Confidence.HIGH,
 					"a field of 'this' is passed to a virtual method and escapes",
 					instructionHandle);
@@ -88,8 +88,8 @@ public class CtorArgsCopiedAnalysisVisitor extends
 
 		ReferenceSlot referenceToStore = (ReferenceSlot) valueToStore;
 		Heap heap = frame.getHeap();
-		if (heap.get(arrayReference.getID()).referredBy(
-				heap.getThisInstance().getId(), heap)) {
+		if (heap.get(arrayReference.getID()).isTransitivelyReferredBy(
+				heap.getThisInstance())) {
 			// array is referred by this
 			if (referenceToStore.getID().equals(
 					frame.getHeap().getExternalObject().getId())) {
@@ -133,8 +133,8 @@ public class CtorArgsCopiedAnalysisVisitor extends
 						instructionHandle);
 			}
 		}
-		if (heap.get(targetReference.getID()).referredBy(
-				heap.getThisInstance().getId(), heap)) {
+		if (heap.get(targetReference.getID()).isTransitivelyReferredBy(
+				heap.getThisInstance())) {
 			// left is referred by this
 			if (referenceToPut.getID().equals(heap.getExternalObject().getId())) {
 				// right is external
@@ -162,8 +162,8 @@ public class CtorArgsCopiedAnalysisVisitor extends
 					instructionHandle);
 		}
 
-		if (heap.get(referenceToPut.getID()).referredBy(
-				heap.getThisInstance().getId(), heap)) {
+		if (heap.get(referenceToPut.getID()).isTransitivelyReferredBy(
+				heap.getThisInstance())) {
 			// a field referred by this is published
 			addBug(Confidence.HIGH,
 					"an object referred by 'this' is published by assignment to a static field",

@@ -8,8 +8,8 @@ import org.apache.bcel.generic.ConstantPoolGen;
 import org.apache.bcel.generic.InstructionHandle;
 import org.apache.bcel.generic.MethodGen;
 
-import de.seerhein_lab.jca.Pair;
 import de.seerhein_lab.jca.Frame;
+import de.seerhein_lab.jca.Pair;
 import de.seerhein_lab.jca.analyzer.BaseInstructionsAnalysisVisitor;
 import de.seerhein_lab.jca.analyzer.BaseMethodAnalyzer;
 import de.seerhein_lab.jca.heap.Heap;
@@ -21,11 +21,8 @@ import edu.umd.cs.findbugs.ba.ClassContext;
 public class FieldsNotModifiedAnalysisVisitor extends
 		BaseInstructionsAnalysisVisitor {
 
-	protected FieldsNotModifiedAnalysisVisitor(
-			ClassContext classContext,
-			Method method,
-			Frame frame,
-			ConstantPoolGen constantPoolGen,
+	protected FieldsNotModifiedAnalysisVisitor(ClassContext classContext,
+			Method method, Frame frame, ConstantPoolGen constantPoolGen,
 			Set<Pair<InstructionHandle, Boolean>> alreadyVisitedIfBranch,
 			Set<Pair<Method, Slot[]>> alreadyVisitedMethods,
 			InstructionHandle instructionHandle,
@@ -75,8 +72,8 @@ public class FieldsNotModifiedAnalysisVisitor extends
 	protected void detectVirtualMethodBug(ReferenceSlot argument) {
 		Heap heap = frame.getHeap();
 		// an object referred by a field of this is passed to a virtual method
-		if (heap.get(argument.getID()).referredBy(
-				heap.getThisInstance().getId(), heap)) {
+		if (heap.get(argument.getID()).isTransitivelyReferredBy(
+				heap.getThisInstance())) {
 			addBug(Confidence.HIGH,
 					"an object referred by a field of 'this' is passed to a virtual method and might be modified",
 					instructionHandle);
@@ -89,8 +86,8 @@ public class FieldsNotModifiedAnalysisVisitor extends
 			Slot valueToStore) {
 		Heap heap = frame.getHeap();
 		// array is referred by a field of this
-		if (heap.get(arrayReference.getID()).referredBy(
-				heap.getThisInstance().getId(), heap)) {
+		if (heap.get(arrayReference.getID()).isTransitivelyReferredBy(
+				heap.getThisInstance())) {
 			addBug(Confidence.HIGH,
 					"the value of an array referred by a field of 'this' is modified",
 					instructionHandle);
@@ -102,8 +99,8 @@ public class FieldsNotModifiedAnalysisVisitor extends
 			Slot valueToPut) {
 		Heap heap = frame.getHeap();
 		// left side is referred by a field of this
-		if (heap.get(targetReference.getID()).referredBy(
-				heap.getThisInstance().getId(), heap)) {
+		if (heap.get(targetReference.getID()).isTransitivelyReferredBy(
+				heap.getThisInstance())) {
 			addBug(Confidence.HIGH,
 					"the value of an object referred by a field of 'this' is modified",
 					instructionHandle);
