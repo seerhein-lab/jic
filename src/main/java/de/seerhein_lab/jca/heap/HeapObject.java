@@ -53,10 +53,6 @@ public class HeapObject {
 		throw new AssertionError("Must not be called on a HeapObject instance");
 	}
 
-	// public Collection<UUID> getReferredObjects() {
-	// throw new AssertionError("Must not be called on a HeapObject instance");
-	// }
-
 	/**
 	 * Must not be called on a HeapObject instance, because a HeapObject can
 	 * only be the "external", which can't refer anything.
@@ -129,6 +125,29 @@ public class HeapObject {
 					return true;
 				}
 			}
+		}
+		return false;
+	}
+
+	public boolean isTransitivelyReferredBy(HeapObject source) {
+		Set<HeapObject> visited = new HashSet<HeapObject>();
+
+		Queue<HeapObject> queue = new ArrayDeque<HeapObject>();
+		queue.add(this);
+
+		while (!queue.isEmpty()) {
+			HeapObject obj = queue.poll();
+
+			for (Iterator<HeapObject> it = obj.getReferringIterator(); it
+					.hasNext();) {
+				HeapObject referring = it.next();
+
+				if (referring.equals(source))
+					return true;
+				if (!visited.contains(referring) && !queue.contains(referring))
+					queue.add(referring);
+			}
+			visited.add(obj);
 		}
 		return false;
 	}
