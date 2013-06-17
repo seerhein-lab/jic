@@ -1,15 +1,11 @@
 package de.seerhein_lab.jca.analyzer.fieldsNotPublishedAnalyzer;
 
-import java.util.Iterator;
 import java.util.Set;
 import java.util.logging.Level;
 
-import org.apache.bcel.Constants;
 import org.apache.bcel.classfile.Method;
-import org.apache.bcel.generic.AALOAD;
 import org.apache.bcel.generic.CodeExceptionGen;
 import org.apache.bcel.generic.ConstantPoolGen;
-import org.apache.bcel.generic.GETFIELD;
 import org.apache.bcel.generic.InstructionHandle;
 import org.apache.bcel.generic.MethodGen;
 import org.apache.bcel.generic.ReturnInstruction;
@@ -20,8 +16,6 @@ import de.seerhein_lab.jca.ResultValue;
 import de.seerhein_lab.jca.ResultValue.Kind;
 import de.seerhein_lab.jca.analyzer.BaseInstructionsAnalysisVisitor;
 import de.seerhein_lab.jca.analyzer.BaseMethodAnalyzer;
-import de.seerhein_lab.jca.heap.Array;
-import de.seerhein_lab.jca.heap.ClassInstance;
 import de.seerhein_lab.jca.heap.Heap;
 import de.seerhein_lab.jca.heap.HeapObject;
 import de.seerhein_lab.jca.slot.ReferenceSlot;
@@ -74,98 +68,6 @@ public class FieldsNotPublishedAnalysisVisitor extends
 	protected String getBugType() {
 		// TODO
 		return "FIELDS_PUBILSHED_BUG";
-	}
-
-	// TODO aaload
-
-	@Override
-	public void visitAALOAD(AALOAD obj) {
-		logger.log(Level.FINEST, indentation + obj.toString(false));
-		// pop array index
-		frame.getStack().pop();
-		// pop array reference
-		ReferenceSlot arrayReference = (ReferenceSlot) frame.getStack().pop();
-		Array array = (Array) frame.getHeap().get(arrayReference.getID());
-
-		linkNewArray(obj, arrayReference, frame.getHeap());
-
-		for (Iterator<HeapObject> iterator = array.getReferredIterator(); iterator
-				.hasNext();) {
-			Frame newFrame = new Frame(frame);
-			newFrame.getStack().push(new ReferenceSlot(iterator.next()));
-			BaseInstructionsAnalysisVisitor visitor = getInstructionsAnalysisVisitor(
-					newFrame, alreadyVisitedIfBranch,
-					instructionHandle.getNext());
-			instructionHandle.getNext().accept(visitor);
-			bugs.addAll(visitor.getBugs().getCollection());
-			result.addAll(visitor.getResult());
-		}
-	};
-
-	public void linkNewArray(AALOAD obj, ReferenceSlot o, Heap heap) {
-		if (obj.getType(constantPoolGen).getType() == Constants.T_OBJECT)
-			heap.linkObjects(o.getID(), null, heap.newClassInstance().getId());
-		else if (obj.getType(constantPoolGen).getType() == Constants.T_ARRAY)
-			heap.linkObjects(o.getID(), null, heap.newArray().getId());
-		else
-			throw new AssertionError();
-	}
-
-	/**
-	 * 10. CPInstruction <br>
-	 * 10.3. FieldOrMethod <br>
-	 * 10.3.2. GETFIELD <br>
-	 * Called when a GETFIELD operation occurs. Pops an object reference from
-	 * the stack and pushes the value of the specified field onto the stack.
-	 * */
-	@Override
-	public void visitGETFIELD(GETFIELD obj) {
-		logger.log(Level.FINEST, indentation + obj.toString(false));
-		// Notation: gets o.f
-
-		// pop object reference
-		ReferenceSlot o = (ReferenceSlot) frame.getStack().pop();
-
-		// obj.getSignature() refers to desired field
-		Slot f = Slot.getDefaultSlotInstance(obj.getType(constantPoolGen));
-		if (f instanceof ReferenceSlot) {
-			Heap heap = frame.getHeap();
-			if (o.getID().equals(heap.getExternalObject().getId())) {
-				// if left side is external return external
-				f = new ReferenceSlot(heap.getExternalObject());
-			} else {
-				// get the ClassInstance linked to the desired field
-				if (((ClassInstance) heap.get(o.getID())).getField(obj
-						.getFieldName(constantPoolGen)) == null)
-					linkNewClassInstance(obj, o, heap);
-				f = new ReferenceSlot(
-						((ClassInstance) heap.get(o.getID())).getField(obj
-								.getFieldName(constantPoolGen)));
-			}
-		}
-		frame.pushStackByRequiredSlots(f);
-
-		logger.log(
-				Level.FINEST,
-				indentation + "\t" + o + "."
-						+ obj.getFieldName(constantPoolGen));
-
-		instructionHandle = instructionHandle.getNext();
-		instructionHandle.accept(this);
-	}
-
-	/**
-	 * Create a new Array or ClassInstance and link it to the object.
-	 */
-	public void linkNewClassInstance(GETFIELD obj, ReferenceSlot o, Heap heap) {
-		if (obj.getType(constantPoolGen).getType() == Constants.T_OBJECT)
-			heap.linkObjects(o.getID(), obj.getFieldName(constantPoolGen), heap
-					.newClassInstance().getId());
-		else if (obj.getType(constantPoolGen).getType() == Constants.T_ARRAY)
-			heap.linkObjects(o.getID(), obj.getFieldName(constantPoolGen), heap
-					.newArray().getId());
-		else
-			throw new AssertionError();
 	}
 
 	@Override

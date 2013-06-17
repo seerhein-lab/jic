@@ -90,11 +90,6 @@ public class ClassAnalyzer {
 			Collection<BugInstance> currentBugs = ctorAnalyzer.getBugs()
 					.getCollection();
 			bugs.addAll(currentBugs);
-
-			if (currentBugs.isEmpty()) {
-				for (ResultValue result : ctorAnalyzer.getResult())
-					heaps.add(result.getHeap());
-			}
 		}
 		return bugs;
 	}

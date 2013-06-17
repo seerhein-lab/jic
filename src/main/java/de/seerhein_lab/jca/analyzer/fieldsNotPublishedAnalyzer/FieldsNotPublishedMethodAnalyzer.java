@@ -42,38 +42,11 @@ public class FieldsNotPublishedMethodAnalyzer extends BaseMethodAnalyzer {
 				depth);
 	}
 
-	// private Set<Heap> createCtorHeaps() {
-	// List<Method> ctors = getConstructors();
-	// Set<Heap> heaps = new HashSet<Heap>();
-	//
-	// for (Method ctor : ctors) {
-	// MethodGen ctorGen = new MethodGen(ctor, clazz.getClassName(),
-	// new ConstantPoolGen(clazz.getConstantPool()));
-	//
-	// BaseMethodAnalyzer ctorAnalyzer = new PropConMethodAnalyzer(
-	// classContext, ctorGen);
-	// ctorAnalyzer.analyze();
-	// if (ctorAnalyzer.getBugs().getCollection().isEmpty()) {
-	// for (ResultValue result : ctorAnalyzer.getResult()) {
-	// heaps.add(result.getHeap());
-	// }
-	// }
-	// }
-	// return heaps;
-	// }
-	//
-	// private List<Method> getConstructors() {
-	// List<Method> ctors = new Vector<Method>();
-	// Method[] methods = clazz.getMethods();
-	// for (Method method : methods)
-	// if (method.getName().equals(CONSTRUCTOR_NAME))
-	// ctors.add(method);
-	// return ctors;
-	// }
-
 	@Override
 	public void analyze() {
-		// Set<Heap> heaps = createCtorHeaps();
+		// TODO check if no heaps are available ->
+		// BaseMethodAnalyzer:IllegalStateException: analyze() must be called
+		// before getBugs()
 		for (Heap callerHeap : heaps) {
 			Stack<Slot> callerStack = new Stack<Slot>();
 

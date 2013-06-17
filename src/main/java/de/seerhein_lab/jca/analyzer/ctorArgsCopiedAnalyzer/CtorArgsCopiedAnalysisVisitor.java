@@ -60,7 +60,7 @@ public class CtorArgsCopiedAnalysisVisitor extends
 	@Override
 	protected String getBugType() {
 		// TODO
-		return "to be defined";
+		return "CTOR_ARGS_NOT_COPIED_BUG";
 	}
 
 	// ******************************************************************//
