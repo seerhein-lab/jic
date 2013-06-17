@@ -5,6 +5,7 @@ import static org.apache.bcel.Constants.CONSTRUCTOR_NAME;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.Vector;
 
 import org.apache.bcel.classfile.Field;
@@ -139,7 +140,7 @@ public class ClassAnalyzer {
 					new ConstantPoolGen(clazz.getConstantPool()));
 
 			BaseMethodAnalyzer methodAnalyzer = new FieldsNotPublishedMethodAnalyzer(
-					classContext, methodGen, heaps);
+					classContext, methodGen, getCopiedHeaps());
 			methodAnalyzer.analyze();
 			bugs.addAll(methodAnalyzer.getBugs().getCollection());
 		}
@@ -158,11 +159,20 @@ public class ClassAnalyzer {
 					new ConstantPoolGen(clazz.getConstantPool()));
 
 			BaseMethodAnalyzer methodAnalyzer = new FieldsNotModifiedMethodAnalyzer(
-					classContext, methodGen, heaps);
+					classContext, methodGen, getCopiedHeaps());
 			methodAnalyzer.analyze();
 			bugs.addAll(methodAnalyzer.getBugs().getCollection());
 		}
 		return bugs;
+	}
+
+	// TODO necessary to copy heaps?
+	private Set<Heap> getCopiedHeaps() {
+		HashSet<Heap> copiedHeaps = new HashSet<Heap>();
+		for (Heap heap : heaps) {
+			copiedHeaps.add(new Heap(heap));
+		}
+		return copiedHeaps;
 	}
 
 	public BugCollection stateUnmodifiable() {
