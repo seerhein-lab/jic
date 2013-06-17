@@ -131,6 +131,8 @@ public class ClassAnalyzer {
 	public BugCollection fieldsAreNotPublished() {
 		SortedBugCollection bugs = new SortedBugCollection();
 		List<Method> methods = getAllMethodsWithoutCtors();
+		if (heaps.isEmpty())
+			return bugs;
 
 		for (Method method : methods) {
 			MethodGen methodGen = new MethodGen(method, clazz.getClassName(),
@@ -148,13 +150,15 @@ public class ClassAnalyzer {
 	public BugCollection stateUnmodified() {
 		SortedBugCollection bugs = new SortedBugCollection();
 		List<Method> methods = getAllMethodsWithoutCtors();
+		if (heaps.isEmpty())
+			return bugs;
 
 		for (Method method : methods) {
 			MethodGen methodGen = new MethodGen(method, clazz.getClassName(),
 					new ConstantPoolGen(clazz.getConstantPool()));
 
 			BaseMethodAnalyzer methodAnalyzer = new FieldsNotModifiedMethodAnalyzer(
-					classContext, methodGen);
+					classContext, methodGen, heaps);
 			methodAnalyzer.analyze();
 			bugs.addAll(methodAnalyzer.getBugs().getCollection());
 		}

@@ -44,9 +44,6 @@ public class FieldsNotPublishedMethodAnalyzer extends BaseMethodAnalyzer {
 
 	@Override
 	public void analyze() {
-		// TODO check if no heaps are available ->
-		// BaseMethodAnalyzer:IllegalStateException: analyze() must be called
-		// before getBugs()
 		for (Heap callerHeap : heaps) {
 			Stack<Slot> callerStack = new Stack<Slot>();
 

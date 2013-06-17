@@ -9,8 +9,8 @@ import org.apache.bcel.generic.InstructionHandle;
 import org.apache.bcel.generic.MethodGen;
 import org.apache.bcel.generic.Type;
 
-import de.seerhein_lab.jca.Pair;
 import de.seerhein_lab.jca.Frame;
+import de.seerhein_lab.jca.Pair;
 import de.seerhein_lab.jca.analyzer.BaseInstructionsAnalysisVisitor;
 import de.seerhein_lab.jca.analyzer.BaseMethodAnalyzer;
 import de.seerhein_lab.jca.heap.Heap;
@@ -20,9 +20,12 @@ import edu.umd.cs.findbugs.ba.ClassContext;
 
 public class FieldsNotModifiedMethodAnalyzer extends BaseMethodAnalyzer {
 
+	private Set<Heap> heaps;
+
 	public FieldsNotModifiedMethodAnalyzer(ClassContext classContext,
-			MethodGen methodGen) {
+			MethodGen methodGen, Set<Heap> heaps) {
 		super(classContext, methodGen);
+		this.heaps = heaps;
 	}
 
 	public FieldsNotModifiedMethodAnalyzer(ClassContext classContext,
@@ -39,34 +42,36 @@ public class FieldsNotModifiedMethodAnalyzer extends BaseMethodAnalyzer {
 				depth);
 	}
 
+	@Override
 	public void analyze() {
-		Stack<Slot> callerStack = new Stack<Slot>();
-		Heap callerHeap = new Heap();
+		for (Heap callerHeap : heaps) {
+			Stack<Slot> callerStack = new Stack<Slot>();
 
-		// push args + this (if not static) onto the stack
-		if (!method.isStatic()) {
-			ReferenceSlot thisReference = new ReferenceSlot(
-					callerHeap.getThisInstance());
-			callerStack.push(thisReference);
-		}
+			Slot externalReference = new ReferenceSlot(
+					callerHeap.getExternalObject());
 
-		ReferenceSlot externalReference = new ReferenceSlot(
-				callerHeap.getExternalObject());
-
-		Type[] argTypes = method.getArgumentTypes();
-
-		for (Type argType : argTypes) {
-			Slot argument = Slot.getDefaultSlotInstance(argType);
-			if (argument instanceof ReferenceSlot) {
-				argument = externalReference;
+			// push args + this (if not static) onto the stack
+			if (!method.isStatic()) {
+				Slot thisReference = new ReferenceSlot(
+						callerHeap.getThisInstance());
+				callerStack.push(thisReference);
 			}
-			for (int i = 0; i < argument.getNumSlots(); i++) {
-				callerStack.push(argument);
+
+			Type[] argTypes = method.getArgumentTypes();
+
+			for (Type argType : argTypes) {
+				Slot argument = Slot.getDefaultSlotInstance(argType);
+				if (argument instanceof ReferenceSlot) {
+					argument = externalReference;
+				}
+				for (int i = 0; i < argument.getNumSlots(); i++) {
+					callerStack.push(argument);
+				}
 			}
+
+			Frame callerFrame = new Frame(callerStack, callerHeap);
+
+			analyze(callerFrame);
 		}
-
-		Frame callerFrame = new Frame(callerStack, callerHeap);
-
-		analyze(callerFrame);
 	}
 }
