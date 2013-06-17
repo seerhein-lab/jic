@@ -72,7 +72,6 @@ public class FieldsNotPublishedAnalysisVisitor extends
 
 	@Override
 	public void visitReturnInstruction(ReturnInstruction obj) {
-		// TODO __CHECK
 		// return 0xb1 (void)
 		// areturn 0xb0
 		// dreturn 0xaf
@@ -104,15 +103,22 @@ public class FieldsNotPublishedAnalysisVisitor extends
 	@Override
 	protected void detectVirtualMethodBug(ReferenceSlot argument) {
 		Heap heap = frame.getHeap();
-		if (argument.getID().equals(heap.getThisInstance().getId())) {
+		HeapObject argumentObject = heap.get(argument.getID());
+		if (argumentObject.equals(heap.getThisInstance())) {
 			// XXX problem or not?? Inheritance?!?
 			addBug(Confidence.HIGH,
 					"'this' is passed to a virtual method and published",
 					instructionHandle);
-		} else if (heap.get(argument.getID()).isTransitivelyReferredBy(
-				heap.getThisInstance())) {
+		} else if (argumentObject.isTransitivelyReferredBy(heap
+				.getThisInstance())) {
 			addBug(Confidence.HIGH,
 					"a field of 'this' is passed to a virtual mehtod and published",
+					instructionHandle);
+		} else if (argumentObject.isIndirectReferedBy(heap.getThisInstance())) {
+			// publish Object that refers Object referedBy 'this'
+			addBug(Confidence.HIGH,
+					"an Object that refers an Object refered by 'this' is passed"
+							+ " to a virtual mehtod and published",
 					instructionHandle);
 		}
 	}
@@ -125,15 +131,23 @@ public class FieldsNotPublishedAnalysisVisitor extends
 			return;
 		}
 
-		ReferenceSlot referenceToStore = (ReferenceSlot) valueToStore;
 		Heap heap = frame.getHeap();
-		if (arrayReference.getID().equals(heap.getExternalObject().getId())
-				&& heap.get(referenceToStore.getID()).isTransitivelyReferredBy(
-						heap.getThisInstance())) {
-			// a field of this is assigned to an external object
-			addBug(Confidence.HIGH,
-					"field of 'this' is published by assignment to an external array",
-					instructionHandle);
+		HeapObject objectToStore = heap.get(((ReferenceSlot) valueToStore)
+				.getID());
+		// array is the "external"
+		if (arrayReference.getID().equals(heap.getExternalObject().getId())) {
+			if (objectToStore.isTransitivelyReferredBy(heap.getThisInstance())) {
+				// a field of this is assigned to an external object
+				addBug(Confidence.HIGH,
+						"field of 'this' is published by assignment to an external array",
+						instructionHandle);
+			} else if (objectToStore
+					.isIndirectReferedBy(heap.getThisInstance()))
+				// publish Object that refers Object referedBy 'this'
+				addBug(Confidence.HIGH,
+						"an Object that refers an Object refered by 'this' is published"
+								+ " by assignment to an external array",
+						instructionHandle);
 		}
 	}
 
@@ -145,44 +159,60 @@ public class FieldsNotPublishedAnalysisVisitor extends
 			return;
 		}
 
-		ReferenceSlot referenceToPut = (ReferenceSlot) valueToPut;
 		Heap heap = frame.getHeap();
-		if (targetReference.getID().equals(heap.getExternalObject().getId())
-				&& heap.get(referenceToPut.getID()).isTransitivelyReferredBy(
-						heap.getThisInstance())) {
-			// a field of this is assigned to an external object
-			addBug(Confidence.HIGH,
-					"a field of 'this' is published by assignment to an external object",
-					instructionHandle);
+		HeapObject objectToPut = heap.get(((ReferenceSlot) valueToPut).getID());
+		// target is the "external"
+		if (targetReference.getID().equals(heap.getExternalObject().getId())) {
+			if (objectToPut.isTransitivelyReferredBy(heap.getThisInstance())) {
+				// a field of this is assigned to an external object
+				addBug(Confidence.HIGH,
+						"a field of 'this' is published by assignment to an external object",
+						instructionHandle);
+			} else if (objectToPut.isIndirectReferedBy(heap.getThisInstance()))
+				// publish Object that refers Object referedBy 'this'
+				addBug(Confidence.HIGH,
+						"an Object that refers an Object refered by 'this' is published"
+								+ " by assignment to an external object",
+						instructionHandle);
 		}
 	}
 
 	@Override
 	protected void detectPutStaticBug(ReferenceSlot referenceToPut) {
 		Heap heap = frame.getHeap();
-		if (referenceToPut.getID().equals(heap.getThisInstance().getId())) {
-			// XXX only a problem if it is a static field of the class we
-			// analyze
+		HeapObject objectToPut = heap.get(referenceToPut.getID());
+		// XXX only a problem if it is a static field of the class we analyze
+		if (objectToPut.equals(heap.getThisInstance())) {
 			addBug(Confidence.HIGH,
 					"'this' is published by assignment to a static field",
 					instructionHandle);
-		} else if (heap.get(referenceToPut.getID()).isTransitivelyReferredBy(
-				heap.getThisInstance())) {
+		} else if (objectToPut.isTransitivelyReferredBy(heap.getThisInstance())) {
+			// publish Object referedBy 'this'
 			addBug(Confidence.HIGH,
 					"a field of 'this' is published by assignment to a static field",
 					instructionHandle);
-		}
+		} else if (objectToPut.isIndirectReferedBy(heap.getThisInstance()))
+			// publish Object that refers Object referedBy 'this'
+			addBug(Confidence.HIGH,
+					"an Object that refers an Object refered by 'this' is published"
+							+ " by assignment to a static field",
+					instructionHandle);
 	}
 
-	// TODO allgemein: publish Object that refers Object referedBy 'this'
 	protected void detectAReturnBug(ReferenceSlot returnValue) {
 		Heap heap = frame.getHeap();
 		HeapObject returnObject = heap.get(returnValue.getID());
 		if (returnObject == null)
 			return;
 		if (returnObject.isTransitivelyReferredBy(heap.getThisInstance())) {
+			// publish Object referedBy 'this'
 			addBug(Confidence.HIGH, "a field of 'this' is published by return",
 					instructionHandle);
-		}
+		} else if (returnObject.isIndirectReferedBy(heap.getThisInstance()))
+			// publish Object that refers Object referedBy 'this'
+			addBug(Confidence.HIGH,
+					"an Object that refers an Object refered by 'this' is published by return",
+					instructionHandle);
+
 	}
 }

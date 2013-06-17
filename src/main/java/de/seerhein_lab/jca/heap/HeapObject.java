@@ -200,6 +200,15 @@ public class HeapObject {
 		return closure;
 	}
 
+	public boolean isIndirectReferedBy(HeapObject source) {
+		for (HeapObject referedObject : this.getReferredClosure()) {
+			if (referedObject.isTransitivelyReferredBy(source)) {
+				return true;
+			}
+		}
+		return false;
+	}
+
 	@Override
 	public int hashCode() {
 		final int prime = 31;
