@@ -114,7 +114,8 @@ public class FieldsNotPublishedAnalysisVisitor extends
 			addBug(Confidence.HIGH,
 					"a field of 'this' is passed to a virtual mehtod and published",
 					instructionHandle);
-		} else if (argumentObject.isIndirectReferedBy(heap.getThisInstance())) {
+		} else if (argumentObject.refersObjectThatIsReferredBy(heap
+				.getThisInstance())) {
 			// publish Object that refers Object referedBy 'this'
 			addBug(Confidence.HIGH,
 					"an Object that refers an Object refered by 'this' is passed"
@@ -141,8 +142,8 @@ public class FieldsNotPublishedAnalysisVisitor extends
 				addBug(Confidence.HIGH,
 						"field of 'this' is published by assignment to an external array",
 						instructionHandle);
-			} else if (objectToStore
-					.isIndirectReferedBy(heap.getThisInstance()))
+			} else if (objectToStore.refersObjectThatIsReferredBy(heap
+					.getThisInstance()))
 				// publish Object that refers Object referedBy 'this'
 				addBug(Confidence.HIGH,
 						"an Object that refers an Object refered by 'this' is published"
@@ -168,7 +169,8 @@ public class FieldsNotPublishedAnalysisVisitor extends
 				addBug(Confidence.HIGH,
 						"a field of 'this' is published by assignment to an external object",
 						instructionHandle);
-			} else if (objectToPut.isIndirectReferedBy(heap.getThisInstance()))
+			} else if (objectToPut.refersObjectThatIsReferredBy(heap
+					.getThisInstance()))
 				// publish Object that refers Object referedBy 'this'
 				addBug(Confidence.HIGH,
 						"an Object that refers an Object refered by 'this' is published"
@@ -191,7 +193,8 @@ public class FieldsNotPublishedAnalysisVisitor extends
 			addBug(Confidence.HIGH,
 					"a field of 'this' is published by assignment to a static field",
 					instructionHandle);
-		} else if (objectToPut.isIndirectReferedBy(heap.getThisInstance()))
+		} else if (objectToPut.refersObjectThatIsReferredBy(heap
+				.getThisInstance()))
 			// publish Object that refers Object referedBy 'this'
 			addBug(Confidence.HIGH,
 					"an Object that refers an Object refered by 'this' is published"
@@ -208,7 +211,8 @@ public class FieldsNotPublishedAnalysisVisitor extends
 			// publish Object referedBy 'this'
 			addBug(Confidence.HIGH, "a field of 'this' is published by return",
 					instructionHandle);
-		} else if (returnObject.isIndirectReferedBy(heap.getThisInstance()))
+		} else if (returnObject.refersObjectThatIsReferredBy(heap
+				.getThisInstance()))
 			// publish Object that refers Object referedBy 'this'
 			addBug(Confidence.HIGH,
 					"an Object that refers an Object refered by 'this' is published by return",
