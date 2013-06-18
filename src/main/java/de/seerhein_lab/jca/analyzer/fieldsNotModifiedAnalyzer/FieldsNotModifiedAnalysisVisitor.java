@@ -64,8 +64,6 @@ public class FieldsNotModifiedAnalysisVisitor extends
 		return "FIELD_MODIFIED_BUG";
 	}
 
-
-
 	// ******************************************************************//
 	// Bug detection section //
 	// ******************************************************************//
@@ -75,7 +73,6 @@ public class FieldsNotModifiedAnalysisVisitor extends
 		// nothing of interest can happen
 	}
 
-	// TODO not only references but all kinds
 	@Override
 	protected void detectXAStoreBug(ReferenceSlot arrayReference,
 			Slot valueToStore) {

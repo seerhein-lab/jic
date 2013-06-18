@@ -166,7 +166,6 @@ public class ClassAnalyzer {
 		return bugs;
 	}
 
-	// TODO necessary to copy heaps?
 	private Set<Heap> getCopiedHeaps() {
 		HashSet<Heap> copiedHeaps = new HashSet<Heap>();
 		for (Heap heap : heaps) {
