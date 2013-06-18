@@ -200,7 +200,7 @@ public class HeapObject {
 		return closure;
 	}
 
-	public boolean isIndirectReferedBy(HeapObject source) {
+	public boolean refersObjectThatIsReferredBy(HeapObject source) {
 		for (HeapObject referedObject : this.getReferredClosure()) {
 			if (referedObject.isTransitivelyReferredBy(source)) {
 				return true;
