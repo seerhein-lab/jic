@@ -16,6 +16,7 @@ import org.apache.bcel.generic.AASTORE;
 import org.apache.bcel.generic.ACONST_NULL;
 import org.apache.bcel.generic.ANEWARRAY;
 import org.apache.bcel.generic.ATHROW;
+import org.apache.bcel.generic.ArrayInstruction;
 import org.apache.bcel.generic.CHECKCAST;
 import org.apache.bcel.generic.CodeExceptionGen;
 import org.apache.bcel.generic.ConstantPoolGen;
@@ -481,6 +482,37 @@ public abstract class BaseInstructionsAnalysisVisitor extends
 	}
 
 	// -----------------------------------------------------------------
+
+	/**
+	 * 3. ArrayInstruction<br>
+	 * Called when an ArrayInstruction operation occurs. This visitor handles
+	 * all ALOAD and ASTORE instructions distinguished by the opcode.
+	 */
+	@Override
+	public void visitArrayInstruction(ArrayInstruction obj) {
+		super.visitArrayInstruction(obj);
+		switch (obj.getOpcode()) {
+		case 0x4f: // iastore
+		case 0x50: // lastore
+		case 0x51: // fastore
+		case 0x52: // dastore
+		case 0x54: // bastore
+		case 0x55: // castore
+		case 0x56: // sastore
+			// pop value
+			Slot value = frame.popStackByRequiredSlots();
+			// pop array index
+			frame.getStack().pop();
+			// pop array reference
+			ReferenceSlot arrayReference = (ReferenceSlot) frame.getStack()
+					.pop();
+
+			detectXAStoreBug(arrayReference, value);
+
+			instructionHandle = instructionHandle.getNext();
+			instructionHandle.accept(this);
+		}
+	}
 
 	@Override
 	public void visitAALOAD(AALOAD obj) {

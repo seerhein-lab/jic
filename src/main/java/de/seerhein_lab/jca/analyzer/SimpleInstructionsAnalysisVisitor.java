@@ -84,15 +84,7 @@ public class SimpleInstructionsAnalysisVisitor extends EmptyVisitor {
 		ARRAY_INSTRUCTIONS.put((short) 0x34, IntSlot.getInstance()); // caload
 		ARRAY_INSTRUCTIONS.put((short) 0x35, IntSlot.getInstance()); // saload
 
-		// store instructions
-		ARRAY_INSTRUCTIONS.put((short) 0x4f, null); // iastore
-		ARRAY_INSTRUCTIONS.put((short) 0x50, null); // lastore
-		ARRAY_INSTRUCTIONS.put((short) 0x51, null); // fastore
-		ARRAY_INSTRUCTIONS.put((short) 0x52, null); // dastore
-		// aastore - 0x53 - is treated specially
-		ARRAY_INSTRUCTIONS.put((short) 0x54, null); // bastore
-		ARRAY_INSTRUCTIONS.put((short) 0x55, null); // castore
-		ARRAY_INSTRUCTIONS.put((short) 0x56, null); // sastore
+		// store instructions are treated specially
 	}
 
 	protected final String indentation;
