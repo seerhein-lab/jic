@@ -25,7 +25,7 @@ public class StateUnmodTestDriver {
 				LOGFILEPATH);
 
 		JavaClass clazz = Repository
-				.lookupClass("playground.PropConstTestClass");
+				.lookupClass("playground.StateUnmodTestClass");
 
 		SortedBugCollection bugs = new SortedBugCollection();
 		ClassAnalyzer classAlalyzer = new ClassAnalyzer(clazz, null);
