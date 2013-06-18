@@ -77,11 +77,11 @@ public class ClassAnalyzerRunner extends Runner {
 
 		BugCollection bugs = runCheckMethod(analyzer);
 
-		if (classToTest.isAnnotationPresent(ProperlyConstructed.class)) {
+		if (classToTest.isAnnotationPresent(NoBugsExpected.class)) {
 			Assert.assertTrue(bugs.getCollection().isEmpty());
 		}
 
-		if (classToTest.isAnnotationPresent(ImproperlyConstructed.class)) {
+		if (classToTest.isAnnotationPresent(BugsExpected.class)) {
 			Assert.assertFalse(bugs.getCollection().isEmpty());
 		}
 	}
@@ -135,8 +135,8 @@ public class ClassAnalyzerRunner extends Runner {
 		Class<?>[] classes = testCaseClass.getClasses();
 		for (Class<?> klass : classes) {
 
-			if (klass.isAnnotationPresent(ProperlyConstructed.class)
-					|| klass.isAnnotationPresent(ImproperlyConstructed.class)) {
+			if (klass.isAnnotationPresent(NoBugsExpected.class)
+					|| klass.isAnnotationPresent(BugsExpected.class)) {
 				testClassesList.add(klass);
 			}
 		}

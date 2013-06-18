@@ -11,8 +11,8 @@ import org.junit.runner.RunWith;
 import de.seerhein_lab.jca.analyzer.ClassAnalyzer;
 import de.seerhein_lab.jca.testutils.ClassAnalyzerRunner;
 import de.seerhein_lab.jca.testutils.ClassAnalyzerRunner.BindAnalyzerMethod;
-import de.seerhein_lab.jca.testutils.ImproperlyConstructed;
-import de.seerhein_lab.jca.testutils.ProperlyConstructed;
+import de.seerhein_lab.jca.testutils.BugsExpected;
+import de.seerhein_lab.jca.testutils.NoBugsExpected;
 import edu.umd.cs.findbugs.BugCollection;
 
 /**
@@ -33,14 +33,14 @@ public class ProperlyConstructedAcceptanceTest {
 	/**
 	 * Simple class without fields and with the default constructor.
 	 */
-	@ProperlyConstructed
+	@NoBugsExpected
 	public static class Story000_ClassWithDefaultCtorEmpty {
 	}
 
 	/**
 	 * Simple class without fields and with an empty constructor.
 	 */
-	@ProperlyConstructed
+	@NoBugsExpected
 	public static class Story001_ClassWithNoArgsCtorEmpty {
 		public Story001_ClassWithNoArgsCtorEmpty() {
 		}
@@ -49,7 +49,7 @@ public class ProperlyConstructedAcceptanceTest {
 	/**
 	 * Class without fields and with a constructor which initializes a byte.
 	 */
-	@ProperlyConstructed
+	@NoBugsExpected
 	public static class Story002_ClassWithNoArgsCtorByte {
 		public Story002_ClassWithNoArgsCtorByte() {
 			@SuppressWarnings("unused")
@@ -60,7 +60,7 @@ public class ProperlyConstructedAcceptanceTest {
 	/**
 	 * Class without fields and with a constructor which initializes an integer.
 	 */
-	@ProperlyConstructed
+	@NoBugsExpected
 	public static class Story003_ClassWithNoArgsCtorInt {
 		public Story003_ClassWithNoArgsCtorInt() {
 			@SuppressWarnings("unused")
@@ -72,7 +72,7 @@ public class ProperlyConstructedAcceptanceTest {
 	 * Class without fields and with a constructor which initializes a
 	 * character.
 	 */
-	@ProperlyConstructed
+	@NoBugsExpected
 	public static class Story004_ClassWithNoArgsCtorChar {
 		public Story004_ClassWithNoArgsCtorChar() {
 			@SuppressWarnings("unused")
@@ -83,7 +83,7 @@ public class ProperlyConstructedAcceptanceTest {
 	/**
 	 * Class without fields and with a constructor which initializes a long.
 	 */
-	@ProperlyConstructed
+	@NoBugsExpected
 	public static class Story005_ClassWithNoArgsCtorLong {
 		public Story005_ClassWithNoArgsCtorLong() {
 			@SuppressWarnings("unused")
@@ -94,7 +94,7 @@ public class ProperlyConstructedAcceptanceTest {
 	/**
 	 * Class without fields and with a constructor which initializes an object.
 	 */
-	@ProperlyConstructed
+	@NoBugsExpected
 	public static class Story006_ClassWithNoArgsCtorObject {
 		public Story006_ClassWithNoArgsCtorObject() {
 			@SuppressWarnings("unused")
@@ -106,7 +106,7 @@ public class ProperlyConstructedAcceptanceTest {
 	 * Class without fields and with a constructor which initializes a long and
 	 * an object.
 	 */
-	@ProperlyConstructed
+	@NoBugsExpected
 	public static class Story007_ClassWithNoArgsLongObject {
 		public Story007_ClassWithNoArgsLongObject() {
 			@SuppressWarnings("unused")
@@ -120,7 +120,7 @@ public class ProperlyConstructedAcceptanceTest {
 	 * Class without fields and with a constructor which initializes all 8
 	 * primitive types and an object.
 	 */
-	@ProperlyConstructed
+	@NoBugsExpected
 	public static class Story008_ClassWithNoArgsCtorAllTypes {
 		@SuppressWarnings("unused")
 		public Story008_ClassWithNoArgsCtorAllTypes() {
@@ -139,7 +139,7 @@ public class ProperlyConstructedAcceptanceTest {
 	/**
 	 * Simple class with default constructor and with a final byte initializer.
 	 */
-	@ProperlyConstructed
+	@NoBugsExpected
 	public static class Story009_ClassWithDefaultCtorInitialyzerByte {
 		final byte b = 7;
 	}
@@ -147,7 +147,7 @@ public class ProperlyConstructedAcceptanceTest {
 	/**
 	 * Simple class with default constructor and with a final char initializer.
 	 */
-	@ProperlyConstructed
+	@NoBugsExpected
 	public static class Story010_ClassWithDefaultCtorInitialyzerChar {
 		final char c = 'x';
 	}
@@ -155,7 +155,7 @@ public class ProperlyConstructedAcceptanceTest {
 	/**
 	 * Simple class with default constructor and with a final long initializer.
 	 */
-	@ProperlyConstructed
+	@NoBugsExpected
 	public static class Story011_ClassWithDefaultCtorInitialyzerLong {
 		final long l = 4711L;
 	}
@@ -164,7 +164,7 @@ public class ProperlyConstructedAcceptanceTest {
 	 * Simple class with default constructor and with a final object
 	 * initializer.
 	 */
-	@ProperlyConstructed
+	@NoBugsExpected
 	public static class Story012_ClassWithDefaultCtorInitialyzerObject {
 		final Object o = new Object();
 	}
@@ -173,7 +173,7 @@ public class ProperlyConstructedAcceptanceTest {
 	 * Simple class with default constructor and with a final long and an object
 	 * initializer.
 	 */
-	@ProperlyConstructed
+	@NoBugsExpected
 	public static class Story013_ClassWithDefaultCtorInitialyzerLongObject {
 		final long l = 4711L;
 		final Object o = new Object();
@@ -183,7 +183,7 @@ public class ProperlyConstructedAcceptanceTest {
 	 * Simple class with default constructor and with a final initializer for
 	 * all 8 primitive types and an object.
 	 */
-	@ProperlyConstructed
+	@NoBugsExpected
 	public static class Story014_ClassWithDefaultCtorInitialyzerAllTypes {
 		final byte b = 7;
 		final short s = 14;
@@ -199,7 +199,7 @@ public class ProperlyConstructedAcceptanceTest {
 	/**
 	 * Class with a constructor with a single byte argument.
 	 */
-	@ProperlyConstructed
+	@NoBugsExpected
 	public static class Story015_ClassWithOneArgCtorByte {
 		@SuppressWarnings("unused")
 		private byte b;
@@ -213,7 +213,7 @@ public class ProperlyConstructedAcceptanceTest {
 	/**
 	 * Class with a constructor with a single byte argument.
 	 */
-	@ProperlyConstructed
+	@NoBugsExpected
 	public static class Story016_WhileLoop {
 		public Story016_WhileLoop() {
 			int i = 15;
@@ -227,7 +227,7 @@ public class ProperlyConstructedAcceptanceTest {
 	/**
 	 * Test class containing a nested loop.
 	 */
-	@ProperlyConstructed
+	@NoBugsExpected
 	public static class Story016_NestedLoop {
 		public Story016_NestedLoop() {
 			for (int i = 0; i < 10; i++) {
@@ -242,7 +242,7 @@ public class ProperlyConstructedAcceptanceTest {
 	/**
 	 * Class with a constructor with a single byte argument.
 	 */
-	@ProperlyConstructed
+	@NoBugsExpected
 	public static class Story017_ClassWithOneArgCtorByte {
 		public Story017_ClassWithOneArgCtorByte() {
 			double d = 15;
@@ -256,7 +256,7 @@ public class ProperlyConstructedAcceptanceTest {
 	/**
 	 * Class which only throws an exception.
 	 */
-	@ProperlyConstructed
+	@NoBugsExpected
 	public static class Story018_SimpleClassWithThrows {
 		public Story018_SimpleClassWithThrows() throws IOException {
 			throw new IOException();
@@ -266,7 +266,7 @@ public class ProperlyConstructedAcceptanceTest {
 	/**
 	 * Throws an exception and catches it immediately.
 	 */
-	@ProperlyConstructed
+	@NoBugsExpected
 	public static class Story019_SimpleClassWithTryCatch {
 		public Story019_SimpleClassWithTryCatch() {
 			try {
@@ -281,7 +281,7 @@ public class ProperlyConstructedAcceptanceTest {
 	 * Class which throws an exception and catches it immediately. Assigning the
 	 * this-reference to an arg is not a problem and should not be detected.
 	 */
-	@ProperlyConstructed
+	@NoBugsExpected
 	public static class Story020_SimpleClassWithTryCatchOneParm {
 		public Story020_SimpleClassWithTryCatchOneParm(Object obj) {
 			try {
@@ -298,7 +298,7 @@ public class ProperlyConstructedAcceptanceTest {
 	 * Due to combination of the results "UnKnown" and not "ProperlyConstructed"
 	 * must be returned.
 	 */
-	@ProperlyConstructed
+	@NoBugsExpected
 	public static class Story021_SimpleClassWithTryCatchNoParm {
 		@SuppressWarnings("unused")
 		private Object obj;
@@ -317,7 +317,7 @@ public class ProperlyConstructedAcceptanceTest {
 	 * Class which throws an exception in some cases and catches it immediately.
 	 * Tests exception handling combined with a BranchInstruction.
 	 */
-	@ProperlyConstructed
+	@NoBugsExpected
 	public static class Story022_ClassWithSingleArgumentSimpleExceptionHandling {
 		public Story022_ClassWithSingleArgumentSimpleExceptionHandling(int i) {
 			try {
@@ -334,7 +334,7 @@ public class ProperlyConstructedAcceptanceTest {
 	 * More complex class which throws an exception in some cases and catches it
 	 * immediately. Tests exception handling combined with a BranchInstruction.
 	 */
-	@ProperlyConstructed
+	@NoBugsExpected
 	public static class Story023_ClassWithSingleArgumentExceptionHandling {
 		public Story023_ClassWithSingleArgumentExceptionHandling(int j) {
 			int i = 0;
@@ -352,7 +352,7 @@ public class ProperlyConstructedAcceptanceTest {
 	/**
 	 * Class which combines TryCatchFinally with a BranchInstruction.
 	 */
-	@ProperlyConstructed
+	@NoBugsExpected
 	public static class Story024_ClassWithSingleArgumentSimpleTryCatchFinally {
 		public Story024_ClassWithSingleArgumentSimpleTryCatchFinally(int i) {
 			try {
@@ -372,7 +372,7 @@ public class ProperlyConstructedAcceptanceTest {
 	 * BranchInsturction. Tests if multiple catches are considered by the
 	 * exception handling.
 	 */
-	@ProperlyConstructed
+	@NoBugsExpected
 	public static class Story025_ClassWithSingleArgumentTryDoubleCatchFinally {
 		public Story025_ClassWithSingleArgumentTryDoubleCatchFinally(int i) {
 			try {
@@ -394,7 +394,7 @@ public class ProperlyConstructedAcceptanceTest {
 	 * BranchInsturction. Tests if the exception handling allows to throw
 	 * exceptions in a catch block.
 	 */
-	@ProperlyConstructed
+	@NoBugsExpected
 	public static class Story026_ClassWithSingleArgumentTryDoubleCatchFinallyMultipleExceptions {
 		public Story026_ClassWithSingleArgumentTryDoubleCatchFinallyMultipleExceptions(
 				int i) throws Exception {
@@ -417,7 +417,7 @@ public class ProperlyConstructedAcceptanceTest {
 	 * Class with a method throwing an exception. Tests if exception handling
 	 * can detect methods throwing an exception.
 	 */
-	@ProperlyConstructed
+	@NoBugsExpected
 	public static class Story027_ClassWithSimpleExceptionThrowingMethod {
 
 		private void thrower() throws IOException {
@@ -438,7 +438,7 @@ public class ProperlyConstructedAcceptanceTest {
 	 * Class containing a exception throwing method and multiple tryCatch
 	 * blocks. Tests if exception handling considers all possible paths.
 	 */
-	@ProperlyConstructed
+	@NoBugsExpected
 	public static class Story028_ClassWithNestedExceptionhandling {
 
 		private void thrower(int i) throws IOException {
@@ -464,7 +464,7 @@ public class ProperlyConstructedAcceptanceTest {
 	 * Complex class for exception handling test. Combines methods with a
 	 * BranchInstruction, TryFinally and multiple catch blocks.
 	 */
-	@ProperlyConstructed
+	@NoBugsExpected
 	public static class Story029_ClassWithMultipleTryCatchFinally {
 		private void thrower(int i) throws Exception {
 			try {
@@ -500,7 +500,7 @@ public class ProperlyConstructedAcceptanceTest {
 	/**
 	 * Class with anonymous inner class.
 	 */
-	@ImproperlyConstructed
+	@BugsExpected
 	public static class Story030_CtorWithAnonymousInnerClass {
 		public Story030_CtorWithAnonymousInnerClass(JButton button) {
 			ActionListener listener = new ActionListener() {
@@ -516,7 +516,7 @@ public class ProperlyConstructedAcceptanceTest {
 	/**
 	 * Class with multiple constructors using this().
 	 */
-	@ProperlyConstructed
+	@NoBugsExpected
 	public static class Story031_MultipleCtorsUsingThis {
 		public Story031_MultipleCtorsUsingThis(int i, String s) {
 			this(i, (Object) s);
