@@ -13,7 +13,7 @@ import edu.umd.cs.findbugs.BugInstance;
 import edu.umd.cs.findbugs.SortedBugCollection;
 
 public class StateUnmodTestDriver {
-	private static final String LOGFILEPATH = "/home/seerheinlab/Arbeitsfläche/log.txt";
+	private static final String LOGFILEPATH = "./log.txt";
 	private static final boolean analyzeCtorCopy = true;
 	private static final boolean analyzeFieldsMutate = true;
 	private static final boolean analyzeFieldsArePuplished = true;
@@ -21,7 +21,8 @@ public class StateUnmodTestDriver {
 	public static void main(String[] args) throws ClassNotFoundException,
 			SecurityException, IOException {
 
-		Logger logger = Utils.setUpLogger("ProperlyConstructedTestDriver", LOGFILEPATH);
+		Logger logger = Utils.setUpLogger("ProperlyConstructedTestDriver",
+				LOGFILEPATH);
 
 		JavaClass clazz = Repository
 				.lookupClass("playground.PropConstTestClass");
