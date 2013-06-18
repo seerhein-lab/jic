@@ -2,7 +2,6 @@ package de.seerhein_lab.jca.analyzer;
 
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 import java.util.logging.Level;
@@ -100,9 +99,6 @@ public abstract class BaseInstructionsAnalysisVisitor extends
 	protected final Set<Pair<Method, Slot[]>> alreadyVisitedMethods;
 	protected SortedBugCollection bugs = new SortedBugCollection();
 	protected Set<ResultValue> result = new HashSet<ResultValue>();
-
-	protected Map<Short, Slot> simpleInstructions = SimpleInstructions
-			.getSimpleInstructions();
 
 	protected abstract BaseInstructionsAnalysisVisitor getInstructionsAnalysisVisitor(
 			Frame frame, Set<Pair<InstructionHandle, Boolean>> alreadyVisited,

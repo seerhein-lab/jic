@@ -93,9 +93,6 @@ public class SimpleInstructionsAnalysisVisitor extends EmptyVisitor {
 	protected final ConstantPoolGen constantPoolGen;
 	protected InstructionHandle instructionHandle;
 
-	protected Map<Short, Slot> simpleInstructions = SimpleInstructions
-			.getSimpleInstructions();
-
 	protected SimpleInstructionsAnalysisVisitor(Frame frame,
 			ConstantPoolGen constantPoolGen,
 			InstructionHandle instructionHandle, int depth) {
