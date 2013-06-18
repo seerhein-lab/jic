@@ -79,7 +79,7 @@ public class CtorArgsCopiedAnalysisVisitor extends
 	}
 
 	@Override
-	protected void detectAStoreBug(ReferenceSlot arrayReference,
+	protected void detectXAStoreBug(ReferenceSlot arrayReference,
 			Slot valueToStore) {
 		if (!(valueToStore instanceof ReferenceSlot)) {
 			// if the value is not a reference we do not analyze

@@ -61,8 +61,10 @@ public class FieldsNotModifiedAnalysisVisitor extends
 	@Override
 	protected String getBugType() {
 		// TODO
-		return "to be defined";
+		return "FIELD_MODIFIED_BUG";
 	}
+
+
 
 	// ******************************************************************//
 	// Bug detection section //
@@ -70,22 +72,15 @@ public class FieldsNotModifiedAnalysisVisitor extends
 
 	@Override
 	protected void detectVirtualMethodBug(ReferenceSlot argument) {
-		Heap heap = frame.getHeap();
-		// an object referred by a field of this is passed to a virtual method
-		if (heap.get(argument.getID()).isTransitivelyReferredBy(
-				heap.getThisInstance())) {
-			addBug(Confidence.HIGH,
-					"an object referred by a field of 'this' is passed to a virtual method and might be modified",
-					instructionHandle);
-		}
-
+		// nothing of interest can happen
 	}
 
+	// TODO not only references but all kinds
 	@Override
-	protected void detectAStoreBug(ReferenceSlot arrayReference,
+	protected void detectXAStoreBug(ReferenceSlot arrayReference,
 			Slot valueToStore) {
 		Heap heap = frame.getHeap();
-		// array is referred by a field of this
+		// array is referred by 'this'
 		if (heap.get(arrayReference.getID()).isTransitivelyReferredBy(
 				heap.getThisInstance())) {
 			addBug(Confidence.HIGH,

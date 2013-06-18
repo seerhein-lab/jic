@@ -113,7 +113,7 @@ public abstract class BaseInstructionsAnalysisVisitor extends
 	// methods for bug detection
 	protected abstract void detectVirtualMethodBug(ReferenceSlot argument);
 
-	protected abstract void detectAStoreBug(ReferenceSlot arrayReference,
+	protected abstract void detectXAStoreBug(ReferenceSlot arrayReference,
 			Slot valueToStore);
 
 	protected abstract void detectPutFieldBug(ReferenceSlot targetReference,
@@ -512,7 +512,7 @@ public abstract class BaseInstructionsAnalysisVisitor extends
 		// pop array reference
 		ReferenceSlot arrayReference = (ReferenceSlot) frame.getStack().pop();
 
-		detectAStoreBug(arrayReference, value);
+		detectXAStoreBug(arrayReference, value);
 
 		// AASTORE, link reference to array
 		frame.getHeap().linkObjects(arrayReference.getID(), null,
