@@ -181,7 +181,6 @@ public class ClassAnalyzer {
 		bugs.addAll(stateUnmodified().getCollection());
 		bugs.addAll(fieldsAreNotPublished().getCollection());
 
-		bugs.add(new BugInstance("Warning: state might be modifiable", 1));
 		return bugs;
 	}
 
