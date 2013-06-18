@@ -16,7 +16,7 @@
         </Detector>
 
         <BugPattern type="PROPER_CONSTRUCTION_BUG">
-                <ShortDescription>Improper construction</ShortDescription>
+                <ShortDescription>Improper construction [v1.9]</ShortDescription>
                 <LongDescription>Improper construction: {0}</LongDescription>
                 <Details>
 <![CDATA[
