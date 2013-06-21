@@ -32,6 +32,10 @@ public class ResultValue {
 	 *            The returned value represented by a Slot.
 	 */
 	public ResultValue(Kind kind, Slot slot, Heap heap) {
+		if (kind == null || slot == null || heap == null) {
+			throw new IllegalArgumentException("parameters must not be null");
+		}
+
 		this.kind = kind;
 		this.slot = slot;
 		this.heap = heap;
