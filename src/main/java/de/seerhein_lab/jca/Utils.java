@@ -9,14 +9,16 @@ import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import java.util.logging.StreamHandler;
 
-public class Utils {
+public final class Utils {
+
+	private Utils() {
+		new AssertionError("must not be called.");
+	}
 
 	public static String formatLoggingOutput(int depth) {
 		StringBuilder indentation = new StringBuilder("");
-
 		for (int i = 0; i < depth; i++)
 			indentation.append("\t");
-
 		return indentation.toString();
 	}
 
@@ -28,20 +30,19 @@ public class Utils {
 			globalLogger.removeHandler(handler);
 		}
 		StreamHandler streamHandler = new StreamHandler(System.out,
-				new Utils().new TestDriverFormater());
+				new TestDriverFormater());
 		streamHandler.setLevel(Level.ALL);
 		globalLogger.addHandler(streamHandler);
 		globalLogger.setLevel(Level.ALL);
 		FileHandler fh = new FileHandler(logFilePath);
-		fh.setFormatter(new Utils().new TestDriverFormater());
+		fh.setFormatter(new TestDriverFormater());
 		fh.setLevel(Level.ALL);
 		globalLogger.addHandler(fh);
 		Logger logger = Logger.getLogger(loggerName);
 		return logger;
 	}
 
-	public class TestDriverFormater extends Formatter {
-
+	public static class TestDriverFormater extends Formatter {
 		@Override
 		public String format(LogRecord arg0) {
 			return arg0.getMessage() + "\n";
