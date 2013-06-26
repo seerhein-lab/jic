@@ -292,6 +292,26 @@ public class ProperlyConstructedAcceptanceTest {
 		}
 	}
 
+
+	/**
+	 * Class which throws an exception and catches it immediately. In the catch clause, 
+	 * the this reference escapes.
+	 */
+	@BugsExpected
+	public static class Story020a_SimpleClassWithTryCatchOneParm {
+		static Story020a_SimpleClassWithTryCatchOneParm reference;
+		
+		public Story020a_SimpleClassWithTryCatchOneParm() {
+			try {
+				throw new IOException();
+			} catch (IOException e) {
+				reference = this;
+			}
+		}
+	}
+
+	
+	
 	/**
 	 * Class which throws an exception and catches it immediately. Assigning the
 	 * this-reference to a field could be a problem and should not be detected.
@@ -498,37 +518,73 @@ public class ProperlyConstructedAcceptanceTest {
 	}
 
 	/**
-	 * Class with anonymous inner class.
-	 */
-	@BugsExpected
-	public static class Story030_CtorWithAnonymousInnerClass {
-		public Story030_CtorWithAnonymousInnerClass(JButton button) {
-			ActionListener listener = new ActionListener() {
-
-				@Override
-				public void actionPerformed(ActionEvent arg0) {
-				}
-			};
-			button.addActionListener(listener);
-		}
-	}
-
-	/**
 	 * Class with multiple constructors using this().
 	 */
 	@NoBugsExpected
-	public static class Story031_MultipleCtorsUsingThis {
-		public Story031_MultipleCtorsUsingThis(int i, String s) {
+	public static class Story030_MultipleCtorsUsingThis {
+		public Story030_MultipleCtorsUsingThis(int i, String s) {
 			this(i, (Object) s);
 		}
 
-		public Story031_MultipleCtorsUsingThis(int i) {
+		public Story030_MultipleCtorsUsingThis(int i) {
 			this(i, (Object) null);
 		}
 
-		public Story031_MultipleCtorsUsingThis(int i, Object o) {
-
+		public Story030_MultipleCtorsUsingThis(int i, Object o) {
 		}
 	}
+	
+	@BugsExpected 
+	public static class Story031_Listener implements ActionListener {
+		public Story031_Listener(JButton button) {
+			button.addActionListener(this);
+		}
+
+		@Override
+		public void actionPerformed(ActionEvent arg0) {			
+		}
+	}
+	
+	@BugsExpected 
+	public static class Story032_AnonymousListener  {
+		public Story032_AnonymousListener(JButton button) {
+			button.addActionListener(new ActionListener() {
+				@Override
+				public void actionPerformed(ActionEvent e) {
+				}
+			});
+		}
+	}
+	
+	@BugsExpected 
+	public static class Story033_NamedInnerInstanceListener  {
+		private class Listener implements ActionListener {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				// TODO Auto-generated method stub
+			}
+		}
+		
+		public Story033_NamedInnerInstanceListener(JButton button) {
+			button.addActionListener(new Listener());
+		}
+	}
+	
+
+	@NoBugsExpected 
+	public static class Story034_StaticInnerInstanceListener  {
+		private static class Listener implements ActionListener {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				// TODO Auto-generated method stub
+			}
+		}
+		
+		public Story034_StaticInnerInstanceListener(JButton button) {
+			button.addActionListener(new Listener());
+		}
+	}
+	
+	
 
 }
