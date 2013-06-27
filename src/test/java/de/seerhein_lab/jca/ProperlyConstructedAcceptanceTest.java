@@ -561,7 +561,6 @@ public class ProperlyConstructedAcceptanceTest {
 		private class Listener implements ActionListener {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				// TODO Auto-generated method stub
 			}
 		}
 		
@@ -576,7 +575,6 @@ public class ProperlyConstructedAcceptanceTest {
 		private static class Listener implements ActionListener {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				// TODO Auto-generated method stub
 			}
 		}
 		
@@ -586,5 +584,22 @@ public class ProperlyConstructedAcceptanceTest {
 	}
 	
 	
+	@BugsExpected 
+	public final static class Story035_LocalObjectReferringThisListener  {
+		private final static class Listener implements ActionListener {
+			@SuppressWarnings("unused")
+			public Object reference;
+			
+			@Override
+			public void actionPerformed(ActionEvent e) {
+			}
+		}
+		
+		public Story035_LocalObjectReferringThisListener(JButton button) {
+			Listener listener = new Listener();
+			listener.reference = this;
+			button.addActionListener(listener);
+		}
+	}
 
 }
