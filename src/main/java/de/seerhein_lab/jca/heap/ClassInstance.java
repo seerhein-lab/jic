@@ -41,8 +41,8 @@ public class ClassInstance extends HeapObject {
 	@Override
 	public void replaceAllOccurrencesOfReferredObject(HeapObject oldObject, HeapObject newObject) {
 		for (String field : refers.keySet())
-			if (refers.get(field).equals(oldObject.id))
-				refers.put(field, newObject.id);
+			if (refers.get(field).equals(oldObject.getId()))
+				refers.put(field, newObject.getId());
 	}
 
 	/**

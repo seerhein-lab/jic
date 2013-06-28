@@ -70,8 +70,8 @@ public class Array extends HeapObject {
 	 */
 	@Override
 	public void replaceAllOccurrencesOfReferredObject(HeapObject oldObject, HeapObject newObject) {
-		refers.remove(oldObject.id);
-		refers.add(newObject.id);
+		refers.remove(oldObject.getId());
+		refers.add(newObject.getId());
 	}
 
 	void addReferredObject(UUID id) {

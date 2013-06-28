@@ -14,7 +14,7 @@ public final class ExternalObject extends HeapObject {
 	
 	public ExternalObject(Heap heap) {
 		super(heap);
-		refers.add(id);
+		refers.add(getId());
 	}
 	
 	public ExternalObject(ExternalObject external, Heap heap) {
