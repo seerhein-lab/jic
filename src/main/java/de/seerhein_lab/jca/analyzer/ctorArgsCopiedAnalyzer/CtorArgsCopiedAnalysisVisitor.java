@@ -97,8 +97,8 @@ public class CtorArgsCopiedAnalysisVisitor extends
 				addBug(Confidence.HIGH,
 						"an external reference is assigned to an array referred by 'this'",
 						instructionHandle);
-			} else if (heap.get(referenceToStore.getID()).refers(
-					heap.getExternalObject().getId(), heap)) {
+			} else if (heap.get(referenceToStore.getID()).transitivelyRefers(
+					heap.getExternalObject())) {
 				// a reference containing an external reference is assigned to
 				// an array referred by this
 				addBug(Confidence.HIGH,
@@ -125,8 +125,8 @@ public class CtorArgsCopiedAnalysisVisitor extends
 				addBug(Confidence.HIGH,
 						"an external object is assigned to 'this'",
 						instructionHandle);
-			} else if (heap.get(referenceToPut.getID()).refers(
-					heap.getExternalObject().getId(), heap)) {
+			} else if (heap.get(referenceToPut.getID()).transitivelyRefers(
+					heap.getExternalObject())) {
 				// right refers external
 				addBug(Confidence.HIGH,
 						"an object containing an external reference is assigned to 'this'",
@@ -141,8 +141,8 @@ public class CtorArgsCopiedAnalysisVisitor extends
 				addBug(Confidence.HIGH,
 						"an external reference is assigned to an object referred by 'this'",
 						instructionHandle);
-			} else if (heap.get(referenceToPut.getID()).refers(
-					heap.getExternalObject().getId(), heap)) {
+			} else if (heap.get(referenceToPut.getID()).transitivelyRefers(
+					heap.getExternalObject())) {
 				// right refers external
 				addBug(Confidence.HIGH,
 						"a reference containing an external reference is assigned to an object referred by 'this'",

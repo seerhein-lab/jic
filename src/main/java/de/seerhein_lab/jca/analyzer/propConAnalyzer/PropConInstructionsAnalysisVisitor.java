@@ -78,8 +78,8 @@ public class PropConInstructionsAnalysisVisitor extends
 			addBug(Confidence.HIGH,
 					"'this' is passed into a virtual method and escapes",
 					instructionHandle);
-		} else if (heap.get(argument.getID()).refers(
-				heap.getThisInstance().getId(), heap)) {
+		} else if (heap.get(argument.getID()).transitivelyRefers(
+				heap.getThisInstance())) {
 			// argument that refers to 'this' is passed into a virtual method
 			addBug(Confidence.HIGH,
 					"a reference that refers to 'this' is passed into a virtual method letting 'this' escape",
@@ -104,8 +104,8 @@ public class PropConInstructionsAnalysisVisitor extends
 				addBug(Confidence.HIGH,
 						"'this' is assigned to an external array and escapes",
 						instructionHandle);
-			} else if (heap.get(arrayReference.getID()).refers(
-					heap.getThisInstance().getId(), heap)) {
+			} else if (heap.get(arrayReference.getID()).transitivelyRefers(
+					heap.getThisInstance())) {
 				// a reference containing this is assigned to the array
 				addBug(Confidence.HIGH,
 						"a reference containing 'this' is assigned to an external array and 'this' escapes",
@@ -130,8 +130,8 @@ public class PropConInstructionsAnalysisVisitor extends
 				addBug(Confidence.HIGH,
 						"'this' is assigned to an external field and escapes",
 						instructionHandle);
-			} else if (heap.get(referenceToPut.getID()).refers(
-					heap.getThisInstance().getId(), heap)) {
+			} else if (heap.get(referenceToPut.getID()).transitivelyRefers(
+					heap.getThisInstance())) {
 				// this is contained in the right side
 				addBug(Confidence.HIGH,
 						"a reference containing 'this' is assigned to an external field and 'this' escapes",
@@ -148,8 +148,8 @@ public class PropConInstructionsAnalysisVisitor extends
 			addBug(Confidence.HIGH,
 					"'this' is assigned to a static field and escapes",
 					instructionHandle);
-		} else if (heap.get(referenceToPut.getID()).refers(
-				heap.getThisInstance().getId(), heap)) {
+		} else if (heap.get(referenceToPut.getID()).transitivelyRefers(
+				heap.getThisInstance())) {
 			// the reference contains this
 			addBug(Confidence.HIGH,
 					"a reference containing 'this' is assigned to a static field and 'this' escapes",

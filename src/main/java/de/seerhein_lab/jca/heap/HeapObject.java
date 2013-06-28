@@ -15,7 +15,7 @@ import de.seerhein_lab.jca.Pair;
  * be instantiated for "the external" object, for other cases use Array or
  * ClassInstance.
  */
-public class HeapObject {
+public abstract class HeapObject {
 	protected final UUID id;
 	protected final Set<UUID> referredBy = new HashSet<UUID>();
 	protected final Heap heap;
@@ -26,7 +26,9 @@ public class HeapObject {
 	 * @param heap
 	 *            The heap where the object is stored.
 	 */
-	HeapObject(Heap heap) {
+	protected HeapObject(Heap heap) {
+		if ( heap == null ) 
+			throw new NullPointerException("heap must not be null");
 		id = UUID.randomUUID();
 		this.heap = heap;
 	}
@@ -39,39 +41,31 @@ public class HeapObject {
 	 * @param heap
 	 *            The heap where the object is stored.
 	 */
-	HeapObject(HeapObject original, Heap heap) {
+	protected HeapObject(HeapObject original, Heap heap) {
+		if ( original == null || heap == null ) 
+			throw new NullPointerException("arguments must not be null");
+
 		id = original.id;
 		referredBy.addAll(original.referredBy);
 		this.heap = heap;
 	}
 
-	/**
-	 * Must not be called on a HeapObject instance, because a HeapObject can
-	 * only be the "external", which can't refer anything.
-	 */
-	void replaceReferredObject(HeapObject oldObject, HeapObject newObject) {
-		throw new AssertionError("Must not be called on a HeapObject instance");
-	}
 
-	/**
-	 * Must not be called on a HeapObject instance, because a HeapObject can
-	 * only be the "external", which can't refer anything.
-	 */
-	public Iterator<HeapObject> getReferredIterator() {
-		throw new AssertionError("Must not be called on a HeapObject instance");
-	}
+	public abstract void replaceAllOccurrencesOfReferredObject(HeapObject oldObject, HeapObject newObject);
 
+	public abstract Iterator<HeapObject> getReferredIterator();
+	
 	/**
 	 * Adds "obj" as a referring Object.
 	 * 
 	 * @param obj
 	 *            Obj which refers this.
 	 */
-	void addReferringObject(HeapObject obj) {
+	final void addReferringObject(HeapObject obj) {
 		referredBy.add(obj.getId());
 	}
 
-	public Iterator<HeapObject> getReferringIterator() {
+	public final Iterator<HeapObject> getReferringIterator() {
 		return new Iterator<HeapObject>() {
 			Iterator<UUID> idIterator = referredBy.iterator();
 
@@ -95,41 +89,13 @@ public class HeapObject {
 	/**
 	 * @return the id
 	 */
-	public UUID getId() {
+	public final UUID getId() {
 		return id;
 	}
 
-	HeapObject copy(Heap heap) {
-		return new HeapObject(this, heap);
-	}
+	abstract HeapObject copy(Heap heap);
 
-	// /**
-	// * Is this referred by "toSearch" in the "heap".
-	// *
-	// * @return If this is referred by "toSearch".
-	// */
-	// public boolean referredBy(UUID toSearch, Heap heap) {
-	// return referredBy(toSearch, heap,
-	// new HashSet<Pair<HeapObject, HeapObject>>());
-	// }
-	//
-	// boolean referredBy(UUID toSearch, Heap heap,
-	// HashSet<Pair<HeapObject, HeapObject>> alreadyVisited) {
-	// for (UUID object : referredBy) {
-	// if (alreadyVisited.add(new Pair<HeapObject, HeapObject>(this, heap
-	// .get(object)))) {
-	// // if it was not in the set
-	// if (object.equals(toSearch)
-	// || heap.get(object).referredBy(toSearch, heap,
-	// alreadyVisited)) {
-	// return true;
-	// }
-	// }
-	// }
-	// return false;
-	// }
-
-	public boolean isTransitivelyReferredBy(HeapObject source) {
+	public final boolean isTransitivelyReferredBy(HeapObject source) {
 		Set<HeapObject> visited = new HashSet<HeapObject>();
 
 		Queue<HeapObject> queue = new ArrayDeque<HeapObject>();
@@ -152,33 +118,32 @@ public class HeapObject {
 		return false;
 	}
 
-	/**
-	 * Does this refer "toSearch" in the "heap". Must not be called on a
-	 * HeapObject instance, because a HeapObject can only be the "external",
-	 * which can't refer anything.
-	 * 
-	 * @return If this refers "toSearch".
-	 */
-	public boolean refers(UUID toSearch, Heap heap) {
-		return refers(toSearch, heap,
-				new HashSet<Pair<HeapObject, HeapObject>>());
-	}
+	
+	public final boolean transitivelyRefers(HeapObject sink) {
+		Set<HeapObject> visited = new HashSet<HeapObject>();
 
-	boolean refers(UUID toSearch, Heap heap,
-			HashSet<Pair<HeapObject, HeapObject>> alreadyVisited) {
-		if (heap.get(toSearch).equals(heap.getExternalObject())
-				&& this.equals(heap.getExternalObject()))
-			return true;
+		Queue<HeapObject> queue = new ArrayDeque<HeapObject>();
+		queue.add(this);
+
+		while (!queue.isEmpty()) {
+			HeapObject obj = queue.poll();
+
+			for (Iterator<HeapObject> it = obj.getReferredIterator(); it
+					.hasNext();) {
+				HeapObject referred = it.next();
+
+				if (referred.equals(sink))
+					return true;
+				if (!visited.contains(referred) && !queue.contains(referred))
+					queue.add(referred);
+			}
+			visited.add(obj);
+		}
 		return false;
 	}
+	
 
-	public Set<HeapObject> getReferredClosure() {
-		Set<HeapObject> closure = new HashSet<HeapObject>();
-		closure.add(heap.getExternalObject());
-		return closure;
-	}
-
-	public Set<HeapObject> getReferringClosure() {
+	public final Set<HeapObject> getReferringClosure() {
 		Set<HeapObject> closure = new HashSet<HeapObject>();
 
 		Queue<HeapObject> queue = new ArrayDeque<HeapObject>();
@@ -200,6 +165,31 @@ public class HeapObject {
 		return closure;
 	}
 
+	public final Set<HeapObject> getReferredClosure() {
+		Set<HeapObject> closure = new HashSet<HeapObject>();
+
+		Queue<HeapObject> queue = new ArrayDeque<HeapObject>();
+		for ( Iterator<HeapObject> it = this.getReferredIterator(); it
+					.hasNext();) {
+			queue.add(it.next());
+		}
+		
+
+		while (!queue.isEmpty()) {
+			HeapObject obj = queue.poll();
+
+			for (Iterator<HeapObject> it = obj.getReferredIterator(); it
+					.hasNext();) {
+				HeapObject referred = it.next();
+				if (!queue.contains(referred) && !closure.contains(referred))
+					queue.add(referred);
+			}
+			closure.add(obj);
+		}
+		return closure;
+	}
+	
+	
 	public boolean refersObjectThatIsReferredBy(HeapObject source) {
 		for (HeapObject referedObject : this.getReferredClosure()) {
 			if (referedObject.isTransitivelyReferredBy(source)) {
@@ -209,35 +199,35 @@ public class HeapObject {
 		return false;
 	}
 
-	@Override
-	public int hashCode() {
-		final int prime = 31;
-		int result = 1;
-		result = prime * result + ((id == null) ? 0 : id.hashCode());
-		result = prime * result
-				+ ((referredBy == null) ? 0 : referredBy.hashCode());
-		return result;
-	}
-
-	@Override
-	public boolean equals(Object obj) {
-		if (this == obj)
-			return true;
-		if (obj == null)
-			return false;
-		if (!(obj instanceof HeapObject))
-			return false;
-		HeapObject other = (HeapObject) obj;
-		if (id == null) {
-			if (other.id != null)
-				return false;
-		} else if (!id.equals(other.id))
-			return false;
-		if (referredBy == null) {
-			if (other.referredBy != null)
-				return false;
-		} else if (!referredBy.equals(other.referredBy))
-			return false;
-		return true;
-	}
+//	@Override
+//	public int hashCode() {
+//		final int prime = 31;
+//		int result = 1;
+//		result = prime * result + ((id == null) ? 0 : id.hashCode());
+//		result = prime * result
+//				+ ((referredBy == null) ? 0 : referredBy.hashCode());
+//		return result;
+//	}
+//
+//	@Override
+//	public boolean equals(Object obj) {
+//		if (this == obj)
+//			return true;
+//		if (obj == null)
+//			return false;
+//		if (!(obj instanceof HeapObject))
+//			return false;
+//		HeapObject other = (HeapObject) obj;
+//		if (id == null) {
+//			if (other.id != null)
+//				return false;
+//		} else if (!id.equals(other.id))
+//			return false;
+//		if (referredBy == null) {
+//			if (other.referredBy != null)
+//				return false;
+//		} else if (!referredBy.equals(other.referredBy))
+//			return false;
+//		return true;
+//	}
 }

@@ -39,7 +39,7 @@ public class ClassInstance extends HeapObject {
 	 * Replace the oldObject by the newObject.
 	 */
 	@Override
-	void replaceReferredObject(HeapObject oldObject, HeapObject newObject) {
+	public void replaceAllOccurrencesOfReferredObject(HeapObject oldObject, HeapObject newObject) {
 		for (String field : refers.keySet())
 			if (refers.get(field).equals(oldObject.id))
 				refers.put(field, newObject.id);
@@ -65,10 +65,6 @@ public class ClassInstance extends HeapObject {
 		return new ClassInstance(this, heap);
 	}
 
-	// @Override
-	// public Collection<UUID> getReferredObjects() {
-	// return refers.values();
-	// }
 
 	@Override
 	public Iterator<HeapObject> getReferredIterator() {
@@ -91,73 +87,34 @@ public class ClassInstance extends HeapObject {
 			}
 		};
 	}
-
-	@Override
-	public Set<HeapObject> getReferredClosure() {
-		Set<HeapObject> closure = new HashSet<HeapObject>();
-
-		Queue<HeapObject> queue = new ArrayDeque<HeapObject>();
-		for (UUID id : refers.values()) {
-			queue.add(heap.get(id));
-		}
-
-		while (!queue.isEmpty()) {
-			HeapObject obj = queue.poll();
-
-			for (Iterator<HeapObject> it = obj.getReferredIterator(); it
-					.hasNext();) {
-				HeapObject referred = it.next();
-				if (!queue.contains(referred) && !closure.contains(referred))
-					queue.add(referred);
-			}
-			closure.add(obj);
-		}
-		return closure;
-	}
-
+ 
 	public HeapObject getField(String name) {
 		return heap.get(refers.get(name));
 	}
 
-	@Override
-	boolean refers(UUID toSearch, Heap heap,
-			HashSet<Pair<HeapObject, HeapObject>> alreadyVisited) {
-		for (UUID field : refers.values()) {
-			if (alreadyVisited.add(new Pair<HeapObject, HeapObject>(this, heap
-					.get(field)))) {
-				// if was not visited before
-				if (field.equals(toSearch)
-						|| heap.get(field).refers(toSearch, heap,
-								alreadyVisited)) {
-					return true;
-				}
-			}
-		}
-		return false;
-	}
-
-	@Override
-	public int hashCode() {
-		final int prime = 31;
-		int result = super.hashCode();
-		result = prime * result + ((refers == null) ? 0 : refers.hashCode());
-		return result;
-	}
-
-	@Override
-	public boolean equals(Object obj) {
-		if (this == obj)
-			return true;
-		if (!super.equals(obj))
-			return false;
-		if (!(obj instanceof ClassInstance))
-			return false;
-		ClassInstance other = (ClassInstance) obj;
-		if (refers == null) {
-			if (other.refers != null)
-				return false;
-		} else if (!refers.equals(other.refers))
-			return false;
-		return true;
-	}
+	
+//	@Override
+//	public int hashCode() {
+//		final int prime = 31;
+//		int result = super.hashCode();
+//		result = prime * result + ((refers == null) ? 0 : refers.hashCode());
+//		return result;
+//	}
+//
+//	@Override
+//	public boolean equals(Object obj) {
+//		if (this == obj)
+//			return true;
+//		if (!super.equals(obj))
+//			return false;
+//		if (!(obj instanceof ClassInstance))
+//			return false;
+//		ClassInstance other = (ClassInstance) obj;
+//		if (refers == null) {
+//			if (other.refers != null)
+//				return false;
+//		} else if (!refers.equals(other.refers))
+//			return false;
+//		return true;
+//	}
 }

@@ -29,7 +29,7 @@ public class Heap {
 		thisID = thisObject.getId();
 		objects.put(thisID, thisObject);
 
-		HeapObject externalObject = new HeapObject(this);
+		ExternalObject externalObject = new ExternalObject(this);
 		externalID = externalObject.getId();
 		objects.put(externalID, externalObject);
 	}
@@ -125,7 +125,7 @@ public class Heap {
 				.hasNext();) {
 			HeapObject referringObject = iterator.next();
 			if (!referringObject.equals(external)) {
-				referringObject.replaceReferredObject(obj, external);
+				referringObject.replaceAllOccurrencesOfReferredObject(obj, external);
 				external.addReferringObject(referringObject);
 			}
 		}

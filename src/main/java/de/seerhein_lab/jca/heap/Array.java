@@ -69,7 +69,7 @@ public class Array extends HeapObject {
 	 * Replace the oldObject by the newObject.
 	 */
 	@Override
-	void replaceReferredObject(HeapObject oldObject, HeapObject newObject) {
+	public void replaceAllOccurrencesOfReferredObject(HeapObject oldObject, HeapObject newObject) {
 		refers.remove(oldObject.id);
 		refers.add(newObject.id);
 	}
@@ -78,68 +78,32 @@ public class Array extends HeapObject {
 		refers.add(id);
 	}
 
-	@Override
-	public Set<HeapObject> getReferredClosure() {
-		Set<HeapObject> closure = new HashSet<HeapObject>();
 
-		Queue<HeapObject> queue = new ArrayDeque<HeapObject>();
-		for (UUID id : refers) {
-			queue.add(heap.get(id));
-		}
 
-		while (!queue.isEmpty()) {
-			HeapObject obj = queue.poll();
+//	@Override
+//	public int hashCode() {
+//		final int prime = 31;
+//		int result = super.hashCode();
+//		result = prime * result + ((refers == null) ? 0 : refers.hashCode());
+//		return result;
+//	}
+//
+//	@Override
+//	public boolean equals(Object obj) {
+//		if (this == obj)
+//			return true;
+//		if (!super.equals(obj))
+//			return false;
+//		if (!(obj instanceof Array))
+//			return false;
+//		Array other = (Array) obj;
+//		if (refers == null) {
+//			if (other.refers != null)
+//				return false;
+//		} else if (!refers.equals(other.refers))
+//			return false;
+//		return true;
+//	}
 
-			for (Iterator<HeapObject> it = obj.getReferredIterator(); it
-					.hasNext();) {
-				HeapObject referred = it.next();
-				if (!queue.contains(referred) && !closure.contains(referred))
-					queue.add(referred);
-			}
-			closure.add(obj);
-		}
-		return closure;
-	}
 
-	@Override
-	boolean refers(UUID toSearch, Heap heap,
-			HashSet<Pair<HeapObject, HeapObject>> alreadyVisited) {
-		for (UUID entry : refers) {
-			if (alreadyVisited.add(new Pair<HeapObject, HeapObject>(this, heap
-					.get(entry)))) {
-				// if was not visited before
-				if (entry.equals(toSearch)
-						|| heap.get(entry).refers(toSearch, heap,
-								alreadyVisited)) {
-					return true;
-				}
-			}
-		}
-		return false;
-	}
-
-	@Override
-	public int hashCode() {
-		final int prime = 31;
-		int result = super.hashCode();
-		result = prime * result + ((refers == null) ? 0 : refers.hashCode());
-		return result;
-	}
-
-	@Override
-	public boolean equals(Object obj) {
-		if (this == obj)
-			return true;
-		if (!super.equals(obj))
-			return false;
-		if (!(obj instanceof Array))
-			return false;
-		Array other = (Array) obj;
-		if (refers == null) {
-			if (other.refers != null)
-				return false;
-		} else if (!refers.equals(other.refers))
-			return false;
-		return true;
-	}
 }
