@@ -24,6 +24,6 @@ public abstract class Slot {
 	public abstract Slot copy();
 
 	public static Slot getDefaultSlotInstance(Type type) {
-		return (map.containsKey(type)) ? map.get(type) : new ReferenceSlot();
+		return (map.containsKey(type)) ? map.get(type) : ReferenceSlot.getNullReference();
 	}
 }

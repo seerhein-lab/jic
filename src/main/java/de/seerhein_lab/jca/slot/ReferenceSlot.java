@@ -5,14 +5,23 @@ import java.util.UUID;
 import de.seerhein_lab.jca.heap.HeapObject;
 
 public class ReferenceSlot extends Slot {
+	private final static ReferenceSlot nullReference = new ReferenceSlot();
+	
 	private final UUID objectID;
 
-	public ReferenceSlot() {
+	private ReferenceSlot() {
 		objectID = null;
 	}
 
 	public ReferenceSlot(HeapObject object) {
+		if ( object == null ) 
+			throw new NullPointerException("argument must not be null");
+		
 		this.objectID = object.getId();
+	}
+	
+	public static ReferenceSlot getNullReference() {
+		return nullReference;
 	}
 
 	@Override
@@ -45,8 +54,7 @@ public class ReferenceSlot extends Slot {
 	public boolean equals(Object obj) {
 		if (this == obj)
 			return true;
-		if (obj == null)
-			return false;
+		
 		if (!(obj instanceof ReferenceSlot))
 			return false;
 		ReferenceSlot other = (ReferenceSlot) obj;

@@ -471,7 +471,7 @@ public abstract class BaseInstructionsAnalysisVisitor extends
 		logger.log(Level.FINE, indentation + obj.toString(false));
 
 		// push 'null' onto the stack
-		frame.getStack().push(new ReferenceSlot());
+		frame.getStack().push(ReferenceSlot.getNullReference());
 
 		instructionHandle = instructionHandle.getNext();
 		instructionHandle.accept(this);
