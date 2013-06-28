@@ -32,10 +32,9 @@ public class ResultValue {
 	 *            The returned value represented by a Slot.
 	 */
 	public ResultValue(Kind kind, Slot slot, Heap heap) {
-		if (kind == null || slot == null || heap == null) {
-			throw new IllegalArgumentException("parameters must not be null");
-		}
-
+		if (kind == null || slot == null || heap == null) 
+			throw new NullPointerException("parameters must not be null");
+		
 		this.kind = kind;
 		this.slot = slot;
 		this.heap = heap;
@@ -45,9 +44,9 @@ public class ResultValue {
 	public int hashCode() {
 		final int prime = 31;
 		int result = 1;
-		result = prime * result + ((heap == null) ? 0 : heap.hashCode());
-		result = prime * result + ((kind == null) ? 0 : kind.hashCode());
-		result = prime * result + ((slot == null) ? 0 : slot.hashCode());
+		result = prime * result + heap.hashCode();
+		result = prime * result + kind.hashCode();
+		result = prime * result + slot.hashCode();
 		return result;
 	}
 
@@ -55,24 +54,12 @@ public class ResultValue {
 	public boolean equals(Object obj) {
 		if (this == obj)
 			return true;
-		if (obj == null)
-			return false;
+		
 		if (!(obj instanceof ResultValue))
 			return false;
 		ResultValue other = (ResultValue) obj;
-		if (heap == null) {
-			if (other.heap != null)
-				return false;
-		} else if (!heap.equals(other.heap))
-			return false;
-		if (kind != other.kind)
-			return false;
-		if (slot == null) {
-			if (other.slot != null)
-				return false;
-		} else if (!slot.equals(other.slot))
-			return false;
-		return true;
+
+		return heap.equals(other.heap) && kind == other.kind && slot.equals(other.slot);
 	}
 
 	public Kind getKind() {
