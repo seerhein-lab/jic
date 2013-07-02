@@ -158,7 +158,7 @@ public class Heap {
 		if (leftSide instanceof Array) {
 			((Array) leftSide).addReferredObject(right);
 		} else if (leftSide instanceof ClassInstance) {
-			((ClassInstance) leftSide).addReferredObject(this, field, right);
+			((ClassInstance) leftSide).addReferredObject(this, field, get(right));
 		}
 	}
 

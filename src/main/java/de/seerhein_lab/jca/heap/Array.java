@@ -1,13 +1,9 @@
 package de.seerhein_lab.jca.heap;
 
-import java.util.ArrayDeque;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.Queue;
 import java.util.Set;
 import java.util.UUID;
-
-import de.seerhein_lab.jca.Pair;
 
 /**
  * Class representing an Array. An Array has an Id, a reference to the heap
@@ -34,14 +30,10 @@ public class Array extends HeapObject {
 	}
 
 	@Override
-	HeapObject copy(Heap heap) {
+	Array copy(Heap heap) {
 		return new Array(this, heap);
 	}
 
-	// @Override
-	// public Collection<UUID> getReferredObjects() {
-	// return refers;
-	// }
 
 	@Override
 	public Iterator<HeapObject> getReferredIterator() {

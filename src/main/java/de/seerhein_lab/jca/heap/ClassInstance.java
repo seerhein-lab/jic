@@ -1,15 +1,9 @@
 package de.seerhein_lab.jca.heap;
 
-import java.util.ArrayDeque;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
-import java.util.Queue;
-import java.util.Set;
 import java.util.UUID;
-
-import de.seerhein_lab.jca.Pair;
 
 /**
  * Class representing a ClassInstance. A ClassInstance has an Id, a reference to
@@ -36,7 +30,7 @@ public class ClassInstance extends HeapObject {
 	}
 
 	/**
-	 * Replace the oldObject by the newObject.
+	 * Replace all occurrences of oldObject by newObject.
 	 */
 	@Override
 	public void replaceAllOccurrencesOfReferredObject(HeapObject oldObject, HeapObject newObject) {
@@ -52,12 +46,12 @@ public class ClassInstance extends HeapObject {
 	 * @param obj
 	 *            Obj which refers this.
 	 */
-	void addReferredObject(Heap heap, String field, UUID id) {
+	void addReferredObject(Heap heap, String field, HeapObject obj) {
 		if (refers.containsKey(field)) {
 			// remove the old assignment
-			heap.get(refers.get(field)).referredBy.remove(id);
+			heap.get(refers.get(field)).referredBy.remove(obj.getId());
 		}
-		refers.put(field, id);
+		refers.put(field, obj.getId());
 	}
 
 	@Override

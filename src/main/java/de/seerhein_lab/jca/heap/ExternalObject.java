@@ -2,11 +2,8 @@ package de.seerhein_lab.jca.heap;
 
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.NoSuchElementException;
 import java.util.Set;
 import java.util.UUID;
-
-import de.seerhein_lab.jca.Pair;
 
 public final class ExternalObject extends HeapObject {
 	private final Set<UUID> refers = new HashSet<UUID>();
