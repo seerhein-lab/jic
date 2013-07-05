@@ -51,6 +51,8 @@ import de.seerhein_lab.jca.ResultValue;
 import de.seerhein_lab.jca.ResultValue.Kind;
 import de.seerhein_lab.jca.heap.Array;
 import de.seerhein_lab.jca.heap.ClassInstance;
+import de.seerhein_lab.jca.heap.ExternalObject;
+import de.seerhein_lab.jca.heap.Heap;
 import de.seerhein_lab.jca.heap.HeapObject;
 import de.seerhein_lab.jca.slot.DoubleSlot;
 import de.seerhein_lab.jca.slot.LongSlot;
@@ -836,34 +838,32 @@ public abstract class BaseInstructionsAnalysisVisitor extends
 		// Notation: puts o.f = v
 
 		// right side of assignment
-		Slot v = frame.popStackByRequiredSlots();
+		Slot vRef = frame.popStackByRequiredSlots();
 
 		// pop left side of assignment off the stack, too
-		ReferenceSlot o = (ReferenceSlot) frame.getStack().pop();
-		detectPutFieldBug(o, v);
-		if (v instanceof ReferenceSlot) {
-			UUID vID = ((ReferenceSlot) v).getID();
-			if (o.getID().equals(frame.getHeap().getExternalObject().getId())) {
-				// left side is external, publish right
-				frame.getHeap().publish(
-						frame.getHeap().getObject((ReferenceSlot) v));
-			} else {
-				// link them together
-				frame.getHeap().linkObjects(o.getID(),
-						obj.getFieldName(constantPoolGen), vID);
-			}
+		ReferenceSlot oRef = (ReferenceSlot) frame.getStack().pop();
+		detectPutFieldBug(oRef, vRef);
+		if (vRef instanceof ReferenceSlot) {
+			Heap heap = frame.getHeap();
+			HeapObject v = heap.getObject((ReferenceSlot)vRef);
+			HeapObject o = heap.getObject(oRef);
+			
+			if ( o instanceof ExternalObject ) 
+				heap.publish(v);
+			else
+				((ClassInstance) o).setField(obj.getFieldName(constantPoolGen), v);
 		}
 
 		logger.log(
 				Level.FINEST,
 				indentation
-						+ o
+						+ oRef
 						+ "."
 						+ obj.getFieldName(constantPoolGen)
 						+ " <--"
-						+ ((v instanceof DoubleSlot || v instanceof LongSlot) ? v
-								+ ", " + v
-								: v));
+						+ ((vRef instanceof DoubleSlot || vRef instanceof LongSlot) ? vRef
+								+ ", " + vRef
+								: vRef));
 
 		instructionHandle = instructionHandle.getNext();
 		instructionHandle.accept(this);

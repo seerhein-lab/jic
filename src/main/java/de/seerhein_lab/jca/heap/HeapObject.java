@@ -68,6 +68,10 @@ public abstract class HeapObject {
 		referredBy.add(obj.getId());
 	}	
 	
+	final void removeReferringObj(HeapObject obj) {
+		referredBy.remove(obj);		
+	}
+	
 	public abstract void replaceAllOccurrencesOfReferredObject(HeapObject oldObject, HeapObject newObject);
 
 	public abstract Iterator<HeapObject> getReferredIterator();
@@ -167,6 +171,8 @@ public abstract class HeapObject {
 		}
 		return false;
 	}
+
+
 
 //	@Override
 //	public int hashCode() {

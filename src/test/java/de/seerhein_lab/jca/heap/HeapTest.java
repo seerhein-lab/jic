@@ -28,12 +28,13 @@ public class HeapTest {
 		e = heap.newClassInstance();
 		f = heap.newArray();
 
-		heap.linkObjects(a.getId(), "f", b.getId());
-		heap.linkObjects(b.getId(), "f", c.getId());
-		heap.linkObjects(b.getId(), "f2", d.getId());
-		heap.linkObjects(c.getId(), "f", e.getId());
-		heap.linkObjects(d.getId(), "f", e.getId());
-		heap.linkObjects(e.getId(), "f", f.getId());
+		a.setField("f", b);
+		b.setField("f", c);
+		b.setField("f2", d);
+		c.setField("f", e);
+		d.setField("f", e);
+		e.setField("f", f);
+		
 		heap.linkObjects(f.getId(), "f", d.getId());
 	}
 
@@ -85,7 +86,7 @@ public class HeapTest {
 	@Test
 	public void testLinkObjectsReplaceField() {
 		assertTrue(a.transitivelyRefers(b));
-		heap.linkObjects(a.getId(), "f", e.getId());
+		a.setField("f", e);
 		assertTrue(a.transitivelyRefers(e));
 		assertFalse(a.transitivelyRefers(b));
 	}
@@ -93,7 +94,7 @@ public class HeapTest {
 	@Test
 	public void testLinkObjectsAddReferingField() {
 		assertTrue(a.transitivelyRefers(b));
-		heap.linkObjects(a.getId(), "f2", e.getId());
+		a.setField("f2", e);
 		assertTrue(a.transitivelyRefers(e));
 		assertTrue(a.transitivelyRefers(b));
 	}

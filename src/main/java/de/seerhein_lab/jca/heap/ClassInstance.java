@@ -39,20 +39,6 @@ public class ClassInstance extends HeapObject {
 				refers.put(field, newObject.getId());
 	}
 
-	/**
-	 * Adds "obj" as a referred Object in the "field". If the field is already
-	 * set, the old value will be replaced.
-	 * 
-	 * @param obj
-	 *            Obj which refers this.
-	 */
-	void addReferredObject(Heap heap, String field, HeapObject obj) {
-		if (refers.containsKey(field)) {
-			// remove the old assignment
-			heap.get(refers.get(field)).referredBy.remove(obj.getId());
-		}
-		refers.put(field, obj.getId());
-	}
 
 	@Override
 	HeapObject copy(Heap heap) {
@@ -82,6 +68,31 @@ public class ClassInstance extends HeapObject {
 		};
 	}
  
+	
+	
+	/**
+	 * Makes the field named field of this object point to the object obj.
+	 * Also sets the backward reference from obj pointing to this object.
+	 * If the field already has a value, the old value is overwritten, and if 
+	 * no other field refers to the old value either, the backward reference from
+	 * the old value to this object is removed.
+	 * 
+	 * 
+	 * @param field
+	 * @param obj
+	 */
+	
+	public void setField(String field, HeapObject obj) {		
+		HeapObject oldTarget =  (refers.containsKey(field))  ? heap.get(refers.get(field)) : null;
+		
+		refers.put(field, obj.getId());
+		obj.addReferringObject(this);
+		
+		if ( oldTarget != null && !refers.containsValue(oldTarget) )
+			oldTarget.removeReferringObj(this);
+	}
+	
+	
 	public HeapObject getField(String name) {
 		return heap.get(refers.get(name));
 	}
