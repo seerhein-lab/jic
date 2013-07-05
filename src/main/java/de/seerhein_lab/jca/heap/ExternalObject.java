@@ -21,6 +21,7 @@ public final class ExternalObject extends HeapObject {
 	@Override
 	public void replaceAllOccurrencesOfReferredObject(HeapObject oldObject,
 			HeapObject newObject) {
+		throw new AssertionError("must not be called.");
 	}
 
 	@Override
