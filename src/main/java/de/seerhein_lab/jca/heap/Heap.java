@@ -14,7 +14,6 @@ import de.seerhein_lab.jca.slot.ReferenceSlot;
  * for "this" and the "external".
  */
 public class Heap {
-
 	private final Map<UUID, HeapObject> objects = new HashMap<UUID, HeapObject>();
 	private final Set<UUID> publishedObjects = new HashSet<UUID>();
 
@@ -71,10 +70,6 @@ public class Heap {
 	public HeapObject getExternalObject() {
 		return get(externalID);
 	}
-
-	// public UUID getNullID() {
-	// return nullID;
-	// }
 
 	/**
 	 * Creates a new ClassInstance and registers it in the heap.
@@ -138,50 +133,38 @@ public class Heap {
 		}
 	}
 
-	/**
-	 * Link two HeapObjects. The left object refers the right object (left.field
-	 * = rigtht). If the left object is a ClassInstance "field" is the name of
-	 * the field, if it is a
-	 * 
-	 * @param left
-	 *            The left side of an assignment.
-	 * @param field
-	 *            The fieldname as String. If "left" is an Array this parameter
-	 *            is ignored.
-	 * @param right
-	 *            The right side of an assignment.
-	 */
 
-	@Override
-	public int hashCode() {
-		final int prime = 31;
-		int result = 1;
-		result = prime * result + ((objects == null) ? 0 : objects.hashCode());
-		result = prime
-				* result
-				+ ((publishedObjects == null) ? 0 : publishedObjects.hashCode());
-		return result;
-	}
 
-	@Override
-	public boolean equals(Object obj) {
-		if (this == obj)
-			return true;
-		if (obj == null)
-			return false;
-		if (!(obj instanceof Heap))
-			return false;
-		Heap other = (Heap) obj;
-		if (objects == null) {
-			if (other.objects != null)
-				return false;
-		} else if (!objects.equals(other.objects))
-			return false;
-		if (publishedObjects == null) {
-			if (other.publishedObjects != null)
-				return false;
-		} else if (!publishedObjects.equals(other.publishedObjects))
-			return false;
-		return true;
-	}
+//	@Override
+//	public int hashCode() {
+//		final int prime = 31;
+//		int result = 1;
+//		result = prime * result + ((objects == null) ? 0 : objects.hashCode());
+//		result = prime
+//				* result
+//				+ ((publishedObjects == null) ? 0 : publishedObjects.hashCode());
+//		return result;
+//	}
+//
+//	@Override
+//	public boolean equals(Object obj) {
+//		if (this == obj)
+//			return true;
+//		if (obj == null)
+//			return false;
+//		if (!(obj instanceof Heap))
+//			return false;
+//		Heap other = (Heap) obj;
+//		if (objects == null) {
+//			if (other.objects != null)
+//				return false;
+//		} else if (!objects.equals(other.objects))
+//			return false;
+//		if (publishedObjects == null) {
+//			if (other.publishedObjects != null)
+//				return false;
+//		} else if (!publishedObjects.equals(other.publishedObjects))
+//			return false;
+//		return true;
+//	}
 }
