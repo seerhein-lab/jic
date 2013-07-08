@@ -34,8 +34,7 @@ public class HeapTest {
 		c.setField("f", e);
 		d.setField("f", e);
 		e.setField("f", f);
-		
-		heap.linkObjects(f.getId(), "f", d.getId());
+		f.addComponent(d);
 	}
 
 	@Test

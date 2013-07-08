@@ -9,7 +9,7 @@ import java.util.UUID;
  * Class representing a ClassInstance. A ClassInstance has an Id, a reference to
  * the heap where its stored and a set of referring + referred objects.
  */
-public class ClassInstance extends HeapObject {
+public final class ClassInstance extends HeapObject {
 	private Map<String, UUID> refers = new HashMap<String, UUID>();
 
 	public ClassInstance(Heap heap) {

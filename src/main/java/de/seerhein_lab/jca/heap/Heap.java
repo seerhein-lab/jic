@@ -151,17 +151,6 @@ public class Heap {
 	 * @param right
 	 *            The right side of an assignment.
 	 */
-	public void linkObjects(UUID left, String field, UUID right) {
-		get(right).addReferringObject(get(left));
-
-		HeapObject leftSide = get(left);
-		if (leftSide instanceof Array) {
-			((Array) leftSide).addReferredObject(right);
-		} 
-//		else if (leftSide instanceof ClassInstance) {
-//			((ClassInstance) leftSide).addReferredObject(this, field, get(right));
-//		}
-	}
 
 	@Override
 	public int hashCode() {

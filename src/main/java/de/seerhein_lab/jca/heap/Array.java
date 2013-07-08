@@ -9,7 +9,7 @@ import java.util.UUID;
  * Class representing an Array. An Array has an Id, a reference to the heap
  * where its stored and a set of referring + referred objects.
  */
-public class Array extends HeapObject {
+public final class Array extends HeapObject {
 	private Set<UUID> refers = new HashSet<UUID>();
 
 	public Array(Heap heap) {
@@ -62,12 +62,14 @@ public class Array extends HeapObject {
 	 */
 	@Override
 	public void replaceAllOccurrencesOfReferredObject(HeapObject oldObject, HeapObject newObject) {
-		refers.remove(oldObject.getId());
-		refers.add(newObject.getId());
+		if ( refers.remove(oldObject.getId()) )
+			refers.add(newObject.getId());
 	}
 
-	void addReferredObject(UUID id) {
-		refers.add(id);
+	
+	public void addComponent(HeapObject obj) {
+		if ( refers.add(obj.getId()) ) 
+			obj.addReferringObject(this);
 	}
 
 

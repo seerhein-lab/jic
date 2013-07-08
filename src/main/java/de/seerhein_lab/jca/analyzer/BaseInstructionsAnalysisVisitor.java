@@ -536,17 +536,24 @@ public abstract class BaseInstructionsAnalysisVisitor extends
 	@Override
 	public void visitAASTORE(AASTORE obj) {
 		// pop value
-		Slot value = frame.popStackByRequiredSlots();
+		ReferenceSlot value = (ReferenceSlot) frame.popStackByRequiredSlots();
+		HeapObject component = frame.getHeap().getObject(value);
+		
 		// pop array index
 		frame.getStack().pop();
 		// pop array reference
 		ReferenceSlot arrayReference = (ReferenceSlot) frame.getStack().pop();
-
+		
 		detectXAStoreBug(arrayReference, value);
-
-		// AASTORE, link reference to array
-		frame.getHeap().linkObjects(arrayReference.getID(), null,
-				((ReferenceSlot) value).getID());
+	
+		Heap heap = frame.getHeap();
+		HeapObject array =  heap.getObject(arrayReference);
+		
+		if ( array instanceof ExternalObject ) 
+			heap.publish(component);
+		else
+			((Array) array).addComponent(component);
+				
 		instructionHandle = instructionHandle.getNext();
 		instructionHandle.accept(this);
 	}
@@ -1016,8 +1023,7 @@ public abstract class BaseInstructionsAnalysisVisitor extends
 			if (i == 0) {
 				slot = new ReferenceSlot(newArray);
 			} else {
-				frame.getHeap().linkObjects(array.getId(), null,
-						newArray.getId());
+				array.addComponent(newArray);
 			}
 			array = newArray;
 		}
