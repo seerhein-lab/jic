@@ -13,29 +13,6 @@ public class Frame {
 	private final Stack<Slot> stack;
 	private final Heap heap;
 
-	/**
-	 * Constructor. Pops numSlots values from the callerStack and stores them
-	 * into an array localVars with size maxLocals. maxLocals must be a positive
-	 * number.
-	 * 
-	 * @param maxLocals
-	 *            The size of the localVars array.
-	 * @param callerStack
-	 *            The caller's stack.
-	 * @param numSlots
-	 *            Number of values to be popped from the callerStack.
-	 * @param heap
-	 *            The caller's heap.
-	 */
-	public Frame(int maxLocals, Stack<Slot> callerStack, int numSlots, Heap heap) {
-		localVars = new Slot[maxLocals];
-
-		for (int i = numSlots - 1; i >= 0; i--)
-			localVars[i] = callerStack.pop();
-
-		stack = new Stack<Slot>();
-		this.heap = heap;
-	}
 
 	/**
 	 * Constructor. Pops numSlots values from the callerStack and stores them
@@ -50,7 +27,13 @@ public class Frame {
 	 *            Number of values to be popped from the callerStack.
 	 */
 	public Frame(int maxLocals, Frame callerFrame, int numSlots) {
-		this(maxLocals, callerFrame.getStack(), numSlots, callerFrame.getHeap());
+		localVars = new Slot[maxLocals];
+
+		for (int i = numSlots - 1; i >= 0; i--)
+			localVars[i] = callerFrame.getStack().pop();
+
+		stack = new Stack<Slot>();
+		this.heap = callerFrame.getHeap();
 	}
 
 	/**
