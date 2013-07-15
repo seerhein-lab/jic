@@ -46,6 +46,15 @@ public class ClassAnalyzer {
 				ctors.add(method);
 		return ctors;
 	}
+	
+	private List<Method> getAllMethodsWithoutCtors() {
+		List<Method> methods = new Vector<Method>();
+		Method[] allMethods = clazz.getMethods();
+		for (Method method : allMethods)
+			if (!method.getName().equals(CONSTRUCTOR_NAME))
+				methods.add(method);
+		return methods;
+	}
 
 	public Method getMethod(String name, Type[] types) {
 		Method[] methods = clazz.getMethods();
@@ -95,14 +104,7 @@ public class ClassAnalyzer {
 		return bugs;
 	}
 
-	private List<Method> getAllMethodsWithoutCtors() {
-		List<Method> methods = new Vector<Method>();
-		Method[] allMethods = clazz.getMethods();
-		for (Method method : allMethods)
-			if (!method.getName().equals(CONSTRUCTOR_NAME))
-				methods.add(method);
-		return methods;
-	}
+
 
 	// TODO set private when testing is complete
 	public SortedBugCollection ctorParamsAreCopied() {
@@ -192,16 +194,5 @@ public class ClassAnalyzer {
 		return bugs;
 	}
 
-	// public static ThreeValueBoolean indicatesSuccess(BugCollection bugs) {
-	// if (bugs.getCollection().isEmpty())
-	// return ThreeValueBoolean.yes;
-	//
-	// Iterator<BugInstance> iterator = bugs.getCollection().iterator();
-	// while (iterator.hasNext())
-	// if (iterator.next().getPriority() == 2)
-	// return ThreeValueBoolean.no;
-	//
-	// return ThreeValueBoolean.unknown;
-	// }
 
 }
