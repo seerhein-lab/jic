@@ -27,10 +27,9 @@ import edu.umd.cs.findbugs.SortedBugCollection;
 import edu.umd.cs.findbugs.ba.ClassContext;
 
 public class ClassAnalyzer {
-
 	private final JavaClass clazz;
 	private final ClassContext classContext;
-	private HashSet<Heap> heaps;
+	private final HashSet<Heap> heaps;
 
 	public ClassAnalyzer(JavaClass clazz, ClassContext classContext) {
 		this.clazz = clazz;
