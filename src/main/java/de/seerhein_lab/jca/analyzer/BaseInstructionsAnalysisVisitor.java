@@ -3,7 +3,6 @@ package de.seerhein_lab.jca.analyzer;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
-import java.util.UUID;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -220,9 +219,12 @@ public abstract class BaseInstructionsAnalysisVisitor extends
 			logger.log(Level.SEVERE, "Could not load class!");
 		}
 
-		ClassAnalyzer targetClassAnalyzer = new ClassAnalyzer(targetClass,
-				classContext);
-		Method targetMethod = targetClassAnalyzer.getMethod(
+//		ClassAnalyzer targetClassAnalyzer = new ClassAnalyzer(targetClass,
+//				classContext);
+//		Method targetMethod = targetClassAnalyzer.getMethod(
+//				obj.getMethodName(constantPoolGen),
+//				obj.getArgumentTypes(constantPoolGen));
+		Method targetMethod = new ClassHelper(targetClass).getMethod(
 				obj.getMethodName(constantPoolGen),
 				obj.getArgumentTypes(constantPoolGen));
 		MethodGen targetMethodGen = new MethodGen(targetMethod,

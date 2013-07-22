@@ -1,19 +1,15 @@
 package de.seerhein_lab.jca.analyzer;
 
-import static org.apache.bcel.Constants.CONSTRUCTOR_NAME;
-
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.Vector;
 
 import org.apache.bcel.classfile.Field;
 import org.apache.bcel.classfile.JavaClass;
 import org.apache.bcel.classfile.Method;
 import org.apache.bcel.generic.ConstantPoolGen;
 import org.apache.bcel.generic.MethodGen;
-import org.apache.bcel.generic.Type;
 
 import de.seerhein_lab.jca.ResultValue;
 import de.seerhein_lab.jca.analyzer.ctorArgsCopiedAnalyzer.CtorArgsCopiedAnalyzer;
@@ -30,51 +26,15 @@ public class ClassAnalyzer {
 	private final JavaClass clazz;
 	private final ClassContext classContext;
 	private final HashSet<Heap> heaps;
+	private final ClassHelper classHelper;
 
 	public ClassAnalyzer(JavaClass clazz, ClassContext classContext) {
 		this.clazz = clazz;
 		this.classContext = classContext;
 		heaps = new HashSet<Heap>();
+		classHelper = new ClassHelper(clazz);
 	}
 
-	private List<Method> getConstructors() {
-		List<Method> ctors = new Vector<Method>();
-		Method[] methods = clazz.getMethods();
-		for (Method method : methods)
-			if (method.getName().equals(CONSTRUCTOR_NAME))
-				ctors.add(method);
-		return ctors;
-	}
-	
-	private List<Method> getAllMethodsWithoutCtors() {
-		List<Method> methods = new Vector<Method>();
-		Method[] allMethods = clazz.getMethods();
-		for (Method method : allMethods)
-			if (!method.getName().equals(CONSTRUCTOR_NAME))
-				methods.add(method);
-		return methods;
-	}
-
-	public Method getMethod(String name, Type[] types) {
-		Method[] methods = clazz.getMethods();
-		for (Method method : methods) {
-			boolean different = false;
-			Type[] methodTypes = method.getArgumentTypes();
-			if (method.getName().equals(name)
-					&& methodTypes.length == types.length) {
-				for (int i = 0; i < methodTypes.length; i++) {
-					if (!methodTypes[i].getSignature().equals(
-							types[i].getSignature())) {
-						different = true;
-						break;
-					}
-				}
-				if (!different)
-					return method;
-			}
-		}
-		return null;
-	}
 
 	private BugCollection allFieldsFinal() {
 		BugCollection bugs = new SortedBugCollection();
@@ -87,7 +47,7 @@ public class ClassAnalyzer {
 
 	public BugCollection properlyConstructed() {
 		SortedBugCollection bugs = new SortedBugCollection();
-		List<Method> ctors = getConstructors();
+		List<Method> ctors = classHelper.getConstructors();
 
 		for (Method ctor : ctors) {
 			MethodGen ctorGen = new MethodGen(ctor, clazz.getClassName(),
@@ -108,7 +68,7 @@ public class ClassAnalyzer {
 	// TODO set private when testing is complete
 	public SortedBugCollection ctorParamsAreCopied() {
 		SortedBugCollection bugs = new SortedBugCollection();
-		List<Method> ctors = getConstructors();
+		List<Method> ctors = classHelper.getConstructors();
 
 		for (Method ctor : ctors) {
 			MethodGen ctorGen = new MethodGen(ctor, clazz.getClassName(),
@@ -132,7 +92,7 @@ public class ClassAnalyzer {
 	// TODO set private when testing is complete
 	public BugCollection fieldsAreNotPublished() {
 		SortedBugCollection bugs = new SortedBugCollection();
-		List<Method> methods = getAllMethodsWithoutCtors();
+		List<Method> methods = classHelper.getAllMethodsButCtors();
 		if (heaps.isEmpty())
 			return bugs;
 
@@ -151,7 +111,7 @@ public class ClassAnalyzer {
 	// TODO set private when testing is complete
 	public BugCollection stateUnmodified() {
 		SortedBugCollection bugs = new SortedBugCollection();
-		List<Method> methods = getAllMethodsWithoutCtors();
+		List<Method> methods = classHelper.getAllMethodsButCtors();
 		if (heaps.isEmpty())
 			return bugs;
 
