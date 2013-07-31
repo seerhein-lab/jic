@@ -103,6 +103,10 @@ public class FieldsNotPublishedAnalysisVisitor extends
 	@Override
 	protected void detectVirtualMethodBug(ReferenceSlot argument) {
 		Heap heap = frame.getHeap();
+
+		if (argument.isNullReference())
+			return;
+
 		HeapObject argumentObject = heap.get(argument.getID());
 		if (argumentObject.equals(heap.getThisInstance())) {
 			// XXX problem or not?? Inheritance?!?
@@ -132,9 +136,12 @@ public class FieldsNotPublishedAnalysisVisitor extends
 			return;
 		}
 
+		ReferenceSlot referenceToStore = (ReferenceSlot) valueToStore;
+		if (referenceToStore.isNullReference())
+			return;
+
 		Heap heap = frame.getHeap();
-		HeapObject objectToStore = heap.get(((ReferenceSlot) valueToStore)
-				.getID());
+		HeapObject objectToStore = heap.get(referenceToStore.getID());
 		// array is the "external"
 		if (arrayReference.getID().equals(heap.getExternalObject().getId())) {
 			if (objectToStore.isTransitivelyReferredBy(heap.getThisInstance())) {
@@ -160,8 +167,12 @@ public class FieldsNotPublishedAnalysisVisitor extends
 			return;
 		}
 
+		ReferenceSlot referenceToPut = (ReferenceSlot) valueToPut;
+		if (referenceToPut.isNullReference())
+			return;
+
 		Heap heap = frame.getHeap();
-		HeapObject objectToPut = heap.get(((ReferenceSlot) valueToPut).getID());
+		HeapObject objectToPut = heap.get(referenceToPut.getID());
 		// target is the "external"
 		if (targetReference.getID().equals(heap.getExternalObject().getId())) {
 			if (objectToPut.isTransitivelyReferredBy(heap.getThisInstance())) {
@@ -182,6 +193,10 @@ public class FieldsNotPublishedAnalysisVisitor extends
 	@Override
 	protected void detectPutStaticBug(ReferenceSlot referenceToPut) {
 		Heap heap = frame.getHeap();
+
+		if (referenceToPut.isNullReference())
+			return;
+
 		HeapObject objectToPut = heap.get(referenceToPut.getID());
 		// XXX only a problem if it is a static field of the class we analyze
 		if (objectToPut.equals(heap.getThisInstance())) {
@@ -207,6 +222,7 @@ public class FieldsNotPublishedAnalysisVisitor extends
 		HeapObject returnObject = heap.get(returnValue.getID());
 		if (returnObject == null)
 			return;
+
 		if (returnObject.isTransitivelyReferredBy(heap.getThisInstance())) {
 			// publish Object referedBy 'this'
 			addBug(Confidence.HIGH, "a field of 'this' is published by return",
