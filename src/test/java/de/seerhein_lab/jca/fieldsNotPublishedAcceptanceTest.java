@@ -34,6 +34,13 @@ public class fieldsNotPublishedAcceptanceTest {
 	}
 
 	@NoBugsExpected
+	public static class DetectVirtualMethodBug_Null {
+		public void publish() {
+			p.publish(null);
+		}
+	}
+
+	@NoBugsExpected
 	public static class DetectVirtualMethodBug_Reference {
 		public void publish() {
 			p.publish(new Object());
@@ -90,6 +97,13 @@ public class fieldsNotPublishedAcceptanceTest {
 
 		public void publish(int[] i) {
 			i[0] = f;
+		}
+	}
+
+	@NoBugsExpected
+	public static class DetectXAStoreBug_Null {
+		public void publish(Object[] array) {
+			array[0] = null;
 		}
 	}
 
@@ -152,6 +166,13 @@ public class fieldsNotPublishedAcceptanceTest {
 	}
 
 	@NoBugsExpected
+	public static class DetectPutFieldBug_Null {
+		public void publish(TestClass tc) {
+			tc.klass = null;
+		}
+	}
+
+	@NoBugsExpected
 	public static class DetectPutFieldBug_ReferenceToExternalObject {
 		public void publish(TestClass tc) {
 			tc.klass = new Object();
@@ -206,6 +227,13 @@ public class fieldsNotPublishedAcceptanceTest {
 
 		public void publish(TestClassStatic tc) {
 			tc.i = f;
+		}
+	}
+
+	@NoBugsExpected
+	public static class DetectPutStaticBug_Null {
+		public void publish(TestClassStatic tc) {
+			tc.klass = null;
 		}
 	}
 

@@ -34,6 +34,15 @@ public class fieldsNotModifiedAcceptanceTest {
 	}
 
 	@BugsExpected
+	public static class DetectXAStoreBug_Null {
+		private final Object[] f = new Object[5];
+
+		public void modifie() {
+			f[0] = null;
+		}
+	}
+
+	@BugsExpected
 	public static class DetectXAStoreBug_ReferenceToArrayReferredByThis {
 		private final Object[] f = new Object[5];
 
@@ -77,11 +86,20 @@ public class fieldsNotModifiedAcceptanceTest {
 	}
 
 	@BugsExpected
-	public static class DetectPutFieldBug_ReferenceToObjectReferredByThis {
-		private final Object[] f = new Object[5];
+	public static class DetectPutFieldBug_Null {
+		private final TestClass f = new TestClass();
 
-		public void modifie(Object i) {
-			f[0] = i;
+		public void modifie() {
+			f.klass = null;
+		}
+	}
+
+	@BugsExpected
+	public static class DetectPutFieldBug_ReferenceToObjectReferredByThis {
+		private final TestClass f = new TestClass();
+
+		public void modifie(Object o) {
+			f.klass = o;
 		}
 	}
 

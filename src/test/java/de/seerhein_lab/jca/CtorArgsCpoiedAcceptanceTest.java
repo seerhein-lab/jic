@@ -49,6 +49,13 @@ public class CtorArgsCpoiedAcceptanceTest {
 		private final Object o = null;
 	}
 
+	@NoBugsExpected
+	public static class DetectVirtualMethodBug_Null {
+		public DetectVirtualMethodBug_Null() {
+			equals(null);
+		}
+	}
+
 	@BugsExpected
 	public static class DetectVirtualMethodBug_ReferredByThis {
 		private final Object o = new Object();
@@ -76,6 +83,15 @@ public class CtorArgsCpoiedAcceptanceTest {
 
 		public DetectXAStoreBug_Int(int i) {
 			f[0] = i;
+		}
+	}
+
+	@NoBugsExpected
+	public static class DetectXAStoreBug_Null {
+		private final Object[] f = new Object[10];
+
+		public DetectXAStoreBug_Null() {
+			f[0] = null;
 		}
 	}
 
@@ -133,6 +149,15 @@ public class CtorArgsCpoiedAcceptanceTest {
 
 		public DetectPutFieldBug_Int(int o) {
 			f = o;
+		}
+	}
+
+	@NoBugsExpected
+	public static class DetectPutFieldBug_Null {
+		private final Object f;
+
+		public DetectPutFieldBug_Null() {
+			f = null;
 		}
 	}
 
@@ -198,6 +223,13 @@ public class CtorArgsCpoiedAcceptanceTest {
 	public static class DetectPutStaticBug_This {
 		public DetectPutStaticBug_This(Object o) {
 			TestClassStatic.klass = this;
+		}
+	}
+
+	@NoBugsExpected
+	public static class DetectPutStaticBug_Null {
+		public DetectPutStaticBug_Null() {
+			TestClassStatic.klass = null;
 		}
 	}
 
