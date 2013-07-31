@@ -44,6 +44,11 @@ public class HeapTest {
 	}
 
 	@Test
+	public void testPublishNull() {
+		heap.publish(null);
+	}
+
+	@Test
 	public void testPublish() {
 		assertEquals(a, heap.get(a.getId()));
 		assertEquals(b, heap.get(b.getId()));
@@ -114,9 +119,9 @@ public class HeapTest {
 		assertEquals(heap.getExternalObject(), heap.get(f.getId()));
 	}
 
-//	@Test
-//	public void testCopyConstructor() {
-//		Heap heapCopy = new Heap(heap);
-//		assertEquals(heap, heapCopy);
-//	}
+	// @Test
+	// public void testCopyConstructor() {
+	// Heap heapCopy = new Heap(heap);
+	// assertEquals(heap, heapCopy);
+	// }
 }

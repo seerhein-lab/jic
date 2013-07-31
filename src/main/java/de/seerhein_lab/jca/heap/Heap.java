@@ -106,7 +106,8 @@ public class Heap {
 	 *            The object to be published
 	 */
 	public void publish(HeapObject obj) {
-		if (obj.getId().equals(thisID) || obj.getId().equals(externalID)) {
+		if (obj == null || obj.getId().equals(thisID)
+				|| obj.getId().equals(externalID)) {
 			// do not publish 'this' in order not to cover further bugs
 			// do not publish 'external', is already published
 			return;
@@ -120,7 +121,8 @@ public class Heap {
 				.hasNext();) {
 			HeapObject referringObject = iterator.next();
 			if (!referringObject.equals(external)) {
-				referringObject.replaceAllOccurrencesOfReferredObject(obj, external);
+				referringObject.replaceAllOccurrencesOfReferredObject(obj,
+						external);
 				external.addReferringObject(referringObject);
 			}
 		}
@@ -133,38 +135,36 @@ public class Heap {
 		}
 	}
 
-
-
-//	@Override
-//	public int hashCode() {
-//		final int prime = 31;
-//		int result = 1;
-//		result = prime * result + ((objects == null) ? 0 : objects.hashCode());
-//		result = prime
-//				* result
-//				+ ((publishedObjects == null) ? 0 : publishedObjects.hashCode());
-//		return result;
-//	}
-//
-//	@Override
-//	public boolean equals(Object obj) {
-//		if (this == obj)
-//			return true;
-//		if (obj == null)
-//			return false;
-//		if (!(obj instanceof Heap))
-//			return false;
-//		Heap other = (Heap) obj;
-//		if (objects == null) {
-//			if (other.objects != null)
-//				return false;
-//		} else if (!objects.equals(other.objects))
-//			return false;
-//		if (publishedObjects == null) {
-//			if (other.publishedObjects != null)
-//				return false;
-//		} else if (!publishedObjects.equals(other.publishedObjects))
-//			return false;
-//		return true;
-//	}
+	// @Override
+	// public int hashCode() {
+	// final int prime = 31;
+	// int result = 1;
+	// result = prime * result + ((objects == null) ? 0 : objects.hashCode());
+	// result = prime
+	// * result
+	// + ((publishedObjects == null) ? 0 : publishedObjects.hashCode());
+	// return result;
+	// }
+	//
+	// @Override
+	// public boolean equals(Object obj) {
+	// if (this == obj)
+	// return true;
+	// if (obj == null)
+	// return false;
+	// if (!(obj instanceof Heap))
+	// return false;
+	// Heap other = (Heap) obj;
+	// if (objects == null) {
+	// if (other.objects != null)
+	// return false;
+	// } else if (!objects.equals(other.objects))
+	// return false;
+	// if (publishedObjects == null) {
+	// if (other.publishedObjects != null)
+	// return false;
+	// } else if (!publishedObjects.equals(other.publishedObjects))
+	// return false;
+	// return true;
+	// }
 }
