@@ -70,6 +70,10 @@ public class CtorArgsCopiedAnalysisVisitor extends
 	@Override
 	protected void detectVirtualMethodBug(ReferenceSlot argument) {
 		Heap heap = frame.getHeap();
+
+		if (argument.isNullReference())
+			return;
+
 		if (heap.get(argument.getID()).isTransitivelyReferredBy(
 				heap.getThisInstance())) {
 			addBug(Confidence.HIGH,
@@ -85,8 +89,11 @@ public class CtorArgsCopiedAnalysisVisitor extends
 			// if the value is not a reference we do not analyze
 			return;
 		}
-
 		ReferenceSlot referenceToStore = (ReferenceSlot) valueToStore;
+
+		if (referenceToStore.isNullReference())
+			return;
+
 		Heap heap = frame.getHeap();
 		if (heap.get(arrayReference.getID()).isTransitivelyReferredBy(
 				heap.getThisInstance())) {
@@ -115,8 +122,11 @@ public class CtorArgsCopiedAnalysisVisitor extends
 			// if the value is not a reference we do not analyze
 			return;
 		}
-
 		ReferenceSlot referenceToPut = (ReferenceSlot) valueToPut;
+
+		if (referenceToPut.isNullReference())
+			return;
+
 		Heap heap = frame.getHeap();
 		if (targetReference.getID().equals(heap.getThisInstance().getId())) {
 			// left side is this
@@ -153,6 +163,9 @@ public class CtorArgsCopiedAnalysisVisitor extends
 
 	@Override
 	protected void detectPutStaticBug(ReferenceSlot referenceToPut) {
+		if (referenceToPut.isNullReference())
+			return;
+
 		Heap heap = frame.getHeap();
 		// XXX this assigned to a static field?? Only starting class?!?
 		if (referenceToPut.getID().equals(heap.getThisInstance().getId())) {
