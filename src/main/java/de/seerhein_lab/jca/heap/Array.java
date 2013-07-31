@@ -34,7 +34,6 @@ public final class Array extends HeapObject {
 		return new Array(this, heap);
 	}
 
-
 	@Override
 	public Iterator<HeapObject> getReferredIterator() {
 		return new Iterator<HeapObject>() {
@@ -61,43 +60,40 @@ public final class Array extends HeapObject {
 	 * Replace the oldObject by the newObject.
 	 */
 	@Override
-	public void replaceAllOccurrencesOfReferredObject(HeapObject oldObject, HeapObject newObject) {
-		if ( refers.remove(oldObject.getId()) )
+	public void replaceAllOccurrencesOfReferredObject(HeapObject oldObject,
+			HeapObject newObject) {
+		if (refers.remove(oldObject.getId()))
 			refers.add(newObject.getId());
 	}
 
-	
 	public void addComponent(HeapObject obj) {
-		if ( refers.add(obj.getId()) ) 
+		if (obj != null && refers.add(obj.getId()))
 			obj.addReferringObject(this);
 	}
 
-
-
-//	@Override
-//	public int hashCode() {
-//		final int prime = 31;
-//		int result = super.hashCode();
-//		result = prime * result + ((refers == null) ? 0 : refers.hashCode());
-//		return result;
-//	}
-//
-//	@Override
-//	public boolean equals(Object obj) {
-//		if (this == obj)
-//			return true;
-//		if (!super.equals(obj))
-//			return false;
-//		if (!(obj instanceof Array))
-//			return false;
-//		Array other = (Array) obj;
-//		if (refers == null) {
-//			if (other.refers != null)
-//				return false;
-//		} else if (!refers.equals(other.refers))
-//			return false;
-//		return true;
-//	}
-
+	// @Override
+	// public int hashCode() {
+	// final int prime = 31;
+	// int result = super.hashCode();
+	// result = prime * result + ((refers == null) ? 0 : refers.hashCode());
+	// return result;
+	// }
+	//
+	// @Override
+	// public boolean equals(Object obj) {
+	// if (this == obj)
+	// return true;
+	// if (!super.equals(obj))
+	// return false;
+	// if (!(obj instanceof Array))
+	// return false;
+	// Array other = (Array) obj;
+	// if (refers == null) {
+	// if (other.refers != null)
+	// return false;
+	// } else if (!refers.equals(other.refers))
+	// return false;
+	// return true;
+	// }
 
 }
