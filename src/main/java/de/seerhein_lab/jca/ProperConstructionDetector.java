@@ -26,14 +26,8 @@ public final class ProperConstructionDetector implements Detector {
 	public void visitClassContext(ClassContext classContext) {
 		JavaClass clazz = classContext.getJavaClass();
 
-		BugCollection bugs = null;
+		BugCollection bugs = new ClassAnalyzer(clazz, classContext).properlyConstructed();
 		
-		try {
-			bugs = new ClassAnalyzer(clazz, classContext)
-				.properlyConstructed();
-		} catch ( StackOverflowError e) {
-			System.out.println("Class " + clazz + " cannot be analyzed");
-		}
 
 		for (BugInstance bug : bugs) {
 			System.out.println("bug: " + bug);
