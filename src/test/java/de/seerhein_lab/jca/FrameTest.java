@@ -47,9 +47,9 @@ public class FrameTest {
 	@Before
 	public void setUp() {
 		heap = new Heap();
-		thiS = new ReferenceSlot(heap.getThisInstance());
-		someRef = new ReferenceSlot(heap.newClassInstance());
-		someOtherRef = new ReferenceSlot(heap.newArray());
+		thiS = ReferenceSlot.createNewInstance(heap.getThisInstance());
+		someRef = ReferenceSlot.createNewInstance(heap.newClassInstance());
+		someOtherRef = ReferenceSlot.createNewInstance(heap.newArray());
 	}
 
 	/**

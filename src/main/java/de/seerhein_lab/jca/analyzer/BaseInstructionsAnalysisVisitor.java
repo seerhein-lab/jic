@@ -303,7 +303,7 @@ public abstract class BaseInstructionsAnalysisVisitor extends
 
 		// return external reference if returnType reference is expected
 		if (returnValue instanceof ReferenceSlot)
-			returnValue = new ReferenceSlot(frame.getHeap().getExternalObject());
+			returnValue = ReferenceSlot.createNewInstance(frame.getHeap().getExternalObject());
 
 		// works also for void results, because number of required slots = 0
 		frame.pushStackByRequiredSlots(returnValue);
@@ -525,7 +525,7 @@ public abstract class BaseInstructionsAnalysisVisitor extends
 		for (Iterator<HeapObject> iterator = array.getReferredIterator(); iterator
 				.hasNext();) {
 			Frame newFrame = new Frame(frame);
-			newFrame.getStack().push(new ReferenceSlot(iterator.next()));
+			newFrame.getStack().push(ReferenceSlot.createNewInstance(iterator.next()));
 			BaseInstructionsAnalysisVisitor visitor = getInstructionsAnalysisVisitor(
 					newFrame, alreadyVisitedIfBranch,
 					instructionHandle.getNext());
@@ -654,7 +654,7 @@ public abstract class BaseInstructionsAnalysisVisitor extends
 		bugs.add(new BugInstance(
 				"Untested Code Warning: Executing JSR instruction", 1));
 		frame.getStack().push(
-				new ReferenceSlot(frame.getHeap().newClassInstance()));
+				ReferenceSlot.createNewInstance(frame.getHeap().newClassInstance()));
 		InstructionHandle savedInstructionHandle = instructionHandle;
 		instructionHandle = obj.getTarget();
 		instructionHandle.accept(this);
@@ -721,7 +721,7 @@ public abstract class BaseInstructionsAnalysisVisitor extends
 		frame.getStack().pop();
 
 		// pushes new array reference
-		frame.getStack().push(new ReferenceSlot(frame.getHeap().newArray()));
+		frame.getStack().push(ReferenceSlot.createNewInstance(frame.getHeap().newArray()));
 
 		instructionHandle = instructionHandle.getNext();
 		instructionHandle.accept(this);
@@ -758,7 +758,7 @@ public abstract class BaseInstructionsAnalysisVisitor extends
 		result.addAll(regularCaseVisitor.getResult());
 
 		// 2nd case: type cast is invalid, throw ClassCastException
-		handleException(new ReferenceSlot(frame.getHeap().newClassInstance()));
+		handleException(ReferenceSlot.createNewInstance(frame.getHeap().newClassInstance()));
 	}
 
 	/**
@@ -781,10 +781,10 @@ public abstract class BaseInstructionsAnalysisVisitor extends
 		if (f instanceof ReferenceSlot) {
 			if (o.getID().equals(frame.getHeap().getExternalObject().getId())) {
 				// if left side is external return external
-				f = new ReferenceSlot(frame.getHeap().getExternalObject());
+				f = ReferenceSlot.createNewInstance(frame.getHeap().getExternalObject());
 			} else {
 				// get the ClassInstance linked to the desired field
-				f = new ReferenceSlot(((ClassInstance) frame.getHeap().get(
+				f = ReferenceSlot.createNewInstance(((ClassInstance) frame.getHeap().get(
 						o.getID())).getField(obj.getFieldName(constantPoolGen)));
 			}
 		}
@@ -820,7 +820,7 @@ public abstract class BaseInstructionsAnalysisVisitor extends
 		// if a reference is expected
 		if (f instanceof ReferenceSlot) {
 			// static values are always external
-			f = new ReferenceSlot(frame.getHeap().getExternalObject());
+			f = ReferenceSlot.createNewInstance(frame.getHeap().getExternalObject());
 		}
 
 		log.append((f instanceof DoubleSlot || f instanceof LongSlot) ? f
@@ -964,7 +964,7 @@ public abstract class BaseInstructionsAnalysisVisitor extends
 		// (notThis) onto the stack
 		if (value instanceof ReferenceSlot) {
 			// it is a String
-			value = new ReferenceSlot(frame.getHeap().newClassInstance());
+			value = ReferenceSlot.createNewInstance(frame.getHeap().newClassInstance());
 		}
 		frame.pushStackByRequiredSlots(value);
 
@@ -986,7 +986,7 @@ public abstract class BaseInstructionsAnalysisVisitor extends
 		// (notThis) onto the stack
 		if (value instanceof ReferenceSlot) {
 			// it is a String
-			value = new ReferenceSlot(frame.getHeap().newClassInstance());
+			value = ReferenceSlot.createNewInstance(frame.getHeap().newClassInstance());
 		}
 		frame.pushStackByRequiredSlots(value);
 
@@ -1023,7 +1023,7 @@ public abstract class BaseInstructionsAnalysisVisitor extends
 			Array newArray = frame.getHeap().newArray();
 
 			if (i == 0) {
-				slot = new ReferenceSlot(newArray);
+				slot = ReferenceSlot.createNewInstance(newArray);
 			} else {
 				array.addComponent(newArray);
 			}
@@ -1049,7 +1049,7 @@ public abstract class BaseInstructionsAnalysisVisitor extends
 		logger.log(Level.FINE, indentation + obj.toString(false));
 
 		ClassInstance instance = frame.getHeap().newClassInstance();
-		ReferenceSlot slot = new ReferenceSlot(instance);
+		ReferenceSlot slot = ReferenceSlot.createNewInstance(instance);
 
 		frame.getStack().push(slot);
 
@@ -1075,7 +1075,7 @@ public abstract class BaseInstructionsAnalysisVisitor extends
 		frame.getStack().pop();
 
 		// push reference to new array onto the stack
-		ReferenceSlot slot = new ReferenceSlot(frame.getHeap().newArray());
+		ReferenceSlot slot = ReferenceSlot.createNewInstance(frame.getHeap().newArray());
 
 		frame.getStack().push(slot);
 

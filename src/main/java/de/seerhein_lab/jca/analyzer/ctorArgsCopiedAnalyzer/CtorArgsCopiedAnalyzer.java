@@ -43,9 +43,9 @@ public class CtorArgsCopiedAnalyzer extends BaseMethodAnalyzer {
 		Stack<Slot> callerStack = new Stack<Slot>();
 		Heap callerHeap = new Heap();
 
-		ReferenceSlot thisReference = new ReferenceSlot(
+		ReferenceSlot thisReference = ReferenceSlot.createNewInstance(
 				callerHeap.getThisInstance());
-		ReferenceSlot externalReference = new ReferenceSlot(
+		ReferenceSlot externalReference = ReferenceSlot.createNewInstance(
 				callerHeap.getExternalObject());
 
 		// push this + args onto the stack

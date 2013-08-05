@@ -47,12 +47,12 @@ public class FieldsNotPublishedMethodAnalyzer extends BaseMethodAnalyzer {
 		for (Heap callerHeap : heaps) {
 			Stack<Slot> callerStack = new Stack<Slot>();
 
-			Slot externalReference = new ReferenceSlot(
+			Slot externalReference = ReferenceSlot.createNewInstance(
 					callerHeap.getExternalObject());
 
 			// push args + this (if not static) onto the stack
 			if (!method.isStatic()) {
-				Slot thisReference = new ReferenceSlot(
+				Slot thisReference = ReferenceSlot.createNewInstance(
 						callerHeap.getThisInstance());
 				callerStack.push(thisReference);
 			}

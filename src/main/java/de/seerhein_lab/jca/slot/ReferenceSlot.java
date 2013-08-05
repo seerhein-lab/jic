@@ -13,11 +13,18 @@ public class ReferenceSlot extends Slot {
 		objectID = null;
 	}
 
-	public ReferenceSlot(HeapObject object) {
+	private ReferenceSlot(HeapObject object) {
 		if (object == null)
 			throw new NullPointerException("argument must not be null");
 
 		this.objectID = object.getId();
+	}
+
+	public static ReferenceSlot createNewInstance(HeapObject object) {
+		if (object == null)
+			return getNullReference();
+		else
+			return new ReferenceSlot(object);
 	}
 
 	public static ReferenceSlot getNullReference() {
