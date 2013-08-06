@@ -7,6 +7,9 @@ import edu.umd.cs.findbugs.BugCollection;
 import edu.umd.cs.findbugs.BugInstance;
 import edu.umd.cs.findbugs.BugReporter;
 import edu.umd.cs.findbugs.Detector;
+import edu.umd.cs.findbugs.SortedBugCollection;
+import edu.umd.cs.findbugs.SourceLineAnnotation;
+import edu.umd.cs.findbugs.annotations.Confidence;
 import edu.umd.cs.findbugs.ba.ClassContext;
 
 public final class JcaDetector implements Detector {
@@ -26,8 +29,20 @@ public final class JcaDetector implements Detector {
 	public void visitClassContext(ClassContext classContext) {
 		JavaClass clazz = classContext.getJavaClass();
 
-		BugCollection bugs = new ClassAnalyzer(clazz, classContext).isImmutable();
-
+		BugCollection bugs = null;
+		
+		try {
+			bugs = new ClassAnalyzer(clazz, classContext).isImmutable();
+		} catch ( Throwable e) {
+			bugs = new SortedBugCollection();
+			BugInstance bug = new BugInstance("PROPER_CONSTRUCTION_BUG", 
+						Confidence.HIGH.getConfidenceValue());
+			bug.addString("Class cannot be analyzed owing to internal problems");
+			bug.addClass(clazz);
+			bug.addSourceLine(SourceLineAnnotation.createUnknown(clazz.getClassName()));
+			bugs.add(bug);
+		}
+			
 		for (BugInstance bug : bugs) {
 			System.out.println("bug: " + bug);
 			reporter.reportBug(bug);
