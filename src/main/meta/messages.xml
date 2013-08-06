@@ -3,12 +3,11 @@
         xsi:noNamespaceSchemaLocation="messagecollection.xsd">
 
         <Plugin>
-                <ShortDescription>Proper Construction Plugin</ShortDescription>
-                <Details>Checks if a class is properly constructed, i.e. that the 'this' reference does not 
-                	escape during construction.</Details>
+                <ShortDescription>JCA Plugin</ShortDescription>
+                <Details>Jaca Concurrency Analyzer Plugin</Details>
         </Plugin>
 
-        <Detector class="de.seerhein_lab.jca.ProperConstructionDetector">
+        <Detector class="de.seerhein_lab.jca.JcaDetector">
                 <Details>
                         Starts proper construction check for class under inspection.
                 </Details>
@@ -16,7 +15,7 @@
         </Detector>
 
         <BugPattern type="PROPER_CONSTRUCTION_BUG">
-                <ShortDescription>Improper construction [v1.9]</ShortDescription>
+                <ShortDescription>Improper construction [v2.0]</ShortDescription>
                 <LongDescription>Improper construction: {0}</LongDescription>
                 <Details>
 <![CDATA[
