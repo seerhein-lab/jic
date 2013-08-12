@@ -8,6 +8,7 @@ import java.util.Set;
 import org.apache.bcel.classfile.Field;
 import org.apache.bcel.classfile.JavaClass;
 import org.apache.bcel.classfile.Method;
+import org.apache.bcel.generic.BasicType;
 import org.apache.bcel.generic.ConstantPoolGen;
 import org.apache.bcel.generic.MethodGen;
 
@@ -35,13 +36,34 @@ public class ClassAnalyzer {
 		classHelper = new ClassHelper(clazz);
 	}
 
-
 	private BugCollection allFieldsFinal() {
 		BugCollection bugs = new SortedBugCollection();
 		Field[] fields = clazz.getFields();
 		for (Field field : fields)
-			if (!field.isStatic() && !field.isFinal())
-				bugs.add(new BugInstance("Error: field must be final", 2));
+			if (!field.isStatic() && !field.isFinal()) {
+				BugInstance bugInstance = new BugInstance(
+						"ALL_FIELDS_FINAL_BUG", 2);
+				bugInstance.addClass(clazz); // TODO Bug handling
+				bugInstance.addField(clazz.getClassName(), field.getName(),
+						field.getSignature(), false);
+				bugs.add(bugInstance);
+			}
+		return bugs;
+	}
+
+	private BugCollection allReferenceFieldsPrivate() {
+		BugCollection bugs = new SortedBugCollection();
+		Field[] fields = clazz.getFields();
+		for (Field field : fields)
+			if (!field.isStatic() && !(field.getType() instanceof BasicType)
+					&& !field.isPrivate()) {
+				BugInstance bugInstance = new BugInstance(
+						"ALL_REFERENCE_FIEDS_PRIVATE_BUG", 2);
+				bugInstance.addClass(clazz); // TODO Bug handling
+				bugInstance.addField(clazz.getClassName(), field.getName(),
+						field.getSignature(), false);
+				bugs.add(bugInstance);
+			}
 		return bugs;
 	}
 
@@ -62,8 +84,6 @@ public class ClassAnalyzer {
 		}
 		return bugs;
 	}
-
-
 
 	// TODO set private when testing is complete
 	public SortedBugCollection ctorParamsAreCopied() {
@@ -148,10 +168,10 @@ public class ClassAnalyzer {
 	public BugCollection isImmutable() {
 		SortedBugCollection bugs = new SortedBugCollection();
 		bugs.addAll(allFieldsFinal().getCollection());
+		bugs.addAll(allReferenceFieldsPrivate().getCollection());
 		bugs.addAll(properlyConstructed().getCollection());
 		bugs.addAll(stateUnmodifiable().getCollection());
 		return bugs;
 	}
-
 
 }

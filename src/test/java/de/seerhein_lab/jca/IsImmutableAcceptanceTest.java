@@ -1,13 +1,12 @@
 package de.seerhein_lab.jca;
 
-import org.junit.Ignore;
 import org.junit.runner.RunWith;
 
 import de.seerhein_lab.jca.analyzer.ClassAnalyzer;
-import de.seerhein_lab.jca.testutils.ClassAnalyzerRunner;
 import de.seerhein_lab.jca.testutils.BugsExpected;
-import de.seerhein_lab.jca.testutils.NoBugsExpected;
+import de.seerhein_lab.jca.testutils.ClassAnalyzerRunner;
 import de.seerhein_lab.jca.testutils.ClassAnalyzerRunner.BindAnalyzerMethod;
+import de.seerhein_lab.jca.testutils.NoBugsExpected;
 import edu.umd.cs.findbugs.BugCollection;
 
 /**
@@ -18,7 +17,7 @@ import edu.umd.cs.findbugs.BugCollection;
  * 
  * @see IsImmutableTestRunner
  */
-@Ignore("activate this test class when the method IsImmutable will be implemented.")
+// @Ignore("activate this test class when the method IsImmutable will be implemented.")
 @RunWith(ClassAnalyzerRunner.class)
 public class IsImmutableAcceptanceTest {
 
@@ -48,7 +47,7 @@ public class IsImmutableAcceptanceTest {
 	 */
 	@NoBugsExpected
 	public static class Story03_ImmutableClassWithFinalField {
-		final Object value = 01;
+		final int value = 01;
 	}
 
 	/**
@@ -66,7 +65,7 @@ public class IsImmutableAcceptanceTest {
 	 */
 	@BugsExpected
 	public static class Story05_ClassWithNonFinalField {
-		Object value = 01;
+		Object value = new Object();
 	}
 
 	/**
