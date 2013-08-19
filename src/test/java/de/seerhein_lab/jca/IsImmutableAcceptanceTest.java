@@ -1,5 +1,6 @@
 package de.seerhein_lab.jca;
 
+import org.junit.Ignore;
 import org.junit.runner.RunWith;
 
 import de.seerhein_lab.jca.analyzer.ClassAnalyzer;
@@ -47,7 +48,7 @@ public class IsImmutableAcceptanceTest {
 	 */
 	@NoBugsExpected
 	public static class Story03_ImmutableClassWithFinalField {
-		final int value = 01;
+		final Object value = null;
 	}
 
 	/**
@@ -65,7 +66,7 @@ public class IsImmutableAcceptanceTest {
 	 */
 	@BugsExpected
 	public static class Story05_ClassWithNonFinalField {
-		Object value = new Object();
+		Object value = null;
 	}
 
 	/**

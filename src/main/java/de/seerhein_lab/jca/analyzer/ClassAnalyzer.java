@@ -170,7 +170,7 @@ public class ClassAnalyzer {
 		bugs.addAll(allFieldsFinal().getCollection());
 		bugs.addAll(allReferenceFieldsPrivate().getCollection());
 		bugs.addAll(properlyConstructed().getCollection());
-		bugs.addAll(stateUnmodifiable().getCollection());
+//		bugs.addAll(stateUnmodifiable().getCollection());
 		return bugs;
 	}
 

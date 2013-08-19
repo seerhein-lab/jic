@@ -32,12 +32,17 @@ public final class JcaDetector implements Detector {
 		BugCollection bugs = null;
 		
 		try {
-			bugs = new ClassAnalyzer(clazz, classContext).isImmutable();
+			bugs = new ClassAnalyzer(clazz, classContext).properlyConstructed();
 		} catch ( Throwable e) {
 			bugs = new SortedBugCollection();
 			BugInstance bug = new BugInstance("PROPER_CONSTRUCTION_BUG", 
 						Confidence.HIGH.getConfidenceValue());
-			bug.addString("Class cannot be analyzed owing to internal problems");
+			//bug.addString("Class cannot be analyzed owing to internal problem.");
+			StringBuilder builder = new StringBuilder();
+			for ( StackTraceElement element : e.getStackTrace())
+				builder.append(element.toString());
+			bug.addString(builder.toString());
+			
 			bug.addClass(clazz);
 			bug.addSourceLine(SourceLineAnnotation.createUnknown(clazz.getClassName()));
 			bugs.add(bug);

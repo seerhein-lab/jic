@@ -1,5 +1,8 @@
 package lightningtalk;
 
+import net.jcip.annotations.Immutable;
+
+@Immutable
 public class SimpleEventListener implements EventListener {
 	private final int state;
 
