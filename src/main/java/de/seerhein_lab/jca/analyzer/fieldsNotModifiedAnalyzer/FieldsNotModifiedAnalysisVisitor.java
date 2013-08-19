@@ -58,12 +58,6 @@ public class FieldsNotModifiedAnalysisVisitor extends
 				targetMethodGen, alreadyVisitedMethods, depth);
 	}
 
-	@Override
-	protected String getBugType() {
-		// TODO
-		return "FIELD_MODIFIED_BUG";
-	}
-
 	// ******************************************************************//
 	// Bug detection section //
 	// ******************************************************************//

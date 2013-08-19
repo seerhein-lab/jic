@@ -8,8 +8,8 @@ import org.apache.bcel.generic.ConstantPoolGen;
 import org.apache.bcel.generic.InstructionHandle;
 import org.apache.bcel.generic.MethodGen;
 
-import de.seerhein_lab.jca.Pair;
 import de.seerhein_lab.jca.Frame;
+import de.seerhein_lab.jca.Pair;
 import de.seerhein_lab.jca.analyzer.BaseInstructionsAnalysisVisitor;
 import de.seerhein_lab.jca.analyzer.BaseMethodAnalyzer;
 import de.seerhein_lab.jca.heap.Heap;
@@ -21,11 +21,8 @@ import edu.umd.cs.findbugs.ba.ClassContext;
 public class PropConInstructionsAnalysisVisitor extends
 		BaseInstructionsAnalysisVisitor {
 
-	protected PropConInstructionsAnalysisVisitor(
-			ClassContext classContext,
-			Method method,
-			Frame frame,
-			ConstantPoolGen constantPoolGen,
+	protected PropConInstructionsAnalysisVisitor(ClassContext classContext,
+			Method method, Frame frame, ConstantPoolGen constantPoolGen,
 			Set<Pair<InstructionHandle, Boolean>> alreadyVisitedIfBranch,
 			Set<Pair<Method, Slot[]>> alreadyVisitedMethods,
 			InstructionHandle instructionHandle,
@@ -59,11 +56,6 @@ public class PropConInstructionsAnalysisVisitor extends
 	protected BaseMethodAnalyzer getMethodAnalyzer(MethodGen targetMethodGen) {
 		return new PropConMethodAnalyzer(classContext, targetMethodGen,
 				alreadyVisitedMethods, depth);
-	}
-
-	@Override
-	protected String getBugType() {
-		return "PROPER_CONSTRUCTION_BUG";
 	}
 
 	// ******************************************************************//

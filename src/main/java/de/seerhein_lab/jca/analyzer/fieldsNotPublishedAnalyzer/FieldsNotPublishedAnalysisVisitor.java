@@ -65,12 +65,6 @@ public class FieldsNotPublishedAnalysisVisitor extends
 	}
 
 	@Override
-	protected String getBugType() {
-		// TODO
-		return "FIELDS_PUBILSHED_BUG";
-	}
-
-	@Override
 	public void visitReturnInstruction(ReturnInstruction obj) {
 		// return 0xb1 (void)
 		// areturn 0xb0

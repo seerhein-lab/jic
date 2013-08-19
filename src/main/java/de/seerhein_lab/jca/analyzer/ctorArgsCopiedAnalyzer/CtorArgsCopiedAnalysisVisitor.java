@@ -57,12 +57,6 @@ public class CtorArgsCopiedAnalysisVisitor extends
 				alreadyVisitedMethods, depth);
 	}
 
-	@Override
-	protected String getBugType() {
-		// TODO
-		return "CTOR_ARGS_NOT_COPIED_BUG";
-	}
-
 	// ******************************************************************//
 	// Bug detection section //
 	// ******************************************************************//
