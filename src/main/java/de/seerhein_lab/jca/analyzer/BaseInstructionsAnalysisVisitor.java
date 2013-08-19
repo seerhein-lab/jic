@@ -1,5 +1,6 @@
 package de.seerhein_lab.jca.analyzer;
 
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
@@ -243,8 +244,13 @@ public abstract class BaseInstructionsAnalysisVisitor extends
 		}
 
 		targetMethodAnalyzer.analyze(frame);
+		
+		if ( !targetMethodAnalyzer.getBugs().getCollection().isEmpty() ) {
+			addBug(Confidence.HIGH, "class calls a faulty method of another class", 
+					instructionHandle);
+			bugs.addAll(targetMethodAnalyzer.getBugs().getCollection());
+		}
 
-		bugs.addAll(targetMethodAnalyzer.getBugs().getCollection());
 
 		Set<ResultValue> calleeResults = targetMethodAnalyzer.getResult();
 

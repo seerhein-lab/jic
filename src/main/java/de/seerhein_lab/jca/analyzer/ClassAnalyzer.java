@@ -42,6 +42,7 @@ public class ClassAnalyzer {
 		for (Field field : fields)
 			if (!field.isStatic() && !field.isFinal()) {
 				BugInstance bugInstance = new BugInstance("IMMUTABILITY_BUG", 2);
+				bugInstance.addString("All fields must be final.");
 				bugInstance.addClass(clazz); // TODO Bug handling
 				bugInstance.addField(clazz.getClassName(), field.getName(),
 						field.getSignature(), false);
@@ -57,6 +58,7 @@ public class ClassAnalyzer {
 			if (!field.isStatic() && !(field.getType() instanceof BasicType)
 					&& !field.isPrivate()) {
 				BugInstance bugInstance = new BugInstance("IMMUTABILITY_BUG", 2);
+				bugInstance.addString("Reference fields must be private.");
 				bugInstance.addClass(clazz); // TODO Bug handling
 				bugInstance.addField(clazz.getClassName(), field.getName(),
 						field.getSignature(), false);

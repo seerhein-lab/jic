@@ -16,7 +16,7 @@
 
         <BugPattern type="IMMUTABILITY_BUG">
                 <ShortDescription>Immutability bug [v2.0]</ShortDescription>
-                <LongDescription>Immutability bug {0}</LongDescription>
+                <LongDescription>Immutability bug: {0}</LongDescription>
                 <Details>
 <![CDATA[
 <p>The class is annoted with @Immutable but is mutable, or its instances are not properly constructed

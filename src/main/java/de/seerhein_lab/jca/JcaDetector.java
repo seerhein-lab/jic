@@ -28,7 +28,7 @@ public final class JcaDetector implements Detector {
 	@Override
 	public void visitClassContext(ClassContext classContext) {
 		JavaClass clazz = classContext.getJavaClass();
-
+		
 		BugCollection bugs = null;
 		
 		try {
