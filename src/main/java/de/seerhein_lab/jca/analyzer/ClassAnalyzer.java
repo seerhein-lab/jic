@@ -58,7 +58,7 @@ public class ClassAnalyzer {
 			if (!field.isStatic() && !(field.getType() instanceof BasicType)
 					&& !field.isPrivate()) {
 				BugInstance bugInstance = new BugInstance(
-						"ALL_REFERENCE_FIEDS_PRIVATE_BUG", 2);
+						"ALL_REFERENCE_FIELDS_PRIVATE_BUG", 2);
 				bugInstance.addClass(clazz); // TODO Bug handling
 				bugInstance.addField(clazz.getClassName(), field.getName(),
 						field.getSignature(), false);
