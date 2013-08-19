@@ -48,9 +48,16 @@ public class IsImmutableAcceptanceTest {
 	 */
 	@NoBugsExpected
 	public static class Story03_ImmutableClassWithFinalField {
+		final private Object value = null;
+	}
+
+	@BugsExpected
+	public static class Story03a_ImmutableClassWithFinalField {
 		final Object value = null;
 	}
 
+	
+	
 	/**
 	 * Class with a private field, the value of the private field could not be
 	 * changed.
@@ -58,9 +65,16 @@ public class IsImmutableAcceptanceTest {
 	@NoBugsExpected
 	public static class Story04_ImmutableClassWithPrivateField {
 		@SuppressWarnings("unused")
-		private String value = "01";
+		private final String value = "01";
 	}
 
+	@BugsExpected
+	public static class Story04a_ImmutableClassWithPrivateField {
+		@SuppressWarnings("unused")
+		private String value = "01";
+	}
+	
+	
 	/**
 	 * Not Immutable class because the field value could be changed.
 	 */
@@ -85,7 +99,7 @@ public class IsImmutableAcceptanceTest {
 	 * Immutable class because class with mutable state but the reference of to
 	 * the state is not access able.
 	 */
-	@BugsExpected
+	@NoBugsExpected
 	public static class Story07_ClassWithNoAccessToMutableState {
 
 		public static class StringHolder {
