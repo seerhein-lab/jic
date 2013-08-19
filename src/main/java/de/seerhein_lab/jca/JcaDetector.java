@@ -14,6 +14,8 @@ import edu.umd.cs.findbugs.annotations.Confidence;
 import edu.umd.cs.findbugs.ba.ClassContext;
 
 public final class JcaDetector implements Detector {
+	
+	private final static String IMMUTABLE_ANNOTATION =  "Lnet/jcip/annotations/Immutable;";
 	private final BugReporter reporter;
 
 	public JcaDetector(BugReporter reporter) {
@@ -22,8 +24,14 @@ public final class JcaDetector implements Detector {
 
 	@Override
 	public void report() {
-		// TODO Auto-generated method stub
-
+	}
+	
+	
+	private boolean supposedlyImmutable(JavaClass clazz) {
+		for ( AnnotationEntry annotation : clazz.getAnnotationEntries() ) 
+			if ( annotation.getAnnotationType().equals(IMMUTABLE_ANNOTATION)) 
+				return true;
+		return false;
 	}
 
 	@Override
@@ -31,33 +39,16 @@ public final class JcaDetector implements Detector {
 		JavaClass clazz = classContext.getJavaClass();
 		
 		BugCollection bugs = null;
-		
-		AnnotationEntry[] annotations = clazz.getAnnotationEntries();
-		
-		boolean supposedToBeImmutable = false;
-		
-		for ( AnnotationEntry annotation : annotations ) {
-			if ( annotation.getAnnotationType().equals("Immutable")) {
-				supposedToBeImmutable = true;
-				break;
-			}
-		}
-		
-		
-		
-		
+				
 		try {
-			bugs = new ClassAnalyzer(clazz, classContext).isImmutable();
+			bugs = supposedlyImmutable(clazz) ? 
+					new ClassAnalyzer(clazz, classContext).isImmutable():
+					new ClassAnalyzer(clazz, classContext).properlyConstructed();	
 		} catch ( Throwable e) {
 			bugs = new SortedBugCollection();
 			BugInstance bug = new BugInstance("IMMUTABILITY_BUG", 
 						Confidence.HIGH.getConfidenceValue());
 			bug.addString("Class cannot be analyzed owing to internal problem.");
-//			StringBuilder builder = new StringBuilder();
-//			for ( StackTraceElement element : e.getStackTrace())
-//				builder.append(element.toString());
-//			bug.addString(builder.toString());
-			
 			bug.addClass(clazz);
 			bug.addSourceLine(SourceLineAnnotation.createUnknown(clazz.getClassName()));
 			bugs.add(bug);
