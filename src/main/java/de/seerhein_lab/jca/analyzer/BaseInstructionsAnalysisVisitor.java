@@ -246,7 +246,10 @@ public abstract class BaseInstructionsAnalysisVisitor extends
 		targetMethodAnalyzer.analyze(frame);
 		
 		if ( !targetMethodAnalyzer.getBugs().getCollection().isEmpty() ) {
-			addBug(Confidence.HIGH, "class calls a faulty method of another class", 
+			addBug(Confidence.HIGH, "call of faulty method " 
+					+ targetClass.getClassName() + "." 
+					+ targetMethod.getName()
+					+ " renders this class also faulty w.r.t immutability",
 					instructionHandle);
 			bugs.addAll(targetMethodAnalyzer.getBugs().getCollection());
 		}
