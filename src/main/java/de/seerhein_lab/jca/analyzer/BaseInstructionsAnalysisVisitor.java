@@ -245,16 +245,18 @@ public abstract class BaseInstructionsAnalysisVisitor extends
 
 		targetMethodAnalyzer.analyze(frame);
 		
-		if ( !targetMethodAnalyzer.getBugs().getCollection().isEmpty() ) {
-			addBug(Confidence.HIGH, "call of faulty method " 
+		for ( Iterator<BugInstance> it = targetMethodAnalyzer.getBugs().iterator(); it.hasNext(); ) {
+			BugInstance bug = it.next();
+			addBug(Confidence.HIGH, 					
+					"nested bug in " 
 					+ targetClass.getClassName() + "." 
-					+ targetMethod.getName()
-					+ " renders this class also faulty w.r.t immutability",
+					+ targetMethod.getName() + ":"
+					+ bug.getPrimarySourceLineAnnotation().getStartLine() + ": "
+					+ bug.getMessage(), 
 					instructionHandle);
-			bugs.addAll(targetMethodAnalyzer.getBugs().getCollection());
 		}
-
-
+		
+		
 		Set<ResultValue> calleeResults = targetMethodAnalyzer.getResult();
 
 		for (ResultValue calleeResult : calleeResults) {

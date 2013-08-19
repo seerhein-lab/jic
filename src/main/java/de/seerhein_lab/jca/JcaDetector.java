@@ -1,5 +1,6 @@
 package de.seerhein_lab.jca;
 
+import org.apache.bcel.classfile.AnnotationEntry;
 import org.apache.bcel.classfile.JavaClass;
 
 import de.seerhein_lab.jca.analyzer.ClassAnalyzer;
@@ -13,7 +14,7 @@ import edu.umd.cs.findbugs.annotations.Confidence;
 import edu.umd.cs.findbugs.ba.ClassContext;
 
 public final class JcaDetector implements Detector {
-	private BugReporter reporter;
+	private final BugReporter reporter;
 
 	public JcaDetector(BugReporter reporter) {
 		this.reporter = reporter;
@@ -30,6 +31,20 @@ public final class JcaDetector implements Detector {
 		JavaClass clazz = classContext.getJavaClass();
 		
 		BugCollection bugs = null;
+		
+		AnnotationEntry[] annotations = clazz.getAnnotationEntries();
+		
+		boolean supposedToBeImmutable = false;
+		
+		for ( AnnotationEntry annotation : annotations ) {
+			if ( annotation.getAnnotationType().equals("Immutable")) {
+				supposedToBeImmutable = true;
+				break;
+			}
+		}
+		
+		
+		
 		
 		try {
 			bugs = new ClassAnalyzer(clazz, classContext).isImmutable();
