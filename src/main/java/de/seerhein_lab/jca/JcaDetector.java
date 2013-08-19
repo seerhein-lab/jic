@@ -32,7 +32,7 @@ public final class JcaDetector implements Detector {
 		BugCollection bugs = null;
 		
 		try {
-			bugs = new ClassAnalyzer(clazz, classContext).properlyConstructed();
+			bugs = new ClassAnalyzer(clazz, classContext).isImmutable();
 		} catch ( Throwable e) {
 			bugs = new SortedBugCollection();
 			BugInstance bug = new BugInstance("PROPER_CONSTRUCTION_BUG", 
