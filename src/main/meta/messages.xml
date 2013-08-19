@@ -14,17 +14,17 @@
 
         </Detector>
 
-        <BugPattern type="PROPER_CONSTRUCTION_BUG">
-                <ShortDescription>Improper construction [v2.0]</ShortDescription>
-                <LongDescription>Improper construction: {0}</LongDescription>
+        <BugPattern type="IMMUTABILITY_BUG">
+                <ShortDescription>Immutability bug [v2.0]</ShortDescription>
+                <LongDescription>Immutability bug {0}</LongDescription>
                 <Details>
 <![CDATA[
-<p>The reference of the object under construction escapes prematurely. 
-	This might let others see the object in an incomplete, invalid state.
+<p>The class is annoted with @Immutable but is mutable, or its instances are not properly constructed
+	(also applies to intentionally mutable classes).
 </p>
 ]]>
                 </Details>
         </BugPattern>
 
-        <BugCode abbrev="PC">Improper construction</BugCode>
+        <BugCode abbrev="IM">Immutability</BugCode>
 </MessageCollection>
