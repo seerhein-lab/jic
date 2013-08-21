@@ -250,7 +250,8 @@ public abstract class BaseInstructionsAnalysisVisitor extends
 			addBug(Confidence.HIGH, 					
 					"nested bug in " 
 					+ targetClass.getClassName() + "." 
-					+ targetMethod.getName() + ":"
+					+ targetMethod.getName() 
+					+ targetMethod.getSignature() + ":"
 					+ bug.getPrimarySourceLineAnnotation().getStartLine() + ": "
 					+ bug.getMessage(), 
 					instructionHandle);
