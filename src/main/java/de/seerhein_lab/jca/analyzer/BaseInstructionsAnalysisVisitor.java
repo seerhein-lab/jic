@@ -229,6 +229,13 @@ public abstract class BaseInstructionsAnalysisVisitor extends
 		MethodGen targetMethodGen = new MethodGen(targetMethod,
 				targetClass.getClassName(), new ConstantPoolGen(
 						targetClass.getConstantPool()));
+		
+		if ( targetMethod.isNative() ) {
+			logger.log(Level.FINE, indentation
+					+ "Native method must be dealt with like virtual method.");
+			handleVirtualMethod(obj, true);
+			return;
+		}
 
 		BaseMethodAnalyzer targetMethodAnalyzer = getMethodAnalyzer(targetMethodGen);
 
@@ -239,7 +246,7 @@ public abstract class BaseInstructionsAnalysisVisitor extends
 			logger.log(Level.FINE, indentation
 					+ "Recursion found: Method already analyzed.");
 			// if already visited then do not analyze again
-			handleVirtualMethod(obj);
+			handleVirtualMethod(obj, false);
 			return;
 		}
 
@@ -287,7 +294,7 @@ public abstract class BaseInstructionsAnalysisVisitor extends
 	 * @param obj
 	 *            node to be visited
 	 */
-	protected void handleVirtualMethod(InvokeInstruction obj) {
+	protected void handleVirtualMethod(InvokeInstruction obj, boolean isStatic) {
 		logger.log(Level.FINE, indentation + obj.toString(false));
 		logger.log(Level.FINEST,
 				indentation + "\t" + obj.getSignature(constantPoolGen));
@@ -298,7 +305,10 @@ public abstract class BaseInstructionsAnalysisVisitor extends
 		Slot argument;
 		// pop a value for each arg and 1 for the hidden 'this' reference
 
-		for (int i = 0; i < type.length + 1; i++) {
+		int arguments = isStatic ? type.length : type.length +1;
+		
+		
+		for (int i = 0; i < arguments; i++) {
 			argument = frame.popStackByRequiredSlots();
 			if (argument instanceof ReferenceSlot) {
 				ReferenceSlot reference = (ReferenceSlot) argument;
@@ -938,7 +948,7 @@ public abstract class BaseInstructionsAnalysisVisitor extends
 	 */
 	@Override
 	public void visitINVOKEINTERFACE(INVOKEINTERFACE obj) {
-		handleVirtualMethod(obj);
+		handleVirtualMethod(obj, false);
 	}
 
 	/**
@@ -968,7 +978,7 @@ public abstract class BaseInstructionsAnalysisVisitor extends
 	 */
 	@Override
 	public void visitINVOKEVIRTUAL(INVOKEVIRTUAL obj) {
-		handleVirtualMethod(obj);
+		handleVirtualMethod(obj, false);
 	}
 
 	/**
