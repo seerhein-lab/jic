@@ -15,16 +15,16 @@ public class Frame {
 
 
 	/**
-	 * Constructor. Pops numSlots values from the callerStack and stores them
-	 * into an array localVars with size maxLocals. maxLocals must be a positive
-	 * number.
+	 * Constructor that copies numSlots entries from the callerStack into the newly created 
+	 * localVars of size maxLocals. Note that the copied entries are consumed from the 
+	 * callerStack. The new frame uses the same heap as the callerFrame.
 	 * 
 	 * @param maxLocals
 	 *            The size of the localVars array.
 	 * @param callerFrame
 	 *            The caller's frame.
 	 * @param numSlots
-	 *            Number of values to be popped from the callerStack.
+	 *            Number of values to be copied from the callerStack into the localVars array.
 	 */
 	public Frame(int maxLocals, Frame callerFrame, int numSlots) {
 		localVars = new Slot[maxLocals];
