@@ -5,11 +5,11 @@
   <version>2.0</version>
   <name>jca</name>
   	<dependencies>
-  		<dependency>
-  			<groupId>org.apache.bcel</groupId>
-  			<artifactId>bcel</artifactId>
-  			<version>5.2</version>
-  		</dependency>
+<!--   		<dependency> -->
+<!--   			<groupId>org.apache.bcel</groupId> -->
+<!--   			<artifactId>bcel</artifactId> -->
+<!--   			<version>5.2</version> -->
+<!--   		</dependency> -->
   		<dependency>
 			<groupId>com.google.code.findbugs</groupId>
 			<artifactId>findbugs</artifactId>
@@ -31,6 +31,7 @@
   		<plugins>
   			<plugin>
   				<artifactId>maven-compiler-plugin</artifactId>
+  				<version>3.0</version>
 				<configuration>
 					<source>1.6</source>
 					<target>1.6</target>
