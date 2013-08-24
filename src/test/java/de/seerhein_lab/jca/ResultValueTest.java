@@ -1,5 +1,7 @@
 package de.seerhein_lab.jca;
 
+import org.junit.Test;
+
 
 /**
  * JUnit test for class ResultValue. Not testing auto-generated methods and
@@ -7,6 +9,9 @@ package de.seerhein_lab.jca;
  */
 public class ResultValueTest {
 
+	 @Test
+	 public void dummy() {}
+	
 	// /**
 	// * Tests combineReferences(Set) with matching reference pair but different
 	// * kind.
