@@ -39,9 +39,9 @@ public final class JcaDetector implements Detector {
 		BugCollection bugs = null;
 
 		try {
-			bugs = supposedlyImmutable(clazz) ? new ClassAnalyzer(clazz,
-					classContext).isImmutable() : new ClassAnalyzer(clazz,
-					classContext).properlyConstructed();
+			bugs = supposedlyImmutable(clazz) ? new ClassAnalyzer(classContext)
+					.isImmutable() : new ClassAnalyzer(classContext)
+					.properlyConstructed();
 		} catch (Throwable e) {
 			bugs = new SortedBugCollection();
 			bugs.add(new BugInstance("IMMUTABILITY_BUG", Confidence.HIGH
