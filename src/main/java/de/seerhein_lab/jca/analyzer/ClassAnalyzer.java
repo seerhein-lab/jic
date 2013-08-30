@@ -29,8 +29,8 @@ public class ClassAnalyzer {
 	private final HashSet<Heap> heaps;
 	private final ClassHelper classHelper;
 
-	public ClassAnalyzer(ClassContext classContext) {
-		this.clazz = classContext.getJavaClass();
+	public ClassAnalyzer(JavaClass clazz, ClassContext classContext) {
+		this.clazz = clazz;
 		this.classContext = classContext;
 		heaps = new HashSet<Heap>();
 		classHelper = new ClassHelper(clazz);
