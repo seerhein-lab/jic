@@ -14,8 +14,7 @@ import edu.umd.cs.findbugs.annotations.Confidence;
 import edu.umd.cs.findbugs.ba.ClassContext;
 
 public final class JcaDetector implements Detector {
-	
-	private final static String IMMUTABLE_ANNOTATION =  "Lnet/jcip/annotations/Immutable;";
+	private final static String IMMUTABLE_ANNOTATION = "Lnet/jcip/annotations/Immutable;";
 	private final BugReporter reporter;
 
 	public JcaDetector(BugReporter reporter) {
@@ -25,11 +24,10 @@ public final class JcaDetector implements Detector {
 	@Override
 	public void report() {
 	}
-	
-	
+
 	private boolean supposedlyImmutable(JavaClass clazz) {
-		for ( AnnotationEntry annotation : clazz.getAnnotationEntries() ) 
-			if ( annotation.getAnnotationType().equals(IMMUTABLE_ANNOTATION)) 
+		for (AnnotationEntry annotation : clazz.getAnnotationEntries())
+			if (annotation.getAnnotationType().equals(IMMUTABLE_ANNOTATION))
 				return true;
 		return false;
 	}
@@ -37,27 +35,26 @@ public final class JcaDetector implements Detector {
 	@Override
 	public void visitClassContext(ClassContext classContext) {
 		JavaClass clazz = classContext.getJavaClass();
-		
+
 		BugCollection bugs = null;
-				
+
 		try {
-			bugs = supposedlyImmutable(clazz) ? 
-					new ClassAnalyzer(clazz, classContext).isImmutable():
-					new ClassAnalyzer(clazz, classContext).properlyConstructed();	
-		} catch ( Throwable e) {
+			bugs = supposedlyImmutable(clazz) ? new ClassAnalyzer(clazz,
+					classContext).isImmutable() : new ClassAnalyzer(clazz,
+					classContext).properlyConstructed();
+		} catch (Throwable e) {
 			bugs = new SortedBugCollection();
-			BugInstance bug = new BugInstance("IMMUTABILITY_BUG", 
-						Confidence.HIGH.getConfidenceValue());
-			bug.addString("Class cannot be analyzed owing to internal problem.");
-			bug.addClass(clazz);
-			bug.addSourceLine(SourceLineAnnotation.createUnknown(clazz.getClassName()));
-			bugs.add(bug);
-		}
-			
-		for (BugInstance bug : bugs) {
-			System.out.println("bug: " + bug);
-			reporter.reportBug(bug);
+			bugs.add(new BugInstance("IMMUTABILITY_BUG", Confidence.HIGH
+					.getConfidenceValue())
+					.addString(
+							"Class cannot be analyzed owing to internal problem.")
+					.addClass(clazz)
+					.addSourceLine(
+							SourceLineAnnotation.createUnknown(clazz
+									.getClassName())));
 		}
 
+		for (BugInstance bug : bugs)
+			reporter.reportBug(bug);
 	}
 }
