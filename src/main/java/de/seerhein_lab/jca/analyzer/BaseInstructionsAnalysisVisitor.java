@@ -255,12 +255,12 @@ public abstract class BaseInstructionsAnalysisVisitor extends
 		for ( Iterator<BugInstance> it = targetMethodAnalyzer.getBugs().iterator(); it.hasNext(); ) {
 			BugInstance bug = it.next();
 			addBug(Confidence.HIGH, 					
-					"nested bug in " 
+					"susequent bug caused by [" 
+					+ bug.getMessage() + " in "  
 					+ targetClass.getClassName() + "." 
 					+ targetMethod.getName() 
 					+ targetMethod.getSignature() + ":"
-					+ bug.getPrimarySourceLineAnnotation().getStartLine() + ": "
-					+ bug.getMessage(), 
+					+ bug.getPrimarySourceLineAnnotation().getStartLine() + "]",
 					instructionHandle);
 		}
 		
