@@ -9,6 +9,10 @@ import java.util.UUID;
  * Class representing a ClassInstance. A ClassInstance has an Id, a reference to
  * the heap where its stored and a set of referring + referred objects.
  */
+/**
+ * @author haase
+ *
+ */
 public final class ClassInstance extends HeapObject {
 	private Map<String, UUID> refers = new HashMap<String, UUID>();
 
@@ -45,24 +49,42 @@ public final class ClassInstance extends HeapObject {
 		return new ClassInstance(this, heap);
 	}
 
+	
+	/*
+	 * Note that the iterator returned by this method skips references to null, i.e.
+	 * it returns only valid objects. 
+	 */
 	@Override
 	public Iterator<HeapObject> getReferredIterator() {
 		return new Iterator<HeapObject>() {
 			Iterator<UUID> idIterator = refers.values().iterator();
-
+			UUID lookAhead;
+			{
+				lookAhead();
+			}
+			
+			private void lookAhead(){
+				lookAhead = null;
+				while ( lookAhead == null && idIterator.hasNext() ) {
+					lookAhead = idIterator.next();
+				}
+			}
+			
 			@Override
-			public boolean hasNext() {
-				return idIterator.hasNext();
+			public boolean hasNext() {	
+				return lookAhead != null;
 			}
 
 			@Override
 			public HeapObject next() {
-				return heap.get(idIterator.next());
+				HeapObject result = heap.get(lookAhead);
+				lookAhead();
+				return result;
 			}
 
 			@Override
 			public void remove() {
-				idIterator.remove();
+				throw new UnsupportedOperationException();
 			}
 		};
 	}
