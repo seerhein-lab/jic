@@ -1,5 +1,8 @@
 package de.seerhein_lab.jca;
 
+import net.jcip.annotations.ThreadSafe;
+import net.jcip.annotations.GuardedBy;
+
 import org.apache.bcel.classfile.AnnotationEntry;
 import org.apache.bcel.classfile.JavaClass;
 
@@ -13,9 +16,14 @@ import edu.umd.cs.findbugs.SourceLineAnnotation;
 import edu.umd.cs.findbugs.annotations.Confidence;
 import edu.umd.cs.findbugs.ba.ClassContext;
 
+@ThreadSafe
 public final class JcaDetector implements Detector {
 	private final static String IMMUTABLE_ANNOTATION = "Lnet/jcip/annotations/Immutable;";
+	
+	@GuardedBy("lock")
 	private final BugReporter reporter;
+
+	private final Object reporterLock = new Object();
 
 	public JcaDetector(BugReporter reporter) {
 		this.reporter = reporter;
@@ -39,9 +47,9 @@ public final class JcaDetector implements Detector {
 		BugCollection bugs = null;
 
 		try {
-			bugs = supposedlyImmutable(clazz) ? new ClassAnalyzer(clazz, classContext)
-					.isImmutable() : new ClassAnalyzer(clazz, classContext)
-					.properlyConstructed();
+			bugs = supposedlyImmutable(clazz) ? new ClassAnalyzer(clazz,
+					classContext).isImmutable() : new ClassAnalyzer(clazz,
+					classContext).properlyConstructed();
 		} catch (Throwable e) {
 			bugs = new SortedBugCollection();
 			bugs.add(new BugInstance("IMMUTABILITY_BUG", Confidence.HIGH
@@ -54,7 +62,11 @@ public final class JcaDetector implements Detector {
 									.getClassName())));
 		}
 
-		for (BugInstance bug : bugs)
-			reporter.reportBug(bug);
+		for (BugInstance bug : bugs) {
+			synchronized (reporterLock) {
+				reporter.reportBug(bug);
+			}
+		}
+
 	}
 }

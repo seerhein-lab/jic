@@ -29,19 +29,32 @@ public final class ExternalObject extends HeapObject {
 		return new Iterator<HeapObject>() {
 			Iterator<UUID> idIterator = refers.iterator();
 
-			@Override
-			public boolean hasNext() {
-				return idIterator.hasNext();
+			UUID lookAhead;
+			{
+				lookAhead();
 			}
 
+			private void lookAhead(){
+				lookAhead = null;
+				while ( lookAhead == null && idIterator.hasNext() ) {
+					lookAhead = idIterator.next();
+				}
+			}
+			
 			@Override
+			public boolean hasNext() {
+				return lookAhead != null;
+			}
+
 			public HeapObject next() {
-				return heap.get(idIterator.next());
+				HeapObject result = heap.get(lookAhead);
+				lookAhead();
+				return result;
 			}
 
 			@Override
 			public void remove() {
-				idIterator.remove();
+				throw new UnsupportedOperationException();
 			}
 		};
 	}
