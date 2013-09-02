@@ -1,5 +1,8 @@
 package playground;
 
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+
 import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -11,6 +14,7 @@ import de.seerhein_lab.jca.Utils;
 import de.seerhein_lab.jca.analyzer.ClassAnalyzer;
 import edu.umd.cs.findbugs.BugCollection;
 import edu.umd.cs.findbugs.BugInstance;
+import edu.umd.cs.findbugs.ba.ClassContext;
 
 public class ProperlyConstructedTestDriver {
 	private static final String LOGFILEPATH = "log.txt";
@@ -24,8 +28,13 @@ public class ProperlyConstructedTestDriver {
 		JavaClass clazz = Repository
 				.lookupClass("playground.PropConstTestClass");
 
-		BugCollection bugs = new ClassAnalyzer(clazz, null)
+		ClassContext classContextMock = mock(ClassContext.class);
+
+		when(classContextMock.getJavaClass()).thenReturn(clazz);
+
+		BugCollection bugs = new ClassAnalyzer(classContextMock)
 				.properlyConstructed();
+
 		logger.log(Level.SEVERE, "bugs: ");
 		for (BugInstance bug : bugs) {
 			logger.log(Level.SEVERE,

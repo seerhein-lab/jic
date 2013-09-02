@@ -1,5 +1,8 @@
 package playground;
 
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+
 import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -11,6 +14,7 @@ import de.seerhein_lab.jca.Utils;
 import de.seerhein_lab.jca.analyzer.ClassAnalyzer;
 import edu.umd.cs.findbugs.BugInstance;
 import edu.umd.cs.findbugs.SortedBugCollection;
+import edu.umd.cs.findbugs.ba.ClassContext;
 
 public class StateUnmodTestDriver {
 	private static final String LOGFILEPATH = "./log.txt";
@@ -28,7 +32,12 @@ public class StateUnmodTestDriver {
 				.lookupClass("playground.StateUnmodTestClass");
 
 		SortedBugCollection bugs = new SortedBugCollection();
-		ClassAnalyzer classAlalyzer = new ClassAnalyzer(clazz, null);
+
+		ClassContext classContextMock = mock(ClassContext.class);
+
+		when(classContextMock.getJavaClass()).thenReturn(clazz);
+
+		ClassAnalyzer classAlalyzer = new ClassAnalyzer(classContextMock);
 		if (analyzeCtorCopy) {
 			logger.log(Level.FINE, "Analyzing CtorCopy");
 			bugs.addAll(classAlalyzer.ctorParamsAreCopied().getCollection());

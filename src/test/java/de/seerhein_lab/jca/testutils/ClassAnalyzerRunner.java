@@ -82,7 +82,7 @@ public class ClassAnalyzerRunner extends Runner {
 
 		when(classContextMock.getJavaClass()).thenReturn(javaClass);
 
-		ClassAnalyzer analyzer = new ClassAnalyzer(javaClass, classContextMock);
+		ClassAnalyzer analyzer = new ClassAnalyzer(classContextMock);
 
 		BugCollection bugs = runCheckMethod(analyzer);
 
