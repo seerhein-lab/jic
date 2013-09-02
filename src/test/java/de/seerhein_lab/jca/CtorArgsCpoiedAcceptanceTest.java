@@ -21,7 +21,7 @@ public class CtorArgsCpoiedAcceptanceTest {
 	@BindAnalyzerMethod
 	public static BugCollection bindClassAnalyzerToProperlyConstructed(
 			ClassAnalyzer analyzer) {
-		return analyzer.ctorParamsAreCopied();
+		return analyzer.ctorArgsAreCopied();
 	}
 
 	/**

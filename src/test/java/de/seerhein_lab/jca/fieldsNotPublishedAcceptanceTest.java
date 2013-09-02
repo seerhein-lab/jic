@@ -22,7 +22,7 @@ public class fieldsNotPublishedAcceptanceTest {
 	@BindAnalyzerMethod
 	public static BugCollection bindClassAnalyzerToProperlyConstructed(
 			ClassAnalyzer analyzer) {
-		analyzer.ctorParamsAreCopied();
+		analyzer.ctorArgsAreCopied();
 		return analyzer.fieldsAreNotPublished();
 	}
 

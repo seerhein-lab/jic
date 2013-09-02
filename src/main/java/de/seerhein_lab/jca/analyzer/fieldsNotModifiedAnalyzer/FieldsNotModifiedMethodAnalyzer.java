@@ -18,17 +18,17 @@ import de.seerhein_lab.jca.slot.ReferenceSlot;
 import de.seerhein_lab.jca.slot.Slot;
 import edu.umd.cs.findbugs.ba.ClassContext;
 
-public class NoMutatorMethodAnalyzer extends BaseMethodAnalyzer {
+public class FieldsNotModifiedMethodAnalyzer extends BaseMethodAnalyzer {
 
 	private Set<Heap> heaps;
 
-	public NoMutatorMethodAnalyzer(ClassContext classContext,
+	public FieldsNotModifiedMethodAnalyzer(ClassContext classContext,
 			MethodGen methodGen, Set<Heap> heaps) {
 		super(classContext, methodGen);
 		this.heaps = heaps;
 	}
 
-	public NoMutatorMethodAnalyzer(ClassContext classContext,
+	public FieldsNotModifiedMethodAnalyzer(ClassContext classContext,
 			MethodGen methodGen,
 			Set<Pair<Method, Slot[]>> alreadyVisitedMethods, int depth) {
 		super(classContext, methodGen, alreadyVisitedMethods, depth);

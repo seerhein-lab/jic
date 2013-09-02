@@ -20,8 +20,8 @@ public class fieldsNotModifiedAcceptanceTest {
 	@BindAnalyzerMethod
 	public static BugCollection bindClassAnalyzerToProperlyConstructed(
 			ClassAnalyzer analyzer) {
-		analyzer.ctorParamsAreCopied();
-		return analyzer.stateUnmodified();
+		analyzer.ctorArgsAreCopied();
+		return analyzer.noMutators();
 	}
 
 	@BugsExpected
