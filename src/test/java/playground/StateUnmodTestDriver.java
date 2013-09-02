@@ -40,11 +40,11 @@ public class StateUnmodTestDriver {
 		ClassAnalyzer classAlalyzer = new ClassAnalyzer(classContextMock);
 		if (analyzeCtorCopy) {
 			logger.log(Level.FINE, "Analyzing CtorCopy");
-			bugs.addAll(classAlalyzer.ctorParamsAreCopied().getCollection());
+			bugs.addAll(classAlalyzer.ctorArgsAreCopied().getCollection());
 		}
 		if (analyzeFieldsMutate) {
 			logger.log(Level.FINE, "Analyzing FieldsMutate");
-			bugs.addAll(classAlalyzer.stateUnmodified().getCollection());
+			bugs.addAll(classAlalyzer.noMutators().getCollection());
 		}
 		if (analyzeFieldsArePuplished) {
 			logger.log(Level.FINE, "Analyzing FieldsNotPublished");
