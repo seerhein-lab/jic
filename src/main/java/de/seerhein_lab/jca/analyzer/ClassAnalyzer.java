@@ -24,27 +24,25 @@ import edu.umd.cs.findbugs.SortedBugCollection;
 import edu.umd.cs.findbugs.ba.ClassContext;
 
 public class ClassAnalyzer {
-	private final JavaClass clazz;
 	private final ClassContext classContext;
 	private final HashSet<Heap> heaps;
 	private final ClassHelper classHelper;
 
-	public ClassAnalyzer(JavaClass clazz, ClassContext classContext) {
-		this.clazz = clazz;
+	public ClassAnalyzer(ClassContext classContext) {
 		this.classContext = classContext;
 		heaps = new HashSet<Heap>();
-		classHelper = new ClassHelper(clazz);
+		classHelper = new ClassHelper(classContext.getJavaClass());
 	}
 
 	private BugCollection allFieldsFinal() {
 		BugCollection bugs = new SortedBugCollection();
-		Field[] fields = clazz.getFields();
+		Field[] fields = classContext.getJavaClass().getFields();
 		for (Field field : fields)
 			if (!field.isStatic() && !field.isFinal()) {
 				BugInstance bugInstance = new BugInstance("IMMUTABILITY_BUG", 2);
 				bugInstance.addString("All fields must be final.");
-				bugInstance.addClass(clazz); // TODO Bug handling
-				bugInstance.addField(clazz.getClassName(), field.getName(),
+				bugInstance.addClass(classContext.getJavaClass()); // TODO Bug handling
+				bugInstance.addField(classContext.getJavaClass().getClassName(), field.getName(),
 						field.getSignature(), false);
 				bugs.add(bugInstance);
 			}
@@ -53,14 +51,14 @@ public class ClassAnalyzer {
 
 	private BugCollection allReferenceFieldsPrivate() {
 		BugCollection bugs = new SortedBugCollection();
-		Field[] fields = clazz.getFields();
+		Field[] fields = classContext.getJavaClass().getFields();
 		for (Field field : fields)
 			if (!field.isStatic() && !(field.getType() instanceof BasicType)
 					&& !field.isPrivate()) {
 				BugInstance bugInstance = new BugInstance("IMMUTABILITY_BUG", 2);
 				bugInstance.addString("Reference fields must be private.");
-				bugInstance.addClass(clazz); // TODO Bug handling
-				bugInstance.addField(clazz.getClassName(), field.getName(),
+				bugInstance.addClass(classContext.getJavaClass()); // TODO Bug handling
+				bugInstance.addField(classContext.getJavaClass().getClassName(), field.getName(),
 						field.getSignature(), false);
 				bugs.add(bugInstance);
 			}
@@ -72,8 +70,8 @@ public class ClassAnalyzer {
 		List<Method> ctors = classHelper.getConstructors();
 
 		for (Method ctor : ctors) {
-			MethodGen ctorGen = new MethodGen(ctor, clazz.getClassName(),
-					new ConstantPoolGen(clazz.getConstantPool()));
+			MethodGen ctorGen = new MethodGen(ctor, classContext.getJavaClass().getClassName(),
+					new ConstantPoolGen(classContext.getJavaClass().getConstantPool()));
 
 			BaseMethodAnalyzer ctorAnalyzer = new PropConMethodAnalyzer(
 					classContext, ctorGen);
@@ -91,8 +89,8 @@ public class ClassAnalyzer {
 		List<Method> ctors = classHelper.getConstructors();
 
 		for (Method ctor : ctors) {
-			MethodGen ctorGen = new MethodGen(ctor, clazz.getClassName(),
-					new ConstantPoolGen(clazz.getConstantPool()));
+			MethodGen ctorGen = new MethodGen(ctor, classContext.getJavaClass().getClassName(),
+					new ConstantPoolGen(classContext.getJavaClass().getConstantPool()));
 
 			BaseMethodAnalyzer ctorAnalyzer = new CtorArgsCopiedAnalyzer(
 					classContext, ctorGen);
@@ -117,8 +115,8 @@ public class ClassAnalyzer {
 			return bugs;
 
 		for (Method method : methods) {
-			MethodGen methodGen = new MethodGen(method, clazz.getClassName(),
-					new ConstantPoolGen(clazz.getConstantPool()));
+			MethodGen methodGen = new MethodGen(method, classContext.getJavaClass().getClassName(),
+					new ConstantPoolGen(classContext.getJavaClass().getConstantPool()));
 
 			BaseMethodAnalyzer methodAnalyzer = new FieldsNotPublishedMethodAnalyzer(
 					classContext, methodGen, getCopiedHeaps());
@@ -136,8 +134,8 @@ public class ClassAnalyzer {
 			return bugs;
 
 		for (Method method : methods) {
-			MethodGen methodGen = new MethodGen(method, clazz.getClassName(),
-					new ConstantPoolGen(clazz.getConstantPool()));
+			MethodGen methodGen = new MethodGen(method, classContext.getJavaClass().getClassName(),
+					new ConstantPoolGen(classContext.getJavaClass().getConstantPool()));
 
 			BaseMethodAnalyzer methodAnalyzer = new FieldsNotModifiedMethodAnalyzer(
 					classContext, methodGen, getCopiedHeaps());
