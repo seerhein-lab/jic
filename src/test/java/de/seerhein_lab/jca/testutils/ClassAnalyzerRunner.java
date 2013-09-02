@@ -1,5 +1,8 @@
 package de.seerhein_lab.jca.testutils;
 
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -20,6 +23,7 @@ import org.junit.runner.notification.RunNotifier;
 
 import de.seerhein_lab.jca.analyzer.ClassAnalyzer;
 import edu.umd.cs.findbugs.BugCollection;
+import edu.umd.cs.findbugs.ba.ClassContext;
 
 public class ClassAnalyzerRunner extends Runner {
 
@@ -73,7 +77,12 @@ public class ClassAnalyzerRunner extends Runner {
 	void runTest(RunNotifier notifier, Description testDescription,
 			Class<?> classToTest) throws Exception {
 		JavaClass javaClass = Repository.lookupClass(classToTest);
-		ClassAnalyzer analyzer = new ClassAnalyzer(javaClass, null);
+
+		ClassContext classContextMock = mock(ClassContext.class);
+
+		when(classContextMock.getJavaClass()).thenReturn(javaClass);
+
+		ClassAnalyzer analyzer = new ClassAnalyzer(javaClass, classContextMock);
 
 		BugCollection bugs = runCheckMethod(analyzer);
 
