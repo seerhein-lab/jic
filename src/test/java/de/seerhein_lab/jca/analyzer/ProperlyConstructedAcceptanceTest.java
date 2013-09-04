@@ -1,4 +1,4 @@
-package de.seerhein_lab.jca;
+package de.seerhein_lab.jca.analyzer;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;

@@ -1,4 +1,4 @@
-package de.seerhein_lab.jca;
+package de.seerhein_lab.jca.analyzer;
 
 import org.junit.Ignore;
 import org.junit.runner.RunWith;
