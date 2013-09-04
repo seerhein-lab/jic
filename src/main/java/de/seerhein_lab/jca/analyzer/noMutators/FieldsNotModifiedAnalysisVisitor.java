@@ -1,4 +1,4 @@
-package de.seerhein_lab.jca.analyzer.fieldsNotModifiedAnalyzer;
+package de.seerhein_lab.jca.analyzer.noMutators;
 
 import java.util.Set;
 
