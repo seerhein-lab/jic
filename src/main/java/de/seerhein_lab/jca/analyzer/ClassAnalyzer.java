@@ -12,10 +12,10 @@ import org.apache.bcel.generic.ConstantPoolGen;
 import org.apache.bcel.generic.MethodGen;
 
 import de.seerhein_lab.jca.ResultValue;
-import de.seerhein_lab.jca.analyzer.ctorArgsCopiedAnalyzer.CtorArgsCopiedAnalyzer;
-import de.seerhein_lab.jca.analyzer.fieldsNotModifiedAnalyzer.FieldsNotModifiedMethodAnalyzer;
-import de.seerhein_lab.jca.analyzer.fieldsNotPublishedAnalyzer.FieldsNotPublishedMethodAnalyzer;
-import de.seerhein_lab.jca.analyzer.propConAnalyzer.PropConMethodAnalyzer;
+import de.seerhein_lab.jca.analyzer.ctorArgsCopied.CtorArgsCopiedAnalyzer;
+import de.seerhein_lab.jca.analyzer.fieldsNotPublished.FieldsNotPublishedMethodAnalyzer;
+import de.seerhein_lab.jca.analyzer.noMutators.NoMutatorsMethodAnalyzer;
+import de.seerhein_lab.jca.analyzer.propCon.PropConMethodAnalyzer;
 import de.seerhein_lab.jca.heap.Heap;
 import edu.umd.cs.findbugs.BugCollection;
 import edu.umd.cs.findbugs.BugInstance;
@@ -47,7 +47,6 @@ public final class ClassAnalyzer {
 						// .getClassName()))
 						.addField(classContext.getJavaClass().getClassName(),
 								field.getName(), field.getSignature(), false));
-
 		return bugs;
 	}
 
@@ -143,7 +142,7 @@ public final class ClassAnalyzer {
 					.getJavaClass().getClassName(), new ConstantPoolGen(
 					classContext.getJavaClass().getConstantPool()));
 
-			BaseMethodAnalyzer methodAnalyzer = new FieldsNotModifiedMethodAnalyzer(
+			BaseMethodAnalyzer methodAnalyzer = new NoMutatorsMethodAnalyzer(
 					classContext, methodGen, getCopiedHeaps());
 			methodAnalyzer.analyze();
 			bugs.addAll(methodAnalyzer.getBugs().getCollection());

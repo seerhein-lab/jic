@@ -18,10 +18,10 @@ import de.seerhein_lab.jca.slot.Slot;
 import edu.umd.cs.findbugs.annotations.Confidence;
 import edu.umd.cs.findbugs.ba.ClassContext;
 
-public class FieldsNotModifiedAnalysisVisitor extends
+public class NoMutatorsAnalysisVisitor extends
 		BaseInstructionsAnalysisVisitor {
 
-	protected FieldsNotModifiedAnalysisVisitor(ClassContext classContext,
+	protected NoMutatorsAnalysisVisitor(ClassContext classContext,
 			Method method, Frame frame, ConstantPoolGen constantPoolGen,
 			Set<Pair<InstructionHandle, Boolean>> alreadyVisitedIfBranch,
 			Set<Pair<Method, Slot[]>> alreadyVisitedMethods,
@@ -32,7 +32,7 @@ public class FieldsNotModifiedAnalysisVisitor extends
 				instructionHandle, exceptionHandlers, depth);
 	}
 
-	public FieldsNotModifiedAnalysisVisitor(ClassContext classContext,
+	public NoMutatorsAnalysisVisitor(ClassContext classContext,
 			Method method, Frame frame, ConstantPoolGen constantPoolGen,
 			InstructionHandle instructionHandle,
 			CodeExceptionGen[] exceptionHandlers,
@@ -46,7 +46,7 @@ public class FieldsNotModifiedAnalysisVisitor extends
 			Frame frame,
 			Set<Pair<InstructionHandle, Boolean>> alreadyVisitedIfBranch,
 			InstructionHandle instructionHandle) {
-		return new FieldsNotModifiedAnalysisVisitor(classContext, method,
+		return new NoMutatorsAnalysisVisitor(classContext, method,
 				frame, constantPoolGen, alreadyVisitedIfBranch,
 				alreadyVisitedMethods, instructionHandle, exceptionHandlers,
 				depth);
@@ -54,7 +54,7 @@ public class FieldsNotModifiedAnalysisVisitor extends
 
 	@Override
 	protected BaseMethodAnalyzer getMethodAnalyzer(MethodGen targetMethodGen) {
-		return new FieldsNotModifiedMethodAnalyzer(classContext,
+		return new NoMutatorsMethodAnalyzer(classContext,
 				targetMethodGen, alreadyVisitedMethods, depth);
 	}
 
