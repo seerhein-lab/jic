@@ -42,9 +42,6 @@ public final class ClassAnalyzer {
 						.getConfidenceValue())
 						.addString("All fields must be final.")
 						.addClass(classContext.getJavaClass())
-						// .addSourceLine(
-						// SourceLineAnnotation.createUnknown(classContext.getJavaClass()
-						// .getClassName()))
 						.addField(classContext.getJavaClass().getClassName(),
 								field.getName(), field.getSignature(), false));
 		return bugs;
@@ -60,9 +57,6 @@ public final class ClassAnalyzer {
 						.getConfidenceValue())
 						.addString("Reference fields must be private.")
 						.addClass(classContext.getJavaClass())
-						// .addSourceLine(
-						// SourceLineAnnotation.createUnknown(classContext.getJavaClass()
-						// .getClassName()))
 						.addField(classContext.getJavaClass().getClassName(),
 								field.getName(), field.getSignature(), false));
 		return bugs;
@@ -85,8 +79,8 @@ public final class ClassAnalyzer {
 		return bugs;
 	}
 
-	// TODO set private when testing is complete
-	public SortedBugCollection ctorArgsAreCopied() {
+	// package private for testing purposes
+	SortedBugCollection ctorArgsAreCopied() {
 		SortedBugCollection bugs = new SortedBugCollection();
 		List<Method> ctors = classHelper.getConstructors();
 
@@ -110,8 +104,8 @@ public final class ClassAnalyzer {
 		return bugs;
 	}
 
-	// TODO set private when testing is complete
-	public BugCollection fieldsAreNotPublished() {
+	// package private for testing purposes
+	BugCollection fieldsAreNotPublished() {
 		SortedBugCollection bugs = new SortedBugCollection();
 		List<Method> methods = classHelper.getAllMethodsButCtors();
 		if (heaps.isEmpty())
@@ -130,8 +124,8 @@ public final class ClassAnalyzer {
 		return bugs;
 	}
 
-	// TODO set private when testing is complete
-	public BugCollection noMutators() {
+	// package private for testing purposes
+	BugCollection noMutators() {
 		SortedBugCollection bugs = new SortedBugCollection();
 		List<Method> methods = classHelper.getAllMethodsButCtors();
 		if (heaps.isEmpty())

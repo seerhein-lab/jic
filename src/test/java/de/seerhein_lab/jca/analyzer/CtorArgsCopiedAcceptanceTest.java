@@ -1,4 +1,4 @@
-package de.seerhein_lab.jca;
+package de.seerhein_lab.jca.analyzer;
 
 import org.junit.runner.RunWith;
 
@@ -16,7 +16,7 @@ import edu.umd.cs.findbugs.BugCollection;
  * @see ProperlyConstructedTestRunner
  */
 @RunWith(ClassAnalyzerRunner.class)
-public class CtorArgsCpoiedAcceptanceTest {
+public class CtorArgsCopiedAcceptanceTest {
 
 	@BindAnalyzerMethod
 	public static BugCollection bindClassAnalyzerToProperlyConstructed(
