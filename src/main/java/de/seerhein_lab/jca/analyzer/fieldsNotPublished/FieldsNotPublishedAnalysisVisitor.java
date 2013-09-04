@@ -1,4 +1,4 @@
-package de.seerhein_lab.jca.analyzer.fieldsNotPublishedAnalyzer;
+package de.seerhein_lab.jca.analyzer.fieldsNotPublished;
 
 import java.util.Set;
 import java.util.logging.Level;
