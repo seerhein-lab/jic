@@ -1,4 +1,4 @@
-package de.seerhein_lab.jca.analyzer.propConAnalyzer;
+package de.seerhein_lab.jca.analyzer.propCon;
 
 import java.util.Set;
 import java.util.Stack;
