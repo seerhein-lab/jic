@@ -1,4 +1,4 @@
-package de.seerhein_lab.jca.analyzer.ctorArgsCopiedAnalyzer;
+package de.seerhein_lab.jca.analyzer.ctorArgsCopied;
 
 import java.util.Set;
 
