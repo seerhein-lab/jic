@@ -16,7 +16,7 @@ import edu.umd.cs.findbugs.BugCollection;
  * @see ProperlyConstructedTestRunner
  */
 @RunWith(ClassAnalyzerRunner.class)
-public class fieldsNotModifiedAcceptanceTest {
+public class NoMutatorsAcceptanceTest {
 	@BindAnalyzerMethod
 	public static BugCollection bindClassAnalyzerToProperlyConstructed(
 			ClassAnalyzer analyzer) {
