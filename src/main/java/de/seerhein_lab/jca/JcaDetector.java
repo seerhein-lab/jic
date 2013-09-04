@@ -1,7 +1,7 @@
 package de.seerhein_lab.jca;
 
-import net.jcip.annotations.ThreadSafe;
 import net.jcip.annotations.GuardedBy;
+import net.jcip.annotations.ThreadSafe;
 
 import org.apache.bcel.classfile.AnnotationEntry;
 import org.apache.bcel.classfile.JavaClass;
@@ -33,7 +33,8 @@ public final class JcaDetector implements Detector {
 	public void report() {
 	}
 
-	private boolean supposedlyImmutable(JavaClass clazz) {
+	// package private for testing purposes
+	boolean supposedlyImmutable(JavaClass clazz) {
 		for (AnnotationEntry annotation : clazz.getAnnotationEntries())
 			if (annotation.getAnnotationType().equals(IMMUTABLE_ANNOTATION))
 				return true;
@@ -58,8 +59,8 @@ public final class JcaDetector implements Detector {
 							"Class cannot be analyzed owing to internal problem.")
 					.addClass(classContext.getJavaClass())
 					.addSourceLine(
-							SourceLineAnnotation.createUnknown(classContext.getJavaClass()
-									.getClassName())));
+							SourceLineAnnotation.createUnknown(classContext
+									.getJavaClass().getClassName())));
 		}
 
 		for (BugInstance bug : bugs) {
