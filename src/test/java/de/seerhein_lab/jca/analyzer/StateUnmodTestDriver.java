@@ -1,4 +1,4 @@
-package playground;
+package de.seerhein_lab.jca.analyzer;
 
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
