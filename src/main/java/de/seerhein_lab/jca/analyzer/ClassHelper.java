@@ -5,21 +5,25 @@ import static org.apache.bcel.Constants.CONSTRUCTOR_NAME;
 import java.util.List;
 import java.util.Vector;
 
+import net.jcip.annotations.Immutable;
+
 import org.apache.bcel.classfile.JavaClass;
 import org.apache.bcel.classfile.Method;
 import org.apache.bcel.generic.Type;
 
-
-public class ClassHelper {
-	private final JavaClass clazz;
+@Immutable
+public final class ClassHelper {
+	private final Method[] methods; 
 
 	public ClassHelper(JavaClass clazz) {
-		this.clazz = clazz;
+		if ( clazz == null ) 
+			throw new NullPointerException("JavaClass must not be null.");
+		
+		this.methods = clazz.getMethods();
 	}
 
 	List<Method> getConstructors() {
 		List<Method> ctors = new Vector<Method>();
-		Method[] methods = clazz.getMethods();
 		for (Method method : methods)
 			if (method.getName().equals(CONSTRUCTOR_NAME))
 				ctors.add(method);
@@ -27,16 +31,14 @@ public class ClassHelper {
 	}
 	
 	List<Method> getAllMethodsButCtors() {
-		List<Method> methods = new Vector<Method>();
-		Method[] allMethods = clazz.getMethods();
-		for (Method method : allMethods)
+		List<Method> methodsButCtors = new Vector<Method>();
+		for (Method method : methods)
 			if (!method.getName().equals(CONSTRUCTOR_NAME))
-				methods.add(method);
-		return methods;
+				methodsButCtors.add(method);
+		return methodsButCtors;
 	}
 
 	Method getMethod(String name, Type[] types) {
-		Method[] methods = clazz.getMethods();
 		for (Method method : methods) {
 			boolean different = false;
 			Type[] methodTypes = method.getArgumentTypes();
