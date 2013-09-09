@@ -1,5 +1,6 @@
 package de.seerhein_lab.jca.analyzer;
 
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.logging.Level;
@@ -12,20 +13,19 @@ import org.apache.bcel.generic.InstructionList;
 import org.apache.bcel.generic.MethodGen;
 import org.apache.bcel.generic.Type;
 
-import de.seerhein_lab.jca.Pair;
 import de.seerhein_lab.jca.Frame;
+import de.seerhein_lab.jca.Pair;
 import de.seerhein_lab.jca.ResultValue;
 import de.seerhein_lab.jca.Utils;
 import de.seerhein_lab.jca.slot.Slot;
-import edu.umd.cs.findbugs.BugCollection;
+import edu.umd.cs.findbugs.BugInstance;
 import edu.umd.cs.findbugs.ba.ClassContext;
 
 /**
  * Analyzes methods.
  */
 public abstract class BaseMethodAnalyzer {
-	private static final Logger logger = Logger
-			.getLogger("BaseMethodAnalyzer");
+	private static final Logger logger = Logger.getLogger("BaseMethodAnalyzer");
 	protected final ClassContext classContext;
 	protected final Set<Pair<Method, Slot[]>> alreadyVisitedMethods;
 	protected final int depth;
@@ -48,8 +48,7 @@ public abstract class BaseMethodAnalyzer {
 	 * 
 	 */
 	public BaseMethodAnalyzer(ClassContext classContext, MethodGen methodGen) {
-		this(classContext, methodGen,
-				new HashSet<Pair<Method, Slot[]>>(), -1);
+		this(classContext, methodGen, new HashSet<Pair<Method, Slot[]>>(), -1);
 	}
 
 	public BaseMethodAnalyzer(ClassContext classContext, MethodGen methodGen,
@@ -101,9 +100,11 @@ public abstract class BaseMethodAnalyzer {
 		visitor = getInstructionAnalysisVisitor(calleeFrame,
 				instructionHandles[0]);
 
-		logger.log(Level.FINE, Utils.formatLoggingOutput(this.depth) + "vvvvvvvvvvvvvvvvvvvvvvvvvv");
+		logger.log(Level.FINE, Utils.formatLoggingOutput(this.depth)
+				+ "vvvvvvvvvvvvvvvvvvvvvvvvvv");
 		instructionHandles[0].accept(visitor);
-		logger.log(Level.FINE, Utils.formatLoggingOutput(this.depth) + "^^^^^^^^^^^^^^^^^^^^^^^^^^");
+		logger.log(Level.FINE, Utils.formatLoggingOutput(this.depth)
+				+ "^^^^^^^^^^^^^^^^^^^^^^^^^^");
 	}
 
 	protected Frame createCalleeFrame(Frame callerFrame) {
@@ -133,12 +134,12 @@ public abstract class BaseMethodAnalyzer {
 	 * @throws IllegalStateException
 	 *             if analyze() was not called beforehand.
 	 */
-	public BugCollection getBugs() {
+	public Collection<BugInstance> getBugs() {
 		if (visitor == null) {
 			throw new IllegalStateException(
 					"analyze() must be called before getBugs()");
 		}
-		return visitor.getBugs();
+		return visitor.getBugs().getCollection();
 	}
 
 	/**

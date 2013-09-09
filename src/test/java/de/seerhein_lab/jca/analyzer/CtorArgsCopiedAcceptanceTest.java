@@ -1,13 +1,14 @@
 package de.seerhein_lab.jca.analyzer;
 
+import java.util.Collection;
+
 import org.junit.runner.RunWith;
 
-import de.seerhein_lab.jca.analyzer.ClassAnalyzer;
 import de.seerhein_lab.jca.testutils.BugsExpected;
 import de.seerhein_lab.jca.testutils.ClassAnalyzerRunner;
 import de.seerhein_lab.jca.testutils.ClassAnalyzerRunner.BindAnalyzerMethod;
 import de.seerhein_lab.jca.testutils.NoBugsExpected;
-import edu.umd.cs.findbugs.BugCollection;
+import edu.umd.cs.findbugs.BugInstance;
 
 /**
  * Functional acceptance tests for the method properlyConstructed of the class
@@ -19,7 +20,7 @@ import edu.umd.cs.findbugs.BugCollection;
 public class CtorArgsCopiedAcceptanceTest {
 
 	@BindAnalyzerMethod
-	public static BugCollection bindClassAnalyzerToProperlyConstructed(
+	public static Collection<BugInstance> bindClassAnalyzerToProperlyConstructed(
 			ClassAnalyzer analyzer) {
 		return analyzer.ctorArgsAreCopied();
 	}

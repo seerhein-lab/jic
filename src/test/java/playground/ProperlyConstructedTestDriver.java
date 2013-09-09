@@ -12,8 +12,8 @@ import org.apache.bcel.classfile.JavaClass;
 
 import de.seerhein_lab.jca.Utils;
 import de.seerhein_lab.jca.analyzer.ClassAnalyzer;
-import edu.umd.cs.findbugs.BugCollection;
 import edu.umd.cs.findbugs.BugInstance;
+import edu.umd.cs.findbugs.SortedBugCollection;
 import edu.umd.cs.findbugs.ba.ClassContext;
 
 public class ProperlyConstructedTestDriver {
@@ -32,8 +32,8 @@ public class ProperlyConstructedTestDriver {
 
 		when(classContextMock.getJavaClass()).thenReturn(clazz);
 
-		BugCollection bugs = new ClassAnalyzer(classContextMock)
-				.properlyConstructed();
+		SortedBugCollection bugs = new SortedBugCollection();
+		bugs.addAll(new ClassAnalyzer(classContextMock).properlyConstructed());
 
 		logger.log(Level.SEVERE, "bugs: ");
 		for (BugInstance bug : bugs) {

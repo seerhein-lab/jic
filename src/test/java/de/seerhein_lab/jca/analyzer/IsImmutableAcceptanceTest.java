@@ -1,14 +1,14 @@
 package de.seerhein_lab.jca.analyzer;
 
-import org.junit.Ignore;
+import java.util.Collection;
+
 import org.junit.runner.RunWith;
 
-import de.seerhein_lab.jca.analyzer.ClassAnalyzer;
 import de.seerhein_lab.jca.testutils.BugsExpected;
 import de.seerhein_lab.jca.testutils.ClassAnalyzerRunner;
 import de.seerhein_lab.jca.testutils.ClassAnalyzerRunner.BindAnalyzerMethod;
 import de.seerhein_lab.jca.testutils.NoBugsExpected;
-import edu.umd.cs.findbugs.BugCollection;
+import edu.umd.cs.findbugs.BugInstance;
 
 /**
  * Functional acceptance tests for the method properlyConstructed of the class
@@ -23,7 +23,7 @@ import edu.umd.cs.findbugs.BugCollection;
 public class IsImmutableAcceptanceTest {
 
 	@BindAnalyzerMethod
-	public static BugCollection bindIsImmutable(ClassAnalyzer analyzer) {
+	public static Collection<BugInstance> bindIsImmutable(ClassAnalyzer analyzer) {
 		return analyzer.isImmutable();
 	}
 
@@ -56,8 +56,6 @@ public class IsImmutableAcceptanceTest {
 		final Object value = null;
 	}
 
-	
-	
 	/**
 	 * Class with a private field, the value of the private field could not be
 	 * changed.
@@ -73,8 +71,7 @@ public class IsImmutableAcceptanceTest {
 		@SuppressWarnings("unused")
 		private String value = "01";
 	}
-	
-	
+
 	/**
 	 * Not Immutable class because the field value could be changed.
 	 */

@@ -1,12 +1,10 @@
 package de.seerhein_lab.jca;
 
-import org.apache.bcel.classfile.JavaClass;
-
 import de.seerhein_lab.jca.analyzer.ClassAnalyzer;
-import edu.umd.cs.findbugs.BugCollection;
 import edu.umd.cs.findbugs.BugInstance;
 import edu.umd.cs.findbugs.BugReporter;
 import edu.umd.cs.findbugs.Detector;
+import edu.umd.cs.findbugs.SortedBugCollection;
 import edu.umd.cs.findbugs.ba.ClassContext;
 
 public final class ProperConstructionDetector implements Detector {
@@ -24,10 +22,8 @@ public final class ProperConstructionDetector implements Detector {
 
 	@Override
 	public void visitClassContext(ClassContext classContext) {
-		JavaClass clazz = classContext.getJavaClass();
-
-		BugCollection bugs = new ClassAnalyzer(classContext).properlyConstructed();
-		
+		SortedBugCollection bugs = new SortedBugCollection();
+		bugs.addAll(new ClassAnalyzer(classContext).properlyConstructed());
 
 		for (BugInstance bug : bugs) {
 			System.out.println("bug: " + bug);

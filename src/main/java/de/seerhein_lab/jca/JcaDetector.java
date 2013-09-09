@@ -7,7 +7,6 @@ import org.apache.bcel.classfile.AnnotationEntry;
 import org.apache.bcel.classfile.JavaClass;
 
 import de.seerhein_lab.jca.analyzer.ClassAnalyzer;
-import edu.umd.cs.findbugs.BugCollection;
 import edu.umd.cs.findbugs.BugInstance;
 import edu.umd.cs.findbugs.BugReporter;
 import edu.umd.cs.findbugs.Detector;
@@ -45,14 +44,13 @@ public final class JcaDetector implements Detector {
 	public void visitClassContext(ClassContext classContext) {
 		JavaClass clazz = classContext.getJavaClass();
 
-		BugCollection bugs = null;
+		SortedBugCollection bugs = new SortedBugCollection();
 
 		try {
-			bugs = supposedlyImmutable(clazz) ? new ClassAnalyzer(classContext)
-					.isImmutable() : new ClassAnalyzer(classContext)
-					.properlyConstructed();
+			bugs.addAll(supposedlyImmutable(clazz) ? new ClassAnalyzer(
+					classContext).isImmutable() : new ClassAnalyzer(
+					classContext).properlyConstructed());
 		} catch (Throwable e) {
-			bugs = new SortedBugCollection();
 			bugs.add(new BugInstance("IMMUTABILITY_BUG", Confidence.HIGH
 					.getConfidenceValue())
 					.addString(

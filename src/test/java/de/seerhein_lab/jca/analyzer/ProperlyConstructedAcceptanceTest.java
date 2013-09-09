@@ -3,17 +3,17 @@ package de.seerhein_lab.jca.analyzer;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.IOException;
+import java.util.Collection;
 
 import javax.swing.JButton;
 
 import org.junit.runner.RunWith;
 
-import de.seerhein_lab.jca.analyzer.ClassAnalyzer;
+import de.seerhein_lab.jca.testutils.BugsExpected;
 import de.seerhein_lab.jca.testutils.ClassAnalyzerRunner;
 import de.seerhein_lab.jca.testutils.ClassAnalyzerRunner.BindAnalyzerMethod;
-import de.seerhein_lab.jca.testutils.BugsExpected;
 import de.seerhein_lab.jca.testutils.NoBugsExpected;
-import edu.umd.cs.findbugs.BugCollection;
+import edu.umd.cs.findbugs.BugInstance;
 
 /**
  * Functional acceptance tests for the method properlyConstructed of the class
@@ -25,7 +25,7 @@ import edu.umd.cs.findbugs.BugCollection;
 public class ProperlyConstructedAcceptanceTest {
 
 	@BindAnalyzerMethod
-	public static BugCollection bindClassAnalyzerToProperlyConstructed(
+	public static Collection<BugInstance> bindClassAnalyzerToProperlyConstructed(
 			ClassAnalyzer analyzer) {
 		return analyzer.properlyConstructed();
 	}
@@ -292,15 +292,14 @@ public class ProperlyConstructedAcceptanceTest {
 		}
 	}
 
-
 	/**
-	 * Class which throws an exception and catches it immediately. In the catch clause, 
-	 * the this reference escapes.
+	 * Class which throws an exception and catches it immediately. In the catch
+	 * clause, the this reference escapes.
 	 */
 	@BugsExpected
 	public static class Story020a_SimpleClassWithTryCatchOneParm {
 		static Story020a_SimpleClassWithTryCatchOneParm reference;
-		
+
 		public Story020a_SimpleClassWithTryCatchOneParm() {
 			try {
 				throw new IOException();
@@ -310,8 +309,6 @@ public class ProperlyConstructedAcceptanceTest {
 		}
 	}
 
-	
-	
 	/**
 	 * Class which throws an exception and catches it immediately. Assigning the
 	 * this-reference to a field could be a problem and should not be detected.
@@ -533,20 +530,20 @@ public class ProperlyConstructedAcceptanceTest {
 		public Story030_MultipleCtorsUsingThis(int i, Object o) {
 		}
 	}
-	
-	@BugsExpected 
+
+	@BugsExpected
 	public static class Story031_Listener implements ActionListener {
 		public Story031_Listener(JButton button) {
 			button.addActionListener(this);
 		}
 
 		@Override
-		public void actionPerformed(ActionEvent arg0) {			
+		public void actionPerformed(ActionEvent arg0) {
 		}
 	}
-	
-	@BugsExpected 
-	public static class Story032_AnonymousListener  {
+
+	@BugsExpected
+	public static class Story032_AnonymousListener {
 		public Story032_AnonymousListener(JButton button) {
 			button.addActionListener(new ActionListener() {
 				@Override
@@ -555,46 +552,44 @@ public class ProperlyConstructedAcceptanceTest {
 			});
 		}
 	}
-	
-	@BugsExpected 
-	public static class Story033_NamedInnerInstanceListener  {
+
+	@BugsExpected
+	public static class Story033_NamedInnerInstanceListener {
 		private class Listener implements ActionListener {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 			}
 		}
-		
+
 		public Story033_NamedInnerInstanceListener(JButton button) {
 			button.addActionListener(new Listener());
 		}
 	}
-	
 
-	@NoBugsExpected 
-	public static class Story034_StaticInnerInstanceListener  {
+	@NoBugsExpected
+	public static class Story034_StaticInnerInstanceListener {
 		private static class Listener implements ActionListener {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 			}
 		}
-		
+
 		public Story034_StaticInnerInstanceListener(JButton button) {
 			button.addActionListener(new Listener());
 		}
 	}
-	
-	
-	@BugsExpected 
-	public final static class Story035_LocalObjectReferringThisListener  {
+
+	@BugsExpected
+	public final static class Story035_LocalObjectReferringThisListener {
 		private final static class Listener implements ActionListener {
 			@SuppressWarnings("unused")
 			public Object reference;
-			
+
 			@Override
 			public void actionPerformed(ActionEvent e) {
 			}
 		}
-		
+
 		public Story035_LocalObjectReferringThisListener(JButton button) {
 			Listener listener = new Listener();
 			listener.reference = this;

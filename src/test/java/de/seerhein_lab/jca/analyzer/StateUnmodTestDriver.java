@@ -11,7 +11,6 @@ import org.apache.bcel.Repository;
 import org.apache.bcel.classfile.JavaClass;
 
 import de.seerhein_lab.jca.Utils;
-import de.seerhein_lab.jca.analyzer.ClassAnalyzer;
 import edu.umd.cs.findbugs.BugInstance;
 import edu.umd.cs.findbugs.SortedBugCollection;
 import edu.umd.cs.findbugs.ba.ClassContext;
@@ -37,18 +36,18 @@ public class StateUnmodTestDriver {
 
 		when(classContextMock.getJavaClass()).thenReturn(clazz);
 
-		ClassAnalyzer classAlalyzer = new ClassAnalyzer(classContextMock);
+		ClassAnalyzer classAnalyzer = new ClassAnalyzer(classContextMock);
 		if (analyzeCtorCopy) {
 			logger.log(Level.FINE, "Analyzing CtorCopy");
-			bugs.addAll(classAlalyzer.ctorArgsAreCopied().getCollection());
+			bugs.addAll(classAnalyzer.ctorArgsAreCopied());
 		}
 		if (analyzeFieldsMutate) {
 			logger.log(Level.FINE, "Analyzing FieldsMutate");
-			bugs.addAll(classAlalyzer.noMutators().getCollection());
+			bugs.addAll(classAnalyzer.noMutators());
 		}
 		if (analyzeFieldsArePuplished) {
 			logger.log(Level.FINE, "Analyzing FieldsNotPublished");
-			bugs.addAll(classAlalyzer.fieldsAreNotPublished().getCollection());
+			bugs.addAll(classAnalyzer.fieldsAreNotPublished());
 		}
 
 		logger.log(Level.SEVERE, "bugs: ");

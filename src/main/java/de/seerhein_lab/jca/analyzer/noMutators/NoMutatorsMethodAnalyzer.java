@@ -20,12 +20,12 @@ import edu.umd.cs.findbugs.ba.ClassContext;
 
 public class NoMutatorsMethodAnalyzer extends BaseMethodAnalyzer {
 
-	private Set<Heap> heaps;
+	private Heap heap;
 
 	public NoMutatorsMethodAnalyzer(ClassContext classContext,
-			MethodGen methodGen, Set<Heap> heaps) {
+			MethodGen methodGen, Heap heap) {
 		super(classContext, methodGen);
-		this.heaps = heaps;
+		this.heap = heap;
 	}
 
 	public NoMutatorsMethodAnalyzer(ClassContext classContext,
@@ -36,42 +36,40 @@ public class NoMutatorsMethodAnalyzer extends BaseMethodAnalyzer {
 
 	protected BaseInstructionsAnalysisVisitor getInstructionAnalysisVisitor(
 			Frame frame, InstructionHandle instructionHandle) {
-		return new NoMutatorsAnalysisVisitor(classContext, method,
-				frame, new ConstantPoolGen(method.getConstantPool()),
+		return new NoMutatorsAnalysisVisitor(classContext, method, frame,
+				new ConstantPoolGen(method.getConstantPool()),
 				instructionHandle, exceptionHandlers, alreadyVisitedMethods,
 				depth);
 	}
 
 	@Override
 	public void analyze() {
-		for (Heap callerHeap : heaps) {
-			Stack<Slot> callerStack = new Stack<Slot>();
+		Stack<Slot> callerStack = new Stack<Slot>();
 
-			Slot externalReference = ReferenceSlot.createNewInstance(
-					callerHeap.getExternalObject());
+		Slot externalReference = ReferenceSlot.createNewInstance(heap
+				.getExternalObject());
 
-			// push args + this (if not static) onto the stack
-			if (!method.isStatic()) {
-				Slot thisReference = ReferenceSlot.createNewInstance(
-						callerHeap.getThisInstance());
-				callerStack.push(thisReference);
-			}
-
-			Type[] argTypes = method.getArgumentTypes();
-
-			for (Type argType : argTypes) {
-				Slot argument = Slot.getDefaultSlotInstance(argType);
-				if (argument instanceof ReferenceSlot) {
-					argument = externalReference;
-				}
-				for (int i = 0; i < argument.getNumSlots(); i++) {
-					callerStack.push(argument);
-				}
-			}
-
-			Frame callerFrame = new Frame(callerStack, callerHeap);
-
-			analyze(callerFrame);
+		// push args + this (if not static) onto the stack
+		if (!method.isStatic()) {
+			Slot thisReference = ReferenceSlot.createNewInstance(heap
+					.getThisInstance());
+			callerStack.push(thisReference);
 		}
+
+		Type[] argTypes = method.getArgumentTypes();
+
+		for (Type argType : argTypes) {
+			Slot argument = Slot.getDefaultSlotInstance(argType);
+			if (argument instanceof ReferenceSlot) {
+				argument = externalReference;
+			}
+			for (int i = 0; i < argument.getNumSlots(); i++) {
+				callerStack.push(argument);
+			}
+		}
+
+		Frame callerFrame = new Frame(callerStack, heap);
+
+		analyze(callerFrame);
 	}
 }

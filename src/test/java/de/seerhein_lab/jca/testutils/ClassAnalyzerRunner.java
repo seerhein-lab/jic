@@ -10,6 +10,7 @@ import java.lang.annotation.Target;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 import org.apache.bcel.Repository;
@@ -22,7 +23,7 @@ import org.junit.runner.notification.Failure;
 import org.junit.runner.notification.RunNotifier;
 
 import de.seerhein_lab.jca.analyzer.ClassAnalyzer;
-import edu.umd.cs.findbugs.BugCollection;
+import edu.umd.cs.findbugs.BugInstance;
 import edu.umd.cs.findbugs.ba.ClassContext;
 
 public class ClassAnalyzerRunner extends Runner {
@@ -84,26 +85,28 @@ public class ClassAnalyzerRunner extends Runner {
 
 		ClassAnalyzer analyzer = new ClassAnalyzer(classContextMock);
 
-		BugCollection bugs = runCheckMethod(analyzer);
+		Collection<BugInstance> bugs = runCheckMethod(analyzer);
 
 		if (classToTest.isAnnotationPresent(NoBugsExpected.class)) {
-			Assert.assertTrue(bugs.getCollection().isEmpty());
+			Assert.assertTrue(bugs.isEmpty());
 		}
 
 		if (classToTest.isAnnotationPresent(BugsExpected.class)) {
-			Assert.assertFalse(bugs.getCollection().isEmpty());
+			Assert.assertFalse(bugs.isEmpty());
 		}
 	}
 
-	BugCollection runCheckMethod(ClassAnalyzer analyzer) {
+	Collection<BugInstance> runCheckMethod(ClassAnalyzer analyzer) {
 		Method method = findAnalyzerBindingSutMethod();
 
 		return invokeBindMethod(method, analyzer);
 	}
 
-	BugCollection invokeBindMethod(Method method, ClassAnalyzer analyzer) {
+	@SuppressWarnings("unchecked")
+	Collection<BugInstance> invokeBindMethod(Method method,
+			ClassAnalyzer analyzer) {
 		try {
-			return (BugCollection) method.invoke(null, analyzer);
+			return (Collection<BugInstance>) method.invoke(null, analyzer);
 		} catch (Exception exp) {
 			throw new RuntimeException(exp);
 		}
@@ -118,7 +121,7 @@ public class ClassAnalyzerRunner extends Runner {
 							"The bind method must be static. "
 									+ "Only static method should be marked with the Annotation: "
 									+ BindAnalyzerMethod.class);
-				} else if (!method.getReturnType().equals(BugCollection.class)) {
+				} else if (!method.getReturnType().equals(Collection.class)) {
 					throw new RuntimeException(
 							"bind method has wrong return typ. "
 									+ "The method should use BugCollection as return type.");
