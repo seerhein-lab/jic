@@ -24,12 +24,11 @@ import edu.umd.cs.findbugs.ba.ClassContext;
  * Analyzes methods.
  */
 public abstract class BaseMethodAnalyzer {
-	protected static final Logger logger = Logger
+	private static final Logger logger = Logger
 			.getLogger("BaseMethodAnalyzer");
 	protected final ClassContext classContext;
 	protected final Set<Pair<Method, Slot[]>> alreadyVisitedMethods;
 	protected final int depth;
-	protected final String indentation;
 
 	/** The method to analyze. */
 	protected final Method method;
@@ -61,7 +60,6 @@ public abstract class BaseMethodAnalyzer {
 		exceptionHandlers = methodGen.getExceptionHandlers();
 		this.alreadyVisitedMethods = alreadyVisitedMethods;
 		this.depth = depth + 1;
-		this.indentation = Utils.formatLoggingOutput(this.depth);
 	}
 
 	protected static boolean protectsInstruction(
@@ -103,9 +101,9 @@ public abstract class BaseMethodAnalyzer {
 		visitor = getInstructionAnalysisVisitor(calleeFrame,
 				instructionHandles[0]);
 
-		logger.log(Level.FINE, indentation + "vvvvvvvvvvvvvvvvvvvvvvvvvv");
+		logger.log(Level.FINE, Utils.formatLoggingOutput(this.depth) + "vvvvvvvvvvvvvvvvvvvvvvvvvv");
 		instructionHandles[0].accept(visitor);
-		logger.log(Level.FINE, indentation + "^^^^^^^^^^^^^^^^^^^^^^^^^^");
+		logger.log(Level.FINE, Utils.formatLoggingOutput(this.depth) + "^^^^^^^^^^^^^^^^^^^^^^^^^^");
 	}
 
 	protected Frame createCalleeFrame(Frame callerFrame) {
