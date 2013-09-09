@@ -3,7 +3,9 @@ package de.seerhein_lab.jca;
 import static org.junit.Assert.assertEquals;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import javax.annotation.CheckForNull;
 
@@ -23,11 +25,11 @@ public class JcaDetectorTest {
 
 	private JcaDetector jcaDetector;
 	private JavaClass javaClass;
-	private boolean isSupposedlyImmutable;
+	private static final String PACKAGE = "de.seerhein_lab.jca.JcaDetectorTest$";
+	private final static Map<String, Boolean> isSupposedlyImmutable = new HashMap<String, Boolean>();
 
-	public JcaDetectorTest(Object javaClass, Object isSupposedlyImmutable) {
+	public JcaDetectorTest(Object javaClass) {
 		this.javaClass = (JavaClass) javaClass;
-		this.isSupposedlyImmutable = (Boolean) isSupposedlyImmutable;
 	}
 
 	@Parameters
@@ -36,8 +38,7 @@ public class JcaDetectorTest {
 				.getClasses();
 		List<Object[]> list = new ArrayList<Object[]>();
 		for (int i = 0; i < classes.length; i++) {
-			list.add(new Object[] { Repository.lookupClass(classes[i]),
-					isSupposedlyImmutableArray[i] });
+			list.add(new Object[] { Repository.lookupClass(classes[i]) });
 		}
 		return list;
 	}
@@ -45,18 +46,21 @@ public class JcaDetectorTest {
 	@Before
 	public void setUp() throws Exception {
 		jcaDetector = new JcaDetector(null);
+		isSupposedlyImmutable.put(PACKAGE + "ImmutableAnnotation", true);
+		isSupposedlyImmutable.put(PACKAGE + "immutableAndOtherAnnotations",
+				true);
+		isSupposedlyImmutable.put(PACKAGE + "noAnnotation", false);
+		isSupposedlyImmutable.put(PACKAGE + "otherAnnotation", false);
+		isSupposedlyImmutable.put(PACKAGE + "otherImmutableAnnotation", false);
+		isSupposedlyImmutable.put(PACKAGE + "otherJcipAnnotation", false);
 	}
 
 	@Test
 	public void testSupposedlyImmutable() throws ClassNotFoundException {
 
-		assertEquals(isSupposedlyImmutable,
+		assertEquals(isSupposedlyImmutable.get(javaClass.getClassName()),
 				jcaDetector.supposedlyImmutable(javaClass));
 	}
-
-	// use alphabetical order
-	private final static boolean isSupposedlyImmutableArray[] = { true, true,
-			false, false, false, false };
 
 	@Immutable
 	public static class ImmutableAnnotation {
