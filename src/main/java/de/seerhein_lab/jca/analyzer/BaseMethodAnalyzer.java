@@ -32,7 +32,6 @@ public abstract class BaseMethodAnalyzer {
 
 	/** The method to analyze. */
 	protected final Method method;
-	// private final ExceptionHandlers exceptionHandlers;
 	protected final CodeExceptionGen[] exceptionHandlers;
 
 	/** The visitor which inspects the method's bytecode instructions. */
@@ -55,7 +54,6 @@ public abstract class BaseMethodAnalyzer {
 			Set<Pair<Method, Slot[]>> alreadyVisitedMethods, int depth) {
 		this.classContext = classContext;
 		this.method = methodGen.getMethod();
-		// this.exceptionHandlers = new ExceptionHandlers(methodGen);
 		exceptionHandlers = methodGen.getExceptionHandlers();
 		this.alreadyVisitedMethods = alreadyVisitedMethods;
 		this.depth = depth + 1;
@@ -67,7 +65,6 @@ public abstract class BaseMethodAnalyzer {
 				.getStartPC(); !protectedInstruction.equals(exceptionHandler
 				.getEndPC()); protectedInstruction = protectedInstruction
 				.getNext()) {
-			// System.out.println(protectedInstruction + " | " + instruction);
 			if (protectedInstruction.getPosition() == instruction.getPosition())
 				return true;
 		}
