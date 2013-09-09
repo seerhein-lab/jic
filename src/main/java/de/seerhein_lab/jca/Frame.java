@@ -10,7 +10,7 @@ import de.seerhein_lab.jca.slot.Slot;
  */
 public class Frame {
 	private final Slot[] localVars;
-	private final Stack<Slot> stack;
+	private final Stack<Slot> opStack;
 	private final Heap heap;
 
 
@@ -32,7 +32,7 @@ public class Frame {
 		for (int i = numSlots - 1; i >= 0; i--)
 			localVars[i] = callerFrame.getStack().pop();
 
-		stack = new Stack<Slot>();
+		opStack = new Stack<Slot>();
 		this.heap = callerFrame.getHeap();
 	}
 
@@ -53,21 +53,21 @@ public class Frame {
 					: frame.getLocalVars()[i].copy();
 		}
 		Slot[] stackArray = frame.getStack().toArray(new Slot[0]);
-		this.stack = new Stack<Slot>();
+		this.opStack = new Stack<Slot>();
 		for (Slot slot : stackArray) {
-			stack.add(slot.copy());
+			opStack.add(slot.copy());
 		}
 		this.heap = heap;
 	}
 
 	public Frame(Stack<Slot> callerStack, Heap callerHeap) {
-		this.stack = callerStack;
+		this.opStack = callerStack;
 		this.localVars = new Slot[0];
 		this.heap = callerHeap;
 	}
 
 	public Stack<Slot> getStack() {
-		return stack;
+		return opStack;
 	}
 
 	/**
@@ -79,7 +79,7 @@ public class Frame {
 	 */
 	public void pushStackByRequiredSlots(Slot slot) {
 		for (int i = 0; i < slot.getNumSlots(); i++) {
-			stack.push(slot);
+			opStack.push(slot);
 		}
 	}
 
@@ -90,9 +90,9 @@ public class Frame {
 	 * @return The top stack value.
 	 */
 	public Slot popStackByRequiredSlots() {
-		Slot poppedValue = stack.pop();
+		Slot poppedValue = opStack.pop();
 		if (poppedValue.getNumSlots() == 2) {
-			stack.pop();
+			opStack.pop();
 		}
 		return poppedValue;
 	}
