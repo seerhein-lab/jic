@@ -2,7 +2,8 @@ package de.seerhein_lab.jca.analyzer;
 
 import java.util.Collection;
 import java.util.HashSet;
-import java.util.List;
+
+import net.jcip.annotations.ThreadSafe;
 
 import org.apache.bcel.classfile.Field;
 import org.apache.bcel.classfile.JavaClass;
@@ -23,6 +24,8 @@ import edu.umd.cs.findbugs.SortedBugCollection;
 import edu.umd.cs.findbugs.annotations.Confidence;
 import edu.umd.cs.findbugs.ba.ClassContext;
 
+// This class is thread safe because it follows the java monitor pattern
+@ThreadSafe
 public final class ClassAnalyzer {
 	private final ClassContext classContext;
 	private final JavaClass clazz;
@@ -67,11 +70,10 @@ public final class ClassAnalyzer {
 		return bugs.getCollection();
 	}
 
-	public Collection<BugInstance> properlyConstructed() {
+	public synchronized Collection<BugInstance> properlyConstructed() {
 		SortedBugCollection bugs = new SortedBugCollection();
-		List<Method> ctors = classHelper.getConstructors();
 
-		for (Method ctor : ctors) {
+		for (Method ctor : classHelper.getConstructors()) {
 			MethodGen ctorGen = new MethodGen(ctor, clazz.getClassName(),
 					new ConstantPoolGen(clazz.getConstantPool()));
 
@@ -86,9 +88,8 @@ public final class ClassAnalyzer {
 	// package private for testing purposes
 	Collection<BugInstance> ctorArgsAreCopied() {
 		SortedBugCollection bugs = new SortedBugCollection();
-		List<Method> ctors = classHelper.getConstructors();
 
-		for (Method ctor : ctors) {
+		for (Method ctor : classHelper.getConstructors()) {
 			MethodGen ctorGen = new MethodGen(ctor, clazz.getClassName(),
 					new ConstantPoolGen(clazz.getConstantPool()));
 
@@ -153,7 +154,7 @@ public final class ClassAnalyzer {
 		return bugs.getCollection();
 	}
 
-	public Collection<BugInstance> isImmutable() {
+	public synchronized Collection<BugInstance> isImmutable() {
 		SortedBugCollection bugs = new SortedBugCollection();
 		bugs.addAll(allFieldsFinal());
 		bugs.addAll(properlyConstructed());
