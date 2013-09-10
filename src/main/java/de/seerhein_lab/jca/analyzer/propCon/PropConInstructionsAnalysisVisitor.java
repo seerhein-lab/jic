@@ -92,12 +92,12 @@ public class PropConInstructionsAnalysisVisitor extends
 		Heap heap = frame.getHeap();
 		if (heap.getObject(arrayReference) instanceof ExternalObject) {
 			// the array is externally known
-			if (referenceToStore.getID().equals(heap.getThisInstance().getId())) {
+			if (referenceToStore.getID() != null && referenceToStore.getID().equals(heap.getThisInstance().getId())) {
 				// this is assigned to the array
 				addBug(Confidence.HIGH,
 						"'this' is assigned to an external array and escapes",
 						instructionHandle);
-			} else if (heap.get(arrayReference.getID()).transitivelyRefers(
+			} else if (arrayReference.getID() != null && heap.get(arrayReference.getID()).transitivelyRefers(
 					heap.getThisInstance())) {
 				// a reference containing this is assigned to the array
 				addBug(Confidence.HIGH,
@@ -118,12 +118,12 @@ public class PropConInstructionsAnalysisVisitor extends
 		Heap heap = frame.getHeap();
 		if (heap.getObject(targetReference) instanceof ExternalObject ) {
 			// the left side of the assignment is externally known
-			if (referenceToPut.getID().equals(heap.getThisInstance().getId())) {
+			if (referenceToPut.getID() != null && referenceToPut.getID().equals(heap.getThisInstance().getId())) {
 				// this is on the right side
 				addBug(Confidence.HIGH,
 						"'this' is assigned to an external field and escapes",
 						instructionHandle);
-			} else if (heap.get(referenceToPut.getID()).transitivelyRefers(
+			} else if (referenceToPut.getID() != null && heap.get(referenceToPut.getID()).transitivelyRefers(
 					heap.getThisInstance())) {
 				// this is contained in the right side
 				addBug(Confidence.HIGH,
