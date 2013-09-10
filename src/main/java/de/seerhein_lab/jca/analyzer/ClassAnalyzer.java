@@ -17,7 +17,7 @@ import de.seerhein_lab.jca.analyzer.ctorArgsCopied.CtorArgsCopiedAnalyzer;
 import de.seerhein_lab.jca.analyzer.fieldsNotPublished.FieldsNotPublishedMethodAnalyzer;
 import de.seerhein_lab.jca.analyzer.noMutators.NoMutatorsMethodAnalyzer;
 import de.seerhein_lab.jca.analyzer.propCon.PropConMethodAnalyzer;
-import de.seerhein_lab.jca.heap.Heap;
+import de.seerhein_lab.jca.vm.Heap;
 import edu.umd.cs.findbugs.BugCollection;
 import edu.umd.cs.findbugs.BugInstance;
 import edu.umd.cs.findbugs.SortedBugCollection;

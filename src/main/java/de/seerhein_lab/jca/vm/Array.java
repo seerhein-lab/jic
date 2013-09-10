@@ -1,4 +1,4 @@
-package de.seerhein_lab.jca.heap;
+package de.seerhein_lab.jca.vm;
 
 import java.util.HashSet;
 import java.util.Iterator;

@@ -12,10 +12,10 @@ import de.seerhein_lab.jca.Frame;
 import de.seerhein_lab.jca.Pair;
 import de.seerhein_lab.jca.analyzer.BaseInstructionsAnalysisVisitor;
 import de.seerhein_lab.jca.analyzer.BaseMethodAnalyzer;
-import de.seerhein_lab.jca.heap.Heap;
-import de.seerhein_lab.jca.heap.ExternalObject;
 import de.seerhein_lab.jca.slot.ReferenceSlot;
 import de.seerhein_lab.jca.slot.Slot;
+import de.seerhein_lab.jca.vm.ExternalObject;
+import de.seerhein_lab.jca.vm.Heap;
 import edu.umd.cs.findbugs.annotations.Confidence;
 import edu.umd.cs.findbugs.ba.ClassContext;
 

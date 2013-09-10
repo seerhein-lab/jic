@@ -2,7 +2,7 @@ package de.seerhein_lab.jca.slot;
 
 import java.util.UUID;
 
-import de.seerhein_lab.jca.heap.HeapObject;
+import de.seerhein_lab.jca.vm.HeapObject;
 
 public class ReferenceSlot extends Slot {
 	private final static ReferenceSlot nullReference = new ReferenceSlot();

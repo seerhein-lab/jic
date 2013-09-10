@@ -9,7 +9,6 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import de.seerhein_lab.jca.heap.Heap;
 import de.seerhein_lab.jca.slot.BooleanSlot;
 import de.seerhein_lab.jca.slot.ByteSlot;
 import de.seerhein_lab.jca.slot.CharSlot;
@@ -21,6 +20,7 @@ import de.seerhein_lab.jca.slot.ReferenceSlot;
 import de.seerhein_lab.jca.slot.ShortSlot;
 import de.seerhein_lab.jca.slot.Slot;
 import de.seerhein_lab.jca.slot.VoidSlot;
+import de.seerhein_lab.jca.vm.Heap;
 
 /**
  * JUnit test for Frame class. Does not test simple getters and setters.

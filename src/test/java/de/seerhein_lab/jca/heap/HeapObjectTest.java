@@ -9,6 +9,11 @@ import java.util.Iterator;
 import org.junit.Before;
 import org.junit.Test;
 
+import de.seerhein_lab.jca.vm.Array;
+import de.seerhein_lab.jca.vm.ClassInstance;
+import de.seerhein_lab.jca.vm.Heap;
+import de.seerhein_lab.jca.vm.HeapObject;
+
 public class HeapObjectTest {
 	private Heap heap;
 	private ClassInstance a;
