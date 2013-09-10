@@ -536,6 +536,7 @@ public abstract class BaseInstructionsAnalysisVisitor extends
 
 	@Override
 	public void visitAALOAD(AALOAD obj) {
+		logger.log(Level.FINE, indentation + obj.toString(false));
 		
 		// pop array index
 		frame.getStack().pop();
@@ -544,8 +545,9 @@ public abstract class BaseInstructionsAnalysisVisitor extends
 		
 		// CAUTION: try to make this also work with external object
 		
-		if (frame.getHeap().get(arrayReference.getID()) instanceof ExternalObject) {
-			frame.getStack().push(arrayReference);
+		if (frame.getHeap().getObject(arrayReference) instanceof ExternalObject) {
+			frame.getStack().push(ReferenceSlot.createNewInstance(frame.getHeap()
+					.getExternalObject()));
 			instructionHandle = instructionHandle.getNext();
 			instructionHandle.accept(this);
 			return;
@@ -553,7 +555,7 @@ public abstract class BaseInstructionsAnalysisVisitor extends
 		
 		// END CAUTION: try to make this also work with external object
 		
-		Array array = (Array) frame.getHeap().get(arrayReference.getID());
+		Array array = (Array) frame.getHeap().getObject(arrayReference);
 
 		for (Iterator<HeapObject> iterator = array.getReferredIterator(); iterator
 				.hasNext();) {
@@ -571,6 +573,8 @@ public abstract class BaseInstructionsAnalysisVisitor extends
 
 	@Override
 	public void visitAASTORE(AASTORE obj) {
+		logger.log(Level.FINE, indentation + obj.toString(false));
+		
 		// pop value
 		ReferenceSlot value = (ReferenceSlot) frame.popStackByRequiredSlots();
 		HeapObject component = frame.getHeap().getObject(value);
@@ -816,7 +820,7 @@ public abstract class BaseInstructionsAnalysisVisitor extends
 		// obj.getSignature() refers to desired field
 		Slot f = Slot.getDefaultSlotInstance(obj.getType(constantPoolGen));
 		if (f instanceof ReferenceSlot) {
-			if (o.getID().equals(frame.getHeap().getExternalObject().getId())) {
+			if ( frame.getHeap().getObject(o) instanceof ExternalObject ) {
 				// if left side is external return external
 				f = ReferenceSlot.createNewInstance(frame.getHeap()
 						.getExternalObject());
