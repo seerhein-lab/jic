@@ -1,6 +1,5 @@
 package de.seerhein_lab.jca.analyzer;
 
-import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
@@ -255,7 +254,7 @@ public abstract class BaseInstructionsAnalysisVisitor extends
 		for ( Iterator<BugInstance> it = targetMethodAnalyzer.getBugs().iterator(); it.hasNext(); ) {
 			BugInstance bug = it.next();
 			addBug(Confidence.HIGH, 					
-					"susequent bug caused by [" 
+					"subsequent bug caused by [" 
 					+ bug.getMessage() + " in "  
 					+ targetClass.getClassName() + "." 
 					+ targetMethod.getName() 
@@ -537,10 +536,23 @@ public abstract class BaseInstructionsAnalysisVisitor extends
 
 	@Override
 	public void visitAALOAD(AALOAD obj) {
+		
 		// pop array index
 		frame.getStack().pop();
 		// pop array reference
 		ReferenceSlot arrayReference = (ReferenceSlot) frame.getStack().pop();
+		
+		// CAUTION: try to make this also work with external object
+		
+		if (frame.getHeap().get(arrayReference.getID()) instanceof ExternalObject) {
+			frame.getStack().push(arrayReference);
+			instructionHandle = instructionHandle.getNext();
+			instructionHandle.accept(this);
+			return;
+		}
+		
+		// END CAUTION: try to make this also work with external object
+		
 		Array array = (Array) frame.getHeap().get(arrayReference.getID());
 
 		for (Iterator<HeapObject> iterator = array.getReferredIterator(); iterator
