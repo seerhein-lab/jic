@@ -20,6 +20,7 @@ import de.seerhein_lab.jca.slot.ReferenceSlot;
 import de.seerhein_lab.jca.slot.ShortSlot;
 import de.seerhein_lab.jca.slot.Slot;
 import de.seerhein_lab.jca.slot.VoidSlot;
+import de.seerhein_lab.jca.vm.Frame;
 import de.seerhein_lab.jca.vm.Heap;
 
 /**

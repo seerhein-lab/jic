@@ -36,13 +36,13 @@ import org.apache.bcel.generic.POP2;
 import org.apache.bcel.generic.RET;
 import org.apache.bcel.generic.SIPUSH;
 
-import de.seerhein_lab.jca.Frame;
 import de.seerhein_lab.jca.Utils;
 import de.seerhein_lab.jca.slot.DoubleSlot;
 import de.seerhein_lab.jca.slot.FloatSlot;
 import de.seerhein_lab.jca.slot.IntSlot;
 import de.seerhein_lab.jca.slot.LongSlot;
 import de.seerhein_lab.jca.slot.Slot;
+import de.seerhein_lab.jca.vm.Frame;
 
 /**
  * Analyzes constructors whether the this-reference escapes or not. Therefore a

@@ -44,7 +44,6 @@ import org.apache.bcel.generic.StackInstruction;
 import org.apache.bcel.generic.StoreInstruction;
 import org.apache.bcel.generic.Type;
 
-import de.seerhein_lab.jca.Frame;
 import de.seerhein_lab.jca.Pair;
 import de.seerhein_lab.jca.ResultValue;
 import de.seerhein_lab.jca.ResultValue.Kind;
@@ -56,6 +55,7 @@ import de.seerhein_lab.jca.slot.VoidSlot;
 import de.seerhein_lab.jca.vm.Array;
 import de.seerhein_lab.jca.vm.ClassInstance;
 import de.seerhein_lab.jca.vm.ExternalObject;
+import de.seerhein_lab.jca.vm.Frame;
 import de.seerhein_lab.jca.vm.Heap;
 import de.seerhein_lab.jca.vm.HeapObject;
 import edu.umd.cs.findbugs.BugCollection;

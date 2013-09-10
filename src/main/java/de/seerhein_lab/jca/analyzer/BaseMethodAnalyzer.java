@@ -13,11 +13,11 @@ import org.apache.bcel.generic.InstructionList;
 import org.apache.bcel.generic.MethodGen;
 import org.apache.bcel.generic.Type;
 
-import de.seerhein_lab.jca.Frame;
 import de.seerhein_lab.jca.Pair;
 import de.seerhein_lab.jca.ResultValue;
 import de.seerhein_lab.jca.Utils;
 import de.seerhein_lab.jca.slot.Slot;
+import de.seerhein_lab.jca.vm.Frame;
 import edu.umd.cs.findbugs.BugInstance;
 import edu.umd.cs.findbugs.ba.ClassContext;
 

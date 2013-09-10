@@ -10,7 +10,6 @@ import org.apache.bcel.generic.InstructionHandle;
 import org.apache.bcel.generic.MethodGen;
 import org.apache.bcel.generic.ReturnInstruction;
 
-import de.seerhein_lab.jca.Frame;
 import de.seerhein_lab.jca.Pair;
 import de.seerhein_lab.jca.ResultValue;
 import de.seerhein_lab.jca.ResultValue.Kind;
@@ -20,6 +19,7 @@ import de.seerhein_lab.jca.slot.ReferenceSlot;
 import de.seerhein_lab.jca.slot.Slot;
 import de.seerhein_lab.jca.slot.VoidSlot;
 import de.seerhein_lab.jca.vm.ExternalObject;
+import de.seerhein_lab.jca.vm.Frame;
 import de.seerhein_lab.jca.vm.Heap;
 import de.seerhein_lab.jca.vm.HeapObject;
 import edu.umd.cs.findbugs.annotations.Confidence;

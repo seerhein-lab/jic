@@ -1,9 +1,8 @@
-package de.seerhein_lab.jca;
+package de.seerhein_lab.jca.vm;
 
 import java.util.Stack;
 
 import de.seerhein_lab.jca.slot.Slot;
-import de.seerhein_lab.jca.vm.Heap;
 
 /**
  * Class representing a method frame. Contains LocalVars and a method stack.
