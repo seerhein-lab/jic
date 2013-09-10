@@ -54,7 +54,7 @@ public final class JcaDetector implements Detector {
 			bugs.add(new BugInstance("IMMUTABILITY_BUG", Confidence.HIGH
 					.getConfidenceValue())
 					.addString(
-							"Class cannot be analyzed owing to internal problem.")
+							"Class cannot be analyzed owing to internal problem (" + e.getMessage() + ")")
 					.addClass(classContext.getJavaClass())
 					.addSourceLine(
 							SourceLineAnnotation.createUnknown(classContext
