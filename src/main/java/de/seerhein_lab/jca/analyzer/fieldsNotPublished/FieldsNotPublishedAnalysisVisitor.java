@@ -16,6 +16,7 @@ import de.seerhein_lab.jca.ResultValue;
 import de.seerhein_lab.jca.ResultValue.Kind;
 import de.seerhein_lab.jca.analyzer.BaseInstructionsAnalysisVisitor;
 import de.seerhein_lab.jca.analyzer.BaseMethodAnalyzer;
+import de.seerhein_lab.jca.heap.ExternalObject;
 import de.seerhein_lab.jca.heap.Heap;
 import de.seerhein_lab.jca.heap.HeapObject;
 import de.seerhein_lab.jca.slot.ReferenceSlot;
@@ -137,7 +138,7 @@ public class FieldsNotPublishedAnalysisVisitor extends
 		Heap heap = frame.getHeap();
 		HeapObject objectToStore = heap.get(referenceToStore.getID());
 		// array is the "external"
-		if (arrayReference.getID().equals(heap.getExternalObject().getId())) {
+		if ( heap.getObject(arrayReference) instanceof ExternalObject ) {
 			if (objectToStore.isTransitivelyReferredBy(heap.getThisInstance())) {
 				// a field of this is assigned to an external object
 				addBug(Confidence.HIGH,
@@ -168,7 +169,7 @@ public class FieldsNotPublishedAnalysisVisitor extends
 		Heap heap = frame.getHeap();
 		HeapObject objectToPut = heap.get(referenceToPut.getID());
 		// target is the "external"
-		if (targetReference.getID().equals(heap.getExternalObject().getId())) {
+		if (heap.getObject(targetReference) instanceof ExternalObject ) {
 			if (objectToPut.isTransitivelyReferredBy(heap.getThisInstance())) {
 				// a field of this is assigned to an external object
 				addBug(Confidence.HIGH,

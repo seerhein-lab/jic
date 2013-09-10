@@ -13,6 +13,7 @@ import de.seerhein_lab.jca.Pair;
 import de.seerhein_lab.jca.analyzer.BaseInstructionsAnalysisVisitor;
 import de.seerhein_lab.jca.analyzer.BaseMethodAnalyzer;
 import de.seerhein_lab.jca.heap.Heap;
+import de.seerhein_lab.jca.heap.ExternalObject;
 import de.seerhein_lab.jca.slot.ReferenceSlot;
 import de.seerhein_lab.jca.slot.Slot;
 import edu.umd.cs.findbugs.annotations.Confidence;
@@ -92,13 +93,12 @@ public class CtorArgsCopiedAnalysisVisitor extends
 		if (heap.get(arrayReference.getID()).isTransitivelyReferredBy(
 				heap.getThisInstance())) {
 			// array is referred by this
-			if (referenceToStore.getID().equals(
-					frame.getHeap().getExternalObject().getId())) {
+			if ( heap.getObject(referenceToStore) instanceof ExternalObject ) {
 				// external reference is assigned to an array referred by this
 				addBug(Confidence.HIGH,
 						"an external reference is assigned to an array referred by 'this'",
 						instructionHandle);
-			} else if (heap.get(referenceToStore.getID()).transitivelyRefers(
+			} else if (heap.getObject(referenceToStore).transitivelyRefers(
 					heap.getExternalObject())) {
 				// a reference containing an external reference is assigned to
 				// an array referred by this
@@ -124,12 +124,12 @@ public class CtorArgsCopiedAnalysisVisitor extends
 		Heap heap = frame.getHeap();
 		if (targetReference.getID().equals(heap.getThisInstance().getId())) {
 			// left side is this
-			if (referenceToPut.getID().equals(heap.getExternalObject().getId())) {
+			if ( heap.getObject(referenceToPut) instanceof ExternalObject ) {
 				// right is external
 				addBug(Confidence.HIGH,
 						"an external object is assigned to 'this'",
 						instructionHandle);
-			} else if (heap.get(referenceToPut.getID()).transitivelyRefers(
+			} else if (heap.getObject(referenceToPut).transitivelyRefers(
 					heap.getExternalObject())) {
 				// right refers external
 				addBug(Confidence.HIGH,
@@ -140,12 +140,12 @@ public class CtorArgsCopiedAnalysisVisitor extends
 		if (heap.get(targetReference.getID()).isTransitivelyReferredBy(
 				heap.getThisInstance())) {
 			// left is referred by this
-			if (referenceToPut.getID().equals(heap.getExternalObject().getId())) {
+			if ( heap.getObject(referenceToPut) instanceof ExternalObject ) {
 				// right is external
 				addBug(Confidence.HIGH,
 						"an external reference is assigned to an object referred by 'this'",
 						instructionHandle);
-			} else if (heap.get(referenceToPut.getID()).transitivelyRefers(
+			} else if (heap.getObject(referenceToPut).transitivelyRefers(
 					heap.getExternalObject())) {
 				// right refers external
 				addBug(Confidence.HIGH,

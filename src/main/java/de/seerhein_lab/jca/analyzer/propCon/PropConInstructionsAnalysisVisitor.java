@@ -13,6 +13,7 @@ import de.seerhein_lab.jca.Pair;
 import de.seerhein_lab.jca.analyzer.BaseInstructionsAnalysisVisitor;
 import de.seerhein_lab.jca.analyzer.BaseMethodAnalyzer;
 import de.seerhein_lab.jca.heap.Heap;
+import de.seerhein_lab.jca.heap.ExternalObject;
 import de.seerhein_lab.jca.slot.ReferenceSlot;
 import de.seerhein_lab.jca.slot.Slot;
 import edu.umd.cs.findbugs.annotations.Confidence;
@@ -89,7 +90,7 @@ public class PropConInstructionsAnalysisVisitor extends
 
 		ReferenceSlot referenceToStore = (ReferenceSlot) valueToStore;
 		Heap heap = frame.getHeap();
-		if (arrayReference.getID().equals(heap.getExternalObject().getId())) {
+		if (heap.getObject(arrayReference) instanceof ExternalObject) {
 			// the array is externally known
 			if (referenceToStore.getID().equals(heap.getThisInstance().getId())) {
 				// this is assigned to the array
@@ -115,7 +116,7 @@ public class PropConInstructionsAnalysisVisitor extends
 		}
 		ReferenceSlot referenceToPut = (ReferenceSlot) valueToPut;
 		Heap heap = frame.getHeap();
-		if (targetReference.getID().equals(heap.getExternalObject().getId())) {
+		if (heap.getObject(targetReference) instanceof ExternalObject ) {
 			// the left side of the assignment is externally known
 			if (referenceToPut.getID().equals(heap.getThisInstance().getId())) {
 				// this is on the right side
