@@ -94,7 +94,7 @@ public class Heap {
 	}
 
 	public HeapObject getObject(ReferenceSlot reference) {
-		return objects.get(reference.getID());
+		return get(reference.getID());
 	}
 
 	/**
