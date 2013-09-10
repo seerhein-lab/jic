@@ -1,7 +1,7 @@
 package de.seerhein_lab.jca;
 
-import de.seerhein_lab.jca.heap.Heap;
 import de.seerhein_lab.jca.slot.Slot;
+import de.seerhein_lab.jca.vm.Heap;
 
 /**
  * This class is used for the return values of called methods or results of
