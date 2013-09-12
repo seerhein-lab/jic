@@ -179,7 +179,7 @@ public abstract class BaseInstructionsAnalysisVisitor extends
 		frame.getStack().push(exception);
 
 		for (CodeExceptionGen exceptionHandler : exceptionHandlers) {
-			if (BaseMethodAnalyzer.protectsInstruction(exceptionHandler,
+			if (MethodHelper.protectsInstruction(exceptionHandler,
 					instructionHandle)) {
 				logger.log(Level.FINE, indentation + "vvvvv "
 						+ exceptionHandler.toString() + ": start vvvvv");
