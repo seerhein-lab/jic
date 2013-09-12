@@ -102,6 +102,10 @@ public class SimpleInstructionsAnalysisVisitor extends EmptyVisitor {
 		this.depth = depth;
 		this.indentation = Utils.formatLoggingOutput(depth);
 	}
+	
+	public InstructionHandle getInstructionHandle() {
+		return instructionHandle;
+	}
 
 	// handle section
 
@@ -367,6 +371,8 @@ public class SimpleInstructionsAnalysisVisitor extends EmptyVisitor {
 	@Override
 	public void visitIINC(IINC obj) {
 		// no effect on operand stack
+//		instructionHandle = instructionHandle.getNext();
+//		instructionHandle.accept(this);
 	}
 
 	// -----------------------------------------------------------------
@@ -399,6 +405,8 @@ public class SimpleInstructionsAnalysisVisitor extends EmptyVisitor {
 	@Override
 	public void visitNOP(NOP obj) {
 		// NOP
+//		instructionHandle = instructionHandle.getNext();
+//		instructionHandle.accept(this);
 	}
 
 	// -----------------------------------------------------------------
@@ -410,6 +418,8 @@ public class SimpleInstructionsAnalysisVisitor extends EmptyVisitor {
 	@Override
 	public void visitRET(RET obj) {
 		logger.log(Level.FINE, indentation + obj.toString(false));
+//		instructionHandle = instructionHandle.getNext();
+//		instructionHandle.accept(this);
 	}
 
 	// -----------------------------------------------------------------
