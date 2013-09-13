@@ -16,6 +16,7 @@ import de.seerhein_lab.jca.slot.ReferenceSlot;
 import de.seerhein_lab.jca.slot.Slot;
 import de.seerhein_lab.jca.vm.Frame;
 import de.seerhein_lab.jca.vm.Heap;
+import de.seerhein_lab.jca.vm.OpStack;
 import edu.umd.cs.findbugs.ba.ClassContext;
 
 public class PropConMethodAnalyzer extends BaseMethodAnalyzer {
@@ -40,7 +41,7 @@ public class PropConMethodAnalyzer extends BaseMethodAnalyzer {
 
 	@Override
 	public void analyze() {
-		Stack<Slot> callerStack = new Stack<Slot>();
+		OpStack callerStack = new OpStack();
 		Heap callerHeap = new Heap();
 
 		ReferenceSlot thisReference = ReferenceSlot.createNewInstance(

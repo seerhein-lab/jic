@@ -9,7 +9,7 @@ import de.seerhein_lab.jca.slot.Slot;
  */
 public class Frame {
 	private final Slot[] localVars;
-	private final Stack<Slot> opStack;
+	private final OpStack opStack;
 
 	/**
 	 * Constructor that copies numSlots entries from the callerStack into the newly created 
@@ -23,13 +23,13 @@ public class Frame {
 	 * @param numSlots
 	 *            Number of values to be copied from the callerStack into the localVars array.
 	 */
-	public Frame(int maxLocals, Stack<Slot> callerOpStack, int numSlots) {
+	public Frame(int maxLocals, OpStack callerOpStack, int numSlots) {
 		localVars = new Slot[maxLocals];
 
 		for (int i = numSlots - 1; i >= 0; i--)
 			localVars[i] = callerOpStack.pop();
 
-		opStack = new Stack<Slot>();
+		opStack = new OpStack();
 	}
 
 	public Frame(Frame frame) {
@@ -38,14 +38,10 @@ public class Frame {
 			this.localVars[i] = (frame.getLocalVars()[i] == null) ? null
 					: frame.getLocalVars()[i].copy();
 		}
-		Slot[] stackArray = frame.getStack().toArray(new Slot[0]);
-		this.opStack = new Stack<Slot>();
-		for (Slot slot : stackArray) {
-			opStack.add(slot.copy());
-		}
+		opStack = new OpStack(frame.getStack());
 	}
 
-	public Stack<Slot> getStack() {
+	public OpStack getStack() {
 		return opStack;
 	}
 

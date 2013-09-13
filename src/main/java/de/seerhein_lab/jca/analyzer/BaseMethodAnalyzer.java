@@ -20,6 +20,7 @@ import de.seerhein_lab.jca.Utils;
 import de.seerhein_lab.jca.slot.Slot;
 import de.seerhein_lab.jca.vm.Frame;
 import de.seerhein_lab.jca.vm.Heap;
+import de.seerhein_lab.jca.vm.OpStack;
 import edu.umd.cs.findbugs.BugInstance;
 import edu.umd.cs.findbugs.ba.ClassContext;
 
@@ -78,7 +79,7 @@ public abstract class BaseMethodAnalyzer {
 	 * @param callerStack
 	 *            the content of the local variable table of the constructor.
 	 */
-	public void analyze(Stack<Slot> callerStack, Heap heap) {
+	public void analyze(OpStack callerStack, Heap heap) {
 		Frame calleeFrame = createCalleeFrame(callerStack);
 
 		InstructionHandle[] instructionHandles = new InstructionList(method
@@ -94,7 +95,7 @@ public abstract class BaseMethodAnalyzer {
 				+ "^^^^^^^^^^^^^^^^^^^^^^^^^^");
 	}
 
-	protected Frame createCalleeFrame(Stack<Slot> callerOpStack) {
+	protected Frame createCalleeFrame(OpStack callerOpStack) {
 		int numSlots = method.isStatic() ? 0 : 1;
 
 		for (Type type : method.getArgumentTypes()) {
@@ -107,8 +108,9 @@ public abstract class BaseMethodAnalyzer {
 	}
 
 	public Slot[] getActualParams(Frame frame) {
-		Frame clonedFrame = new Frame(frame);
-		return createCalleeFrame(clonedFrame.getStack()).getLocalVars();
+		OpStack opStack = new OpStack(frame.getStack());
+		
+		return createCalleeFrame(opStack).getLocalVars();
 
 	}
 
