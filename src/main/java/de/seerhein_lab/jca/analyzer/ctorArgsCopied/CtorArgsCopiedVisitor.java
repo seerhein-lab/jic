@@ -23,31 +23,31 @@ public class CtorArgsCopiedVisitor extends
 		BaseInstructionsVisitor {
 
 	protected CtorArgsCopiedVisitor(ClassContext classContext,
-			Method method, Frame frame, ConstantPoolGen constantPoolGen,
+			Method method, Frame frame, Heap heap, ConstantPoolGen constantPoolGen,
 			Set<Pair<InstructionHandle, Boolean>> alreadyVisitedIfBranch,
 			Set<Pair<Method, Slot[]>> alreadyVisitedMethods,
 			InstructionHandle instructionHandle,
 			CodeExceptionGen[] exceptionHandlers, int depth) {
-		super(classContext, method, frame, constantPoolGen,
+		super(classContext, method, frame, heap, constantPoolGen,
 				alreadyVisitedIfBranch, alreadyVisitedMethods,
 				instructionHandle, exceptionHandlers, depth);
 	}
 
 	public CtorArgsCopiedVisitor(ClassContext classContext,
-			Method method, Frame frame, ConstantPoolGen constantPoolGen,
+			Method method, Frame frame, Heap heap, ConstantPoolGen constantPoolGen,
 			InstructionHandle instructionHandle,
 			CodeExceptionGen[] exceptionHandlers,
 			Set<Pair<Method, Slot[]>> alreadyVisitedMethods, int depth) {
-		super(classContext, method, frame, constantPoolGen, instructionHandle,
+		super(classContext, method, frame, heap, constantPoolGen, instructionHandle,
 				exceptionHandlers, alreadyVisitedMethods, depth);
 	}
 
 	@Override
 	protected BaseInstructionsVisitor getInstructionsAnalysisVisitor(
-			Frame frame,
+			Frame frame, Heap heap,
 			Set<Pair<InstructionHandle, Boolean>> alreadyVisitedIfBranch,
 			InstructionHandle instructionHandle) {
-		return new CtorArgsCopiedVisitor(classContext, method, frame,
+		return new CtorArgsCopiedVisitor(classContext, method, frame, heap,
 				constantPoolGen, alreadyVisitedIfBranch, alreadyVisitedMethods,
 				instructionHandle, exceptionHandlers, depth);
 	}
@@ -64,8 +64,6 @@ public class CtorArgsCopiedVisitor extends
 
 	@Override
 	protected void detectVirtualMethodBug(ReferenceSlot argument) {
-		Heap heap = frame.getHeap();
-
 		if (argument.isNullReference())
 			return;
 
@@ -89,7 +87,6 @@ public class CtorArgsCopiedVisitor extends
 		if (referenceToStore.isNullReference())
 			return;
 
-		Heap heap = frame.getHeap();
 		if (heap.get(arrayReference.getID()).isTransitivelyReferredBy(
 				heap.getThisInstance())) {
 			// array is referred by this
@@ -121,7 +118,6 @@ public class CtorArgsCopiedVisitor extends
 		if (referenceToPut.isNullReference())
 			return;
 
-		Heap heap = frame.getHeap();
 		if (targetReference.getID().equals(heap.getThisInstance().getId())) {
 			// left side is this
 			if ( heap.getObject(referenceToPut) instanceof ExternalObject ) {
@@ -160,7 +156,6 @@ public class CtorArgsCopiedVisitor extends
 		if (referenceToPut.isNullReference())
 			return;
 
-		Heap heap = frame.getHeap();
 		// XXX this assigned to a static field?? Only starting class?!?
 		if (referenceToPut.getID().equals(heap.getThisInstance().getId())) {
 			// this is published

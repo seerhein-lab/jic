@@ -10,7 +10,7 @@ import de.seerhein_lab.jca.slot.Slot;
 public class Frame {
 	private final Slot[] localVars;
 	private final Stack<Slot> opStack;
-	private final Heap heap;
+//	private final Heap heap;
 
 
 	/**
@@ -25,14 +25,14 @@ public class Frame {
 	 * @param numSlots
 	 *            Number of values to be copied from the callerStack into the localVars array.
 	 */
-	public Frame(int maxLocals, Frame callerFrame, int numSlots) {
+	public Frame(int maxLocals, Stack<Slot> callerOpStack, int numSlots) {
 		localVars = new Slot[maxLocals];
 
 		for (int i = numSlots - 1; i >= 0; i--)
-			localVars[i] = callerFrame.getStack().pop();
+			localVars[i] = callerOpStack.pop();
 
 		opStack = new Stack<Slot>();
-		this.heap = callerFrame.getHeap();
+//		this.heap = callerFrame.getHeap();
 	}
 
 	/**
@@ -41,11 +41,13 @@ public class Frame {
 	 * @param frame
 	 *            The frame to copy.
 	 */
-	public Frame(Frame frame) {
-		this(frame, new Heap(frame.getHeap()));
-	}
+//	public Frame(Frame frame) {
+//		this(frame, new Heap(frame.getHeap()));
+//	}
 
-	public Frame(Frame frame, Heap heap) {
+	public Frame(Frame frame
+//			, Heap heap
+			) {
 		this.localVars = new Slot[frame.getLocalVars().length];
 		for (int i = 0; i < frame.getLocalVars().length; i++) {
 			this.localVars[i] = (frame.getLocalVars()[i] == null) ? null
@@ -56,13 +58,15 @@ public class Frame {
 		for (Slot slot : stackArray) {
 			opStack.add(slot.copy());
 		}
-		this.heap = heap;
+//		this.heap = heap;
 	}
 
-	public Frame(Stack<Slot> callerStack, Heap callerHeap) {
+	public Frame(Stack<Slot> callerStack
+//			, Heap callerHeap
+			) {
 		this.opStack = callerStack;
 		this.localVars = new Slot[0];
-		this.heap = callerHeap;
+//		this.heap = callerHeap;
 	}
 
 	public Stack<Slot> getStack() {
@@ -105,7 +109,7 @@ public class Frame {
 		return localVars;
 	}
 
-	public Heap getHeap() {
-		return heap;
-	}
+//	public Heap getHeap() {
+//		return heap;
+//	}
 }

@@ -30,9 +30,9 @@ public class CtorArgsCopiedAnalyzer extends BaseMethodAnalyzer {
 		super(classContext, methodGen, alreadyVisitedMethods, depth);
 	}
 
-	protected BaseInstructionsVisitor getInstructionAnalysisVisitor(
-			Frame frame, InstructionHandle instructionHandle) {
-		return new CtorArgsCopiedVisitor(classContext, method, frame,
+	protected BaseInstructionsVisitor getInstructionVisitor(
+			Frame frame, Heap heap, InstructionHandle instructionHandle) {
+		return new CtorArgsCopiedVisitor(classContext, method, frame, heap,
 				new ConstantPoolGen(method.getConstantPool()),
 				instructionHandle, exceptionHandlers, alreadyVisitedMethods,
 				depth);
@@ -63,8 +63,8 @@ public class CtorArgsCopiedAnalyzer extends BaseMethodAnalyzer {
 			}
 		}
 
-		Frame callerFrame = new Frame(callerStack, callerHeap);
+		Frame callerFrame = new Frame(callerStack);
 
-		analyze(callerFrame);
+		analyze(callerFrame, callerHeap);
 	}
 }

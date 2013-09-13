@@ -23,32 +23,32 @@ public class PropConInstructionsVisitor extends
 		BaseInstructionsVisitor {
 
 	protected PropConInstructionsVisitor(ClassContext classContext,
-			Method method, Frame frame, ConstantPoolGen constantPoolGen,
+			Method method, Frame frame, Heap heap, ConstantPoolGen constantPoolGen,
 			Set<Pair<InstructionHandle, Boolean>> alreadyVisitedIfBranch,
 			Set<Pair<Method, Slot[]>> alreadyVisitedMethods,
 			InstructionHandle instructionHandle,
 			CodeExceptionGen[] exceptionHandlers, int depth) {
-		super(classContext, method, frame, constantPoolGen,
+		super(classContext, method, frame, heap, constantPoolGen,
 				alreadyVisitedIfBranch, alreadyVisitedMethods,
 				instructionHandle, exceptionHandlers, depth);
 	}
 
 	public PropConInstructionsVisitor(ClassContext classContext,
-			Method method, Frame frame, ConstantPoolGen constantPoolGen,
+			Method method, Frame frame, Heap heap, ConstantPoolGen constantPoolGen,
 			InstructionHandle instructionHandle,
 			CodeExceptionGen[] exceptionHandlers,
 			Set<Pair<Method, Slot[]>> alreadyVisitedMethods, int depth) {
-		super(classContext, method, frame, constantPoolGen, instructionHandle,
+		super(classContext, method, frame, heap, constantPoolGen, instructionHandle,
 				exceptionHandlers, alreadyVisitedMethods, depth);
 	}
 
 	@Override
 	protected BaseInstructionsVisitor getInstructionsAnalysisVisitor(
-			Frame frame,
+			Frame frame, Heap heap,
 			Set<Pair<InstructionHandle, Boolean>> alreadyVisitedIfBranch,
 			InstructionHandle instructionHandle) {
 		return new PropConInstructionsVisitor(classContext, method,
-				frame, constantPoolGen, alreadyVisitedIfBranch,
+				frame, heap, constantPoolGen, alreadyVisitedIfBranch,
 				alreadyVisitedMethods, instructionHandle, exceptionHandlers,
 				depth);
 	}
@@ -65,7 +65,6 @@ public class PropConInstructionsVisitor extends
 
 	@Override
 	protected void detectVirtualMethodBug(ReferenceSlot argument) {
-		Heap heap = frame.getHeap();
 		if (argument.getID().equals(heap.getThisInstance().getId())) {
 			// 'this' is passed into a virtual method
 			addBug(Confidence.HIGH,
@@ -89,7 +88,6 @@ public class PropConInstructionsVisitor extends
 		}
 
 		ReferenceSlot referenceToStore = (ReferenceSlot) valueToStore;
-		Heap heap = frame.getHeap();
 		if (heap.getObject(arrayReference) instanceof ExternalObject) {
 			// the array is externally known
 			if (referenceToStore.getID() != null && referenceToStore.getID().equals(heap.getThisInstance().getId())) {
@@ -115,7 +113,6 @@ public class PropConInstructionsVisitor extends
 			return;
 		}
 		ReferenceSlot referenceToPut = (ReferenceSlot) valueToPut;
-		Heap heap = frame.getHeap();
 		if (heap.getObject(targetReference) instanceof ExternalObject ) {
 			// the left side of the assignment is externally known
 			if (referenceToPut.getID() != null && referenceToPut.getID().equals(heap.getThisInstance().getId())) {
@@ -136,7 +133,6 @@ public class PropConInstructionsVisitor extends
 
 	@Override
 	protected void detectPutStaticBug(ReferenceSlot referenceToPut) {
-		Heap heap = frame.getHeap();
 		if (referenceToPut.getID().equals(heap.getThisInstance().getId())) {
 			addBug(Confidence.HIGH,
 					"'this' is assigned to a static field and escapes",

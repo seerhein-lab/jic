@@ -3,6 +3,7 @@ package de.seerhein_lab.jca.analyzer;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.Stack;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -18,6 +19,7 @@ import de.seerhein_lab.jca.ResultValue;
 import de.seerhein_lab.jca.Utils;
 import de.seerhein_lab.jca.slot.Slot;
 import de.seerhein_lab.jca.vm.Frame;
+import de.seerhein_lab.jca.vm.Heap;
 import edu.umd.cs.findbugs.BugInstance;
 import edu.umd.cs.findbugs.ba.ClassContext;
 
@@ -59,21 +61,9 @@ public abstract class BaseMethodAnalyzer {
 		this.depth = depth + 1;
 	}
 
-	protected static boolean protectsInstruction(
-			CodeExceptionGen exceptionHandler, InstructionHandle instruction) {
-		for (InstructionHandle protectedInstruction = exceptionHandler
-				.getStartPC(); !protectedInstruction.equals(exceptionHandler
-				.getEndPC()); protectedInstruction = protectedInstruction
-				.getNext()) {
-			if (protectedInstruction.getPosition() == instruction.getPosition())
-				return true;
-		}
-		return (exceptionHandler.getEndPC().getPosition() == instruction
-				.getPosition());
-	}
 
-	protected abstract BaseInstructionsVisitor getInstructionAnalysisVisitor(
-			Frame frame, InstructionHandle instructionHandle);
+	protected abstract BaseInstructionsVisitor getInstructionVisitor(
+			Frame frame, Heap heap, InstructionHandle instructionHandle);
 
 	/**
 	 * Checks whether the reference of the checked object is passed to another
@@ -88,13 +78,13 @@ public abstract class BaseMethodAnalyzer {
 	 * @param callerStack
 	 *            the content of the local variable table of the constructor.
 	 */
-	public void analyze(Frame callerFrame) {
-		Frame calleeFrame = createCalleeFrame(callerFrame);
+	public void analyze(Frame callerFrame, Heap heap) {
+		Frame calleeFrame = createCalleeFrame(callerFrame.getStack());
 
 		InstructionHandle[] instructionHandles = new InstructionList(method
 				.getCode().getCode()).getInstructionHandles();
 
-		visitor = getInstructionAnalysisVisitor(calleeFrame,
+		visitor = getInstructionVisitor(calleeFrame, heap,
 				instructionHandles[0]);
 
 		logger.log(Level.FINE, Utils.formatLoggingOutput(this.depth)
@@ -104,7 +94,7 @@ public abstract class BaseMethodAnalyzer {
 				+ "^^^^^^^^^^^^^^^^^^^^^^^^^^");
 	}
 
-	protected Frame createCalleeFrame(Frame callerFrame) {
+	protected Frame createCalleeFrame(Stack<Slot> callerOpStack) {
 		int numSlots = method.isStatic() ? 0 : 1;
 
 		for (Type type : method.getArgumentTypes()) {
@@ -112,13 +102,13 @@ public abstract class BaseMethodAnalyzer {
 		}
 
 		Frame calleeFrame = new Frame(method.getCode().getMaxLocals(),
-				callerFrame, numSlots);
+				callerOpStack, numSlots);
 		return calleeFrame;
 	}
 
 	public Slot[] getActualParams(Frame frame) {
 		Frame clonedFrame = new Frame(frame);
-		return createCalleeFrame(clonedFrame).getLocalVars();
+		return createCalleeFrame(clonedFrame.getStack()).getLocalVars();
 
 	}
 

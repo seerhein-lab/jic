@@ -34,10 +34,10 @@ public class FieldsNotPublishedMethodAnalyzer extends BaseMethodAnalyzer {
 		super(classContext, methodGen, alreadyVisitedMethods, depth);
 	}
 
-	protected BaseInstructionsVisitor getInstructionAnalysisVisitor(
-			Frame frame, InstructionHandle instructionHandle) {
+	protected BaseInstructionsVisitor getInstructionVisitor(
+			Frame frame, Heap heap, InstructionHandle instructionHandle) {
 		return new FieldsNotPublishedVisitor(classContext, method,
-				frame, new ConstantPoolGen(method.getConstantPool()),
+				frame, heap, new ConstantPoolGen(method.getConstantPool()),
 				instructionHandle, exceptionHandlers, alreadyVisitedMethods,
 				depth);
 	}
@@ -68,8 +68,8 @@ public class FieldsNotPublishedMethodAnalyzer extends BaseMethodAnalyzer {
 			}
 		}
 
-		Frame callerFrame = new Frame(callerStack, heap);
+		Frame callerFrame = new Frame(callerStack);
 
-		analyze(callerFrame);
+		analyze(callerFrame, heap);
 	}
 }

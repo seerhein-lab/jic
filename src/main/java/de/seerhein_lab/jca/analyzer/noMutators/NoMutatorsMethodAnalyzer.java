@@ -34,9 +34,9 @@ public class NoMutatorsMethodAnalyzer extends BaseMethodAnalyzer {
 		super(classContext, methodGen, alreadyVisitedMethods, depth);
 	}
 
-	protected BaseInstructionsVisitor getInstructionAnalysisVisitor(
-			Frame frame, InstructionHandle instructionHandle) {
-		return new NoMutatorsVisitor(classContext, method, frame,
+	protected BaseInstructionsVisitor getInstructionVisitor(
+			Frame frame, Heap heap, InstructionHandle instructionHandle) {
+		return new NoMutatorsVisitor(classContext, method, frame, heap,
 				new ConstantPoolGen(method.getConstantPool()),
 				instructionHandle, exceptionHandlers, alreadyVisitedMethods,
 				depth);
@@ -68,8 +68,8 @@ public class NoMutatorsMethodAnalyzer extends BaseMethodAnalyzer {
 			}
 		}
 
-		Frame callerFrame = new Frame(callerStack, heap);
+		Frame callerFrame = new Frame(callerStack);
 
-		analyze(callerFrame);
+		analyze(callerFrame, heap);
 	}
 }

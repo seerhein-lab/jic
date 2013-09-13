@@ -22,32 +22,32 @@ public class NoMutatorsVisitor extends
 		BaseInstructionsVisitor {
 
 	protected NoMutatorsVisitor(ClassContext classContext,
-			Method method, Frame frame, ConstantPoolGen constantPoolGen,
+			Method method, Frame frame, Heap heap, ConstantPoolGen constantPoolGen,
 			Set<Pair<InstructionHandle, Boolean>> alreadyVisitedIfBranch,
 			Set<Pair<Method, Slot[]>> alreadyVisitedMethods,
 			InstructionHandle instructionHandle,
 			CodeExceptionGen[] exceptionHandlers, int depth) {
-		super(classContext, method, frame, constantPoolGen,
+		super(classContext, method, frame, heap, constantPoolGen,
 				alreadyVisitedIfBranch, alreadyVisitedMethods,
 				instructionHandle, exceptionHandlers, depth);
 	}
 
 	public NoMutatorsVisitor(ClassContext classContext,
-			Method method, Frame frame, ConstantPoolGen constantPoolGen,
+			Method method, Frame frame, Heap heap, ConstantPoolGen constantPoolGen,
 			InstructionHandle instructionHandle,
 			CodeExceptionGen[] exceptionHandlers,
 			Set<Pair<Method, Slot[]>> alreadyVisitedMethods, int depth) {
-		super(classContext, method, frame, constantPoolGen, instructionHandle,
+		super(classContext, method, frame, heap, constantPoolGen, instructionHandle,
 				exceptionHandlers, alreadyVisitedMethods, depth);
 	}
 
 	@Override
 	protected BaseInstructionsVisitor getInstructionsAnalysisVisitor(
-			Frame frame,
+			Frame frame, Heap heap,
 			Set<Pair<InstructionHandle, Boolean>> alreadyVisitedIfBranch,
 			InstructionHandle instructionHandle) {
 		return new NoMutatorsVisitor(classContext, method,
-				frame, constantPoolGen, alreadyVisitedIfBranch,
+				frame, heap, constantPoolGen, alreadyVisitedIfBranch,
 				alreadyVisitedMethods, instructionHandle, exceptionHandlers,
 				depth);
 	}
@@ -70,7 +70,6 @@ public class NoMutatorsVisitor extends
 	@Override
 	protected void detectXAStoreBug(ReferenceSlot arrayReference,
 			Slot valueToStore) {
-		Heap heap = frame.getHeap();
 		// array is referred by 'this'
 		if (heap.get(arrayReference.getID()).isTransitivelyReferredBy(
 				heap.getThisInstance())) {
@@ -83,7 +82,6 @@ public class NoMutatorsVisitor extends
 	@Override
 	protected void detectPutFieldBug(ReferenceSlot targetReference,
 			Slot valueToPut) {
-		Heap heap = frame.getHeap();
 		// left side is referred by a field of this
 		if (heap.get(targetReference.getID()).isTransitivelyReferredBy(
 				heap.getThisInstance())) {

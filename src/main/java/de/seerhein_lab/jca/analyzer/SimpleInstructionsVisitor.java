@@ -43,6 +43,7 @@ import de.seerhein_lab.jca.slot.IntSlot;
 import de.seerhein_lab.jca.slot.LongSlot;
 import de.seerhein_lab.jca.slot.Slot;
 import de.seerhein_lab.jca.vm.Frame;
+import de.seerhein_lab.jca.vm.Heap;
 
 /**
  * Analyzes constructors whether the this-reference escapes or not. Therefore a
@@ -90,13 +91,16 @@ public class SimpleInstructionsVisitor extends EmptyVisitor {
 	protected final String indentation;
 	protected final int depth;
 	protected Frame frame;
+	protected Heap heap;
 	protected final ConstantPoolGen constantPoolGen;
 	protected InstructionHandle instructionHandle;
 
 	protected SimpleInstructionsVisitor(Frame frame,
+			Heap heap, 
 			ConstantPoolGen constantPoolGen,
 			InstructionHandle instructionHandle, int depth) {
 		this.frame = frame;
+		this.heap = heap;
 		this.constantPoolGen = constantPoolGen;
 		this.instructionHandle = instructionHandle;
 		this.depth = depth;

@@ -29,32 +29,32 @@ public class FieldsNotPublishedVisitor extends
 		BaseInstructionsVisitor {
 
 	protected FieldsNotPublishedVisitor(ClassContext classContext,
-			Method method, Frame frame, ConstantPoolGen constantPoolGen,
+			Method method, Frame frame, Heap heap, ConstantPoolGen constantPoolGen,
 			Set<Pair<InstructionHandle, Boolean>> alreadyVisitedIfBranch,
 			Set<Pair<Method, Slot[]>> alreadyVisitedMethods,
 			InstructionHandle instructionHandle,
 			CodeExceptionGen[] exceptionHandlers, int depth) {
-		super(classContext, method, frame, constantPoolGen,
+		super(classContext, method, frame, heap, constantPoolGen,
 				alreadyVisitedIfBranch, alreadyVisitedMethods,
 				instructionHandle, exceptionHandlers, depth);
 	}
 
 	public FieldsNotPublishedVisitor(ClassContext classContext,
-			Method method, Frame frame, ConstantPoolGen constantPoolGen,
+			Method method, Frame frame, Heap heap, ConstantPoolGen constantPoolGen,
 			InstructionHandle instructionHandle,
 			CodeExceptionGen[] exceptionHandlers,
 			Set<Pair<Method, Slot[]>> alreadyVisitedMethods, int depth) {
-		super(classContext, method, frame, constantPoolGen, instructionHandle,
+		super(classContext, method, frame, heap, constantPoolGen, instructionHandle,
 				exceptionHandlers, alreadyVisitedMethods, depth);
 	}
 
 	@Override
 	protected BaseInstructionsVisitor getInstructionsAnalysisVisitor(
-			Frame frame,
+			Frame frame, Heap heap,
 			Set<Pair<InstructionHandle, Boolean>> alreadyVisitedIfBranch,
 			InstructionHandle instructionHandle) {
 		return new FieldsNotPublishedVisitor(classContext, method,
-				frame, constantPoolGen, alreadyVisitedIfBranch,
+				frame, heap, constantPoolGen, alreadyVisitedIfBranch,
 				alreadyVisitedMethods, instructionHandle, exceptionHandlers,
 				depth);
 	}
@@ -80,14 +80,12 @@ public class FieldsNotPublishedVisitor extends
 		logger.log(Level.FINEST, indentation + "\t" + returnType);
 
 		if (returnType instanceof VoidSlot)
-			result.add(new ResultValue(Kind.REGULAR, returnType, frame
-					.getHeap()));
+			result.add(new ResultValue(Kind.REGULAR, returnType, heap));
 		else {
 			Slot returnSlot = frame.popStackByRequiredSlots();
 			if (returnType instanceof ReferenceSlot)
 				detectAReturnBug((ReferenceSlot) returnSlot);
-			result.add(new ResultValue(Kind.REGULAR, returnSlot, frame
-					.getHeap()));
+			result.add(new ResultValue(Kind.REGULAR, returnSlot, heap));
 		}
 	}
 
@@ -97,8 +95,6 @@ public class FieldsNotPublishedVisitor extends
 
 	@Override
 	protected void detectVirtualMethodBug(ReferenceSlot argument) {
-		Heap heap = frame.getHeap();
-
 		if (argument.isNullReference())
 			return;
 
@@ -135,7 +131,6 @@ public class FieldsNotPublishedVisitor extends
 		if (referenceToStore.isNullReference())
 			return;
 
-		Heap heap = frame.getHeap();
 		HeapObject objectToStore = heap.get(referenceToStore.getID());
 		// array is the "external"
 		if ( heap.getObject(arrayReference) instanceof ExternalObject ) {
@@ -166,7 +161,6 @@ public class FieldsNotPublishedVisitor extends
 		if (referenceToPut.isNullReference())
 			return;
 
-		Heap heap = frame.getHeap();
 		HeapObject objectToPut = heap.get(referenceToPut.getID());
 		// target is the "external"
 		if (heap.getObject(targetReference) instanceof ExternalObject ) {
@@ -187,8 +181,6 @@ public class FieldsNotPublishedVisitor extends
 
 	@Override
 	protected void detectPutStaticBug(ReferenceSlot referenceToPut) {
-		Heap heap = frame.getHeap();
-
 		if (referenceToPut.isNullReference())
 			return;
 
@@ -213,7 +205,6 @@ public class FieldsNotPublishedVisitor extends
 	}
 
 	protected void detectAReturnBug(ReferenceSlot returnValue) {
-		Heap heap = frame.getHeap();
 		HeapObject returnObject = heap.get(returnValue.getID());
 		if (returnObject == null)
 			return;
