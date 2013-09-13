@@ -88,7 +88,7 @@ import edu.umd.cs.findbugs.ba.ClassContext;
  * </ul>
  * </p>
  */
-public abstract class BaseInstructionsAnalysisVisitor extends
+public abstract class BaseInstructionsVisitor extends
 		SimpleInstructionsAnalysisVisitor {
 	protected static final Logger logger = Logger
 			.getLogger("BaseInstructionsAnalysisVisitor");
@@ -101,7 +101,7 @@ public abstract class BaseInstructionsAnalysisVisitor extends
 	protected SortedBugCollection bugs = new SortedBugCollection();
 	protected Set<ResultValue> result = new HashSet<ResultValue>();
 
-	protected abstract BaseInstructionsAnalysisVisitor getInstructionsAnalysisVisitor(
+	protected abstract BaseInstructionsVisitor getInstructionsAnalysisVisitor(
 			Frame frame, Set<Pair<InstructionHandle, Boolean>> alreadyVisited,
 			InstructionHandle instructionHandle);
 
@@ -119,7 +119,7 @@ public abstract class BaseInstructionsAnalysisVisitor extends
 
 	protected abstract void detectPutStaticBug(ReferenceSlot referenceToPut);
 
-	public BaseInstructionsAnalysisVisitor(ClassContext classContext,
+	public BaseInstructionsVisitor(ClassContext classContext,
 			Method method, Frame frame, ConstantPoolGen constantPoolGen,
 			InstructionHandle instructionHandle,
 			CodeExceptionGen[] exceptionHandlers,
@@ -130,7 +130,7 @@ public abstract class BaseInstructionsAnalysisVisitor extends
 				depth);
 	}
 
-	protected BaseInstructionsAnalysisVisitor(ClassContext classContext,
+	protected BaseInstructionsVisitor(ClassContext classContext,
 			Method method, Frame frame, ConstantPoolGen constantPoolGen,
 			Set<Pair<InstructionHandle, Boolean>> alreadyVisited,
 			Set<Pair<Method, Slot[]>> alreadyVisitedMethods,
@@ -183,7 +183,7 @@ public abstract class BaseInstructionsAnalysisVisitor extends
 					instructionHandle)) {
 				logger.log(Level.FINE, indentation + "vvvvv "
 						+ exceptionHandler.toString() + ": start vvvvv");
-				BaseInstructionsAnalysisVisitor excepHandlerVisitor = getInstructionsAnalysisVisitor(
+				BaseInstructionsVisitor excepHandlerVisitor = getInstructionsAnalysisVisitor(
 						new Frame(frame), alreadyVisitedIfBranch,
 						exceptionHandler.getHandlerPC());
 				exceptionHandler.getHandlerPC().accept(excepHandlerVisitor);
@@ -268,7 +268,7 @@ public abstract class BaseInstructionsAnalysisVisitor extends
 
 		for (ResultValue calleeResult : calleeResults) {
 			if (calleeResult.getKind().equals(Kind.REGULAR)) {
-				BaseInstructionsAnalysisVisitor specificCalleeResultVisitor = getInstructionsAnalysisVisitor(
+				BaseInstructionsVisitor specificCalleeResultVisitor = getInstructionsAnalysisVisitor(
 						new Frame(frame, calleeResult.getHeap()),
 						alreadyVisitedIfBranch, instructionHandle.getNext());
 
@@ -562,7 +562,7 @@ public abstract class BaseInstructionsAnalysisVisitor extends
 			Frame newFrame = new Frame(frame);
 			newFrame.getStack().push(
 					ReferenceSlot.createNewInstance(iterator.next()));
-			BaseInstructionsAnalysisVisitor visitor = getInstructionsAnalysisVisitor(
+			BaseInstructionsVisitor visitor = getInstructionsAnalysisVisitor(
 					newFrame, alreadyVisitedIfBranch,
 					instructionHandle.getNext());
 			instructionHandle.getNext().accept(visitor);
@@ -648,7 +648,7 @@ public abstract class BaseInstructionsAnalysisVisitor extends
 		if (alreadyVisitedIfBranch.add(elseBranch)) {
 			Set<Pair<InstructionHandle, Boolean>> newAlreadyVisited = new HashSet<Pair<InstructionHandle, Boolean>>();
 			newAlreadyVisited.addAll(alreadyVisitedIfBranch);
-			BaseInstructionsAnalysisVisitor elseBranchVisitor = getInstructionsAnalysisVisitor(
+			BaseInstructionsVisitor elseBranchVisitor = getInstructionsAnalysisVisitor(
 					new Frame(frame), newAlreadyVisited,
 					instructionHandle.getNext());
 			instructionHandle.getNext().accept(elseBranchVisitor);
@@ -668,7 +668,7 @@ public abstract class BaseInstructionsAnalysisVisitor extends
 			Set<Pair<InstructionHandle, Boolean>> newAlreadyVisited = new HashSet<Pair<InstructionHandle, Boolean>>();
 			newAlreadyVisited.addAll(alreadyVisitedIfBranch);
 
-			BaseInstructionsAnalysisVisitor thenBranchVisitor = getInstructionsAnalysisVisitor(
+			BaseInstructionsVisitor thenBranchVisitor = getInstructionsAnalysisVisitor(
 					new Frame(frame), newAlreadyVisited, obj.getTarget());
 			obj.getTarget().accept(thenBranchVisitor);
 			bugs.addAll(thenBranchVisitor.getBugs().getCollection());
@@ -717,7 +717,7 @@ public abstract class BaseInstructionsAnalysisVisitor extends
 
 		// gets all targets excluding the default case
 		InstructionHandle[] targets = obj.getTargets();
-		BaseInstructionsAnalysisVisitor caseToFollow;
+		BaseInstructionsVisitor caseToFollow;
 		// follows all targets excluding the default case
 		for (int i = 0; i < targets.length; i++) {
 			logger.log(Level.FINEST, indentation + "--------------- Line "
@@ -782,7 +782,7 @@ public abstract class BaseInstructionsAnalysisVisitor extends
 
 		// 1st case: type cast is valid, continue execution in a separate
 		// visitor
-		BaseInstructionsAnalysisVisitor regularCaseVisitor = getInstructionsAnalysisVisitor(
+		BaseInstructionsVisitor regularCaseVisitor = getInstructionsAnalysisVisitor(
 				new Frame(frame), alreadyVisitedIfBranch,
 				instructionHandle.getNext());
 

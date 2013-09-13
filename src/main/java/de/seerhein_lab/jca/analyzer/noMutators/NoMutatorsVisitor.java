@@ -9,7 +9,7 @@ import org.apache.bcel.generic.InstructionHandle;
 import org.apache.bcel.generic.MethodGen;
 
 import de.seerhein_lab.jca.Pair;
-import de.seerhein_lab.jca.analyzer.BaseInstructionsAnalysisVisitor;
+import de.seerhein_lab.jca.analyzer.BaseInstructionsVisitor;
 import de.seerhein_lab.jca.analyzer.BaseMethodAnalyzer;
 import de.seerhein_lab.jca.slot.ReferenceSlot;
 import de.seerhein_lab.jca.slot.Slot;
@@ -18,10 +18,10 @@ import de.seerhein_lab.jca.vm.Heap;
 import edu.umd.cs.findbugs.annotations.Confidence;
 import edu.umd.cs.findbugs.ba.ClassContext;
 
-public class NoMutatorsAnalysisVisitor extends
-		BaseInstructionsAnalysisVisitor {
+public class NoMutatorsVisitor extends
+		BaseInstructionsVisitor {
 
-	protected NoMutatorsAnalysisVisitor(ClassContext classContext,
+	protected NoMutatorsVisitor(ClassContext classContext,
 			Method method, Frame frame, ConstantPoolGen constantPoolGen,
 			Set<Pair<InstructionHandle, Boolean>> alreadyVisitedIfBranch,
 			Set<Pair<Method, Slot[]>> alreadyVisitedMethods,
@@ -32,7 +32,7 @@ public class NoMutatorsAnalysisVisitor extends
 				instructionHandle, exceptionHandlers, depth);
 	}
 
-	public NoMutatorsAnalysisVisitor(ClassContext classContext,
+	public NoMutatorsVisitor(ClassContext classContext,
 			Method method, Frame frame, ConstantPoolGen constantPoolGen,
 			InstructionHandle instructionHandle,
 			CodeExceptionGen[] exceptionHandlers,
@@ -42,11 +42,11 @@ public class NoMutatorsAnalysisVisitor extends
 	}
 
 	@Override
-	protected BaseInstructionsAnalysisVisitor getInstructionsAnalysisVisitor(
+	protected BaseInstructionsVisitor getInstructionsAnalysisVisitor(
 			Frame frame,
 			Set<Pair<InstructionHandle, Boolean>> alreadyVisitedIfBranch,
 			InstructionHandle instructionHandle) {
-		return new NoMutatorsAnalysisVisitor(classContext, method,
+		return new NoMutatorsVisitor(classContext, method,
 				frame, constantPoolGen, alreadyVisitedIfBranch,
 				alreadyVisitedMethods, instructionHandle, exceptionHandlers,
 				depth);

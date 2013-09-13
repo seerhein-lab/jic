@@ -35,7 +35,7 @@ public abstract class BaseMethodAnalyzer {
 	protected final CodeExceptionGen[] exceptionHandlers;
 
 	/** The visitor which inspects the method's bytecode instructions. */
-	protected BaseInstructionsAnalysisVisitor visitor = null;
+	protected BaseInstructionsVisitor visitor = null;
 
 	/**
 	 * Constructor.
@@ -72,7 +72,7 @@ public abstract class BaseMethodAnalyzer {
 				.getPosition());
 	}
 
-	protected abstract BaseInstructionsAnalysisVisitor getInstructionAnalysisVisitor(
+	protected abstract BaseInstructionsVisitor getInstructionAnalysisVisitor(
 			Frame frame, InstructionHandle instructionHandle);
 
 	/**

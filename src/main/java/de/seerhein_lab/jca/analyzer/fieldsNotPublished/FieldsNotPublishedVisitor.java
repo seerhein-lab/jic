@@ -13,7 +13,7 @@ import org.apache.bcel.generic.ReturnInstruction;
 import de.seerhein_lab.jca.Pair;
 import de.seerhein_lab.jca.ResultValue;
 import de.seerhein_lab.jca.ResultValue.Kind;
-import de.seerhein_lab.jca.analyzer.BaseInstructionsAnalysisVisitor;
+import de.seerhein_lab.jca.analyzer.BaseInstructionsVisitor;
 import de.seerhein_lab.jca.analyzer.BaseMethodAnalyzer;
 import de.seerhein_lab.jca.slot.ReferenceSlot;
 import de.seerhein_lab.jca.slot.Slot;
@@ -25,10 +25,10 @@ import de.seerhein_lab.jca.vm.HeapObject;
 import edu.umd.cs.findbugs.annotations.Confidence;
 import edu.umd.cs.findbugs.ba.ClassContext;
 
-public class FieldsNotPublishedAnalysisVisitor extends
-		BaseInstructionsAnalysisVisitor {
+public class FieldsNotPublishedVisitor extends
+		BaseInstructionsVisitor {
 
-	protected FieldsNotPublishedAnalysisVisitor(ClassContext classContext,
+	protected FieldsNotPublishedVisitor(ClassContext classContext,
 			Method method, Frame frame, ConstantPoolGen constantPoolGen,
 			Set<Pair<InstructionHandle, Boolean>> alreadyVisitedIfBranch,
 			Set<Pair<Method, Slot[]>> alreadyVisitedMethods,
@@ -39,7 +39,7 @@ public class FieldsNotPublishedAnalysisVisitor extends
 				instructionHandle, exceptionHandlers, depth);
 	}
 
-	public FieldsNotPublishedAnalysisVisitor(ClassContext classContext,
+	public FieldsNotPublishedVisitor(ClassContext classContext,
 			Method method, Frame frame, ConstantPoolGen constantPoolGen,
 			InstructionHandle instructionHandle,
 			CodeExceptionGen[] exceptionHandlers,
@@ -49,11 +49,11 @@ public class FieldsNotPublishedAnalysisVisitor extends
 	}
 
 	@Override
-	protected BaseInstructionsAnalysisVisitor getInstructionsAnalysisVisitor(
+	protected BaseInstructionsVisitor getInstructionsAnalysisVisitor(
 			Frame frame,
 			Set<Pair<InstructionHandle, Boolean>> alreadyVisitedIfBranch,
 			InstructionHandle instructionHandle) {
-		return new FieldsNotPublishedAnalysisVisitor(classContext, method,
+		return new FieldsNotPublishedVisitor(classContext, method,
 				frame, constantPoolGen, alreadyVisitedIfBranch,
 				alreadyVisitedMethods, instructionHandle, exceptionHandlers,
 				depth);

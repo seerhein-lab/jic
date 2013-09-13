@@ -10,7 +10,7 @@ import org.apache.bcel.generic.MethodGen;
 import org.apache.bcel.generic.Type;
 
 import de.seerhein_lab.jca.Pair;
-import de.seerhein_lab.jca.analyzer.BaseInstructionsAnalysisVisitor;
+import de.seerhein_lab.jca.analyzer.BaseInstructionsVisitor;
 import de.seerhein_lab.jca.analyzer.BaseMethodAnalyzer;
 import de.seerhein_lab.jca.slot.ReferenceSlot;
 import de.seerhein_lab.jca.slot.Slot;
@@ -30,9 +30,9 @@ public class PropConMethodAnalyzer extends BaseMethodAnalyzer {
 		super(classContext, methodGen, alreadyVisitedMethods, depth);
 	}
 
-	protected BaseInstructionsAnalysisVisitor getInstructionAnalysisVisitor(
+	protected BaseInstructionsVisitor getInstructionAnalysisVisitor(
 			Frame frame, InstructionHandle instructionHandle) {
-		return new PropConInstructionsAnalysisVisitor(classContext, method,
+		return new PropConInstructionsVisitor(classContext, method,
 				frame, new ConstantPoolGen(method.getConstantPool()),
 				instructionHandle, exceptionHandlers, alreadyVisitedMethods,
 				depth);
