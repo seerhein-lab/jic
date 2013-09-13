@@ -63,8 +63,6 @@ public class CtorArgsCopiedAnalyzer extends BaseMethodAnalyzer {
 			}
 		}
 
-		Frame callerFrame = new Frame(callerStack);
-
-		analyze(callerFrame, callerHeap);
+		analyze(callerStack, callerHeap);
 	}
 }

@@ -78,8 +78,8 @@ public abstract class BaseMethodAnalyzer {
 	 * @param callerStack
 	 *            the content of the local variable table of the constructor.
 	 */
-	public void analyze(Frame callerFrame, Heap heap) {
-		Frame calleeFrame = createCalleeFrame(callerFrame.getStack());
+	public void analyze(Stack<Slot> callerStack, Heap heap) {
+		Frame calleeFrame = createCalleeFrame(callerStack);
 
 		InstructionHandle[] instructionHandles = new InstructionList(method
 				.getCode().getCode()).getInstructionHandles();

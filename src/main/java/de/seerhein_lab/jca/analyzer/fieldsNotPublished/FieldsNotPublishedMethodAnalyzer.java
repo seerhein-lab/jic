@@ -68,8 +68,6 @@ public class FieldsNotPublishedMethodAnalyzer extends BaseMethodAnalyzer {
 			}
 		}
 
-		Frame callerFrame = new Frame(callerStack);
-
-		analyze(callerFrame, heap);
+		analyze(callerStack, heap);
 	}
 }

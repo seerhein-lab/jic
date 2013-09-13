@@ -244,7 +244,7 @@ public abstract class BaseInstructionsVisitor extends
 			return;
 		}
 
-		targetMethodAnalyzer.analyze(frame, heap);
+		targetMethodAnalyzer.analyze(frame.getStack(), heap);
 		
 		for ( Iterator<BugInstance> it = targetMethodAnalyzer.getBugs().iterator(); it.hasNext(); ) {
 			BugInstance bug = it.next();

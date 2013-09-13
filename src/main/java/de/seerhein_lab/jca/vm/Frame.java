@@ -10,8 +10,6 @@ import de.seerhein_lab.jca.slot.Slot;
 public class Frame {
 	private final Slot[] localVars;
 	private final Stack<Slot> opStack;
-//	private final Heap heap;
-
 
 	/**
 	 * Constructor that copies numSlots entries from the callerStack into the newly created 
@@ -32,22 +30,9 @@ public class Frame {
 			localVars[i] = callerOpStack.pop();
 
 		opStack = new Stack<Slot>();
-//		this.heap = callerFrame.getHeap();
 	}
 
-	/**
-	 * Simple copy constructor. Creates a deep copy of a given frame.
-	 * 
-	 * @param frame
-	 *            The frame to copy.
-	 */
-//	public Frame(Frame frame) {
-//		this(frame, new Heap(frame.getHeap()));
-//	}
-
-	public Frame(Frame frame
-//			, Heap heap
-			) {
+	public Frame(Frame frame) {
 		this.localVars = new Slot[frame.getLocalVars().length];
 		for (int i = 0; i < frame.getLocalVars().length; i++) {
 			this.localVars[i] = (frame.getLocalVars()[i] == null) ? null
@@ -58,15 +43,6 @@ public class Frame {
 		for (Slot slot : stackArray) {
 			opStack.add(slot.copy());
 		}
-//		this.heap = heap;
-	}
-
-	public Frame(Stack<Slot> callerStack
-//			, Heap callerHeap
-			) {
-		this.opStack = callerStack;
-		this.localVars = new Slot[0];
-//		this.heap = callerHeap;
 	}
 
 	public Stack<Slot> getStack() {
@@ -108,8 +84,4 @@ public class Frame {
 	public Slot[] getLocalVars() {
 		return localVars;
 	}
-
-//	public Heap getHeap() {
-//		return heap;
-//	}
 }
