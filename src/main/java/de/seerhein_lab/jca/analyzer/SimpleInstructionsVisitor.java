@@ -68,7 +68,7 @@ import de.seerhein_lab.jca.vm.Frame;
  * </ul>
  * </p>
  */
-public class SimpleInstructionsAnalysisVisitor extends EmptyVisitor {
+public class SimpleInstructionsVisitor extends EmptyVisitor {
 	protected static final Logger logger = Logger
 			.getLogger("SimpleInstructionsAnalysisVisitor");
 
@@ -93,7 +93,7 @@ public class SimpleInstructionsAnalysisVisitor extends EmptyVisitor {
 	protected final ConstantPoolGen constantPoolGen;
 	protected InstructionHandle instructionHandle;
 
-	protected SimpleInstructionsAnalysisVisitor(Frame frame,
+	protected SimpleInstructionsVisitor(Frame frame,
 			ConstantPoolGen constantPoolGen,
 			InstructionHandle instructionHandle, int depth) {
 		this.frame = frame;

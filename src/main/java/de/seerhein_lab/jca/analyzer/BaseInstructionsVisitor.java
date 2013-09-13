@@ -89,7 +89,7 @@ import edu.umd.cs.findbugs.ba.ClassContext;
  * </p>
  */
 public abstract class BaseInstructionsVisitor extends
-		SimpleInstructionsAnalysisVisitor {
+		SimpleInstructionsVisitor {
 	protected static final Logger logger = Logger
 			.getLogger("BaseInstructionsAnalysisVisitor");
 	protected final ClassContext classContext;
