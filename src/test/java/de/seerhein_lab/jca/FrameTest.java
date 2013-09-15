@@ -22,6 +22,7 @@ import de.seerhein_lab.jca.slot.Slot;
 import de.seerhein_lab.jca.slot.VoidSlot;
 import de.seerhein_lab.jca.vm.Frame;
 import de.seerhein_lab.jca.vm.Heap;
+import de.seerhein_lab.jca.vm.OpStack;
 
 /**
  * JUnit test for Frame class. Does not test simple getters and setters.
@@ -59,7 +60,7 @@ public class FrameTest {
 	 */
 	@Test(expected = NegativeArraySizeException.class)
 	public void testFrameIntStackOfSlotInt0() {
-		Stack<Slot> callerStack = new Stack<Slot>();
+		OpStack callerStack = new OpStack();
 		callerStack.push(thiS);
 		callerStack.push(someRef);
 		callerStack.push(bool);
@@ -79,7 +80,7 @@ public class FrameTest {
 
 	@Test
 	public void testFrameConstructor() {
-		Frame frame = new Frame(0, new Stack<Slot>(), 0);
+		Frame frame = new Frame(0, new OpStack(), 0);
 		frame.getStack().push(thiS);
 		Frame newFrame = new Frame(1, frame.getStack(), 1);
 		assertEquals(newFrame.getLocalVars()[0], thiS);
@@ -100,7 +101,7 @@ public class FrameTest {
 	 */
 	@Test
 	public void testFrameIntStackOfSlotInt2() {
-		Stack<Slot> callerStack = new Stack<Slot>();
+		OpStack callerStack = new OpStack();
 		callerStack.push(thiS);
 		callerStack.push(someRef);
 		callerStack.push(bool);
@@ -139,7 +140,7 @@ public class FrameTest {
 	 */
 	@Test
 	public void testFrameIntStackOfSlotInt3() {
-		Stack<Slot> callerStack = new Stack<Slot>();
+		OpStack callerStack = new OpStack();
 		callerStack.push(thiS);
 		callerStack.push(someRef);
 		callerStack.push(bool);
@@ -178,7 +179,7 @@ public class FrameTest {
 	 */
 	@Test
 	public void testFrameIntStackOfSlotInt4() {
-		Stack<Slot> callerStack = new Stack<Slot>();
+		OpStack callerStack = new OpStack();
 		callerStack.push(thiS);
 		callerStack.push(someRef);
 		callerStack.push(bool);
@@ -218,7 +219,7 @@ public class FrameTest {
 	 */
 	@Test(expected = IndexOutOfBoundsException.class)
 	public void testFrameIntStackOfSlotInt5() {
-		Stack<Slot> callerStack = new Stack<Slot>();
+		OpStack callerStack = new OpStack();
 		callerStack.push(thiS);
 		callerStack.push(someRef);
 		callerStack.push(bool);
@@ -251,9 +252,9 @@ public class FrameTest {
 	 */
 	@Test
 	public void testFrameFrame1() {
-		Stack<Slot> callerStack = new Stack<Slot>();
-		callerStack.add(bool);
-		callerStack.add(floaT);
+		OpStack callerStack = new OpStack();
+		callerStack.push(bool);
+		callerStack.push(floaT);
 		Frame frameToCopy = new Frame(5, callerStack, 2);
 		frameToCopy.getStack().push(doublE);
 
@@ -275,7 +276,7 @@ public class FrameTest {
 	 */
 	@Test
 	public void testPushStackByRequiredSlots() {
-		Frame frame = new Frame(0, new Stack<Slot>(), 0);
+		Frame frame = new Frame(0, new OpStack(), 0);
 
 		frame.pushStackByRequiredSlots(someOtherRef);
 		assertEquals(1, frame.getStack().size());
@@ -332,7 +333,7 @@ public class FrameTest {
 	 */
 	@Test
 	public void testPopStackByRequiredSlots0() {
-		Frame frame = new Frame(0, new Stack<Slot>(), 0);
+		Frame frame = new Frame(0, new OpStack(), 0);
 		frame.getStack().push(bool);
 		frame.getStack().push(floaT);
 
@@ -346,7 +347,7 @@ public class FrameTest {
 	 */
 	@Test
 	public void testPopStackByRequiredSlots1() {
-		Frame frame = new Frame(0, new Stack<Slot>(), 0);
+		Frame frame = new Frame(0, new OpStack(), 0);
 		frame.getStack().push(bool);
 		frame.getStack().push(doublE);
 
@@ -360,7 +361,7 @@ public class FrameTest {
 	 */
 	@Test(expected = EmptyStackException.class)
 	public void testPopStackByRequiredSlots2() {
-		Frame frame = new Frame(0, new Stack<Slot>(), 0);
+		Frame frame = new Frame(0, new OpStack(), 0);
 		frame.getStack().push(doublE);
 
 		frame.popStackByRequiredSlots();

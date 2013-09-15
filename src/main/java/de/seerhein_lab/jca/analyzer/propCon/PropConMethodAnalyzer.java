@@ -17,6 +17,7 @@ import de.seerhein_lab.jca.slot.Slot;
 import de.seerhein_lab.jca.vm.Frame;
 import de.seerhein_lab.jca.vm.Heap;
 import de.seerhein_lab.jca.vm.OpStack;
+import de.seerhein_lab.jca.vm.PC;
 import edu.umd.cs.findbugs.ba.ClassContext;
 
 public class PropConMethodAnalyzer extends BaseMethodAnalyzer {
@@ -32,10 +33,10 @@ public class PropConMethodAnalyzer extends BaseMethodAnalyzer {
 	}
 
 	protected BaseInstructionsVisitor getInstructionVisitor(
-			Frame frame, Heap heap, InstructionHandle instructionHandle) {
+			Frame frame, Heap heap, PC pc) {
 		return new PropConInstructionsVisitor(classContext, method,
 				frame, heap, new ConstantPoolGen(method.getConstantPool()),
-				instructionHandle, exceptionHandlers, alreadyVisitedMethods,
+				pc.getCurrentInstruction(), exceptionHandlers, alreadyVisitedMethods,
 				depth);
 	}
 

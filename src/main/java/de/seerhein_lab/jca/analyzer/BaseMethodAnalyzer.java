@@ -21,6 +21,7 @@ import de.seerhein_lab.jca.slot.Slot;
 import de.seerhein_lab.jca.vm.Frame;
 import de.seerhein_lab.jca.vm.Heap;
 import de.seerhein_lab.jca.vm.OpStack;
+import de.seerhein_lab.jca.vm.PC;
 import edu.umd.cs.findbugs.BugInstance;
 import edu.umd.cs.findbugs.ba.ClassContext;
 
@@ -64,7 +65,7 @@ public abstract class BaseMethodAnalyzer {
 
 
 	protected abstract BaseInstructionsVisitor getInstructionVisitor(
-			Frame frame, Heap heap, InstructionHandle instructionHandle);
+			Frame frame, Heap heap, PC pc);
 
 	/**
 	 * Checks whether the reference of the checked object is passed to another
@@ -79,18 +80,24 @@ public abstract class BaseMethodAnalyzer {
 	 * @param callerStack
 	 *            the content of the local variable table of the constructor.
 	 */
-	public void analyze(OpStack callerStack, Heap heap) {
+	public void analyze(OpStack callerStack, Heap heap) {					
 		Frame calleeFrame = createCalleeFrame(callerStack);
 
 		InstructionHandle[] instructionHandles = new InstructionList(method
 				.getCode().getCode()).getInstructionHandles();
 
-		visitor = getInstructionVisitor(calleeFrame, heap,
-				instructionHandles[0]);
+		PC pc = new PC(instructionHandles[0]);
+
+		visitor = getInstructionVisitor(calleeFrame, heap, pc);
 
 		logger.log(Level.FINE, Utils.formatLoggingOutput(this.depth)
 				+ "vvvvvvvvvvvvvvvvvvvvvvvvvv");
-		instructionHandles[0].accept(visitor);
+		while ( pc.isValid() ) {
+			pc.getCurrentInstruction().accept(visitor);
+			// TODO remove next line eventually
+			pc.invalidate();
+		}
+		
 		logger.log(Level.FINE, Utils.formatLoggingOutput(this.depth)
 				+ "^^^^^^^^^^^^^^^^^^^^^^^^^^");
 	}
@@ -109,9 +116,7 @@ public abstract class BaseMethodAnalyzer {
 
 	public Slot[] getActualParams(Frame frame) {
 		OpStack opStack = new OpStack(frame.getStack());
-		
 		return createCalleeFrame(opStack).getLocalVars();
-
 	}
 
 	/**
