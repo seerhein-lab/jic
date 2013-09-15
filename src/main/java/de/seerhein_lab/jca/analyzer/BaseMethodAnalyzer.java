@@ -3,7 +3,6 @@ package de.seerhein_lab.jca.analyzer;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
-import java.util.Stack;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -17,6 +16,7 @@ import org.apache.bcel.generic.Type;
 import de.seerhein_lab.jca.Pair;
 import de.seerhein_lab.jca.ResultValue;
 import de.seerhein_lab.jca.Utils;
+import de.seerhein_lab.jca.slot.ReferenceSlot;
 import de.seerhein_lab.jca.slot.Slot;
 import de.seerhein_lab.jca.vm.Frame;
 import de.seerhein_lab.jca.vm.Heap;
@@ -63,7 +63,6 @@ public abstract class BaseMethodAnalyzer {
 		this.depth = depth + 1;
 	}
 
-
 	protected abstract BaseInstructionsVisitor getInstructionVisitor(
 			Frame frame, Heap heap, PC pc);
 
@@ -71,7 +70,32 @@ public abstract class BaseMethodAnalyzer {
 	 * Checks whether the reference of the checked object is passed to another
 	 * object in the method.
 	 */
-	public abstract void analyze();
+	public final void analyze() {
+		OpStack callerStack = new OpStack();
+		Heap callerHeap = getHeap();
+
+		// push this onto the stack, if not static
+		if (!method.isStatic()) {
+			callerStack.push(ReferenceSlot.createNewInstance(callerHeap
+					.getThisInstance()));
+		}
+
+		// push args onto the stack
+		for (Type argType : method.getArgumentTypes()) {
+			Slot argument = Slot.getDefaultSlotInstance(argType);
+			if (argument instanceof ReferenceSlot) {
+				argument = ReferenceSlot.createNewInstance(callerHeap
+						.getExternalObject());
+			}
+			for (int i = 0; i < argument.getNumSlots(); i++) {
+				callerStack.push(argument);
+			}
+		}
+
+		analyze(callerStack, callerHeap);
+	}
+
+	public abstract Heap getHeap();
 
 	/**
 	 * Checks whether the reference of the checked object is passed to another
@@ -80,7 +104,7 @@ public abstract class BaseMethodAnalyzer {
 	 * @param callerStack
 	 *            the content of the local variable table of the constructor.
 	 */
-	public void analyze(OpStack callerStack, Heap heap) {					
+	public void analyze(OpStack callerStack, Heap heap) {
 		Frame calleeFrame = createCalleeFrame(callerStack);
 
 		InstructionHandle[] instructionHandles = new InstructionList(method
@@ -92,12 +116,12 @@ public abstract class BaseMethodAnalyzer {
 
 		logger.log(Level.FINE, Utils.formatLoggingOutput(this.depth)
 				+ "vvvvvvvvvvvvvvvvvvvvvvvvvv");
-		while ( pc.isValid() ) {
+		while (pc.isValid()) {
 			pc.getCurrentInstruction().accept(visitor);
 			// TODO remove next line eventually
 			pc.invalidate();
 		}
-		
+
 		logger.log(Level.FINE, Utils.formatLoggingOutput(this.depth)
 				+ "^^^^^^^^^^^^^^^^^^^^^^^^^^");
 	}
