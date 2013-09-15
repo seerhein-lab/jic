@@ -1,7 +1,5 @@
 package de.seerhein_lab.jca.vm;
 
-import java.util.Stack;
-
 import de.seerhein_lab.jca.slot.Slot;
 
 /**
@@ -12,16 +10,18 @@ public class Frame {
 	private final OpStack opStack;
 
 	/**
-	 * Constructor that copies numSlots entries from the callerStack into the newly created 
-	 * localVars of size maxLocals. Note that the copied entries are consumed from the 
-	 * callerStack. The new frame uses the same heap as the callerFrame.
+	 * Constructor that copies numSlots entries from the callerStack into the
+	 * newly created localVars of size maxLocals. Note that the copied entries
+	 * are consumed from the callerStack. The new frame uses the same heap as
+	 * the callerFrame.
 	 * 
 	 * @param maxLocals
 	 *            The size of the localVars array.
 	 * @param callerFrame
 	 *            The caller's frame.
 	 * @param numSlots
-	 *            Number of values to be copied from the callerStack into the localVars array.
+	 *            Number of values to be copied from the callerStack into the
+	 *            localVars array.
 	 */
 	public Frame(int maxLocals, OpStack callerOpStack, int numSlots) {
 		localVars = new Slot[maxLocals];

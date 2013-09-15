@@ -17,6 +17,7 @@ import edu.umd.cs.findbugs.BugInstance;
  * @see ProperlyConstructedTestRunner
  */
 @RunWith(ClassAnalyzerRunner.class)
+@SuppressWarnings("unused")
 public class FieldsNotPublishedAcceptanceTest {
 	private static PublishMetohd p = new PublishMetohd();
 
@@ -226,22 +227,22 @@ public class FieldsNotPublishedAcceptanceTest {
 	public static class DetectPutStaticBug_Int {
 		private final int f = 10;
 
-		public void publish(TestClassStatic tc) {
-			tc.i = f;
+		public void publish() {
+			TestClassStatic.i = f;
 		}
 	}
 
 	@NoBugsExpected
 	public static class DetectPutStaticBug_Null {
-		public void publish(TestClassStatic tc) {
-			tc.klass = null;
+		public void publish() {
+			TestClassStatic.klass = null;
 		}
 	}
 
 	@NoBugsExpected
 	public static class DetectPutStaticBug_ReferenceToExternalObject {
-		public void publish(TestClassStatic tc) {
-			tc.klass = new Object();
+		public void publish() {
+			TestClassStatic.klass = new Object();
 		}
 	}
 
@@ -257,15 +258,15 @@ public class FieldsNotPublishedAcceptanceTest {
 	public static class DetectPutStaticBug_ReferenceReferredByThis {
 		private final Object f = new Object();
 
-		public void publish(TestClassStatic tc) {
-			tc.klass = f;
+		public void publish() {
+			TestClassStatic.klass = f;
 		}
 	}
 
 	@BugsExpected
 	public static class DetectPutStaticBug_This {
-		public void publish(TestClassStatic tc) {
-			tc.klass = this;
+		public void publish() {
+			TestClassStatic.klass = this;
 		}
 	}
 
@@ -273,10 +274,10 @@ public class FieldsNotPublishedAcceptanceTest {
 	public static class DetectPutStaticBug_ReferenceTransitivelyReferredByThis {
 		private final TestClass f = new TestClass();
 
-		public void publish(TestClassStatic tc) {
+		public void publish() {
 			Object object = new Object();
 			f.klass = object;
-			tc.klass = object;
+			TestClassStatic.klass = object;
 		}
 	}
 
@@ -284,13 +285,13 @@ public class FieldsNotPublishedAcceptanceTest {
 	public static class DetectPutStaticBug_refersObjectThatIsReferredByThis {
 		private final TestClass o = new TestClass();
 
-		public void publish(TestClassStatic tc) {
+		public void publish() {
 			Object object = new Object();
 			this.o.tc = new TestClass();
 			this.o.tc.klass = object;
 			TestClass testClass = new TestClass();
 			testClass.klass = object;
-			tc.klass = testClass;
+			TestClassStatic.klass = testClass;
 		}
 	}
 

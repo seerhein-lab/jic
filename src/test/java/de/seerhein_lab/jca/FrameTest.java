@@ -3,7 +3,6 @@ package de.seerhein_lab.jca;
 import static org.junit.Assert.assertEquals;
 
 import java.util.EmptyStackException;
-import java.util.Stack;
 
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -73,7 +72,7 @@ public class FrameTest {
 		callerStack.push(shorT);
 		callerStack.push(someOtherRef);
 		callerStack.push(voiD);
-		
+
 		@SuppressWarnings("unused")
 		Frame frame = new Frame(-1, callerStack, 12);
 	}

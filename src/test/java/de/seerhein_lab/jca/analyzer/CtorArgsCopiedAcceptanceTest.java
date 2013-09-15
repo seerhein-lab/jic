@@ -17,6 +17,7 @@ import edu.umd.cs.findbugs.BugInstance;
  * @see ProperlyConstructedTestRunner
  */
 @RunWith(ClassAnalyzerRunner.class)
+@SuppressWarnings("unused")
 public class CtorArgsCopiedAcceptanceTest {
 
 	@BindAnalyzerMethod

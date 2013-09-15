@@ -20,6 +20,7 @@ import edu.umd.cs.findbugs.BugInstance;
  */
 // @Ignore("activate this test class when the method IsImmutable will be implemented.")
 @RunWith(ClassAnalyzerRunner.class)
+@SuppressWarnings("unused")
 public class IsImmutableAcceptanceTest {
 
 	@BindAnalyzerMethod
@@ -62,13 +63,11 @@ public class IsImmutableAcceptanceTest {
 	 */
 	@NoBugsExpected
 	public static class Story04_ImmutableClassWithPrivateField {
-		@SuppressWarnings("unused")
 		private final String value = "01";
 	}
 
 	@BugsExpected
 	public static class Story04a_ImmutableClassWithPrivateField {
-		@SuppressWarnings("unused")
 		private String value = "01";
 	}
 
@@ -103,7 +102,6 @@ public class IsImmutableAcceptanceTest {
 			String value = "default";
 		}
 
-		@SuppressWarnings("unused")
 		private final StringHolder value = new StringHolder();
 
 	}
