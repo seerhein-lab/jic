@@ -19,11 +19,11 @@ import de.seerhein_lab.jca.vm.Heap;
 import edu.umd.cs.findbugs.annotations.Confidence;
 import edu.umd.cs.findbugs.ba.ClassContext;
 
-public class PropConInstructionsVisitor extends
-		BaseInstructionsVisitor {
+public class PropConInstructionsVisitor extends BaseInstructionsVisitor {
 
 	protected PropConInstructionsVisitor(ClassContext classContext,
-			Method method, Frame frame, Heap heap, ConstantPoolGen constantPoolGen,
+			Method method, Frame frame, Heap heap,
+			ConstantPoolGen constantPoolGen,
 			Set<Pair<InstructionHandle, Boolean>> alreadyVisitedIfBranch,
 			Set<Pair<Method, Slot[]>> alreadyVisitedMethods,
 			InstructionHandle instructionHandle,
@@ -33,13 +33,14 @@ public class PropConInstructionsVisitor extends
 				instructionHandle, exceptionHandlers, depth);
 	}
 
-	public PropConInstructionsVisitor(ClassContext classContext,
-			Method method, Frame frame, Heap heap, ConstantPoolGen constantPoolGen,
+	public PropConInstructionsVisitor(ClassContext classContext, Method method,
+			Frame frame, Heap heap, ConstantPoolGen constantPoolGen,
 			InstructionHandle instructionHandle,
 			CodeExceptionGen[] exceptionHandlers,
 			Set<Pair<Method, Slot[]>> alreadyVisitedMethods, int depth) {
-		super(classContext, method, frame, heap, constantPoolGen, instructionHandle,
-				exceptionHandlers, alreadyVisitedMethods, depth);
+		super(classContext, method, frame, heap, constantPoolGen,
+				instructionHandle, exceptionHandlers, alreadyVisitedMethods,
+				depth);
 	}
 
 	@Override
@@ -47,8 +48,8 @@ public class PropConInstructionsVisitor extends
 			Frame frame, Heap heap,
 			Set<Pair<InstructionHandle, Boolean>> alreadyVisitedIfBranch,
 			InstructionHandle instructionHandle) {
-		return new PropConInstructionsVisitor(classContext, method,
-				frame, heap, constantPoolGen, alreadyVisitedIfBranch,
+		return new PropConInstructionsVisitor(classContext, method, frame,
+				heap, constantPoolGen, alreadyVisitedIfBranch,
 				alreadyVisitedMethods, instructionHandle, exceptionHandlers,
 				depth);
 	}
@@ -65,6 +66,9 @@ public class PropConInstructionsVisitor extends
 
 	@Override
 	protected void detectVirtualMethodBug(ReferenceSlot argument) {
+		if (argument.isNullReference())
+			return;
+
 		if (argument.getID().equals(heap.getThisInstance().getId())) {
 			// 'this' is passed into a virtual method
 			addBug(Confidence.HIGH,
@@ -90,13 +94,16 @@ public class PropConInstructionsVisitor extends
 		ReferenceSlot referenceToStore = (ReferenceSlot) valueToStore;
 		if (heap.getObject(arrayReference) instanceof ExternalObject) {
 			// the array is externally known
-			if (referenceToStore.getID() != null && referenceToStore.getID().equals(heap.getThisInstance().getId())) {
+			if (referenceToStore.getID() != null
+					&& referenceToStore.getID().equals(
+							heap.getThisInstance().getId())) {
 				// this is assigned to the array
 				addBug(Confidence.HIGH,
 						"'this' is assigned to an external array and escapes",
 						instructionHandle);
-			} else if (arrayReference.getID() != null && heap.get(arrayReference.getID()).transitivelyRefers(
-					heap.getThisInstance())) {
+			} else if (arrayReference.getID() != null
+					&& heap.get(arrayReference.getID()).transitivelyRefers(
+							heap.getThisInstance())) {
 				// a reference containing this is assigned to the array
 				addBug(Confidence.HIGH,
 						"a reference containing 'this' is assigned to an external array and 'this' escapes",
@@ -113,15 +120,18 @@ public class PropConInstructionsVisitor extends
 			return;
 		}
 		ReferenceSlot referenceToPut = (ReferenceSlot) valueToPut;
-		if (heap.getObject(targetReference) instanceof ExternalObject ) {
+		if (heap.getObject(targetReference) instanceof ExternalObject) {
 			// the left side of the assignment is externally known
-			if (referenceToPut.getID() != null && referenceToPut.getID().equals(heap.getThisInstance().getId())) {
+			if (referenceToPut.getID() != null
+					&& referenceToPut.getID().equals(
+							heap.getThisInstance().getId())) {
 				// this is on the right side
 				addBug(Confidence.HIGH,
 						"'this' is assigned to an external field and escapes",
 						instructionHandle);
-			} else if (referenceToPut.getID() != null && heap.get(referenceToPut.getID()).transitivelyRefers(
-					heap.getThisInstance())) {
+			} else if (referenceToPut.getID() != null
+					&& heap.get(referenceToPut.getID()).transitivelyRefers(
+							heap.getThisInstance())) {
 				// this is contained in the right side
 				addBug(Confidence.HIGH,
 						"a reference containing 'this' is assigned to an external field and 'this' escapes",
@@ -133,6 +143,9 @@ public class PropConInstructionsVisitor extends
 
 	@Override
 	protected void detectPutStaticBug(ReferenceSlot referenceToPut) {
+		if (referenceToPut.isNullReference())
+			return;
+
 		if (referenceToPut.getID().equals(heap.getThisInstance().getId())) {
 			addBug(Confidence.HIGH,
 					"'this' is assigned to a static field and escapes",
