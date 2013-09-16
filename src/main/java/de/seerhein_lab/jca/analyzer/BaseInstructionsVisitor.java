@@ -214,7 +214,8 @@ public abstract class BaseInstructionsVisitor extends
 			targetClass = Repository.lookupClass(obj.getReferenceType(
 					constantPoolGen).toString());
 		} catch (ClassNotFoundException e) {
-			logger.log(Level.SEVERE, "Could not load class!");
+			throw new AssertionError(obj.getReferenceType(
+					constantPoolGen).toString() + " cannot be loaded.");
 		}
 
 		Method targetMethod = new ClassHelper(targetClass).getMethod(
