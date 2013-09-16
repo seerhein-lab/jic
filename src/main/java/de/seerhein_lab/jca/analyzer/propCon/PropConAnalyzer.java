@@ -29,7 +29,7 @@ public class PropConAnalyzer extends BaseMethodAnalyzer {
 
 	protected BaseInstructionsVisitor getInstructionVisitor(Frame frame,
 			Heap heap, PC pc) {
-		return new PropConInstructionsVisitor(classContext, method, frame,
+		return new PropConVisitor(classContext, method, frame,
 				heap, new ConstantPoolGen(method.getConstantPool()),
 				pc.getCurrentInstruction(), exceptionHandlers,
 				alreadyVisitedMethods, depth);

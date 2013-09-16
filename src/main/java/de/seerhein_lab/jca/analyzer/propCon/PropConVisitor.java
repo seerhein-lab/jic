@@ -19,9 +19,9 @@ import de.seerhein_lab.jca.vm.Heap;
 import edu.umd.cs.findbugs.annotations.Confidence;
 import edu.umd.cs.findbugs.ba.ClassContext;
 
-public class PropConInstructionsVisitor extends BaseInstructionsVisitor {
+public class PropConVisitor extends BaseInstructionsVisitor {
 
-	protected PropConInstructionsVisitor(ClassContext classContext,
+	protected PropConVisitor(ClassContext classContext,
 			Method method, Frame frame, Heap heap,
 			ConstantPoolGen constantPoolGen,
 			Set<Pair<InstructionHandle, Boolean>> alreadyVisitedIfBranch,
@@ -33,7 +33,7 @@ public class PropConInstructionsVisitor extends BaseInstructionsVisitor {
 				instructionHandle, exceptionHandlers, depth);
 	}
 
-	public PropConInstructionsVisitor(ClassContext classContext, Method method,
+	public PropConVisitor(ClassContext classContext, Method method,
 			Frame frame, Heap heap, ConstantPoolGen constantPoolGen,
 			InstructionHandle instructionHandle,
 			CodeExceptionGen[] exceptionHandlers,
@@ -48,7 +48,7 @@ public class PropConInstructionsVisitor extends BaseInstructionsVisitor {
 			Frame frame, Heap heap,
 			Set<Pair<InstructionHandle, Boolean>> alreadyVisitedIfBranch,
 			InstructionHandle instructionHandle) {
-		return new PropConInstructionsVisitor(classContext, method, frame,
+		return new PropConVisitor(classContext, method, frame,
 				heap, constantPoolGen, alreadyVisitedIfBranch,
 				alreadyVisitedMethods, instructionHandle, exceptionHandlers,
 				depth);
