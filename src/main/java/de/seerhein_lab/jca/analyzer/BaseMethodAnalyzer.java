@@ -117,6 +117,11 @@ public abstract class BaseMethodAnalyzer {
 		logger.log(Level.FINE, Utils.formatLoggingOutput(this.depth)
 				+ "vvvvvvvvvvvvvvvvvvvvvvvvvv");
 		while (pc.isValid()) {
+			// visitor is expected to 
+			// (1) either execute the current opcode and then update the pc, or 
+			// (2) deliver a (possibly multi-value) result and invalidate the pc.
+			//     The result can be computed by execution of the last opcode in 
+			//     the list, or by recursively instantiating other analyzers.
 			pc.getCurrentInstruction().accept(visitor);
 			// TODO remove next line eventually
 			pc.invalidate();
