@@ -15,17 +15,17 @@ import de.seerhein_lab.jca.vm.Heap;
 import de.seerhein_lab.jca.vm.PC;
 import edu.umd.cs.findbugs.ba.ClassContext;
 
-public class FieldsNotPublishedMethodAnalyzer extends BaseMethodAnalyzer {
+public class FieldsNotPublishedAnalyzer extends BaseMethodAnalyzer {
 
 	private Heap heap;
 
-	public FieldsNotPublishedMethodAnalyzer(ClassContext classContext,
+	public FieldsNotPublishedAnalyzer(ClassContext classContext,
 			MethodGen methodGen, Heap heap) {
 		super(classContext, methodGen);
 		this.heap = heap;
 	}
 
-	public FieldsNotPublishedMethodAnalyzer(ClassContext classContext,
+	public FieldsNotPublishedAnalyzer(ClassContext classContext,
 			MethodGen methodGen,
 			Set<Pair<Method, Slot[]>> alreadyVisitedMethods, int depth) {
 		super(classContext, methodGen, alreadyVisitedMethods, depth);

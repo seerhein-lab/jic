@@ -56,7 +56,7 @@ public class PropConInstructionsVisitor extends BaseInstructionsVisitor {
 
 	@Override
 	protected BaseMethodAnalyzer getMethodAnalyzer(MethodGen targetMethodGen) {
-		return new PropConMethodAnalyzer(classContext, targetMethodGen,
+		return new PropConAnalyzer(classContext, targetMethodGen,
 				alreadyVisitedMethods, depth);
 	}
 

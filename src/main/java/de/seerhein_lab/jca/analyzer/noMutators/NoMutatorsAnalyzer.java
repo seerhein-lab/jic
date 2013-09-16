@@ -15,17 +15,17 @@ import de.seerhein_lab.jca.vm.Heap;
 import de.seerhein_lab.jca.vm.PC;
 import edu.umd.cs.findbugs.ba.ClassContext;
 
-public class NoMutatorsMethodAnalyzer extends BaseMethodAnalyzer {
+public class NoMutatorsAnalyzer extends BaseMethodAnalyzer {
 
 	private Heap heap;
 
-	public NoMutatorsMethodAnalyzer(ClassContext classContext,
+	public NoMutatorsAnalyzer(ClassContext classContext,
 			MethodGen methodGen, Heap heap) {
 		super(classContext, methodGen);
 		this.heap = heap;
 	}
 
-	public NoMutatorsMethodAnalyzer(ClassContext classContext,
+	public NoMutatorsAnalyzer(ClassContext classContext,
 			MethodGen methodGen,
 			Set<Pair<Method, Slot[]>> alreadyVisitedMethods, int depth) {
 		super(classContext, methodGen, alreadyVisitedMethods, depth);

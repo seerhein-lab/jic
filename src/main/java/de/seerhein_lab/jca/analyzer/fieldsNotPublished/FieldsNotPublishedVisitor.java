@@ -61,7 +61,7 @@ public class FieldsNotPublishedVisitor extends
 
 	@Override
 	protected BaseMethodAnalyzer getMethodAnalyzer(MethodGen targetMethodGen) {
-		return new FieldsNotPublishedMethodAnalyzer(classContext,
+		return new FieldsNotPublishedAnalyzer(classContext,
 				targetMethodGen, alreadyVisitedMethods, depth);
 	}
 

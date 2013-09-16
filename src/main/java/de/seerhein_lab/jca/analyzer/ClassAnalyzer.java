@@ -14,9 +14,9 @@ import org.apache.bcel.generic.MethodGen;
 
 import de.seerhein_lab.jca.ResultValue;
 import de.seerhein_lab.jca.analyzer.ctorArgsCopied.CtorArgsCopiedAnalyzer;
-import de.seerhein_lab.jca.analyzer.fieldsNotPublished.FieldsNotPublishedMethodAnalyzer;
-import de.seerhein_lab.jca.analyzer.noMutators.NoMutatorsMethodAnalyzer;
-import de.seerhein_lab.jca.analyzer.propCon.PropConMethodAnalyzer;
+import de.seerhein_lab.jca.analyzer.fieldsNotPublished.FieldsNotPublishedAnalyzer;
+import de.seerhein_lab.jca.analyzer.noMutators.NoMutatorsAnalyzer;
+import de.seerhein_lab.jca.analyzer.propCon.PropConAnalyzer;
 import de.seerhein_lab.jca.vm.Heap;
 import edu.umd.cs.findbugs.BugCollection;
 import edu.umd.cs.findbugs.BugInstance;
@@ -77,7 +77,7 @@ public final class ClassAnalyzer {
 			MethodGen ctorGen = new MethodGen(ctor, clazz.getClassName(),
 					new ConstantPoolGen(clazz.getConstantPool()));
 
-			BaseMethodAnalyzer ctorAnalyzer = new PropConMethodAnalyzer(
+			BaseMethodAnalyzer ctorAnalyzer = new PropConAnalyzer(
 					classContext, ctorGen);
 			ctorAnalyzer.analyze();
 			bugs.addAll(ctorAnalyzer.getBugs());
@@ -117,7 +117,7 @@ public final class ClassAnalyzer {
 						clazz.getClassName(), new ConstantPoolGen(
 								clazz.getConstantPool()));
 
-				BaseMethodAnalyzer methodAnalyzer = new FieldsNotPublishedMethodAnalyzer(
+				BaseMethodAnalyzer methodAnalyzer = new FieldsNotPublishedAnalyzer(
 						classContext, methodGen, new Heap(heap));
 				methodAnalyzer.analyze();
 				bugs.addAll(methodAnalyzer.getBugs());
@@ -136,7 +136,7 @@ public final class ClassAnalyzer {
 						clazz.getClassName(), new ConstantPoolGen(
 								clazz.getConstantPool()));
 
-				BaseMethodAnalyzer methodAnalyzer = new NoMutatorsMethodAnalyzer(
+				BaseMethodAnalyzer methodAnalyzer = new NoMutatorsAnalyzer(
 						classContext, methodGen, new Heap(heap));
 				methodAnalyzer.analyze();
 				bugs.addAll(methodAnalyzer.getBugs());

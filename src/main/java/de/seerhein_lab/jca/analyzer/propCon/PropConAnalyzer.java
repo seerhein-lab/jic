@@ -15,13 +15,13 @@ import de.seerhein_lab.jca.vm.Heap;
 import de.seerhein_lab.jca.vm.PC;
 import edu.umd.cs.findbugs.ba.ClassContext;
 
-public class PropConMethodAnalyzer extends BaseMethodAnalyzer {
+public class PropConAnalyzer extends BaseMethodAnalyzer {
 
-	public PropConMethodAnalyzer(ClassContext classContext, MethodGen methodGen) {
+	public PropConAnalyzer(ClassContext classContext, MethodGen methodGen) {
 		super(classContext, methodGen);
 	}
 
-	public PropConMethodAnalyzer(ClassContext classContext,
+	public PropConAnalyzer(ClassContext classContext,
 			MethodGen methodGen,
 			Set<Pair<Method, Slot[]>> alreadyVisitedMethods, int depth) {
 		super(classContext, methodGen, alreadyVisitedMethods, depth);
