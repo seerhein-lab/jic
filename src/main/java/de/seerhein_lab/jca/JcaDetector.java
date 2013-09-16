@@ -19,10 +19,11 @@ import edu.umd.cs.findbugs.ba.ClassContext;
 public final class JcaDetector implements Detector {
 	private final static String IMMUTABLE_ANNOTATION = "Lnet/jcip/annotations/Immutable;";
 
-	@GuardedBy("lock")
+	@GuardedBy("reporterLock")
 	private final BugReporter reporter;
-
 	private final Object reporterLock = new Object();
+	
+	public static int propConCounter;
 
 	public JcaDetector(BugReporter reporter) {
 		this.reporter = reporter;
@@ -42,6 +43,7 @@ public final class JcaDetector implements Detector {
 
 	@Override
 	public void visitClassContext(ClassContext classContext) {
+		propConCounter = 0;
 		JavaClass clazz = classContext.getJavaClass();
 
 		SortedBugCollection bugs = new SortedBugCollection();
