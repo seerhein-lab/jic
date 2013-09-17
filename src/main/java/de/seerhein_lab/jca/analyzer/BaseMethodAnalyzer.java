@@ -6,6 +6,8 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import net.jcip.annotations.ThreadSafe;
+
 import org.apache.bcel.classfile.Method;
 import org.apache.bcel.generic.CodeExceptionGen;
 import org.apache.bcel.generic.InstructionHandle;
@@ -25,9 +27,8 @@ import de.seerhein_lab.jca.vm.PC;
 import edu.umd.cs.findbugs.BugInstance;
 import edu.umd.cs.findbugs.ba.ClassContext;
 
-/**
- * Analyzes methods.
- */
+
+@ThreadSafe // follows the Java monitor pattern
 public abstract class BaseMethodAnalyzer {
 	private static final Logger logger = Logger.getLogger("BaseMethodAnalyzer");
 	protected final ClassContext classContext;
@@ -66,11 +67,8 @@ public abstract class BaseMethodAnalyzer {
 	protected abstract BaseInstructionsVisitor getInstructionVisitor(
 			Frame frame, Heap heap, PC pc);
 
-	/**
-	 * Checks whether the reference of the checked object is passed to another
-	 * object in the method.
-	 */
-	public final void analyze() {
+
+	public final synchronized void analyze() {
 		OpStack callerStack = new OpStack();
 		Heap callerHeap = getHeap();
 
@@ -95,7 +93,7 @@ public abstract class BaseMethodAnalyzer {
 		analyze(callerStack, callerHeap);
 	}
 
-	public abstract Heap getHeap();
+	protected abstract Heap getHeap();
 
 	/**
 	 * Checks whether the reference of the checked object is passed to another
@@ -104,9 +102,9 @@ public abstract class BaseMethodAnalyzer {
 	 * @param callerStack
 	 *            the content of the local variable table of the constructor.
 	 */
-	public void analyze(OpStack callerStack, Heap heap) {
+	public final synchronized void analyze(OpStack callerStack, Heap heap) {
 		Frame calleeFrame = createCalleeFrame(callerStack);
-
+		
 		InstructionHandle[] instructionHandles = new InstructionList(method
 				.getCode().getCode()).getInstructionHandles();
 
@@ -131,7 +129,7 @@ public abstract class BaseMethodAnalyzer {
 				+ "^^^^^^^^^^^^^^^^^^^^^^^^^^");
 	}
 
-	protected Frame createCalleeFrame(OpStack callerOpStack) {
+	private Frame createCalleeFrame(OpStack callerOpStack) {
 		int numSlots = method.isStatic() ? 0 : 1;
 
 		for (Type type : method.getArgumentTypes()) {
@@ -143,7 +141,7 @@ public abstract class BaseMethodAnalyzer {
 		return calleeFrame;
 	}
 
-	public Slot[] getActualParams(Frame frame) {
+	public final synchronized Slot[] getActualParams(Frame frame) {
 		OpStack opStack = new OpStack(frame.getStack());
 		return createCalleeFrame(opStack).getLocalVars();
 	}
@@ -157,7 +155,7 @@ public abstract class BaseMethodAnalyzer {
 	 * @throws IllegalStateException
 	 *             if analyze() was not called beforehand.
 	 */
-	public Collection<BugInstance> getBugs() {
+	public final synchronized Collection<BugInstance> getBugs() {
 		if (visitor == null) {
 			throw new IllegalStateException(
 					"analyze() must be called before getBugs()");
@@ -175,7 +173,7 @@ public abstract class BaseMethodAnalyzer {
 	 * @throws IllegalStateException
 	 *             if analyze() was not called beforehand.
 	 */
-	public Set<ResultValue> getResult() {
+	public final synchronized Set<ResultValue> getResult() {
 
 		if (visitor == null) {
 			throw new IllegalStateException(
