@@ -34,29 +34,20 @@ public abstract class BaseMethodAnalyzer {
 	protected final ClassContext classContext;
 	protected final Set<Pair<Method, Slot[]>> alreadyVisitedMethods;
 	protected final int depth;
-
-	/** The method to analyze. */
 	protected final Method method;
 	protected final CodeExceptionGen[] exceptionHandlers;
-
-	/** The visitor which inspects the method's bytecode instructions. */
 	protected BaseInstructionsVisitor visitor = null;
 
-	/**
-	 * Constructor.
-	 * 
-	 * @param classContext
-	 * 
-	 * @param method
-	 *            The method to analyze, not null.
-	 * 
-	 */
+
 	public BaseMethodAnalyzer(ClassContext classContext, MethodGen methodGen) {
 		this(classContext, methodGen, new HashSet<Pair<Method, Slot[]>>(), -1);
 	}
 
 	public BaseMethodAnalyzer(ClassContext classContext, MethodGen methodGen,
 			Set<Pair<Method, Slot[]>> alreadyVisitedMethods, int depth) {
+		if ( classContext == null || methodGen == null || alreadyVisitedMethods == null ) 
+			throw new AssertionError("Params must not be null.");
+		
 		this.classContext = classContext;
 		this.method = methodGen.getMethod();
 		exceptionHandlers = methodGen.getExceptionHandlers();
@@ -64,8 +55,9 @@ public abstract class BaseMethodAnalyzer {
 		this.depth = depth + 1;
 	}
 
-	protected abstract BaseInstructionsVisitor getInstructionVisitor(
-			Frame frame, Heap heap, PC pc);
+	protected abstract BaseInstructionsVisitor getInstructionVisitor(Frame frame, Heap heap, PC pc);
+
+	protected abstract Heap getHeap();
 
 
 	public final synchronized void analyze() {
@@ -93,15 +85,6 @@ public abstract class BaseMethodAnalyzer {
 		analyze(callerStack, callerHeap);
 	}
 
-	protected abstract Heap getHeap();
-
-	/**
-	 * Checks whether the reference of the checked object is passed to another
-	 * object in the method.
-	 * 
-	 * @param callerStack
-	 *            the content of the local variable table of the constructor.
-	 */
 	public final synchronized void analyze(OpStack callerStack, Heap heap) {
 		Frame calleeFrame = createCalleeFrame(callerStack);
 		
