@@ -44,25 +44,35 @@ public final class JcaDetector implements Detector {
 	@Override
 	public void visitClassContext(ClassContext classContext) {
 		propConCounter = 0;
+
 		JavaClass clazz = classContext.getJavaClass();
+		boolean supposedlyImmutable = supposedlyImmutable(clazz);
+		
+		if ( clazz.isAnnotation() || clazz.isInterface() ) {
+			if (  supposedlyImmutable ) 
+				reporter.reportBug(Utils.createBug(
+						Confidence.HIGH, "Type cannot be annotated as immutable", clazz));
+			return;
+		}
 
 		SortedBugCollection bugs = new SortedBugCollection();
+		
+		if ( clazz.isAbstract() && supposedlyImmutable ) {
+			reporter.reportBug(Utils.createBug(
+					Confidence.HIGH, "Type cannot be annotated as immutable", clazz));
+			supposedlyImmutable = false;
+		} 
 
 		try {
-			bugs.addAll(supposedlyImmutable(clazz) ? new ClassAnalyzer(
+			bugs.addAll(supposedlyImmutable? new ClassAnalyzer(
 					classContext).isImmutable() : new ClassAnalyzer(
 					classContext).properlyConstructed());
 		} catch (Throwable e) {
-			bugs.add(new BugInstance("IMMUTABILITY_BUG", Confidence.HIGH
-					.getConfidenceValue())
-					.addString(
-							"Class cannot be analyzed owing to internal problem (" + e + ")")
-					.addClass(classContext.getJavaClass())
-					.addSourceLine(
-							SourceLineAnnotation.createUnknown(classContext
-									.getJavaClass().getClassName())));
+			reporter.reportBug(Utils.createBug(Confidence.HIGH, 
+					"Class cannot be analyzed owing to internal problem (" + e + ")", 
+					classContext.getJavaClass()));
 		}
-
+		
 		for (BugInstance bug : bugs) {
 			synchronized (reporterLock) {
 				reporter.reportBug(bug);
