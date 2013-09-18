@@ -89,8 +89,7 @@ import edu.umd.cs.findbugs.ba.ClassContext;
  * </ul>
  * </p>
  */
-public abstract class BaseInstructionsVisitor extends
-		SimpleInstructionsVisitor {
+public abstract class BaseInstructionsVisitor extends SimpleInstructionsVisitor {
 	protected static final Logger logger = Logger
 			.getLogger("BaseInstructionsAnalysisVisitor");
 	protected final ClassContext classContext;
@@ -103,7 +102,8 @@ public abstract class BaseInstructionsVisitor extends
 	protected Set<ResultValue> result = new HashSet<ResultValue>();
 
 	protected abstract BaseInstructionsVisitor getInstructionsAnalysisVisitor(
-			Frame frame, Heap heap, Set<Pair<InstructionHandle, Boolean>> alreadyVisited,
+			Frame frame, Heap heap,
+			Set<Pair<InstructionHandle, Boolean>> alreadyVisited,
 			InstructionHandle instructionHandle);
 
 	protected abstract BaseMethodAnalyzer getMethodAnalyzer(
@@ -120,8 +120,8 @@ public abstract class BaseInstructionsVisitor extends
 
 	protected abstract void detectPutStaticBug(ReferenceSlot referenceToPut);
 
-	public BaseInstructionsVisitor(ClassContext classContext,
-			Method method, Frame frame, Heap heap, ConstantPoolGen constantPoolGen,
+	public BaseInstructionsVisitor(ClassContext classContext, Method method,
+			Frame frame, Heap heap, ConstantPoolGen constantPoolGen,
 			InstructionHandle instructionHandle,
 			CodeExceptionGen[] exceptionHandlers,
 			Set<Pair<Method, Slot[]>> alreadyVisitedMethods, int depth) {
@@ -131,8 +131,8 @@ public abstract class BaseInstructionsVisitor extends
 				depth);
 	}
 
-	protected BaseInstructionsVisitor(ClassContext classContext,
-			Method method, Frame frame, Heap heap, ConstantPoolGen constantPoolGen,
+	protected BaseInstructionsVisitor(ClassContext classContext, Method method,
+			Frame frame, Heap heap, ConstantPoolGen constantPoolGen,
 			Set<Pair<InstructionHandle, Boolean>> alreadyVisited,
 			Set<Pair<Method, Slot[]>> alreadyVisitedMethods,
 			InstructionHandle instructionHandle,
@@ -156,7 +156,8 @@ public abstract class BaseInstructionsVisitor extends
 
 	protected void addBug(Confidence confidence, String message,
 			InstructionHandle instructionHandle) {
-		BugInstance bugInstance = Utils.createBug(confidence, message, classContext.getJavaClass());
+		BugInstance bugInstance = Utils.createBug(confidence, message,
+				classContext.getJavaClass());
 
 		bugInstance.addSourceLine(classContext, method, instructionHandle);
 		bugs.add(bugInstance);
@@ -205,18 +206,20 @@ public abstract class BaseInstructionsVisitor extends
 			targetClass = Repository.lookupClass(obj.getReferenceType(
 					constantPoolGen).toString());
 		} catch (ClassNotFoundException e) {
-			throw new AssertionError(obj.getReferenceType(
-					constantPoolGen).toString() + " cannot be loaded.");
+			throw new AssertionError(obj.getReferenceType(constantPoolGen)
+					.toString() + " cannot be loaded.");
 		}
 
 		Method targetMethod = new ClassHelper(targetClass).getMethod(
 				obj.getMethodName(constantPoolGen),
 				obj.getArgumentTypes(constantPoolGen));
+		if (targetMethod == null)
+			throw new AssertionError("targetMethod not found in Class");
 		MethodGen targetMethodGen = new MethodGen(targetMethod,
 				targetClass.getClassName(), new ConstantPoolGen(
 						targetClass.getConstantPool()));
-		
-		if ( targetMethod.isNative() ) {
+
+		if (targetMethod.isNative()) {
 			logger.log(Level.FINE, indentation
 					+ "Native method must be dealt with like virtual method.");
 			handleVirtualMethod(obj, true);
@@ -237,20 +240,23 @@ public abstract class BaseInstructionsVisitor extends
 		}
 
 		targetMethodAnalyzer.analyze(frame.getStack(), heap);
-		
-		for ( Iterator<BugInstance> it = targetMethodAnalyzer.getBugs().iterator(); it.hasNext(); ) {
+
+		for (Iterator<BugInstance> it = targetMethodAnalyzer.getBugs()
+				.iterator(); it.hasNext();) {
 			BugInstance bug = it.next();
-			addBug(Confidence.HIGH, 					
-					"subsequent bug caused by [" 
-					+ bug.getMessage() + " in "  
-					+ targetClass.getClassName() + "." 
-					+ targetMethod.getName() 
-					+ targetMethod.getSignature() + ":"
-					+ bug.getPrimarySourceLineAnnotation().getStartLine() + "]",
-					instructionHandle);
+			addBug(Confidence.HIGH,
+					"subsequent bug caused by ["
+							+ bug.getMessage()
+							+ " in "
+							+ targetClass.getClassName()
+							+ "."
+							+ targetMethod.getName()
+							+ targetMethod.getSignature()
+							+ ":"
+							+ bug.getPrimarySourceLineAnnotation()
+									.getStartLine() + "]", instructionHandle);
 		}
-		
-		
+
 		Set<ResultValue> calleeResults = targetMethodAnalyzer.getResult();
 
 		for (ResultValue calleeResult : calleeResults) {
@@ -291,9 +297,8 @@ public abstract class BaseInstructionsVisitor extends
 		Slot argument;
 		// pop a value for each arg and 1 for the hidden 'this' reference
 
-		int arguments = isStatic ? type.length : type.length +1;
-		
-		
+		int arguments = isStatic ? type.length : type.length + 1;
+
 		for (int i = 0; i < arguments; i++) {
 			argument = frame.popStackByRequiredSlots();
 			if (argument instanceof ReferenceSlot) {
@@ -523,25 +528,28 @@ public abstract class BaseInstructionsVisitor extends
 	@Override
 	public void visitAALOAD(AALOAD obj) {
 		logger.log(Level.FINE, indentation + obj.toString(false));
-		
+
 		// pop array index
 		frame.getStack().pop();
 		// pop array reference
 		ReferenceSlot arrayReference = (ReferenceSlot) frame.getStack().pop();
-		
+
 		// CAUTION: try to make this also work with external object
-		
+
 		if (heap.getObject(arrayReference) instanceof ExternalObject) {
-			frame.getStack().push(ReferenceSlot.createNewInstance(heap
-					.getExternalObject()));
+			frame.getStack().push(
+					ReferenceSlot.createNewInstance(heap.getExternalObject()));
 			instructionHandle = instructionHandle.getNext();
 			instructionHandle.accept(this);
 			return;
 		}
-		
+
 		// END CAUTION: try to make this also work with external object
-		
+
 		Array array = (Array) heap.getObject(arrayReference);
+
+		if (array == null)
+			throw new AssertionError("AALOAD on null");
 
 		for (Iterator<HeapObject> iterator = array.getReferredIterator(); iterator
 				.hasNext();) {
@@ -560,7 +568,7 @@ public abstract class BaseInstructionsVisitor extends
 	@Override
 	public void visitAASTORE(AASTORE obj) {
 		logger.log(Level.FINE, indentation + obj.toString(false));
-		
+
 		// pop value
 		ReferenceSlot value = (ReferenceSlot) frame.popStackByRequiredSlots();
 		HeapObject component = heap.getObject(value);
@@ -654,7 +662,8 @@ public abstract class BaseInstructionsVisitor extends
 			newAlreadyVisited.addAll(alreadyVisitedIfBranch);
 
 			BaseInstructionsVisitor thenBranchVisitor = getInstructionsAnalysisVisitor(
-					new Frame(frame), new Heap(heap), newAlreadyVisited, obj.getTarget());
+					new Frame(frame), new Heap(heap), newAlreadyVisited,
+					obj.getTarget());
 			obj.getTarget().accept(thenBranchVisitor);
 			bugs.addAll(thenBranchVisitor.getBugs().getCollection());
 			result.addAll(thenBranchVisitor.getResult());
@@ -677,8 +686,7 @@ public abstract class BaseInstructionsVisitor extends
 		bugs.add(new BugInstance(
 				"Untested Code Warning: Executing JSR instruction", 1));
 		frame.getStack().push(
-				ReferenceSlot.createNewInstance(heap
-						.newClassInstance()));
+				ReferenceSlot.createNewInstance(heap.newClassInstance()));
 		InstructionHandle savedInstructionHandle = instructionHandle;
 		instructionHandle = obj.getTarget();
 		instructionHandle.accept(this);
@@ -745,8 +753,7 @@ public abstract class BaseInstructionsVisitor extends
 		frame.getStack().pop();
 
 		// pushes new array reference
-		frame.getStack().push(
-				ReferenceSlot.createNewInstance(heap.newArray()));
+		frame.getStack().push(ReferenceSlot.createNewInstance(heap.newArray()));
 
 		instructionHandle = instructionHandle.getNext();
 		instructionHandle.accept(this);
@@ -783,8 +790,8 @@ public abstract class BaseInstructionsVisitor extends
 		result.addAll(regularCaseVisitor.getResult());
 
 		// 2nd case: type cast is invalid, throw ClassCastException
-		handleException(ReferenceSlot.createNewInstance(heap
-				.newClassInstance()));
+		handleException(ReferenceSlot
+				.createNewInstance(heap.newClassInstance()));
 	}
 
 	/**
@@ -802,18 +809,19 @@ public abstract class BaseInstructionsVisitor extends
 		// pop object reference
 		ReferenceSlot o = (ReferenceSlot) frame.getStack().pop();
 
+		if (o.getID() == null)
+			throw new AssertionError("GETFIELD on null");
+
 		// obj.getSignature() refers to desired field
 		Slot f = Slot.getDefaultSlotInstance(obj.getType(constantPoolGen));
 		if (f instanceof ReferenceSlot) {
-			if ( heap.getObject(o) instanceof ExternalObject ) {
+			if (heap.getObject(o) instanceof ExternalObject) {
 				// if left side is external return external
-				f = ReferenceSlot.createNewInstance(heap
-						.getExternalObject());
+				f = ReferenceSlot.createNewInstance(heap.getExternalObject());
 			} else {
 				// get the ClassInstance linked to the desired field
-				f = ReferenceSlot.createNewInstance(((ClassInstance) 
-						heap.get(o.getID())).getField(obj
-						.getFieldName(constantPoolGen)));
+				f = ReferenceSlot.createNewInstance(((ClassInstance) heap.get(o
+						.getID())).getField(obj.getFieldName(constantPoolGen)));
 			}
 		}
 		frame.pushStackByRequiredSlots(f);
@@ -848,8 +856,7 @@ public abstract class BaseInstructionsVisitor extends
 		// if a reference is expected
 		if (f instanceof ReferenceSlot) {
 			// static values are always external
-			f = ReferenceSlot.createNewInstance(heap
-					.getExternalObject());
+			f = ReferenceSlot.createNewInstance(heap.getExternalObject());
 		}
 
 		log.append((f instanceof DoubleSlot || f instanceof LongSlot) ? f
@@ -926,8 +933,7 @@ public abstract class BaseInstructionsVisitor extends
 		if (v instanceof ReferenceSlot) {
 			detectPutStaticBug((ReferenceSlot) v);
 			// make it external
-			heap.publish(
-					heap.getObject((ReferenceSlot) v));
+			heap.publish(heap.getObject((ReferenceSlot) v));
 		}
 
 		// write log
@@ -993,8 +999,7 @@ public abstract class BaseInstructionsVisitor extends
 		// (notThis) onto the stack
 		if (value instanceof ReferenceSlot) {
 			// it is a String
-			value = ReferenceSlot.createNewInstance(heap
-					.newClassInstance());
+			value = ReferenceSlot.createNewInstance(heap.newClassInstance());
 		}
 		frame.pushStackByRequiredSlots(value);
 
@@ -1016,8 +1021,7 @@ public abstract class BaseInstructionsVisitor extends
 		// (notThis) onto the stack
 		if (value instanceof ReferenceSlot) {
 			// it is a String
-			value = ReferenceSlot.createNewInstance(heap
-					.newClassInstance());
+			value = ReferenceSlot.createNewInstance(heap.newClassInstance());
 		}
 		frame.pushStackByRequiredSlots(value);
 
@@ -1106,8 +1110,7 @@ public abstract class BaseInstructionsVisitor extends
 		frame.getStack().pop();
 
 		// push reference to new array onto the stack
-		ReferenceSlot slot = ReferenceSlot.createNewInstance(heap
-				.newArray());
+		ReferenceSlot slot = ReferenceSlot.createNewInstance(heap.newArray());
 
 		frame.getStack().push(slot);
 
