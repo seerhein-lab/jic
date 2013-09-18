@@ -11,7 +11,7 @@ import java.util.UUID;
  */
 /**
  * @author haase
- *
+ * 
  */
 public final class ClassInstance extends HeapObject {
 	private Map<String, UUID> refers = new HashMap<String, UUID>();
@@ -39,9 +39,11 @@ public final class ClassInstance extends HeapObject {
 	@Override
 	public void replaceAllOccurrencesOfReferredObject(HeapObject oldObject,
 			HeapObject newObject) {
-		for (String field : refers.keySet())
-			if (refers.get(field).equals(oldObject.getId()))
+		for (String field : refers.keySet()) {
+			if (refers.get(field) != null
+					&& refers.get(field).equals(oldObject.getId()))
 				refers.put(field, newObject.getId());
+		}
 	}
 
 	@Override
@@ -49,10 +51,9 @@ public final class ClassInstance extends HeapObject {
 		return new ClassInstance(this, heap);
 	}
 
-	
 	/*
-	 * Note that the iterator returned by this method skips references to null, i.e.
-	 * it returns only valid objects. 
+	 * Note that the iterator returned by this method skips references to null,
+	 * i.e. it returns only valid objects.
 	 */
 	@Override
 	public Iterator<HeapObject> getReferredIterator() {
@@ -62,16 +63,16 @@ public final class ClassInstance extends HeapObject {
 			{
 				lookAhead();
 			}
-			
-			private void lookAhead(){
+
+			private void lookAhead() {
 				lookAhead = null;
-				while ( lookAhead == null && idIterator.hasNext() ) {
+				while (lookAhead == null && idIterator.hasNext()) {
 					lookAhead = idIterator.next();
 				}
 			}
-			
+
 			@Override
-			public boolean hasNext() {	
+			public boolean hasNext() {
 				return lookAhead != null;
 			}
 
