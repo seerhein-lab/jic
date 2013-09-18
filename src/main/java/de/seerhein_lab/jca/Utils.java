@@ -9,12 +9,24 @@ import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import java.util.logging.StreamHandler;
 
+import org.apache.bcel.classfile.JavaClass;
+
+import edu.umd.cs.findbugs.BugInstance;
+import edu.umd.cs.findbugs.annotations.Confidence;
+
 public final class Utils {
 
 	private Utils() {
 		new AssertionError("must not be called.");
 	}
-
+	
+	public static BugInstance createBug(Confidence confidence, String message, JavaClass clazz) {
+		return new BugInstance("IMMUTABILITY_BUG", confidence.getConfidenceValue())
+				.addString(message)
+				.addClass(clazz);
+	}
+	
+	
 	public static String formatLoggingOutput(int depth) {
 		StringBuilder indentation = new StringBuilder("");
 		for (int i = 0; i < depth; i++)
