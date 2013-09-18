@@ -1,7 +1,5 @@
 package de.seerhein_lab.jca;
 
-import net.jcip.annotations.GuardedBy;
-import net.jcip.annotations.ThreadSafe;
 
 import org.apache.bcel.classfile.AnnotationEntry;
 import org.apache.bcel.classfile.JavaClass;
@@ -11,17 +9,15 @@ import edu.umd.cs.findbugs.BugInstance;
 import edu.umd.cs.findbugs.BugReporter;
 import edu.umd.cs.findbugs.Detector;
 import edu.umd.cs.findbugs.SortedBugCollection;
-import edu.umd.cs.findbugs.SourceLineAnnotation;
 import edu.umd.cs.findbugs.annotations.Confidence;
 import edu.umd.cs.findbugs.ba.ClassContext;
 
-@ThreadSafe
+// This class must either be used thread-confined, or reporter must be thread-safe, otherwise concurrent calls to
+// reporter.reportBug() can result in race conditions.
 public final class JcaDetector implements Detector {
 	private final static String IMMUTABLE_ANNOTATION = "Lnet/jcip/annotations/Immutable;";
 
-	@GuardedBy("reporterLock")
 	private final BugReporter reporter;
-	private final Object reporterLock = new Object();
 	
 	public static int propConCounter;
 
@@ -74,10 +70,7 @@ public final class JcaDetector implements Detector {
 		}
 		
 		for (BugInstance bug : bugs) {
-			synchronized (reporterLock) {
-				reporter.reportBug(bug);
-			}
+			reporter.reportBug(bug);
 		}
-
 	}
 }
