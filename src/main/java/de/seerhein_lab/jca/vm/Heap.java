@@ -4,6 +4,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.NoSuchElementException;
 import java.util.Set;
 import java.util.UUID;
 
@@ -59,6 +60,9 @@ public class Heap {
 	 * @return The HeapObject for the id.
 	 */
 	public HeapObject get(UUID id) {
+		if (id != null && !objects.containsKey(id))
+			throw new NoSuchElementException(
+					"HeapObject not found in this Heap");
 		return publishedObjects.contains(id) ? objects.get(externalID)
 				: objects.get(id);
 	}
