@@ -47,6 +47,7 @@ import org.apache.bcel.generic.Type;
 import de.seerhein_lab.jca.Pair;
 import de.seerhein_lab.jca.ResultValue;
 import de.seerhein_lab.jca.ResultValue.Kind;
+import de.seerhein_lab.jca.Utils;
 import de.seerhein_lab.jca.slot.DoubleSlot;
 import de.seerhein_lab.jca.slot.LongSlot;
 import de.seerhein_lab.jca.slot.ReferenceSlot;
@@ -155,19 +156,9 @@ public abstract class BaseInstructionsVisitor extends
 
 	protected void addBug(Confidence confidence, String message,
 			InstructionHandle instructionHandle) {
-		BugInstance bugInstance = new BugInstance("IMMUTABILITY_BUG",
-				confidence.getConfidenceValue());
+		BugInstance bugInstance = Utils.createBug(confidence, message, classContext.getJavaClass());
 
-		// param {0} in messages.xml
-		bugInstance.addString(message);
-
-		if (classContext != null) {
-			bugInstance.addClass(classContext.getJavaClass()).addSourceLine(
-					classContext, method, instructionHandle);
-		} else {
-			bugInstance
-					.addClass("de.htwg_konstanz.in.jca.testclasses.UtilsTestClass");
-		}
+		bugInstance.addSourceLine(classContext, method, instructionHandle);
 		bugs.add(bugInstance);
 
 	}
