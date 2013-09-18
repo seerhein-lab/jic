@@ -30,7 +30,7 @@ public class PropConAnalyzer extends BaseMethodAnalyzer {
 
 	protected BaseInstructionsVisitor getInstructionVisitor(Frame frame,
 			Heap heap, PC pc) {
-		if ( JcaDetector.propConCounter > 10000 ) 
+		if ( JcaDetector.propConCounter > 5000 ) 
 			throw new OutOfMemoryError("emergency break to avoid out of memory error.");
 		
 		JcaDetector.propConCounter++;
