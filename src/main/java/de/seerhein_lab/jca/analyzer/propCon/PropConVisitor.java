@@ -1,5 +1,6 @@
 package de.seerhein_lab.jca.analyzer.propCon;
 
+import java.util.HashSet;
 import java.util.Set;
 
 import org.apache.bcel.classfile.Method;
@@ -22,13 +23,12 @@ import edu.umd.cs.findbugs.ba.ClassContext;
 
 public class PropConVisitor extends BaseVisitor {
 
-	protected PropConVisitor(ClassContext classContext,
-			Method method, Frame frame, Heap heap,
-			ConstantPoolGen constantPoolGen,
-			Set<Pair<InstructionHandle, Boolean>> alreadyVisitedIfBranch,
-			Set<Pair<Method, Slot[]>> alreadyVisitedMethods,
+	protected PropConVisitor(ClassContext classContext, Method method, 
+			Frame frame, Heap heap, ConstantPoolGen constantPoolGen,
 			InstructionHandle instructionHandle,
-			CodeExceptionGen[] exceptionHandlers, int depth) {
+			CodeExceptionGen[] exceptionHandlers,
+			Set<Pair<Method, Slot[]>> alreadyVisitedMethods,
+			int depth, Set<Pair<InstructionHandle, Boolean>> alreadyVisitedIfBranch) {
 		super(classContext, method, frame, heap, constantPoolGen,
 				alreadyVisitedIfBranch, alreadyVisitedMethods,
 				instructionHandle, exceptionHandlers, depth);
@@ -36,12 +36,11 @@ public class PropConVisitor extends BaseVisitor {
 
 	public PropConVisitor(ClassContext classContext, Method method,
 			Frame frame, Heap heap, ConstantPoolGen constantPoolGen,
-			PC pc,
-			CodeExceptionGen[] exceptionHandlers,
+			PC pc, CodeExceptionGen[] exceptionHandlers,
 			Set<Pair<Method, Slot[]>> alreadyVisitedMethods, int depth) {
-		super(classContext, method, frame, heap, constantPoolGen,
-				pc.getCurrentInstruction(), exceptionHandlers, alreadyVisitedMethods,
-				depth);
+		this(classContext, method, frame, heap, constantPoolGen, 
+				pc.getCurrentInstruction(), exceptionHandlers, 
+				alreadyVisitedMethods, depth, new HashSet<Pair<InstructionHandle, Boolean>>());
 	}
 
 	@Override
@@ -50,9 +49,9 @@ public class PropConVisitor extends BaseVisitor {
 			Set<Pair<InstructionHandle, Boolean>> alreadyVisitedIfBranch,
 			InstructionHandle instructionHandle) {
 		return new PropConVisitor(classContext, method, frame,
-				heap, constantPoolGen, alreadyVisitedIfBranch,
-				alreadyVisitedMethods, instructionHandle, exceptionHandlers,
-				depth);
+				heap, constantPoolGen, instructionHandle,
+				exceptionHandlers, alreadyVisitedMethods, depth,
+				alreadyVisitedIfBranch);
 	}
 
 	@Override

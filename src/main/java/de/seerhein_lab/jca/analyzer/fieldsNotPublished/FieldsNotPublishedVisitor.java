@@ -1,5 +1,6 @@
 package de.seerhein_lab.jca.analyzer.fieldsNotPublished;
 
+import java.util.HashSet;
 import java.util.Set;
 import java.util.logging.Level;
 
@@ -31,10 +32,10 @@ public class FieldsNotPublishedVisitor extends
 
 	protected FieldsNotPublishedVisitor(ClassContext classContext,
 			Method method, Frame frame, Heap heap, ConstantPoolGen constantPoolGen,
-			Set<Pair<InstructionHandle, Boolean>> alreadyVisitedIfBranch,
-			Set<Pair<Method, Slot[]>> alreadyVisitedMethods,
 			InstructionHandle instructionHandle,
-			CodeExceptionGen[] exceptionHandlers, int depth) {
+			CodeExceptionGen[] exceptionHandlers,
+			Set<Pair<Method, Slot[]>> alreadyVisitedMethods,
+			int depth, Set<Pair<InstructionHandle, Boolean>> alreadyVisitedIfBranch) {
 		super(classContext, method, frame, heap, constantPoolGen,
 				alreadyVisitedIfBranch, alreadyVisitedMethods,
 				instructionHandle, exceptionHandlers, depth);
@@ -44,8 +45,8 @@ public class FieldsNotPublishedVisitor extends
 			Method method, Frame frame, Heap heap, ConstantPoolGen constantPoolGen,
 			PC pc, CodeExceptionGen[] exceptionHandlers,
 			Set<Pair<Method, Slot[]>> alreadyVisitedMethods, int depth) {
-		super(classContext, method, frame, heap, constantPoolGen, pc.getCurrentInstruction(),
-				exceptionHandlers, alreadyVisitedMethods, depth);
+		this(classContext, method, frame, heap, constantPoolGen, pc.getCurrentInstruction(),
+				exceptionHandlers, alreadyVisitedMethods, depth, new HashSet<Pair<InstructionHandle, Boolean>>());
 	}
 
 	@Override
@@ -54,9 +55,9 @@ public class FieldsNotPublishedVisitor extends
 			Set<Pair<InstructionHandle, Boolean>> alreadyVisitedIfBranch,
 			InstructionHandle instructionHandle) {
 		return new FieldsNotPublishedVisitor(classContext, method,
-				frame, heap, constantPoolGen, alreadyVisitedIfBranch,
-				alreadyVisitedMethods, instructionHandle, exceptionHandlers,
-				depth);
+				frame, heap, constantPoolGen, instructionHandle,
+				exceptionHandlers, alreadyVisitedMethods, depth,
+				alreadyVisitedIfBranch);
 	}
 
 	@Override

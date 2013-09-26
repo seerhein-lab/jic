@@ -1,5 +1,6 @@
 package de.seerhein_lab.jca.analyzer.noMutators;
 
+import java.util.HashSet;
 import java.util.Set;
 
 import org.apache.bcel.classfile.Method;
@@ -24,10 +25,10 @@ public class NoMutatorsVisitor extends
 
 	protected NoMutatorsVisitor(ClassContext classContext,
 			Method method, Frame frame, Heap heap, ConstantPoolGen constantPoolGen,
-			Set<Pair<InstructionHandle, Boolean>> alreadyVisitedIfBranch,
-			Set<Pair<Method, Slot[]>> alreadyVisitedMethods,
 			InstructionHandle instructionHandle,
-			CodeExceptionGen[] exceptionHandlers, int depth) {
+			CodeExceptionGen[] exceptionHandlers,
+			Set<Pair<Method, Slot[]>> alreadyVisitedMethods,
+			int depth, Set<Pair<InstructionHandle, Boolean>> alreadyVisitedIfBranch) {
 		super(classContext, method, frame, heap, constantPoolGen,
 				alreadyVisitedIfBranch, alreadyVisitedMethods,
 				instructionHandle, exceptionHandlers, depth);
@@ -38,8 +39,8 @@ public class NoMutatorsVisitor extends
 			PC pc,
 			CodeExceptionGen[] exceptionHandlers,
 			Set<Pair<Method, Slot[]>> alreadyVisitedMethods, int depth) {
-		super(classContext, method, frame, heap, constantPoolGen, pc.getCurrentInstruction(),
-				exceptionHandlers, alreadyVisitedMethods, depth);
+		this(classContext, method, frame, heap, constantPoolGen, pc.getCurrentInstruction(),
+				exceptionHandlers, alreadyVisitedMethods, depth, new HashSet<Pair<InstructionHandle, Boolean>>());
 	}
 
 	@Override
@@ -48,9 +49,9 @@ public class NoMutatorsVisitor extends
 			Set<Pair<InstructionHandle, Boolean>> alreadyVisitedIfBranch,
 			InstructionHandle instructionHandle) {
 		return new NoMutatorsVisitor(classContext, method,
-				frame, heap, constantPoolGen, alreadyVisitedIfBranch,
-				alreadyVisitedMethods, instructionHandle, exceptionHandlers,
-				depth);
+				frame, heap, constantPoolGen, instructionHandle,
+				exceptionHandlers, alreadyVisitedMethods, depth,
+				alreadyVisitedIfBranch);
 	}
 
 	@Override

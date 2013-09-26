@@ -1,5 +1,6 @@
 package de.seerhein_lab.jca.analyzer.ctorArgsCopied;
 
+import java.util.HashSet;
 import java.util.Set;
 
 import org.apache.bcel.classfile.Method;
@@ -25,10 +26,10 @@ public class CtorArgsCopiedVisitor extends
 
 	protected CtorArgsCopiedVisitor(ClassContext classContext,
 			Method method, Frame frame, Heap heap, ConstantPoolGen constantPoolGen,
-			Set<Pair<InstructionHandle, Boolean>> alreadyVisitedIfBranch,
-			Set<Pair<Method, Slot[]>> alreadyVisitedMethods,
 			InstructionHandle instructionHandle,
-			CodeExceptionGen[] exceptionHandlers, int depth) {
+			CodeExceptionGen[] exceptionHandlers,
+			Set<Pair<Method, Slot[]>> alreadyVisitedMethods,
+			int depth, Set<Pair<InstructionHandle, Boolean>> alreadyVisitedIfBranch) {
 		super(classContext, method, frame, heap, constantPoolGen,
 				alreadyVisitedIfBranch, alreadyVisitedMethods,
 				instructionHandle, exceptionHandlers, depth);
@@ -39,8 +40,8 @@ public class CtorArgsCopiedVisitor extends
 			PC pc,
 			CodeExceptionGen[] exceptionHandlers,
 			Set<Pair<Method, Slot[]>> alreadyVisitedMethods, int depth) {
-		super(classContext, method, frame, heap, constantPoolGen, pc.getCurrentInstruction(),
-				exceptionHandlers, alreadyVisitedMethods, depth);
+		this(classContext, method, frame, heap, constantPoolGen, pc.getCurrentInstruction(),
+				exceptionHandlers, alreadyVisitedMethods, depth, new HashSet<Pair<InstructionHandle, Boolean>>());
 	}
 
 	@Override
@@ -49,8 +50,8 @@ public class CtorArgsCopiedVisitor extends
 			Set<Pair<InstructionHandle, Boolean>> alreadyVisitedIfBranch,
 			InstructionHandle instructionHandle) {
 		return new CtorArgsCopiedVisitor(classContext, method, frame, heap,
-				constantPoolGen, alreadyVisitedIfBranch, alreadyVisitedMethods,
-				instructionHandle, exceptionHandlers, depth);
+				constantPoolGen, instructionHandle, exceptionHandlers,
+				alreadyVisitedMethods, depth, alreadyVisitedIfBranch);
 	}
 
 	@Override
