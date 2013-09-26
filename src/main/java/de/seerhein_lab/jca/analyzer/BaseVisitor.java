@@ -120,16 +120,16 @@ public abstract class BaseVisitor extends SimpleVisitor {
 
 	protected abstract void detectPutStaticBug(ReferenceSlot referenceToPut);
 
-	public BaseVisitor(ClassContext classContext, Method method,
-			Frame frame, Heap heap, ConstantPoolGen constantPoolGen,
-			InstructionHandle instructionHandle,
-			CodeExceptionGen[] exceptionHandlers,
-			Set<Pair<Method, Slot[]>> alreadyVisitedMethods, int depth) {
-		this(classContext, method, frame, heap, constantPoolGen,
-				new HashSet<Pair<InstructionHandle, Boolean>>(),
-				alreadyVisitedMethods, instructionHandle, exceptionHandlers,
-				depth);
-	}
+//	public BaseVisitor(ClassContext classContext, Method method,
+//			Frame frame, Heap heap, ConstantPoolGen constantPoolGen,
+//			InstructionHandle instructionHandle,
+//			CodeExceptionGen[] exceptionHandlers,
+//			Set<Pair<Method, Slot[]>> alreadyVisitedMethods, int depth) {
+//		this(classContext, method, frame, heap, constantPoolGen,
+//				new HashSet<Pair<InstructionHandle, Boolean>>(),
+//				alreadyVisitedMethods, instructionHandle, exceptionHandlers,
+//				depth);
+//	}
 
 	protected BaseVisitor(ClassContext classContext, Method method,
 			Frame frame, Heap heap, ConstantPoolGen constantPoolGen,
