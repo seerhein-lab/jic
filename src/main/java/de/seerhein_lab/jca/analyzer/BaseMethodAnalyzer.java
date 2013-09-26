@@ -37,7 +37,7 @@ public abstract class BaseMethodAnalyzer {
 	protected final int depth;
 	protected final Method method;
 	protected final CodeExceptionGen[] exceptionHandlers;
-	protected BaseInstructionsVisitor visitor = null;
+	protected BaseVisitor visitor = null;
 
 
 	public BaseMethodAnalyzer(ClassContext classContext, MethodGen methodGen) {
@@ -56,7 +56,7 @@ public abstract class BaseMethodAnalyzer {
 		this.depth = depth + 1;
 	}
 
-	protected abstract BaseInstructionsVisitor getInstructionVisitor(Frame frame, Heap heap, PC pc);
+	protected abstract BaseVisitor getInstructionVisitor(Frame frame, Heap heap, PC pc);
 
 	protected abstract Heap getHeap();
 //	protected abstract String getMessage4NativeMethod();

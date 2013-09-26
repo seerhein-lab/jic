@@ -10,7 +10,7 @@ import org.apache.bcel.generic.MethodGen;
 
 import de.seerhein_lab.jca.JcaDetector;
 import de.seerhein_lab.jca.Pair;
-import de.seerhein_lab.jca.analyzer.BaseInstructionsVisitor;
+import de.seerhein_lab.jca.analyzer.BaseVisitor;
 import de.seerhein_lab.jca.analyzer.BaseMethodAnalyzer;
 import de.seerhein_lab.jca.slot.Slot;
 import de.seerhein_lab.jca.vm.Frame;
@@ -31,7 +31,7 @@ public final class PropConAnalyzer extends BaseMethodAnalyzer {
 		super(classContext, methodGen, alreadyVisitedMethods, depth);
 	}
 
-	protected BaseInstructionsVisitor getInstructionVisitor(Frame frame,
+	protected BaseVisitor getInstructionVisitor(Frame frame,
 			Heap heap, PC pc) {
 		if ( JcaDetector.propConCounter > 5000 ) 
 			throw new OutOfMemoryError("emergency break to avoid out of memory error.");

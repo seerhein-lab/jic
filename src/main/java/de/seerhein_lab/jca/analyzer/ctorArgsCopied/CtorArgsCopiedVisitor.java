@@ -9,7 +9,7 @@ import org.apache.bcel.generic.InstructionHandle;
 import org.apache.bcel.generic.MethodGen;
 
 import de.seerhein_lab.jca.Pair;
-import de.seerhein_lab.jca.analyzer.BaseInstructionsVisitor;
+import de.seerhein_lab.jca.analyzer.BaseVisitor;
 import de.seerhein_lab.jca.analyzer.BaseMethodAnalyzer;
 import de.seerhein_lab.jca.slot.ReferenceSlot;
 import de.seerhein_lab.jca.slot.Slot;
@@ -21,7 +21,7 @@ import edu.umd.cs.findbugs.annotations.Confidence;
 import edu.umd.cs.findbugs.ba.ClassContext;
 
 public class CtorArgsCopiedVisitor extends
-		BaseInstructionsVisitor {
+		BaseVisitor {
 
 	protected CtorArgsCopiedVisitor(ClassContext classContext,
 			Method method, Frame frame, Heap heap, ConstantPoolGen constantPoolGen,
@@ -44,7 +44,7 @@ public class CtorArgsCopiedVisitor extends
 	}
 
 	@Override
-	protected BaseInstructionsVisitor getInstructionsAnalysisVisitor(
+	protected BaseVisitor getInstructionsAnalysisVisitor(
 			Frame frame, Heap heap,
 			Set<Pair<InstructionHandle, Boolean>> alreadyVisitedIfBranch,
 			InstructionHandle instructionHandle) {
