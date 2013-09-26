@@ -69,7 +69,7 @@ import de.seerhein_lab.jca.vm.Heap;
  * </ul>
  * </p>
  */
-public class SimpleInstructionsVisitor extends EmptyVisitor {
+public class SimpleVisitor extends EmptyVisitor {
 	protected static final Logger logger = Logger
 			.getLogger("SimpleInstructionsAnalysisVisitor");
 
@@ -95,7 +95,7 @@ public class SimpleInstructionsVisitor extends EmptyVisitor {
 	protected final ConstantPoolGen constantPoolGen;
 	protected InstructionHandle instructionHandle;
 
-	protected SimpleInstructionsVisitor(Frame frame,
+	protected SimpleVisitor(Frame frame,
 			Heap heap, 
 			ConstantPoolGen constantPoolGen,
 			InstructionHandle instructionHandle, int depth) {
