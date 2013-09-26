@@ -25,6 +25,7 @@ import de.seerhein_lab.jca.vm.Heap;
 import de.seerhein_lab.jca.vm.OpStack;
 import de.seerhein_lab.jca.vm.PC;
 import edu.umd.cs.findbugs.BugInstance;
+import edu.umd.cs.findbugs.annotations.Confidence;
 import edu.umd.cs.findbugs.ba.ClassContext;
 
 
@@ -58,6 +59,7 @@ public abstract class BaseMethodAnalyzer {
 	protected abstract BaseInstructionsVisitor getInstructionVisitor(Frame frame, Heap heap, PC pc);
 
 	protected abstract Heap getHeap();
+//	protected abstract String getMessage4NativeMethod();
 
 
 	public final synchronized void analyze() {
@@ -65,10 +67,10 @@ public abstract class BaseMethodAnalyzer {
 		Heap callerHeap = getHeap();
 
 		// push this onto the stack, if not static
-		if (!method.isStatic()) {
+//		if (!method.isStatic()) {
 			callerStack.push(ReferenceSlot.createNewInstance(callerHeap
 					.getThisInstance()));
-		}
+//		}
 
 		// push args onto the stack
 		for (Type argType : method.getArgumentTypes()) {

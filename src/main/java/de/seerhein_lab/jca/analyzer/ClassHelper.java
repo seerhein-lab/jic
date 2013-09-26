@@ -30,10 +30,10 @@ public final class ClassHelper {
 		return ctors;
 	}
 	
-	List<Method> getAllMethodsButCtors() {
+	List<Method> getNonPrivateNonStaticMethods() {
 		List<Method> methodsButCtors = new Vector<Method>();
 		for (Method method : methods)
-			if (!method.getName().equals(CONSTRUCTOR_NAME))
+			if (!method.getName().equals(CONSTRUCTOR_NAME) && !method.isPrivate() && !method.isStatic())
 				methodsButCtors.add(method);
 		return methodsButCtors;
 	}

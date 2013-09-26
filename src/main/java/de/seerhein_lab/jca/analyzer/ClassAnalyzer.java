@@ -13,6 +13,7 @@ import org.apache.bcel.generic.ConstantPoolGen;
 import org.apache.bcel.generic.MethodGen;
 
 import de.seerhein_lab.jca.ResultValue;
+import de.seerhein_lab.jca.Utils;
 import de.seerhein_lab.jca.analyzer.ctorArgsCopied.CtorArgsCopiedAnalyzer;
 import de.seerhein_lab.jca.analyzer.fieldsNotPublished.FieldsNotPublishedAnalyzer;
 import de.seerhein_lab.jca.analyzer.noMutators.NoMutatorsAnalyzer;
@@ -46,10 +47,7 @@ public final class ClassAnalyzer {
 		Field[] fields = clazz.getFields();
 		for (Field field : fields)
 			if (!field.isStatic() && !field.isFinal())
-				bugs.add(new BugInstance("IMMUTABILITY_BUG", Confidence.HIGH
-						.getConfidenceValue())
-						.addString("All fields must be final.")
-						.addClass(clazz)
+				bugs.add(Utils.createBug(Confidence.HIGH, "All fields must be final.", clazz)
 						.addField(clazz.getClassName(), field.getName(),
 								field.getSignature(), false));
 		return bugs.getCollection();
@@ -61,10 +59,7 @@ public final class ClassAnalyzer {
 		for (Field field : fields)
 			if (!field.isStatic() && !(field.getType() instanceof BasicType)
 					&& !field.isPrivate())
-				bugs.add(new BugInstance("IMMUTABILITY_BUG", Confidence.HIGH
-						.getConfidenceValue())
-						.addString("Reference fields must be private.")
-						.addClass(clazz)
+				bugs.add(Utils.createBug(Confidence.HIGH, "Reference fields must be private.", clazz)
 						.addField(clazz.getClassName(), field.getName(),
 								field.getSignature(), false));
 		return bugs.getCollection();
@@ -111,7 +106,14 @@ public final class ClassAnalyzer {
 	Collection<BugInstance> fieldsAreNotPublished() {
 		SortedBugCollection bugs = new SortedBugCollection();
 
-		for (Method method : classHelper.getAllMethodsButCtors()) {
+		for (Method method : classHelper.getNonPrivateNonStaticMethods()) {
+			if ( method.isNative() ) {
+				bugs.add(Utils.createBug(Confidence.MEDIUM, 
+						"Native method might publish reference fields of 'this' object", 
+						classContext.getJavaClass()));
+				continue;
+			}
+			
 			for (Heap heap : heaps) {
 				MethodGen methodGen = new MethodGen(method,
 						clazz.getClassName(), new ConstantPoolGen(
@@ -130,7 +132,14 @@ public final class ClassAnalyzer {
 	Collection<BugInstance> noMutators() {
 		SortedBugCollection bugs = new SortedBugCollection();
 
-		for (Method method : classHelper.getAllMethodsButCtors()) {
+		for (Method method : classHelper.getNonPrivateNonStaticMethods()) {
+			if ( method.isNative() ) {
+				bugs.add(Utils.createBug(Confidence.MEDIUM, 
+						"Native method might modify 'this' object", 
+						classContext.getJavaClass()));
+				continue;
+			}
+			
 			for (Heap heap : heaps) {
 				MethodGen methodGen = new MethodGen(method,
 						clazz.getClassName(), new ConstantPoolGen(
