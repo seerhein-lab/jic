@@ -2,6 +2,8 @@ package de.seerhein_lab.jca.analyzer.fieldsNotPublished;
 
 import java.util.Set;
 
+import net.jcip.annotations.ThreadSafe;
+
 import org.apache.bcel.classfile.Method;
 import org.apache.bcel.generic.ConstantPoolGen;
 import org.apache.bcel.generic.MethodGen;
@@ -15,6 +17,7 @@ import de.seerhein_lab.jca.vm.Heap;
 import de.seerhein_lab.jca.vm.PC;
 import edu.umd.cs.findbugs.ba.ClassContext;
 
+@ThreadSafe // Superclass is thread-safe, this sub-class doesn't add any public methods
 public class FieldsNotPublishedAnalyzer extends BaseMethodAnalyzer {
 
 	private Heap heap;
@@ -25,7 +28,7 @@ public class FieldsNotPublishedAnalyzer extends BaseMethodAnalyzer {
 		this.heap = heap;
 	}
 
-	public FieldsNotPublishedAnalyzer(ClassContext classContext,
+	protected FieldsNotPublishedAnalyzer(ClassContext classContext,
 			MethodGen methodGen,
 			Set<Pair<Method, Slot[]>> alreadyVisitedMethods, int depth) {
 		super(classContext, methodGen, alreadyVisitedMethods, depth);
@@ -40,7 +43,7 @@ public class FieldsNotPublishedAnalyzer extends BaseMethodAnalyzer {
 	}
 
 	@Override
-	public Heap getHeap() {
+	protected Heap getHeap() {
 		return heap;
 	}
 }

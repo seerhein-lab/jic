@@ -2,6 +2,8 @@ package de.seerhein_lab.jca.analyzer.ctorArgsCopied;
 
 import java.util.Set;
 
+import net.jcip.annotations.ThreadSafe;
+
 import org.apache.bcel.classfile.Method;
 import org.apache.bcel.generic.ConstantPoolGen;
 import org.apache.bcel.generic.MethodGen;
@@ -15,13 +17,14 @@ import de.seerhein_lab.jca.vm.Heap;
 import de.seerhein_lab.jca.vm.PC;
 import edu.umd.cs.findbugs.ba.ClassContext;
 
-public class CtorArgsCopiedAnalyzer extends BaseMethodAnalyzer {
+@ThreadSafe // Superclass is thread-safe, this sub-class doesn't add any public methods
+public final class CtorArgsCopiedAnalyzer extends BaseMethodAnalyzer {
 
 	public CtorArgsCopiedAnalyzer(ClassContext classContext, MethodGen methodGen) {
 		super(classContext, methodGen);
 	}
 
-	public CtorArgsCopiedAnalyzer(ClassContext classContext,
+	protected CtorArgsCopiedAnalyzer(ClassContext classContext,
 			MethodGen methodGen,
 			Set<Pair<Method, Slot[]>> alreadyVisitedMethods, int depth) {
 		super(classContext, methodGen, alreadyVisitedMethods, depth);
@@ -36,7 +39,7 @@ public class CtorArgsCopiedAnalyzer extends BaseMethodAnalyzer {
 	}
 
 	@Override
-	public Heap getHeap() {
+	protected Heap getHeap() {
 		return new Heap();
 	}
 }
