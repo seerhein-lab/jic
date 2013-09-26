@@ -22,6 +22,7 @@ import de.seerhein_lab.jca.vm.ExternalObject;
 import de.seerhein_lab.jca.vm.Frame;
 import de.seerhein_lab.jca.vm.Heap;
 import de.seerhein_lab.jca.vm.HeapObject;
+import de.seerhein_lab.jca.vm.PC;
 import edu.umd.cs.findbugs.annotations.Confidence;
 import edu.umd.cs.findbugs.ba.ClassContext;
 
@@ -41,10 +42,9 @@ public class FieldsNotPublishedVisitor extends
 
 	public FieldsNotPublishedVisitor(ClassContext classContext,
 			Method method, Frame frame, Heap heap, ConstantPoolGen constantPoolGen,
-			InstructionHandle instructionHandle,
-			CodeExceptionGen[] exceptionHandlers,
+			PC pc, CodeExceptionGen[] exceptionHandlers,
 			Set<Pair<Method, Slot[]>> alreadyVisitedMethods, int depth) {
-		super(classContext, method, frame, heap, constantPoolGen, instructionHandle,
+		super(classContext, method, frame, heap, constantPoolGen, pc.getCurrentInstruction(),
 				exceptionHandlers, alreadyVisitedMethods, depth);
 	}
 

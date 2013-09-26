@@ -37,8 +37,7 @@ public class NoMutatorsAnalyzer extends BaseMethodAnalyzer {
 			Heap heap, PC pc) {
 		return new NoMutatorsVisitor(classContext, method, frame, heap,
 				new ConstantPoolGen(method.getConstantPool()),
-				pc.getCurrentInstruction(), exceptionHandlers,
-				alreadyVisitedMethods, depth);
+				pc, exceptionHandlers, alreadyVisitedMethods, depth);
 	}
 
 	@Override

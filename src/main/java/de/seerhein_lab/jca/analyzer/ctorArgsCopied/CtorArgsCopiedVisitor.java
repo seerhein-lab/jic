@@ -16,6 +16,7 @@ import de.seerhein_lab.jca.slot.Slot;
 import de.seerhein_lab.jca.vm.ExternalObject;
 import de.seerhein_lab.jca.vm.Frame;
 import de.seerhein_lab.jca.vm.Heap;
+import de.seerhein_lab.jca.vm.PC;
 import edu.umd.cs.findbugs.annotations.Confidence;
 import edu.umd.cs.findbugs.ba.ClassContext;
 
@@ -35,10 +36,10 @@ public class CtorArgsCopiedVisitor extends
 
 	public CtorArgsCopiedVisitor(ClassContext classContext,
 			Method method, Frame frame, Heap heap, ConstantPoolGen constantPoolGen,
-			InstructionHandle instructionHandle,
+			PC pc,
 			CodeExceptionGen[] exceptionHandlers,
 			Set<Pair<Method, Slot[]>> alreadyVisitedMethods, int depth) {
-		super(classContext, method, frame, heap, constantPoolGen, instructionHandle,
+		super(classContext, method, frame, heap, constantPoolGen, pc.getCurrentInstruction(),
 				exceptionHandlers, alreadyVisitedMethods, depth);
 	}
 

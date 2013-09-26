@@ -39,7 +39,7 @@ public final class PropConAnalyzer extends BaseMethodAnalyzer {
 		JcaDetector.propConCounter++;
 		return new PropConVisitor(classContext, method, frame,
 				heap, new ConstantPoolGen(method.getConstantPool()),
-				pc.getCurrentInstruction(), exceptionHandlers,
+				pc, exceptionHandlers,
 				alreadyVisitedMethods, depth);
 	}
 
