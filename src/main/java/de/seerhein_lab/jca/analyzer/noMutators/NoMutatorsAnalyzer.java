@@ -1,5 +1,6 @@
 package de.seerhein_lab.jca.analyzer.noMutators;
 
+import java.util.HashSet;
 import java.util.Set;
 
 import net.jcip.annotations.ThreadSafe;
@@ -23,7 +24,7 @@ public class NoMutatorsAnalyzer extends BaseMethodAnalyzer {
 
 	public NoMutatorsAnalyzer(ClassContext classContext,
 			MethodGen methodGen, Heap heap) {
-		super(classContext, methodGen);
+		this(classContext, methodGen, new HashSet<Pair<Method, Slot[]>>(), -1);
 		this.heap = heap;
 	}
 

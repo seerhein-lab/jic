@@ -1,5 +1,6 @@
 package de.seerhein_lab.jca.analyzer.fieldsNotPublished;
 
+import java.util.HashSet;
 import java.util.Set;
 
 import net.jcip.annotations.ThreadSafe;
@@ -24,7 +25,7 @@ public class FieldsNotPublishedAnalyzer extends BaseMethodAnalyzer {
 
 	public FieldsNotPublishedAnalyzer(ClassContext classContext,
 			MethodGen methodGen, Heap heap) {
-		super(classContext, methodGen);
+		this(classContext, methodGen, new HashSet<Pair<Method, Slot[]>>(), -1);
 		this.heap = heap;
 	}
 

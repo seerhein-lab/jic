@@ -1,5 +1,6 @@
 package de.seerhein_lab.jca.analyzer.ctorArgsCopied;
 
+import java.util.HashSet;
 import java.util.Set;
 
 import net.jcip.annotations.ThreadSafe;
@@ -21,11 +22,10 @@ import edu.umd.cs.findbugs.ba.ClassContext;
 public final class CtorArgsCopiedAnalyzer extends BaseMethodAnalyzer {
 
 	public CtorArgsCopiedAnalyzer(ClassContext classContext, MethodGen methodGen) {
-		super(classContext, methodGen);
+		this(classContext, methodGen, new HashSet<Pair<Method, Slot[]>>(), -1);
 	}
 
-	protected CtorArgsCopiedAnalyzer(ClassContext classContext,
-			MethodGen methodGen,
+	protected CtorArgsCopiedAnalyzer(ClassContext classContext, MethodGen methodGen,
 			Set<Pair<Method, Slot[]>> alreadyVisitedMethods, int depth) {
 		super(classContext, methodGen, alreadyVisitedMethods, depth);
 	}

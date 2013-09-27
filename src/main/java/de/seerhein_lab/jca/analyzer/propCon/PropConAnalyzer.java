@@ -1,5 +1,6 @@
 package de.seerhein_lab.jca.analyzer.propCon;
 
+import java.util.HashSet;
 import java.util.Set;
 
 import net.jcip.annotations.ThreadSafe;
@@ -22,7 +23,7 @@ import edu.umd.cs.findbugs.ba.ClassContext;
 public final class PropConAnalyzer extends BaseMethodAnalyzer {
 
 	public PropConAnalyzer(ClassContext classContext, MethodGen methodGen) {
-		super(classContext, methodGen);
+		this(classContext, methodGen, new HashSet<Pair<Method, Slot[]>>(), -1);
 	}
 
 	protected PropConAnalyzer(ClassContext classContext,
