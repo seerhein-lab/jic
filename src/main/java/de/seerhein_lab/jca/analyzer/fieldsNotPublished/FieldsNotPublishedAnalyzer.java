@@ -37,8 +37,8 @@ public class FieldsNotPublishedAnalyzer extends BaseMethodAnalyzer {
 
 	protected BaseVisitor getInstructionVisitor(Frame frame,
 			Heap heap, PC pc) {
-		return new FieldsNotPublishedVisitor(classContext, method, frame, heap,
-				new ConstantPoolGen(method.getConstantPool()),
+		return new FieldsNotPublishedVisitor(classContext, methodGen, frame, heap,
+				methodGen.getConstantPool(),
 				pc, exceptionHandlers, alreadyVisitedMethods, depth);
 	}
 

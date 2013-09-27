@@ -35,7 +35,7 @@ public abstract class BaseMethodAnalyzer {
 	protected final ClassContext classContext;
 	protected final Set<Pair<Method, Slot[]>> alreadyVisitedMethods;
 	protected final int depth;
-	protected final Method method;
+	protected final MethodGen methodGen;
 	protected final CodeExceptionGen[] exceptionHandlers;
 	protected BaseVisitor visitor = null;
 
@@ -46,7 +46,7 @@ public abstract class BaseMethodAnalyzer {
 			throw new AssertionError("Params must not be null.");
 		
 		this.classContext = classContext;
-		this.method = methodGen.getMethod();
+		this.methodGen = methodGen;
 		exceptionHandlers = methodGen.getExceptionHandlers();
 		this.alreadyVisitedMethods = alreadyVisitedMethods;
 		this.depth = depth + 1;
@@ -69,7 +69,7 @@ public abstract class BaseMethodAnalyzer {
 //		}
 
 		// push args onto the stack
-		for (Type argType : method.getArgumentTypes()) {
+		for (Type argType : methodGen.getArgumentTypes()) {
 			Slot argument = Slot.getDefaultSlotInstance(argType);
 			if (argument instanceof ReferenceSlot) {
 				argument = ReferenceSlot.createNewInstance(callerHeap
@@ -110,7 +110,7 @@ public abstract class BaseMethodAnalyzer {
 	public final synchronized void analyze(OpStack callerStack, Heap heap) {
 		Frame calleeFrame = createCalleeFrame(callerStack);
 		
-		InstructionHandle[] instructionHandles = new InstructionList(method
+		InstructionHandle[] instructionHandles = new InstructionList(methodGen.getMethod()
 				.getCode().getCode()).getInstructionHandles();
 		
 		analyze(instructionHandles[0], calleeFrame, heap);
@@ -138,13 +138,13 @@ public abstract class BaseMethodAnalyzer {
 	}
 
 	private Frame createCalleeFrame(OpStack callerOpStack) {
-		int numSlots = method.isStatic() ? 0 : 1;
+		int numSlots = methodGen.isStatic() ? 0 : 1;
 
-		for (Type type : method.getArgumentTypes()) {
+		for (Type type : methodGen.getArgumentTypes()) {
 			numSlots += Slot.getDefaultSlotInstance(type).getNumSlots();
 		}
 
-		Frame calleeFrame = new Frame(method.getCode().getMaxLocals(),
+		Frame calleeFrame = new Frame(methodGen.getMethod().getCode().getMaxLocals(),
 				callerOpStack, numSlots);
 		return calleeFrame;
 	}

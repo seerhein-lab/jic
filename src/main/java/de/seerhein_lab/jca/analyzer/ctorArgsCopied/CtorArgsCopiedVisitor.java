@@ -25,22 +25,22 @@ public class CtorArgsCopiedVisitor extends
 		BaseVisitor {
 
 	protected CtorArgsCopiedVisitor(ClassContext classContext,
-			Method method, Frame frame, Heap heap, ConstantPoolGen constantPoolGen,
+			MethodGen methodGen, Frame frame, Heap heap, ConstantPoolGen constantPoolGen,
 			InstructionHandle instructionHandle,
 			CodeExceptionGen[] exceptionHandlers,
 			Set<Pair<Method, Slot[]>> alreadyVisitedMethods,
 			int depth, Set<Pair<InstructionHandle, Boolean>> alreadyVisitedIfBranch) {
-		super(classContext, method, frame, heap, constantPoolGen,
+		super(classContext, methodGen, frame, heap, constantPoolGen,
 				alreadyVisitedIfBranch, alreadyVisitedMethods,
 				instructionHandle, exceptionHandlers, depth);
 	}
 
 	public CtorArgsCopiedVisitor(ClassContext classContext,
-			Method method, Frame frame, Heap heap, ConstantPoolGen constantPoolGen,
+			MethodGen methodGen, Frame frame, Heap heap, ConstantPoolGen constantPoolGen,
 			PC pc,
 			CodeExceptionGen[] exceptionHandlers,
 			Set<Pair<Method, Slot[]>> alreadyVisitedMethods, int depth) {
-		this(classContext, method, frame, heap, constantPoolGen, pc.getCurrentInstruction(),
+		this(classContext, methodGen, frame, heap, constantPoolGen, pc.getCurrentInstruction(),
 				exceptionHandlers, alreadyVisitedMethods, depth, new HashSet<Pair<InstructionHandle, Boolean>>());
 	}
 
@@ -49,7 +49,7 @@ public class CtorArgsCopiedVisitor extends
 			Frame frame, Heap heap,
 			Set<Pair<InstructionHandle, Boolean>> alreadyVisitedIfBranch,
 			InstructionHandle instructionHandle) {
-		return new CtorArgsCopiedVisitor(classContext, method, frame, heap,
+		return new CtorArgsCopiedVisitor(classContext, methodGen, frame, heap,
 				constantPoolGen, instructionHandle, exceptionHandlers,
 				alreadyVisitedMethods, depth, alreadyVisitedIfBranch);
 	}

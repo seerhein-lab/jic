@@ -31,21 +31,21 @@ public class FieldsNotPublishedVisitor extends
 		BaseVisitor {
 
 	protected FieldsNotPublishedVisitor(ClassContext classContext,
-			Method method, Frame frame, Heap heap, ConstantPoolGen constantPoolGen,
+			MethodGen methodGen, Frame frame, Heap heap, ConstantPoolGen constantPoolGen,
 			InstructionHandle instructionHandle,
 			CodeExceptionGen[] exceptionHandlers,
 			Set<Pair<Method, Slot[]>> alreadyVisitedMethods,
 			int depth, Set<Pair<InstructionHandle, Boolean>> alreadyVisitedIfBranch) {
-		super(classContext, method, frame, heap, constantPoolGen,
+		super(classContext, methodGen, frame, heap, constantPoolGen,
 				alreadyVisitedIfBranch, alreadyVisitedMethods,
 				instructionHandle, exceptionHandlers, depth);
 	}
 
 	public FieldsNotPublishedVisitor(ClassContext classContext,
-			Method method, Frame frame, Heap heap, ConstantPoolGen constantPoolGen,
+			MethodGen methodGen, Frame frame, Heap heap, ConstantPoolGen constantPoolGen,
 			PC pc, CodeExceptionGen[] exceptionHandlers,
 			Set<Pair<Method, Slot[]>> alreadyVisitedMethods, int depth) {
-		this(classContext, method, frame, heap, constantPoolGen, pc.getCurrentInstruction(),
+		this(classContext, methodGen, frame, heap, constantPoolGen, pc.getCurrentInstruction(),
 				exceptionHandlers, alreadyVisitedMethods, depth, new HashSet<Pair<InstructionHandle, Boolean>>());
 	}
 
@@ -54,7 +54,7 @@ public class FieldsNotPublishedVisitor extends
 			Frame frame, Heap heap,
 			Set<Pair<InstructionHandle, Boolean>> alreadyVisitedIfBranch,
 			InstructionHandle instructionHandle) {
-		return new FieldsNotPublishedVisitor(classContext, method,
+		return new FieldsNotPublishedVisitor(classContext, methodGen,
 				frame, heap, constantPoolGen, instructionHandle,
 				exceptionHandlers, alreadyVisitedMethods, depth,
 				alreadyVisitedIfBranch);

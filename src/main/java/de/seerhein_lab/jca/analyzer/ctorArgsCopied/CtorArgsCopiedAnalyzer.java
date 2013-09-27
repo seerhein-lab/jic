@@ -32,8 +32,8 @@ public final class CtorArgsCopiedAnalyzer extends BaseMethodAnalyzer {
 
 	protected BaseVisitor getInstructionVisitor(Frame frame,
 			Heap heap, PC pc) {
-		return new CtorArgsCopiedVisitor(classContext, method, frame, heap,
-				new ConstantPoolGen(method.getConstantPool()),
+		return new CtorArgsCopiedVisitor(classContext, methodGen, frame, heap,
+				methodGen.getConstantPool(),
 				pc, exceptionHandlers,
 				alreadyVisitedMethods, depth);
 	}

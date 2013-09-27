@@ -38,8 +38,8 @@ public final class PropConAnalyzer extends BaseMethodAnalyzer {
 			throw new OutOfMemoryError("emergency break to avoid out of memory error.");
 		
 		JcaDetector.propConCounter++;
-		return new PropConVisitor(classContext, method, frame,
-				heap, new ConstantPoolGen(method.getConstantPool()),
+		return new PropConVisitor(classContext, methodGen, frame,
+				heap, methodGen.getConstantPool(),
 				pc, exceptionHandlers,
 				alreadyVisitedMethods, depth);
 	}

@@ -93,7 +93,7 @@ public abstract class BaseVisitor extends SimpleVisitor {
 	protected static final Logger logger = Logger
 			.getLogger("BaseInstructionsAnalysisVisitor");
 	protected final ClassContext classContext;
-	protected final Method method;
+	protected final MethodGen methodGen;
 
 	protected final CodeExceptionGen[] exceptionHandlers;
 	protected Set<Pair<InstructionHandle, Boolean>> alreadyVisitedIfBranch;
@@ -131,7 +131,7 @@ public abstract class BaseVisitor extends SimpleVisitor {
 //				depth);
 //	}
 
-	protected BaseVisitor(ClassContext classContext, Method method,
+	protected BaseVisitor(ClassContext classContext, MethodGen methodGen,
 			Frame frame, Heap heap, ConstantPoolGen constantPoolGen,
 			Set<Pair<InstructionHandle, Boolean>> alreadyVisited,
 			Set<Pair<Method, Slot[]>> alreadyVisitedMethods,
@@ -140,7 +140,7 @@ public abstract class BaseVisitor extends SimpleVisitor {
 		super(frame, heap, constantPoolGen, instructionHandle, depth);
 
 		this.classContext = classContext;
-		this.method = method;
+		this.methodGen = methodGen;
 		this.alreadyVisitedIfBranch = alreadyVisited;
 		this.alreadyVisitedMethods = alreadyVisitedMethods;
 		this.exceptionHandlers = exceptionHandlers;
@@ -159,7 +159,7 @@ public abstract class BaseVisitor extends SimpleVisitor {
 		BugInstance bugInstance = Utils.createBug(confidence, message,
 				classContext.getJavaClass());
 
-		bugInstance.addSourceLine(classContext, method, instructionHandle);
+		bugInstance.addSourceLine(classContext, methodGen.getMethod(), instructionHandle);
 		bugs.add(bugInstance);
 
 	}

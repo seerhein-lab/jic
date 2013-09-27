@@ -23,22 +23,22 @@ import edu.umd.cs.findbugs.ba.ClassContext;
 
 public class PropConVisitor extends BaseVisitor {
 
-	protected PropConVisitor(ClassContext classContext, Method method, 
+	protected PropConVisitor(ClassContext classContext, MethodGen methodGen, 
 			Frame frame, Heap heap, ConstantPoolGen constantPoolGen,
 			InstructionHandle instructionHandle,
 			CodeExceptionGen[] exceptionHandlers,
 			Set<Pair<Method, Slot[]>> alreadyVisitedMethods,
 			int depth, Set<Pair<InstructionHandle, Boolean>> alreadyVisitedIfBranch) {
-		super(classContext, method, frame, heap, constantPoolGen,
+		super(classContext, methodGen, frame, heap, constantPoolGen,
 				alreadyVisitedIfBranch, alreadyVisitedMethods,
 				instructionHandle, exceptionHandlers, depth);
 	}
 
-	public PropConVisitor(ClassContext classContext, Method method,
+	public PropConVisitor(ClassContext classContext, MethodGen methodGen,
 			Frame frame, Heap heap, ConstantPoolGen constantPoolGen,
 			PC pc, CodeExceptionGen[] exceptionHandlers,
 			Set<Pair<Method, Slot[]>> alreadyVisitedMethods, int depth) {
-		this(classContext, method, frame, heap, constantPoolGen, 
+		this(classContext, methodGen, frame, heap, constantPoolGen, 
 				pc.getCurrentInstruction(), exceptionHandlers, 
 				alreadyVisitedMethods, depth, new HashSet<Pair<InstructionHandle, Boolean>>());
 	}
@@ -48,7 +48,7 @@ public class PropConVisitor extends BaseVisitor {
 			Frame frame, Heap heap,
 			Set<Pair<InstructionHandle, Boolean>> alreadyVisitedIfBranch,
 			InstructionHandle instructionHandle) {
-		return new PropConVisitor(classContext, method, frame,
+		return new PropConVisitor(classContext, methodGen, frame,
 				heap, constantPoolGen, instructionHandle,
 				exceptionHandlers, alreadyVisitedMethods, depth,
 				alreadyVisitedIfBranch);
