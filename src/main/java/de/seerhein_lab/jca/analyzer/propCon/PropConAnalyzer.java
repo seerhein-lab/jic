@@ -7,6 +7,7 @@ import net.jcip.annotations.ThreadSafe;
 
 import org.apache.bcel.classfile.Method;
 import org.apache.bcel.generic.ConstantPoolGen;
+import org.apache.bcel.generic.InstructionHandle;
 import org.apache.bcel.generic.MethodGen;
 
 import de.seerhein_lab.jca.JcaDetector;
@@ -33,7 +34,7 @@ public final class PropConAnalyzer extends BaseMethodAnalyzer {
 	}
 
 	protected BaseVisitor getInstructionVisitor(Frame frame,
-			Heap heap, PC pc) {
+			Heap heap, PC pc, Set<Pair<InstructionHandle, Boolean>> alreadyVisitedIfBranch) {
 		if ( JcaDetector.propConCounter > 5000 ) 
 			throw new OutOfMemoryError("emergency break to avoid out of memory error.");
 		
@@ -41,7 +42,7 @@ public final class PropConAnalyzer extends BaseMethodAnalyzer {
 		return new PropConVisitor(classContext, methodGen, frame,
 				heap, methodGen.getConstantPool(),
 				pc, exceptionHandlers,
-				alreadyVisitedMethods, depth);
+				alreadyVisitedMethods, depth, alreadyVisitedIfBranch);
 	}
 
 	@Override

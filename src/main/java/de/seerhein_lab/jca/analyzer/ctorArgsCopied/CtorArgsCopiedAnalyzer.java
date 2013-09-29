@@ -7,6 +7,7 @@ import net.jcip.annotations.ThreadSafe;
 
 import org.apache.bcel.classfile.Method;
 import org.apache.bcel.generic.ConstantPoolGen;
+import org.apache.bcel.generic.InstructionHandle;
 import org.apache.bcel.generic.MethodGen;
 
 import de.seerhein_lab.jca.Pair;
@@ -31,11 +32,11 @@ public final class CtorArgsCopiedAnalyzer extends BaseMethodAnalyzer {
 	}
 
 	protected BaseVisitor getInstructionVisitor(Frame frame,
-			Heap heap, PC pc) {
+			Heap heap, PC pc, Set<Pair<InstructionHandle, Boolean>> alreadyVisitedIfBranch) {
 		return new CtorArgsCopiedVisitor(classContext, methodGen, frame, heap,
 				methodGen.getConstantPool(),
 				pc, exceptionHandlers,
-				alreadyVisitedMethods, depth);
+				alreadyVisitedMethods, depth, alreadyVisitedIfBranch);
 	}
 
 	@Override

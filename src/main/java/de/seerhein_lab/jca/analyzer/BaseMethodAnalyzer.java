@@ -52,7 +52,8 @@ public abstract class BaseMethodAnalyzer {
 		this.depth = depth + 1;
 	}
 
-	protected abstract BaseVisitor getInstructionVisitor(Frame frame, Heap heap, PC pc);
+	protected abstract BaseVisitor getInstructionVisitor(Frame frame, Heap heap, PC pc, 
+			Set<Pair<InstructionHandle, Boolean>> alreadyVisitedIfBranch);
 
 	protected abstract Heap getHeap();
 //	protected abstract String getMessage4NativeMethod();
@@ -83,10 +84,12 @@ public abstract class BaseMethodAnalyzer {
 		analyze(callerStack, callerHeap);
 	}
 	
-	public final synchronized void analyze(InstructionHandle ih, Frame frame, Heap heap) {
+	public final synchronized void analyze(InstructionHandle ih, Frame frame, Heap heap, 
+			Set<Pair<InstructionHandle, Boolean>> alreadyVisitedIfBranch) {
+		
 		PC pc = new PC(ih);
 
-		visitor = getInstructionVisitor(frame, heap, pc);
+		visitor = getInstructionVisitor(frame, heap, pc, alreadyVisitedIfBranch);
 
 		logger.log(Level.FINE, Utils.formatLoggingOutput(this.depth)
 				+ "vvvvvvvvvvvvvvvvvvvvvvvvvv");
@@ -113,7 +116,7 @@ public abstract class BaseMethodAnalyzer {
 		InstructionHandle[] instructionHandles = new InstructionList(methodGen.getMethod()
 				.getCode().getCode()).getInstructionHandles();
 		
-		analyze(instructionHandles[0], calleeFrame, heap);
+		analyze(instructionHandles[0], calleeFrame, heap, new HashSet<Pair<InstructionHandle, Boolean>>());
 		
 
 //		PC pc = new PC(instructionHandles[0]);

@@ -25,34 +25,34 @@ public class NoMutatorsVisitor extends
 
 	protected NoMutatorsVisitor(ClassContext classContext,
 			MethodGen methodGen, Frame frame, Heap heap, ConstantPoolGen constantPoolGen,
-			InstructionHandle instructionHandle,
+			PC pc,
 			CodeExceptionGen[] exceptionHandlers,
 			Set<Pair<Method, Slot[]>> alreadyVisitedMethods,
 			int depth, Set<Pair<InstructionHandle, Boolean>> alreadyVisitedIfBranch) {
 		super(classContext, methodGen, frame, heap, constantPoolGen,
 				alreadyVisitedIfBranch, alreadyVisitedMethods,
-				instructionHandle, exceptionHandlers, depth);
+				pc, exceptionHandlers, depth);
 	}
 
-	public NoMutatorsVisitor(ClassContext classContext,
-			MethodGen methodGen, Frame frame, Heap heap, ConstantPoolGen constantPoolGen,
-			PC pc,
-			CodeExceptionGen[] exceptionHandlers,
-			Set<Pair<Method, Slot[]>> alreadyVisitedMethods, int depth) {
-		this(classContext, methodGen, frame, heap, constantPoolGen, pc.getCurrentInstruction(),
-				exceptionHandlers, alreadyVisitedMethods, depth, new HashSet<Pair<InstructionHandle, Boolean>>());
-	}
+//	public NoMutatorsVisitor(ClassContext classContext,
+//			MethodGen methodGen, Frame frame, Heap heap, ConstantPoolGen constantPoolGen,
+//			PC pc,
+//			CodeExceptionGen[] exceptionHandlers,
+//			Set<Pair<Method, Slot[]>> alreadyVisitedMethods, int depth) {
+//		this(classContext, methodGen, frame, heap, constantPoolGen, pc,
+//				exceptionHandlers, alreadyVisitedMethods, depth, new HashSet<Pair<InstructionHandle, Boolean>>());
+//	}
 
-	@Override
-	protected BaseVisitor getInstructionsAnalysisVisitor(
-			Frame frame, Heap heap,
-			Set<Pair<InstructionHandle, Boolean>> alreadyVisitedIfBranch,
-			InstructionHandle instructionHandle) {
-		return new NoMutatorsVisitor(classContext, methodGen,
-				frame, heap, constantPoolGen, instructionHandle,
-				exceptionHandlers, alreadyVisitedMethods, depth,
-				alreadyVisitedIfBranch);
-	}
+//	@Override
+//	protected BaseVisitor getInstructionsAnalysisVisitor(
+//			Frame frame, Heap heap,
+//			Set<Pair<InstructionHandle, Boolean>> alreadyVisitedIfBranch,
+//			InstructionHandle instructionHandle) {
+//		return new NoMutatorsVisitor(classContext, methodGen,
+//				frame, heap, constantPoolGen, instructionHandle,
+//				exceptionHandlers, alreadyVisitedMethods, depth,
+//				alreadyVisitedIfBranch);
+//	}
 
 	@Override
 	protected BaseMethodAnalyzer getMethodAnalyzer(MethodGen targetMethodGen) {
