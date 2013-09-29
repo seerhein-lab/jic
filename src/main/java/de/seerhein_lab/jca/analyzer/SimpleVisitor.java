@@ -44,6 +44,7 @@ import de.seerhein_lab.jca.slot.LongSlot;
 import de.seerhein_lab.jca.slot.Slot;
 import de.seerhein_lab.jca.vm.Frame;
 import de.seerhein_lab.jca.vm.Heap;
+import de.seerhein_lab.jca.vm.PC;
 
 /**
  * Analyzes constructors whether the this-reference escapes or not. Therefore a
@@ -94,15 +95,17 @@ public class SimpleVisitor extends EmptyVisitor {
 	protected Heap heap;
 	protected final ConstantPoolGen constantPoolGen;
 	protected InstructionHandle instructionHandle;
+	protected PC pc;
 
 	protected SimpleVisitor(Frame frame,
 			Heap heap, 
 			ConstantPoolGen constantPoolGen,
-			InstructionHandle instructionHandle, int depth) {
+			PC pc, int depth) {
 		this.frame = frame;
 		this.heap = heap;
 		this.constantPoolGen = constantPoolGen;
-		this.instructionHandle = instructionHandle;
+		this.pc = pc;
+		this.instructionHandle = pc.getCurrentInstruction();
 		this.depth = depth;
 		this.indentation = Utils.formatLoggingOutput(depth);
 	}
@@ -136,8 +139,10 @@ public class SimpleVisitor extends EmptyVisitor {
 		log.append(")");
 		logger.log(Level.FINEST, indentation + log);
 
+		pc.setInstruction(instructionHandle.getNext());
 		instructionHandle = instructionHandle.getNext();
-		instructionHandle.accept(this);
+//		instructionHandle.accept(this);
+//		pc.getCurrentInstruction().accept(this);
 	}
 
 	// ******************************************************************//

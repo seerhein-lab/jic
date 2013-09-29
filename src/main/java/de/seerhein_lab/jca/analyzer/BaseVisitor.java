@@ -138,7 +138,7 @@ public abstract class BaseVisitor extends SimpleVisitor {
 			Set<Pair<Method, Slot[]>> alreadyVisitedMethods,
 			PC pc,
 			CodeExceptionGen[] exceptionHandlers, int depth) {
-		super(frame, heap, constantPoolGen, pc.getCurrentInstruction(), depth);
+		super(frame, heap, constantPoolGen, pc, depth);
 
 		this.classContext = classContext;
 		this.methodGen = methodGen;
