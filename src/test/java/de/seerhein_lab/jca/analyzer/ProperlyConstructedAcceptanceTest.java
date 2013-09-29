@@ -22,6 +22,7 @@ import edu.umd.cs.findbugs.BugInstance;
  * @see ProperlyConstructedTestRunner
  */
 @RunWith(ClassAnalyzerRunner.class)
+@SuppressWarnings("unused")
 public class ProperlyConstructedAcceptanceTest {
 
 	@BindAnalyzerMethod
@@ -52,7 +53,6 @@ public class ProperlyConstructedAcceptanceTest {
 	@NoBugsExpected
 	public static class Story002_ClassWithNoArgsCtorByte {
 		public Story002_ClassWithNoArgsCtorByte() {
-			@SuppressWarnings("unused")
 			byte b = 5;
 		}
 	}
@@ -63,7 +63,6 @@ public class ProperlyConstructedAcceptanceTest {
 	@NoBugsExpected
 	public static class Story003_ClassWithNoArgsCtorInt {
 		public Story003_ClassWithNoArgsCtorInt() {
-			@SuppressWarnings("unused")
 			int i = 20;
 		}
 	}
@@ -75,7 +74,6 @@ public class ProperlyConstructedAcceptanceTest {
 	@NoBugsExpected
 	public static class Story004_ClassWithNoArgsCtorChar {
 		public Story004_ClassWithNoArgsCtorChar() {
-			@SuppressWarnings("unused")
 			char c = 'c';
 		}
 	}
@@ -86,7 +84,6 @@ public class ProperlyConstructedAcceptanceTest {
 	@NoBugsExpected
 	public static class Story005_ClassWithNoArgsCtorLong {
 		public Story005_ClassWithNoArgsCtorLong() {
-			@SuppressWarnings("unused")
 			long l = 25l;
 		}
 	}
@@ -97,7 +94,6 @@ public class ProperlyConstructedAcceptanceTest {
 	@NoBugsExpected
 	public static class Story006_ClassWithNoArgsCtorObject {
 		public Story006_ClassWithNoArgsCtorObject() {
-			@SuppressWarnings("unused")
 			Object o = new Object();
 		}
 	}
@@ -109,9 +105,7 @@ public class ProperlyConstructedAcceptanceTest {
 	@NoBugsExpected
 	public static class Story007_ClassWithNoArgsLongObject {
 		public Story007_ClassWithNoArgsLongObject() {
-			@SuppressWarnings("unused")
 			long l = 1l;
-			@SuppressWarnings("unused")
 			Object o = new Object();
 		}
 	}
@@ -122,7 +116,6 @@ public class ProperlyConstructedAcceptanceTest {
 	 */
 	@NoBugsExpected
 	public static class Story008_ClassWithNoArgsCtorAllTypes {
-		@SuppressWarnings("unused")
 		public Story008_ClassWithNoArgsCtorAllTypes() {
 			byte b = 7;
 			short s = 14;
@@ -201,7 +194,6 @@ public class ProperlyConstructedAcceptanceTest {
 	 */
 	@NoBugsExpected
 	public static class Story015_ClassWithOneArgCtorByte {
-		@SuppressWarnings("unused")
 		private byte b;
 
 		public Story015_ClassWithOneArgCtorByte(byte b) {
@@ -232,7 +224,6 @@ public class ProperlyConstructedAcceptanceTest {
 		public Story016_NestedLoop() {
 			for (int i = 0; i < 10; i++) {
 				for (int j = 0; j < i; j++) {
-					@SuppressWarnings("unused")
 					int k = i + j;
 				}
 			}
@@ -317,7 +308,6 @@ public class ProperlyConstructedAcceptanceTest {
 	 */
 	@NoBugsExpected
 	public static class Story021_SimpleClassWithTryCatchNoParm {
-		@SuppressWarnings("unused")
 		private Object obj;
 
 		public Story021_SimpleClassWithTryCatchNoParm() {
@@ -582,7 +572,6 @@ public class ProperlyConstructedAcceptanceTest {
 	@BugsExpected
 	public final static class Story035_LocalObjectReferringThisListener {
 		private final static class Listener implements ActionListener {
-			@SuppressWarnings("unused")
 			public Object reference;
 
 			@Override
@@ -594,6 +583,16 @@ public class ProperlyConstructedAcceptanceTest {
 			Listener listener = new Listener();
 			listener.reference = this;
 			button.addActionListener(listener);
+		}
+	}
+
+	@NoBugsExpected
+	public static class Story036_AALOADonNull {
+		private Object[] array;
+
+		public Story036_AALOADonNull() {
+			array = null;
+			int length = array.length;
 		}
 	}
 
