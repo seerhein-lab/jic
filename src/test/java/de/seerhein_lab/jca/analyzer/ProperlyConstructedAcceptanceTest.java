@@ -596,4 +596,30 @@ public class ProperlyConstructedAcceptanceTest {
 		}
 	}
 
+	@BugsExpected
+	public static class Story037_IfNullThen {
+		private Object x;
+
+		public Story037_IfNullThen() {
+			x = null;
+			if (x == null)
+				equals(this);
+			else
+				equals("");
+		}
+	}
+
+	@BugsExpected
+	public static class Story038_IfNullElse {
+		private Object x;
+
+		public Story038_IfNullElse() {
+			x = null;
+			if (x == null)
+				equals("");
+			else
+				equals(this);
+		}
+	}
+
 }
