@@ -1,6 +1,5 @@
 package de.seerhein_lab.jca.analyzer.fieldsNotPublished;
 
-import java.util.HashSet;
 import java.util.Set;
 import java.util.logging.Level;
 
@@ -14,8 +13,8 @@ import org.apache.bcel.generic.ReturnInstruction;
 import de.seerhein_lab.jca.Pair;
 import de.seerhein_lab.jca.ResultValue;
 import de.seerhein_lab.jca.ResultValue.Kind;
-import de.seerhein_lab.jca.analyzer.BaseVisitor;
 import de.seerhein_lab.jca.analyzer.BaseMethodAnalyzer;
+import de.seerhein_lab.jca.analyzer.BaseVisitor;
 import de.seerhein_lab.jca.slot.ReferenceSlot;
 import de.seerhein_lab.jca.slot.Slot;
 import de.seerhein_lab.jca.slot.VoidSlot;
@@ -27,43 +26,44 @@ import de.seerhein_lab.jca.vm.PC;
 import edu.umd.cs.findbugs.annotations.Confidence;
 import edu.umd.cs.findbugs.ba.ClassContext;
 
-public class FieldsNotPublishedVisitor extends
-		BaseVisitor {
+public class FieldsNotPublishedVisitor extends BaseVisitor {
 
 	protected FieldsNotPublishedVisitor(ClassContext classContext,
-			MethodGen methodGen, Frame frame, Heap heap, ConstantPoolGen constantPoolGen,
-			PC pc,
+			MethodGen methodGen, Frame frame, Heap heap,
+			ConstantPoolGen constantPoolGen, PC pc,
 			CodeExceptionGen[] exceptionHandlers,
-			Set<Pair<Method, Slot[]>> alreadyVisitedMethods,
-			int depth, Set<Pair<InstructionHandle, Boolean>> alreadyVisitedIfBranch) {
+			Set<Pair<Method, Slot[]>> alreadyVisitedMethods, int depth,
+			Set<Pair<InstructionHandle, Boolean>> alreadyVisitedIfBranch) {
 		super(classContext, methodGen, frame, heap, constantPoolGen,
-				alreadyVisitedIfBranch, alreadyVisitedMethods,
-				pc, exceptionHandlers, depth);
+				alreadyVisitedIfBranch, alreadyVisitedMethods, pc,
+				exceptionHandlers, depth);
 	}
 
-//	public FieldsNotPublishedVisitor(ClassContext classContext,
-//			MethodGen methodGen, Frame frame, Heap heap, ConstantPoolGen constantPoolGen,
-//			PC pc, CodeExceptionGen[] exceptionHandlers,
-//			Set<Pair<Method, Slot[]>> alreadyVisitedMethods, int depth) {
-//		this(classContext, methodGen, frame, heap, constantPoolGen, pc,
-//				exceptionHandlers, alreadyVisitedMethods, depth, new HashSet<Pair<InstructionHandle, Boolean>>());
-//	}
+	// public FieldsNotPublishedVisitor(ClassContext classContext,
+	// MethodGen methodGen, Frame frame, Heap heap, ConstantPoolGen
+	// constantPoolGen,
+	// PC pc, CodeExceptionGen[] exceptionHandlers,
+	// Set<Pair<Method, Slot[]>> alreadyVisitedMethods, int depth) {
+	// this(classContext, methodGen, frame, heap, constantPoolGen, pc,
+	// exceptionHandlers, alreadyVisitedMethods, depth, new
+	// HashSet<Pair<InstructionHandle, Boolean>>());
+	// }
 
-//	@Override
-//	protected BaseVisitor getInstructionsAnalysisVisitor(
-//			Frame frame, Heap heap,
-//			Set<Pair<InstructionHandle, Boolean>> alreadyVisitedIfBranch,
-//			InstructionHandle instructionHandle) {
-//		return new FieldsNotPublishedVisitor(classContext, methodGen,
-//				frame, heap, constantPoolGen, instructionHandle,
-//				exceptionHandlers, alreadyVisitedMethods, depth,
-//				alreadyVisitedIfBranch);
-//	}
+	// @Override
+	// protected BaseVisitor getInstructionsAnalysisVisitor(
+	// Frame frame, Heap heap,
+	// Set<Pair<InstructionHandle, Boolean>> alreadyVisitedIfBranch,
+	// InstructionHandle instructionHandle) {
+	// return new FieldsNotPublishedVisitor(classContext, methodGen,
+	// frame, heap, constantPoolGen, instructionHandle,
+	// exceptionHandlers, alreadyVisitedMethods, depth,
+	// alreadyVisitedIfBranch);
+	// }
 
 	@Override
 	protected BaseMethodAnalyzer getMethodAnalyzer(MethodGen targetMethodGen) {
-		return new FieldsNotPublishedAnalyzer(classContext,
-				targetMethodGen, alreadyVisitedMethods, depth);
+		return new FieldsNotPublishedAnalyzer(classContext, targetMethodGen,
+				alreadyVisitedMethods, depth);
 	}
 
 	@Override
@@ -88,6 +88,7 @@ public class FieldsNotPublishedVisitor extends
 				detectAReturnBug((ReferenceSlot) returnSlot);
 			result.add(new ResultValue(Kind.REGULAR, returnSlot, heap));
 		}
+		pc.invalidate();
 	}
 
 	// ******************************************************************//
@@ -116,7 +117,7 @@ public class FieldsNotPublishedVisitor extends
 			addBug(Confidence.HIGH,
 					"an Object that refers an Object refered by 'this' is passed"
 							+ " to a virtual mehtod and published",
-							pc.getCurrentInstruction());
+					pc.getCurrentInstruction());
 		}
 	}
 
@@ -134,7 +135,7 @@ public class FieldsNotPublishedVisitor extends
 
 		HeapObject objectToStore = heap.get(referenceToStore.getID());
 		// array is the "external"
-		if ( heap.getObject(arrayReference) instanceof ExternalObject ) {
+		if (heap.getObject(arrayReference) instanceof ExternalObject) {
 			if (objectToStore.isTransitivelyReferredBy(heap.getThisInstance())) {
 				// a field of this is assigned to an external object
 				addBug(Confidence.HIGH,
@@ -146,7 +147,7 @@ public class FieldsNotPublishedVisitor extends
 				addBug(Confidence.HIGH,
 						"an Object that refers an Object refered by 'this' is published"
 								+ " by assignment to an external array",
-								pc.getCurrentInstruction());
+						pc.getCurrentInstruction());
 		}
 	}
 
@@ -164,7 +165,7 @@ public class FieldsNotPublishedVisitor extends
 
 		HeapObject objectToPut = heap.get(referenceToPut.getID());
 		// target is the "external"
-		if (heap.getObject(targetReference) instanceof ExternalObject ) {
+		if (heap.getObject(targetReference) instanceof ExternalObject) {
 			if (objectToPut.isTransitivelyReferredBy(heap.getThisInstance())) {
 				// a field of this is assigned to an external object
 				addBug(Confidence.HIGH,
@@ -176,7 +177,7 @@ public class FieldsNotPublishedVisitor extends
 				addBug(Confidence.HIGH,
 						"an Object that refers an Object refered by 'this' is published"
 								+ " by assignment to an external object",
-								pc.getCurrentInstruction());
+						pc.getCurrentInstruction());
 		}
 	}
 
@@ -202,7 +203,7 @@ public class FieldsNotPublishedVisitor extends
 			addBug(Confidence.HIGH,
 					"an Object that refers an Object refered by 'this' is published"
 							+ " by assignment to a static field",
-							pc.getCurrentInstruction());
+					pc.getCurrentInstruction());
 	}
 
 	protected void detectAReturnBug(ReferenceSlot returnValue) {
