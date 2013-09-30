@@ -1,4 +1,4 @@
-# JCA - Java Concurrency Analyzer
+# JIC - Java Immutability Checker
 
 [![Build Status](https://buildhive.cloudbees.com/job/Seitenbau/job/jca/badge/icon)](https://buildhive.cloudbees.com/job/Seitenbau/job/jca/)
 
