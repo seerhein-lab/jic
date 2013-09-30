@@ -74,17 +74,17 @@ public class SimpleVisitor extends EmptyVisitor {
 	protected static final Logger logger = Logger
 			.getLogger("SimpleInstructionsAnalysisVisitor");
 
-	private final static Map<Short, Slot> ARRAY_INSTRUCTIONS = new HashMap<Short, Slot>();
+	private final static Map<Short, Slot> ARRAY_LOAD_INSTRUCTIONS = new HashMap<Short, Slot>();
 	static {
 		// load instructions
-		ARRAY_INSTRUCTIONS.put((short) 0x2e, IntSlot.getInstance()); // iaload
-		ARRAY_INSTRUCTIONS.put((short) 0x2f, LongSlot.getInstance()); // laload
-		ARRAY_INSTRUCTIONS.put((short) 0x30, FloatSlot.getInstance()); // faload
-		ARRAY_INSTRUCTIONS.put((short) 0x31, DoubleSlot.getInstance()); // daload
+		ARRAY_LOAD_INSTRUCTIONS.put((short) 0x2e, IntSlot.getInstance()); // iaload
+		ARRAY_LOAD_INSTRUCTIONS.put((short) 0x2f, LongSlot.getInstance()); // laload
+		ARRAY_LOAD_INSTRUCTIONS.put((short) 0x30, FloatSlot.getInstance()); // faload
+		ARRAY_LOAD_INSTRUCTIONS.put((short) 0x31, DoubleSlot.getInstance()); // daload
 		// aaload - 0x32 - is treated specially
-		ARRAY_INSTRUCTIONS.put((short) 0x33, IntSlot.getInstance()); // baload
-		ARRAY_INSTRUCTIONS.put((short) 0x34, IntSlot.getInstance()); // caload
-		ARRAY_INSTRUCTIONS.put((short) 0x35, IntSlot.getInstance()); // saload
+		ARRAY_LOAD_INSTRUCTIONS.put((short) 0x33, IntSlot.getInstance()); // baload
+		ARRAY_LOAD_INSTRUCTIONS.put((short) 0x34, IntSlot.getInstance()); // caload
+		ARRAY_LOAD_INSTRUCTIONS.put((short) 0x35, IntSlot.getInstance()); // saload
 
 		// store instructions are treated specially
 	}
@@ -94,8 +94,8 @@ public class SimpleVisitor extends EmptyVisitor {
 	protected Frame frame;
 	protected Heap heap;
 	protected final ConstantPoolGen constantPoolGen;
-	protected InstructionHandle instructionHandle;
-	protected PC pc;
+//	protected InstructionHandle instructionHandle;
+	protected final PC pc;
 
 	protected SimpleVisitor(Frame frame,
 			Heap heap, 
@@ -105,14 +105,11 @@ public class SimpleVisitor extends EmptyVisitor {
 		this.heap = heap;
 		this.constantPoolGen = constantPoolGen;
 		this.pc = pc;
-		this.instructionHandle = pc.getCurrentInstruction();
+//		this.instructionHandle = pc.getCurrentInstruction();
 		this.depth = depth;
 		this.indentation = Utils.formatLoggingOutput(depth);
 	}
 	
-	public InstructionHandle getInstructionHandle() {
-		return instructionHandle;
-	}
 
 	// handle section
 
@@ -139,8 +136,8 @@ public class SimpleVisitor extends EmptyVisitor {
 		log.append(")");
 		logger.log(Level.FINEST, indentation + log);
 
-		pc.setInstruction(instructionHandle.getNext());
-		instructionHandle = instructionHandle.getNext();
+		pc.advance();
+//		instructionHandle = instructionHandle.getNext();
 //		instructionHandle.accept(this);
 //		pc.getCurrentInstruction().accept(this);
 	}
@@ -170,11 +167,11 @@ public class SimpleVisitor extends EmptyVisitor {
 	 */
 	@Override
 	public void visitArrayInstruction(ArrayInstruction obj) {
-		if (!ARRAY_INSTRUCTIONS.containsKey(obj.getOpcode())) {
+		if (!ARRAY_LOAD_INSTRUCTIONS.containsKey(obj.getOpcode())) {
 			// instruction is not handled with this method
 			return;
 		}
-		handleSimpleInstruction(obj, ARRAY_INSTRUCTIONS.get(obj.getOpcode()));
+		handleSimpleInstruction(obj, ARRAY_LOAD_INSTRUCTIONS.get(obj.getOpcode()));
 	}
 
 	// -----------------------------------------------------------------

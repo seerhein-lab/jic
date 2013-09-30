@@ -73,13 +73,13 @@ public class PropConVisitor extends BaseVisitor {
 			// 'this' is passed into a virtual method
 			addBug(Confidence.HIGH,
 					"'this' is passed into a virtual method and escapes",
-					instructionHandle);
+					pc.getCurrentInstruction());
 		} else if (heap.get(argument.getID()).transitivelyRefers(
 				heap.getThisInstance())) {
 			// argument that refers to 'this' is passed into a virtual method
 			addBug(Confidence.HIGH,
 					"a reference that refers to 'this' is passed into a virtual method letting 'this' escape",
-					instructionHandle);
+					pc.getCurrentInstruction());
 		}
 	}
 
@@ -100,14 +100,14 @@ public class PropConVisitor extends BaseVisitor {
 				// this is assigned to the array
 				addBug(Confidence.HIGH,
 						"'this' is assigned to an external array and escapes",
-						instructionHandle);
+						pc.getCurrentInstruction());
 			} else if (arrayReference.getID() != null
 					&& heap.get(arrayReference.getID()).transitivelyRefers(
 							heap.getThisInstance())) {
 				// a reference containing this is assigned to the array
 				addBug(Confidence.HIGH,
 						"a reference containing 'this' is assigned to an external array and 'this' escapes",
-						instructionHandle);
+						pc.getCurrentInstruction());
 			}
 		}
 	}
@@ -128,14 +128,14 @@ public class PropConVisitor extends BaseVisitor {
 				// this is on the right side
 				addBug(Confidence.HIGH,
 						"'this' is assigned to an external field and escapes",
-						instructionHandle);
+						pc.getCurrentInstruction());
 			} else if (referenceToPut.getID() != null
 					&& heap.get(referenceToPut.getID()).transitivelyRefers(
 							heap.getThisInstance())) {
 				// this is contained in the right side
 				addBug(Confidence.HIGH,
 						"a reference containing 'this' is assigned to an external field and 'this' escapes",
-						instructionHandle);
+						pc.getCurrentInstruction());
 			}
 
 		}
@@ -149,13 +149,13 @@ public class PropConVisitor extends BaseVisitor {
 		if (referenceToPut.getID().equals(heap.getThisInstance().getId())) {
 			addBug(Confidence.HIGH,
 					"'this' is assigned to a static field and escapes",
-					instructionHandle);
+					pc.getCurrentInstruction());
 		} else if (heap.get(referenceToPut.getID()).transitivelyRefers(
 				heap.getThisInstance())) {
 			// the reference contains this
 			addBug(Confidence.HIGH,
 					"a reference containing 'this' is assigned to a static field and 'this' escapes",
-					instructionHandle);
+					pc.getCurrentInstruction());
 		}
 	}
 }

@@ -73,7 +73,7 @@ public class CtorArgsCopiedVisitor extends
 				heap.getThisInstance())) {
 			addBug(Confidence.HIGH,
 					"a field of 'this' is passed to a virtual method and escapes",
-					instructionHandle);
+					pc.getCurrentInstruction());
 		}
 	}
 
@@ -96,14 +96,14 @@ public class CtorArgsCopiedVisitor extends
 				// external reference is assigned to an array referred by this
 				addBug(Confidence.HIGH,
 						"an external reference is assigned to an array referred by 'this'",
-						instructionHandle);
+						pc.getCurrentInstruction());
 			} else if (heap.getObject(referenceToStore).transitivelyRefers(
 					heap.getExternalObject())) {
 				// a reference containing an external reference is assigned to
 				// an array referred by this
 				addBug(Confidence.HIGH,
 						"a reference containing an external reference is assigned to an array referred by 'this'",
-						instructionHandle);
+						pc.getCurrentInstruction());
 			}
 		}
 	}
@@ -126,13 +126,13 @@ public class CtorArgsCopiedVisitor extends
 				// right is external
 				addBug(Confidence.HIGH,
 						"an external object is assigned to 'this'",
-						instructionHandle);
+						pc.getCurrentInstruction());
 			} else if (heap.getObject(referenceToPut).transitivelyRefers(
 					heap.getExternalObject())) {
 				// right refers external
 				addBug(Confidence.HIGH,
 						"an object containing an external reference is assigned to 'this'",
-						instructionHandle);
+						pc.getCurrentInstruction());
 			}
 		}
 		if (heap.get(targetReference.getID()).isTransitivelyReferredBy(
@@ -142,13 +142,13 @@ public class CtorArgsCopiedVisitor extends
 				// right is external
 				addBug(Confidence.HIGH,
 						"an external reference is assigned to an object referred by 'this'",
-						instructionHandle);
+						pc.getCurrentInstruction());
 			} else if (heap.getObject(referenceToPut).transitivelyRefers(
 					heap.getExternalObject())) {
 				// right refers external
 				addBug(Confidence.HIGH,
 						"a reference containing an external reference is assigned to an object referred by 'this'",
-						instructionHandle);
+						pc.getCurrentInstruction());
 			}
 		}
 	}
@@ -163,7 +163,7 @@ public class CtorArgsCopiedVisitor extends
 			// this is published
 			addBug(Confidence.HIGH,
 					"'this' is published by assignment to a static field",
-					instructionHandle);
+					pc.getCurrentInstruction());
 		}
 
 		if (heap.get(referenceToPut.getID()).isTransitivelyReferredBy(
@@ -171,7 +171,7 @@ public class CtorArgsCopiedVisitor extends
 			// a field referred by this is published
 			addBug(Confidence.HIGH,
 					"an object referred by 'this' is published by assignment to a static field",
-					instructionHandle);
+					pc.getCurrentInstruction());
 		}
 	}
 

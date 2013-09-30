@@ -173,7 +173,7 @@ public abstract class BaseVisitor extends SimpleVisitor {
 
 		for (CodeExceptionGen exceptionHandler : exceptionHandlers) {
 			if (MethodHelper.protectsInstruction(exceptionHandler,
-					instructionHandle)) {
+					pc.getCurrentInstruction())) {
 				logger.log(Level.FINE, indentation + "vvvvv "
 						+ exceptionHandler.toString() + ": start vvvvv");
 
@@ -201,6 +201,7 @@ public abstract class BaseVisitor extends SimpleVisitor {
 			}
 		}
 		result.add(new ResultValue(Kind.EXCEPTION, exception, heap));
+		pc.invalidate();
 	}
 
 	/**
@@ -269,7 +270,7 @@ public abstract class BaseVisitor extends SimpleVisitor {
 							+ targetMethod.getSignature()
 							+ ":"
 							+ bug.getPrimarySourceLineAnnotation()
-									.getStartLine() + "]", instructionHandle);
+									.getStartLine() + "]", pc.getCurrentInstruction());
 		}
 
 		Set<ResultValue> calleeResults = targetMethodAnalyzer.getResult();
@@ -282,10 +283,9 @@ public abstract class BaseVisitor extends SimpleVisitor {
 
 				Frame newFrame = new Frame(frame);
 				newFrame.pushStackByRequiredSlots(calleeResult.getSlot());
-
-				analyzer.analyze(instructionHandle.getNext(), newFrame,
-						calleeResult.getHeap(), alreadyVisitedIfBranch);
-
+				
+				analyzer.analyze(pc.getCurrentInstruction().getNext(), newFrame, calleeResult.getHeap(), alreadyVisitedIfBranch);
+								
 				bugs.addAll(analyzer.getBugs());
 				result.addAll(analyzer.getResult());
 
@@ -309,6 +309,7 @@ public abstract class BaseVisitor extends SimpleVisitor {
 				frame = savedFrame;
 			}
 		}
+		pc.invalidate();
 	}
 
 	/**
@@ -351,8 +352,7 @@ public abstract class BaseVisitor extends SimpleVisitor {
 		// works also for void results, because number of required slots = 0
 		frame.pushStackByRequiredSlots(returnValue);
 
-		instructionHandle = instructionHandle.getNext();
-		instructionHandle.accept(this);
+		pc.advance();
 	}
 
 	// ******************************************************************//
@@ -369,8 +369,7 @@ public abstract class BaseVisitor extends SimpleVisitor {
 	public void visitLoadInstruction(LoadInstruction obj) {
 		logger.log(Level.FINE, indentation + obj.toString(false));
 		frame.pushStackByRequiredSlots(frame.getLocalVars()[obj.getIndex()]);
-		instructionHandle = instructionHandle.getNext();
-		instructionHandle.accept(this);
+		pc.advance();
 	}
 
 	/**
@@ -386,8 +385,7 @@ public abstract class BaseVisitor extends SimpleVisitor {
 			frame.getLocalVars()[obj.getIndex() + i] = frame.getStack().pop();
 		}
 
-		instructionHandle = instructionHandle.getNext();
-		instructionHandle.accept(this);
+		pc.advance();
 	}
 
 	// -----------------------------------------------------------------
@@ -408,6 +406,7 @@ public abstract class BaseVisitor extends SimpleVisitor {
 		else
 			result.add(new ResultValue(Kind.REGULAR, frame
 					.popStackByRequiredSlots(), heap));
+		pc.invalidate();
 	}
 
 	// ---StackInstruction----------------------------------------------
@@ -503,8 +502,7 @@ public abstract class BaseVisitor extends SimpleVisitor {
 			// all other opcodes
 			return;
 		}
-		instructionHandle = instructionHandle.getNext();
-		instructionHandle.accept(this);
+		pc.advance();
 	}
 
 	/**
@@ -519,8 +517,7 @@ public abstract class BaseVisitor extends SimpleVisitor {
 		// push 'null' onto the stack
 		frame.getStack().push(ReferenceSlot.getNullReference());
 
-		instructionHandle = instructionHandle.getNext();
-		instructionHandle.accept(this);
+		pc.advance();
 	}
 
 	// -----------------------------------------------------------------
@@ -551,8 +548,7 @@ public abstract class BaseVisitor extends SimpleVisitor {
 
 			detectXAStoreBug(arrayReference, value);
 
-			instructionHandle = instructionHandle.getNext();
-			instructionHandle.accept(this);
+			pc.advance();
 		}
 	}
 
@@ -570,8 +566,7 @@ public abstract class BaseVisitor extends SimpleVisitor {
 		if (heap.getObject(arrayReference) instanceof ExternalObject) {
 			frame.getStack().push(
 					ReferenceSlot.createNewInstance(heap.getExternalObject()));
-			instructionHandle = instructionHandle.getNext();
-			instructionHandle.accept(this);
+			pc.advance();
 			return;
 		}
 
@@ -591,10 +586,9 @@ public abstract class BaseVisitor extends SimpleVisitor {
 			Frame newFrame = new Frame(frame);
 			newFrame.getStack().push(
 					ReferenceSlot.createNewInstance(iterator.next()));
-
-			analyzer.analyze(instructionHandle.getNext(), newFrame, new Heap(
-					heap), alreadyVisitedIfBranch);
-
+			
+			analyzer.analyze(pc.getCurrentInstruction().getNext(), newFrame, new Heap(heap), alreadyVisitedIfBranch);
+			
 			bugs.addAll(analyzer.getBugs());
 			result.addAll(analyzer.getResult());
 
@@ -610,6 +604,7 @@ public abstract class BaseVisitor extends SimpleVisitor {
 			// bugs.addAll(visitor.getBugs().getCollection());
 			// result.addAll(visitor.getResult());
 		}
+		pc.invalidate();
 	}
 
 	@Override
@@ -634,8 +629,7 @@ public abstract class BaseVisitor extends SimpleVisitor {
 		else
 			((Array) array).addComponent(component);
 
-		instructionHandle = instructionHandle.getNext();
-		instructionHandle.accept(this);
+		pc.advance();
 	}
 
 	// -----------------------------------------------------------------
@@ -660,8 +654,7 @@ public abstract class BaseVisitor extends SimpleVisitor {
 	@Override
 	public void visitGotoInstruction(GotoInstruction obj) {
 		logger.log(Level.FINE, indentation + obj.toString(false));
-		instructionHandle = obj.getTarget();
-		instructionHandle.accept(this);
+		pc.setInstruction(obj.getTarget());
 	}
 
 	/**
@@ -700,7 +693,7 @@ public abstract class BaseVisitor extends SimpleVisitor {
 				+ alreadyVisitedIfBranch.size()
 				+ ".else  (condition might be inverted!) ------------------");
 		Pair<InstructionHandle, Boolean> elseBranch = new Pair<InstructionHandle, Boolean>(
-				instructionHandle, false);
+				pc.getCurrentInstruction(), false);
 		if (analyzeElseBranch && alreadyVisitedIfBranch.add(elseBranch)) {
 			Set<Pair<InstructionHandle, Boolean>> newAlreadyVisited = new HashSet<Pair<InstructionHandle, Boolean>>();
 			newAlreadyVisited.addAll(alreadyVisitedIfBranch);
@@ -708,9 +701,9 @@ public abstract class BaseVisitor extends SimpleVisitor {
 			// ****************************
 			BaseMethodAnalyzer elseAnalyzer = getMethodAnalyzer(methodGen);
 
-			elseAnalyzer.analyze(instructionHandle.getNext(), new Frame(frame),
-					new Heap(heap), newAlreadyVisited);
-
+			
+			elseAnalyzer.analyze(pc.getCurrentInstruction().getNext(), new Frame(frame), new Heap(heap), newAlreadyVisited);
+			
 			bugs.addAll(elseAnalyzer.getBugs());
 			result.addAll(elseAnalyzer.getResult());
 			// ****************************
@@ -729,9 +722,9 @@ public abstract class BaseVisitor extends SimpleVisitor {
 				+ alreadyVisitedIfBranch.size()
 				+ ".then  (condition might be inverted!) ------------------");
 		Pair<InstructionHandle, Boolean> thenBranch = new Pair<InstructionHandle, Boolean>(
-				instructionHandle, true);
-		if (analyzeThenBranch && alreadyVisitedIfBranch.add(thenBranch)) {
+				pc.getCurrentInstruction(), true);
 
+		if (analyzeThenBranch && alreadyVisitedIfBranch.add(thenBranch)) {
 			Set<Pair<InstructionHandle, Boolean>> newAlreadyVisited = new HashSet<Pair<InstructionHandle, Boolean>>();
 			newAlreadyVisited.addAll(alreadyVisitedIfBranch);
 
@@ -755,6 +748,7 @@ public abstract class BaseVisitor extends SimpleVisitor {
 			logger.log(Level.FINEST, indentation
 					+ "Loop detected, do not re-enter.");
 		}
+		pc.invalidate();
 	}
 
 	/**
@@ -771,12 +765,18 @@ public abstract class BaseVisitor extends SimpleVisitor {
 				"Untested Code Warning: Executing JSR instruction", 1));
 		frame.getStack().push(
 				ReferenceSlot.createNewInstance(heap.newClassInstance()));
-		InstructionHandle savedInstructionHandle = instructionHandle;
-		instructionHandle = obj.getTarget();
-		instructionHandle.accept(this);
-
-		instructionHandle = savedInstructionHandle.getNext();
-		instructionHandle.accept(this);
+	
+		// TODO: Broken with introduction of PC!
+		
+		pc.setInstruction(obj.getTarget());
+		
+		
+//		InstructionHandle savedInstructionHandle = instructionHandle;
+//		instructionHandle = obj.getTarget();
+//		instructionHandle.accept(this);
+//
+//		instructionHandle = savedInstructionHandle.getNext();
+//		instructionHandle.accept(this);
 	}
 
 	/**
@@ -794,7 +794,6 @@ public abstract class BaseVisitor extends SimpleVisitor {
 
 		// gets all targets excluding the default case
 		InstructionHandle[] targets = obj.getTargets();
-		BaseVisitor caseToFollow;
 		// follows all targets excluding the default case
 		for (int i = 0; i < targets.length; i++) {
 			logger.log(Level.FINEST, indentation + "--------------- Line "
@@ -835,13 +834,16 @@ public abstract class BaseVisitor extends SimpleVisitor {
 		result.addAll(defaultAnalyzer.getResult());
 		// ****************************
 
-		// caseToFollow = getInstructionsAnalysisVisitor(new Frame(frame),
-		// new Heap(heap), alreadyVisitedIfBranch, obj.getTarget());
-		// obj.getTarget().accept(caseToFollow);
-		// // adding occurred bugs to bug-collection
-		// bugs.addAll(caseToFollow.getBugs().getCollection());
-		// // adding result of the case to a result-list
-		// result.addAll(caseToFollow.getResult());
+		
+//		caseToFollow = getInstructionsAnalysisVisitor(new Frame(frame),
+//				new Heap(heap), alreadyVisitedIfBranch, obj.getTarget());
+//		obj.getTarget().accept(caseToFollow);
+//		// adding occurred bugs to bug-collection
+//		bugs.addAll(caseToFollow.getBugs().getCollection());
+//		// adding result of the case to a result-list
+//		result.addAll(caseToFollow.getResult());
+		
+		pc.invalidate();
 	}
 
 	/**
@@ -861,8 +863,7 @@ public abstract class BaseVisitor extends SimpleVisitor {
 		// pushes new array reference
 		frame.getStack().push(ReferenceSlot.createNewInstance(heap.newArray()));
 
-		instructionHandle = instructionHandle.getNext();
-		instructionHandle.accept(this);
+		pc.advance();
 	}
 
 	/**
@@ -883,10 +884,9 @@ public abstract class BaseVisitor extends SimpleVisitor {
 
 		// ****************************
 		BaseMethodAnalyzer analyzer = getMethodAnalyzer(methodGen);
-
-		analyzer.analyze(instructionHandle.getNext(), new Frame(frame),
-				new Heap(heap), alreadyVisitedIfBranch);
-
+		
+		analyzer.analyze(pc.getCurrentInstruction().getNext(), new Frame(frame), new Heap(heap), alreadyVisitedIfBranch);
+		
 		bugs.addAll(analyzer.getBugs());
 		result.addAll(analyzer.getResult());
 		// ****************************
@@ -901,10 +901,11 @@ public abstract class BaseVisitor extends SimpleVisitor {
 				Level.FINEST,
 				indentation + "\t" + objRef + " ?= "
 						+ obj.getLoadClassType(constantPoolGen));
-		// instructionHandle.getNext().accept(regularCaseVisitor);
-		//
-		// bugs.addAll(regularCaseVisitor.getBugs().getCollection());
-		// result.addAll(regularCaseVisitor.getResult());
+		
+//		instructionHandle.getNext().accept(regularCaseVisitor);
+//
+//		bugs.addAll(regularCaseVisitor.getBugs().getCollection());
+//		result.addAll(regularCaseVisitor.getResult());
 
 		// 2nd case: type cast is invalid, throw ClassCastException
 		handleException(ReferenceSlot
@@ -948,8 +949,7 @@ public abstract class BaseVisitor extends SimpleVisitor {
 				indentation + "\t" + o + "."
 						+ obj.getFieldName(constantPoolGen));
 
-		instructionHandle = instructionHandle.getNext();
-		instructionHandle.accept(this);
+		pc.advance();
 	}
 
 	/**
@@ -982,8 +982,7 @@ public abstract class BaseVisitor extends SimpleVisitor {
 		log.append(")");
 		logger.log(Level.FINEST, indentation + log);
 
-		instructionHandle = instructionHandle.getNext();
-		instructionHandle.accept(this);
+		pc.advance();
 	}
 
 	/**
@@ -1027,8 +1026,7 @@ public abstract class BaseVisitor extends SimpleVisitor {
 								+ ", " + vRef
 								: vRef));
 
-		instructionHandle = instructionHandle.getNext();
-		instructionHandle.accept(this);
+		pc.advance();
 	}
 
 	/**
@@ -1060,8 +1058,7 @@ public abstract class BaseVisitor extends SimpleVisitor {
 
 		logger.log(Level.FINEST, indentation + log);
 
-		instructionHandle = instructionHandle.getNext();
-		instructionHandle.accept(this);
+		pc.advance();
 	}
 
 	/**
@@ -1122,8 +1119,7 @@ public abstract class BaseVisitor extends SimpleVisitor {
 
 		logger.log(Level.FINEST, indentation + "\t" + value);
 
-		instructionHandle = instructionHandle.getNext();
-		instructionHandle.accept(this);
+		pc.advance();
 	}
 
 	/**
@@ -1144,8 +1140,7 @@ public abstract class BaseVisitor extends SimpleVisitor {
 
 		logger.log(Level.FINEST, indentation + "\t" + value);
 
-		instructionHandle = instructionHandle.getNext();
-		instructionHandle.accept(this);
+		pc.advance();
 	}
 
 	/**
@@ -1185,8 +1180,7 @@ public abstract class BaseVisitor extends SimpleVisitor {
 		// push array reference onto stack
 		frame.getStack().push(slot);
 
-		instructionHandle = instructionHandle.getNext();
-		instructionHandle.accept(this);
+		pc.advance();
 	}
 
 	/**
@@ -1205,8 +1199,7 @@ public abstract class BaseVisitor extends SimpleVisitor {
 
 		frame.getStack().push(slot);
 
-		instructionHandle = instructionHandle.getNext();
-		instructionHandle.accept(this);
+		pc.advance();
 	}
 
 	/**
@@ -1231,7 +1224,6 @@ public abstract class BaseVisitor extends SimpleVisitor {
 
 		frame.getStack().push(slot);
 
-		instructionHandle = instructionHandle.getNext();
-		instructionHandle.accept(this);
+		pc.advance();
 	}
 }

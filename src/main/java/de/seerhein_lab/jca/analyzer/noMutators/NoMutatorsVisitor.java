@@ -77,7 +77,7 @@ public class NoMutatorsVisitor extends
 				heap.getThisInstance())) {
 			addBug(Confidence.HIGH,
 					"the value of an array referred by a field of 'this' is modified",
-					instructionHandle);
+					pc.getCurrentInstruction());
 		}
 	}
 
@@ -89,7 +89,7 @@ public class NoMutatorsVisitor extends
 				heap.getThisInstance())) {
 			addBug(Confidence.HIGH,
 					"the value of an object referred by a field of 'this' is modified",
-					instructionHandle);
+					pc.getCurrentInstruction());
 		}
 	}
 
