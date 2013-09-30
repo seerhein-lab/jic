@@ -25,7 +25,6 @@ import org.apache.bcel.generic.IMPDEP1;
 import org.apache.bcel.generic.IMPDEP2;
 import org.apache.bcel.generic.INSTANCEOF;
 import org.apache.bcel.generic.Instruction;
-import org.apache.bcel.generic.InstructionHandle;
 import org.apache.bcel.generic.LCMP;
 import org.apache.bcel.generic.LCONST;
 import org.apache.bcel.generic.MONITORENTER;
@@ -94,22 +93,19 @@ public class SimpleVisitor extends EmptyVisitor {
 	protected Frame frame;
 	protected Heap heap;
 	protected final ConstantPoolGen constantPoolGen;
-//	protected InstructionHandle instructionHandle;
+	// protected InstructionHandle instructionHandle;
 	protected final PC pc;
 
-	protected SimpleVisitor(Frame frame,
-			Heap heap, 
-			ConstantPoolGen constantPoolGen,
-			PC pc, int depth) {
+	protected SimpleVisitor(Frame frame, Heap heap,
+			ConstantPoolGen constantPoolGen, PC pc, int depth) {
 		this.frame = frame;
 		this.heap = heap;
 		this.constantPoolGen = constantPoolGen;
 		this.pc = pc;
-//		this.instructionHandle = pc.getCurrentInstruction();
+		// this.instructionHandle = pc.getCurrentInstruction();
 		this.depth = depth;
 		this.indentation = Utils.formatLoggingOutput(depth);
 	}
-	
 
 	// handle section
 
@@ -137,9 +133,9 @@ public class SimpleVisitor extends EmptyVisitor {
 		logger.log(Level.FINEST, indentation + log);
 
 		pc.advance();
-//		instructionHandle = instructionHandle.getNext();
-//		instructionHandle.accept(this);
-//		pc.getCurrentInstruction().accept(this);
+		// instructionHandle = instructionHandle.getNext();
+		// instructionHandle.accept(this);
+		// pc.getCurrentInstruction().accept(this);
 	}
 
 	// ******************************************************************//
@@ -171,7 +167,8 @@ public class SimpleVisitor extends EmptyVisitor {
 			// instruction is not handled with this method
 			return;
 		}
-		handleSimpleInstruction(obj, ARRAY_LOAD_INSTRUCTIONS.get(obj.getOpcode()));
+		handleSimpleInstruction(obj,
+				ARRAY_LOAD_INSTRUCTIONS.get(obj.getOpcode()));
 	}
 
 	// -----------------------------------------------------------------
@@ -377,8 +374,7 @@ public class SimpleVisitor extends EmptyVisitor {
 	@Override
 	public void visitIINC(IINC obj) {
 		// no effect on operand stack
-//		instructionHandle = instructionHandle.getNext();
-//		instructionHandle.accept(this);
+		pc.advance();
 	}
 
 	// -----------------------------------------------------------------
@@ -411,8 +407,8 @@ public class SimpleVisitor extends EmptyVisitor {
 	@Override
 	public void visitNOP(NOP obj) {
 		// NOP
-//		instructionHandle = instructionHandle.getNext();
-//		instructionHandle.accept(this);
+		// instructionHandle = instructionHandle.getNext();
+		// instructionHandle.accept(this);
 	}
 
 	// -----------------------------------------------------------------
@@ -424,8 +420,8 @@ public class SimpleVisitor extends EmptyVisitor {
 	@Override
 	public void visitRET(RET obj) {
 		logger.log(Level.FINE, indentation + obj.toString(false));
-//		instructionHandle = instructionHandle.getNext();
-//		instructionHandle.accept(this);
+		// instructionHandle = instructionHandle.getNext();
+		// instructionHandle.accept(this);
 	}
 
 	// -----------------------------------------------------------------
