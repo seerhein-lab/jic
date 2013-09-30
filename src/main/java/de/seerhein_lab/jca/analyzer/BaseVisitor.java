@@ -270,7 +270,8 @@ public abstract class BaseVisitor extends SimpleVisitor {
 							+ targetMethod.getSignature()
 							+ ":"
 							+ bug.getPrimarySourceLineAnnotation()
-									.getStartLine() + "]", pc.getCurrentInstruction());
+									.getStartLine() + "]",
+					pc.getCurrentInstruction());
 		}
 
 		Set<ResultValue> calleeResults = targetMethodAnalyzer.getResult();
@@ -283,9 +284,11 @@ public abstract class BaseVisitor extends SimpleVisitor {
 
 				Frame newFrame = new Frame(frame);
 				newFrame.pushStackByRequiredSlots(calleeResult.getSlot());
-				
-				analyzer.analyze(pc.getCurrentInstruction().getNext(), newFrame, calleeResult.getHeap(), alreadyVisitedIfBranch);
-								
+
+				analyzer.analyze(pc.getCurrentInstruction().getNext(),
+						newFrame, calleeResult.getHeap(),
+						alreadyVisitedIfBranch);
+
 				bugs.addAll(analyzer.getBugs());
 				result.addAll(analyzer.getResult());
 
@@ -305,7 +308,10 @@ public abstract class BaseVisitor extends SimpleVisitor {
 				// result.addAll(specificCalleeResultVisitor.getResult());
 			} else {
 				Frame savedFrame = new Frame(frame);
+				InstructionHandle currentInstruction = pc
+						.getCurrentInstruction();
 				handleException((ReferenceSlot) calleeResult.getSlot());
+				pc.setInstruction(currentInstruction);
 				frame = savedFrame;
 			}
 		}
@@ -586,9 +592,10 @@ public abstract class BaseVisitor extends SimpleVisitor {
 			Frame newFrame = new Frame(frame);
 			newFrame.getStack().push(
 					ReferenceSlot.createNewInstance(iterator.next()));
-			
-			analyzer.analyze(pc.getCurrentInstruction().getNext(), newFrame, new Heap(heap), alreadyVisitedIfBranch);
-			
+
+			analyzer.analyze(pc.getCurrentInstruction().getNext(), newFrame,
+					new Heap(heap), alreadyVisitedIfBranch);
+
 			bugs.addAll(analyzer.getBugs());
 			result.addAll(analyzer.getResult());
 
@@ -701,9 +708,9 @@ public abstract class BaseVisitor extends SimpleVisitor {
 			// ****************************
 			BaseMethodAnalyzer elseAnalyzer = getMethodAnalyzer(methodGen);
 
-			
-			elseAnalyzer.analyze(pc.getCurrentInstruction().getNext(), new Frame(frame), new Heap(heap), newAlreadyVisited);
-			
+			elseAnalyzer.analyze(pc.getCurrentInstruction().getNext(),
+					new Frame(frame), new Heap(heap), newAlreadyVisited);
+
 			bugs.addAll(elseAnalyzer.getBugs());
 			result.addAll(elseAnalyzer.getResult());
 			// ****************************
@@ -765,18 +772,17 @@ public abstract class BaseVisitor extends SimpleVisitor {
 				"Untested Code Warning: Executing JSR instruction", 1));
 		frame.getStack().push(
 				ReferenceSlot.createNewInstance(heap.newClassInstance()));
-	
+
 		// TODO: Broken with introduction of PC!
-		
+
 		pc.setInstruction(obj.getTarget());
-		
-		
-//		InstructionHandle savedInstructionHandle = instructionHandle;
-//		instructionHandle = obj.getTarget();
-//		instructionHandle.accept(this);
-//
-//		instructionHandle = savedInstructionHandle.getNext();
-//		instructionHandle.accept(this);
+
+		// InstructionHandle savedInstructionHandle = instructionHandle;
+		// instructionHandle = obj.getTarget();
+		// instructionHandle.accept(this);
+		//
+		// instructionHandle = savedInstructionHandle.getNext();
+		// instructionHandle.accept(this);
 	}
 
 	/**
@@ -834,15 +840,14 @@ public abstract class BaseVisitor extends SimpleVisitor {
 		result.addAll(defaultAnalyzer.getResult());
 		// ****************************
 
-		
-//		caseToFollow = getInstructionsAnalysisVisitor(new Frame(frame),
-//				new Heap(heap), alreadyVisitedIfBranch, obj.getTarget());
-//		obj.getTarget().accept(caseToFollow);
-//		// adding occurred bugs to bug-collection
-//		bugs.addAll(caseToFollow.getBugs().getCollection());
-//		// adding result of the case to a result-list
-//		result.addAll(caseToFollow.getResult());
-		
+		// caseToFollow = getInstructionsAnalysisVisitor(new Frame(frame),
+		// new Heap(heap), alreadyVisitedIfBranch, obj.getTarget());
+		// obj.getTarget().accept(caseToFollow);
+		// // adding occurred bugs to bug-collection
+		// bugs.addAll(caseToFollow.getBugs().getCollection());
+		// // adding result of the case to a result-list
+		// result.addAll(caseToFollow.getResult());
+
 		pc.invalidate();
 	}
 
@@ -884,9 +889,10 @@ public abstract class BaseVisitor extends SimpleVisitor {
 
 		// ****************************
 		BaseMethodAnalyzer analyzer = getMethodAnalyzer(methodGen);
-		
-		analyzer.analyze(pc.getCurrentInstruction().getNext(), new Frame(frame), new Heap(heap), alreadyVisitedIfBranch);
-		
+
+		analyzer.analyze(pc.getCurrentInstruction().getNext(),
+				new Frame(frame), new Heap(heap), alreadyVisitedIfBranch);
+
 		bugs.addAll(analyzer.getBugs());
 		result.addAll(analyzer.getResult());
 		// ****************************
@@ -901,11 +907,11 @@ public abstract class BaseVisitor extends SimpleVisitor {
 				Level.FINEST,
 				indentation + "\t" + objRef + " ?= "
 						+ obj.getLoadClassType(constantPoolGen));
-		
-//		instructionHandle.getNext().accept(regularCaseVisitor);
-//
-//		bugs.addAll(regularCaseVisitor.getBugs().getCollection());
-//		result.addAll(regularCaseVisitor.getResult());
+
+		// instructionHandle.getNext().accept(regularCaseVisitor);
+		//
+		// bugs.addAll(regularCaseVisitor.getBugs().getCollection());
+		// result.addAll(regularCaseVisitor.getResult());
 
 		// 2nd case: type cast is invalid, throw ClassCastException
 		handleException(ReferenceSlot
