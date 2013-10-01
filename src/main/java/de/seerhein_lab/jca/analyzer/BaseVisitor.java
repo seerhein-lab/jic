@@ -882,10 +882,12 @@ public abstract class BaseVisitor extends SimpleVisitor {
 	public void visitCHECKCAST(CHECKCAST obj) {
 		logger.log(Level.FINE, indentation + obj.toString(false));
 		ReferenceSlot objRef = (ReferenceSlot) frame.getStack().pop();
-		// check type of popped object reference
+		frame.getStack().push(objRef);
 
-		// 1st case: type cast is valid, continue execution in a separate
-		// visitor
+		if (objRef.isNullReference()) {
+			pc.advance();
+			return;
+		}
 
 		// ****************************
 		BaseMethodAnalyzer analyzer = getMethodAnalyzer(methodGen);
