@@ -2,9 +2,9 @@
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>de.seerhein_lab</groupId>
-	<artifactId>jca</artifactId>
+	<artifactId>jic</artifactId>
 	<version>2.0</version>
-	<name>jca</name>
+	<name>jic</name>
 	<dependencies>
 		<!-- <dependency> -->
 		<!-- <groupId>org.apache.bcel</groupId> -->

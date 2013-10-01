@@ -23,7 +23,7 @@ import org.junit.runners.Parameterized.Parameters;
 @RunWith(Parameterized.class)
 public class JcaDetectorTest {
 
-	private JcaDetector jcaDetector;
+	private JicDetector jcaDetector;
 	private JavaClass javaClass;
 	private static final String PACKAGE = "de.seerhein_lab.jca.JcaDetectorTest$";
 	private final static Map<String, Boolean> isSupposedlyImmutable = new HashMap<String, Boolean>();
@@ -45,7 +45,7 @@ public class JcaDetectorTest {
 
 	@Before
 	public void setUp() throws Exception {
-		jcaDetector = new JcaDetector(null);
+		jcaDetector = new JicDetector(null);
 		isSupposedlyImmutable.put(PACKAGE + "ImmutableAnnotation", true);
 		isSupposedlyImmutable.put(PACKAGE + "immutableAndOtherAnnotations",
 				true);

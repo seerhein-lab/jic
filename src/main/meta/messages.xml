@@ -3,11 +3,11 @@
         xsi:noNamespaceSchemaLocation="messagecollection.xsd">
 
         <Plugin>
-                <ShortDescription>JCA Plugin</ShortDescription>
-                <Details>Jaca Concurrency Analyzer Plugin</Details>
+                <ShortDescription>JIC Plugin</ShortDescription>
+                <Details>Jaca Immutability Checker Plugin</Details>
         </Plugin>
 
-        <Detector class="de.seerhein_lab.jca.JcaDetector">
+        <Detector class="de.seerhein_lab.jca.JicDetector">
                 <Details>
                         Starts proper construction check for class under inspection.
                 </Details>

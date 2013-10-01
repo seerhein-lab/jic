@@ -14,14 +14,14 @@ import edu.umd.cs.findbugs.ba.ClassContext;
 
 // This class must either be used thread-confined, or reporter must be thread-safe, otherwise concurrent calls to
 // reporter.reportBug() can result in race conditions.
-public final class JcaDetector implements Detector {
+public final class JicDetector implements Detector {
 	private final static String IMMUTABLE_ANNOTATION = "Lnet/jcip/annotations/Immutable;";
 
 	private final BugReporter reporter;
 	
 	public static int propConCounter;
 
-	public JcaDetector(BugReporter reporter) {
+	public JicDetector(BugReporter reporter) {
 		this.reporter = reporter;
 	}
 
