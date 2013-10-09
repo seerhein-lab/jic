@@ -18,7 +18,7 @@ Project description -- to be done.
  
 ## Build Project
 
- 1. Clone Project from github git clone https://github.com/Seitenbau/jca.git
+ 1. Clone Project from github git clone https://github.com/seerhein-lab/jic.git
  
  2. Import as Eclipse project mvn eclipse:eclipse and import as generic project. 
  

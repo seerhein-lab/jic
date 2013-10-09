@@ -1,4 +1,4 @@
-package playground;
+package de.seerhein_lab.jic.analyzer;
 
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -16,8 +16,11 @@ import edu.umd.cs.findbugs.BugInstance;
 import edu.umd.cs.findbugs.SortedBugCollection;
 import edu.umd.cs.findbugs.ba.ClassContext;
 
-public class ProperlyConstructedTestDriver {
-	private static final String LOGFILEPATH = "log.txt";
+public class StateUnmodTestDriver {
+	private static final String LOGFILEPATH = "./log.txt";
+	private static final boolean analyzeCtorCopy = true;
+	private static final boolean analyzeFieldsMutate = true;
+	private static final boolean analyzeFieldsArePuplished = true;
 
 	public static void main(String[] args) throws ClassNotFoundException,
 			SecurityException, IOException {
@@ -26,14 +29,27 @@ public class ProperlyConstructedTestDriver {
 				LOGFILEPATH);
 
 		JavaClass clazz = Repository
-				.lookupClass("playground.PropConstTestClass");
+				.lookupClass("playground.StateUnmodTestClass");
+
+		SortedBugCollection bugs = new SortedBugCollection();
 
 		ClassContext classContextMock = mock(ClassContext.class);
 
 		when(classContextMock.getJavaClass()).thenReturn(clazz);
 
-		SortedBugCollection bugs = new SortedBugCollection();
-		bugs.addAll(new ClassAnalyzer(classContextMock).properlyConstructed());
+		ClassAnalyzer classAnalyzer = new ClassAnalyzer(classContextMock);
+		if (analyzeCtorCopy) {
+			logger.log(Level.FINE, "Analyzing CtorCopy");
+			bugs.addAll(classAnalyzer.ctorArgsAreCopied());
+		}
+		if (analyzeFieldsMutate) {
+			logger.log(Level.FINE, "Analyzing FieldsMutate");
+			bugs.addAll(classAnalyzer.noMutators());
+		}
+		if (analyzeFieldsArePuplished) {
+			logger.log(Level.FINE, "Analyzing FieldsNotPublished");
+			bugs.addAll(classAnalyzer.fieldsAreNotPublished());
+		}
 
 		logger.log(Level.SEVERE, "bugs: ");
 		for (BugInstance bug : bugs) {
@@ -44,5 +60,4 @@ public class ProperlyConstructedTestDriver {
 		logger.log(Level.SEVERE, "end bugs");
 
 	}
-
 }

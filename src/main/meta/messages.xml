@@ -7,7 +7,7 @@
                 <Details>Java Immutability Checker Plugin</Details>
         </Plugin>
 
-        <Detector class="de.seerhein_lab.jca.JicDetector">
+        <Detector class="de.seerhein_lab.jic.JicDetector">
                 <Details>
                         Starts proper construction check for class under inspection.
                 </Details>
