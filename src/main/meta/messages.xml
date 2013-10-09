@@ -4,7 +4,7 @@
 
         <Plugin>
                 <ShortDescription>JIC Plugin</ShortDescription>
-                <Details>Jaca Immutability Checker Plugin</Details>
+                <Details>Java Immutability Checker Plugin</Details>
         </Plugin>
 
         <Detector class="de.seerhein_lab.jca.JicDetector">

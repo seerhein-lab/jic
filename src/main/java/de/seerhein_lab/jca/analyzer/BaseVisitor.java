@@ -696,64 +696,77 @@ public abstract class BaseVisitor extends SimpleVisitor {
 			}
 		}
 
-		logger.log(Level.FINEST, indentation + "------------------  "
-				+ alreadyVisitedIfBranch.size()
-				+ ".else  (condition might be inverted!) ------------------");
-		Pair<InstructionHandle, Boolean> elseBranch = new Pair<InstructionHandle, Boolean>(
-				pc.getCurrentInstruction(), false);
-		if (analyzeElseBranch && alreadyVisitedIfBranch.add(elseBranch)) {
-			Set<Pair<InstructionHandle, Boolean>> newAlreadyVisited = new HashSet<Pair<InstructionHandle, Boolean>>();
-			newAlreadyVisited.addAll(alreadyVisitedIfBranch);
+		if (analyzeElseBranch) {			
+			logger.log(Level.FINEST, indentation + "------------------  "
+					+ alreadyVisitedIfBranch.size()
+					+ ".else  (condition might be inverted!) ------------------");
+			Pair<InstructionHandle, Boolean> elseBranch = new Pair<InstructionHandle, Boolean>(
+					pc.getCurrentInstruction(), false);
 
-			// ****************************
-			BaseMethodAnalyzer elseAnalyzer = getMethodAnalyzer(methodGen);
+			if (alreadyVisitedIfBranch.add(elseBranch)) {
+//				Set<Pair<InstructionHandle, Boolean>> newAlreadyVisited = new HashSet<Pair<InstructionHandle, Boolean>>();
+//				newAlreadyVisited.addAll(alreadyVisitedIfBranch);
+	
+				// ****************************
+				BaseMethodAnalyzer elseAnalyzer = getMethodAnalyzer(methodGen);
+	
+//	    		elseAnalyzer.analyze(pc.getCurrentInstruction().getNext(),
+//						new Frame(frame), new Heap(heap), newAlreadyVisited);
 
-			elseAnalyzer.analyze(pc.getCurrentInstruction().getNext(),
-					new Frame(frame), new Heap(heap), newAlreadyVisited);
+				elseAnalyzer.analyze(pc.getCurrentInstruction().getNext(),
+						new Frame(frame), new Heap(heap), alreadyVisitedIfBranch);
 
-			bugs.addAll(elseAnalyzer.getBugs());
-			result.addAll(elseAnalyzer.getResult());
-			// ****************************
-
-			// BaseVisitor elseBranchVisitor = getInstructionsAnalysisVisitor(
-			// new Frame(frame), new Heap(heap), newAlreadyVisited,
-			// instructionHandle.getNext());
-			// instructionHandle.getNext().accept(elseBranchVisitor);
-			// bugs.addAll(elseBranchVisitor.getBugs().getCollection());
-			// result.addAll(elseBranchVisitor.getResult());
-		} else {
-			logger.log(Level.FINEST, indentation
-					+ "Loop detected, do not re-enter.");
+				bugs.addAll(elseAnalyzer.getBugs());
+				result.addAll(elseAnalyzer.getResult());
+				// ****************************
+	
+				// BaseVisitor elseBranchVisitor = getInstructionsAnalysisVisitor(
+				// new Frame(frame), new Heap(heap), newAlreadyVisited,
+				// instructionHandle.getNext());
+				// instructionHandle.getNext().accept(elseBranchVisitor);
+				// bugs.addAll(elseBranchVisitor.getBugs().getCollection());
+				// result.addAll(elseBranchVisitor.getResult());
+			} else {
+				logger.log(Level.FINEST, indentation
+						+ "Loop detected, do not re-enter.");
+			}
 		}
-		logger.log(Level.FINEST, indentation + "------------------  "
-				+ alreadyVisitedIfBranch.size()
-				+ ".then  (condition might be inverted!) ------------------");
-		Pair<InstructionHandle, Boolean> thenBranch = new Pair<InstructionHandle, Boolean>(
-				pc.getCurrentInstruction(), true);
 
-		if (analyzeThenBranch && alreadyVisitedIfBranch.add(thenBranch)) {
-			Set<Pair<InstructionHandle, Boolean>> newAlreadyVisited = new HashSet<Pair<InstructionHandle, Boolean>>();
-			newAlreadyVisited.addAll(alreadyVisitedIfBranch);
+		if (analyzeThenBranch) {
+			logger.log(Level.FINEST, indentation + "------------------  "
+					+ alreadyVisitedIfBranch.size()
+					+ ".then  (condition might be inverted!) ------------------");
+			Pair<InstructionHandle, Boolean> thenBranch = new Pair<InstructionHandle, Boolean>(
+					pc.getCurrentInstruction(), true);
+		
+			if (alreadyVisitedIfBranch.add(thenBranch)) {
+//				Set<Pair<InstructionHandle, Boolean>> newAlreadyVisited = new HashSet<Pair<InstructionHandle, Boolean>>();
+//				newAlreadyVisited.addAll(alreadyVisitedIfBranch);
+	
+				// ****************************
+				BaseMethodAnalyzer thenAnalyzer = getMethodAnalyzer(methodGen);
+	
+//				thenAnalyzer.analyze(obj.getTarget(), new Frame(frame), new Heap(
+//						heap), newAlreadyVisited);
+	
+				thenAnalyzer.analyze(obj.getTarget(), new Frame(frame), new Heap(
+						heap), alreadyVisitedIfBranch);
 
-			// ****************************
-			BaseMethodAnalyzer thenAnalyzer = getMethodAnalyzer(methodGen);
-
-			thenAnalyzer.analyze(obj.getTarget(), new Frame(frame), new Heap(
-					heap), newAlreadyVisited);
-
-			bugs.addAll(thenAnalyzer.getBugs());
-			result.addAll(thenAnalyzer.getResult());
-			// ****************************
-
-			// BaseVisitor thenBranchVisitor = getInstructionsAnalysisVisitor(
-			// new Frame(frame), new Heap(heap), newAlreadyVisited,
-			// obj.getTarget());
-			// obj.getTarget().accept(thenBranchVisitor);
-			// bugs.addAll(thenBranchVisitor.getBugs().getCollection());
-			// result.addAll(thenBranchVisitor.getResult());
-		} else {
-			logger.log(Level.FINEST, indentation
-					+ "Loop detected, do not re-enter.");
+				
+				bugs.addAll(thenAnalyzer.getBugs());
+				result.addAll(thenAnalyzer.getResult());
+				// ****************************
+	
+				// BaseVisitor thenBranchVisitor = getInstructionsAnalysisVisitor(
+				// new Frame(frame), new Heap(heap), newAlreadyVisited,
+				// obj.getTarget());
+				// obj.getTarget().accept(thenBranchVisitor);
+				// bugs.addAll(thenBranchVisitor.getBugs().getCollection());
+				// result.addAll(thenBranchVisitor.getResult());
+			} else {
+				logger.log(Level.FINEST, indentation
+						+ "Loop detected, do not re-enter.");
+			}
 		}
 		pc.invalidate();
 	}

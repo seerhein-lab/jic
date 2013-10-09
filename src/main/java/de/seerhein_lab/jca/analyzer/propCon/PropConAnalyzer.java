@@ -10,7 +10,7 @@ import org.apache.bcel.generic.ConstantPoolGen;
 import org.apache.bcel.generic.InstructionHandle;
 import org.apache.bcel.generic.MethodGen;
 
-import de.seerhein_lab.jca.JcaDetector;
+import de.seerhein_lab.jca.JicDetector;
 import de.seerhein_lab.jca.Pair;
 import de.seerhein_lab.jca.analyzer.BaseVisitor;
 import de.seerhein_lab.jca.analyzer.BaseMethodAnalyzer;
@@ -35,10 +35,10 @@ public final class PropConAnalyzer extends BaseMethodAnalyzer {
 
 	protected BaseVisitor getInstructionVisitor(Frame frame,
 			Heap heap, PC pc, Set<Pair<InstructionHandle, Boolean>> alreadyVisitedIfBranch) {
-		if ( JcaDetector.propConCounter > 5000 ) 
+		if ( JicDetector.propConCounter > 5000 ) 
 			throw new OutOfMemoryError("emergency break to avoid out of memory error.");
 		
-		JcaDetector.propConCounter++;
+		JicDetector.propConCounter++;
 		return new PropConVisitor(classContext, methodGen, frame,
 				heap, methodGen.getConstantPool(),
 				pc, exceptionHandlers,
