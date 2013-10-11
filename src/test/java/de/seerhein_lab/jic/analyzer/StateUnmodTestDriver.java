@@ -25,7 +25,7 @@ public class StateUnmodTestDriver {
 	public static void main(String[] args) throws ClassNotFoundException,
 			SecurityException, IOException {
 
-		Logger logger = Utils.setUpLogger("ProperlyConstructedTestDriver",
+		Logger logger = Utils.setUpLogger("StateUnmodTestDriver",
 				LOGFILEPATH);
 
 		JavaClass clazz = Repository

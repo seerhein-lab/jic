@@ -1,10 +1,12 @@
 package playground;
 
+
+
 @SuppressWarnings("unused")
 public class PropConstTestClass {
-	private static Object i;
+	private final Object f = new Object();
 
-	public PropConstTestClass() {
-		i = this;
+	public Object publish() {
+		return f;
 	}
 }

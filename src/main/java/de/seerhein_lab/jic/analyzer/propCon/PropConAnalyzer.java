@@ -14,6 +14,7 @@ import de.seerhein_lab.jic.JicDetector;
 import de.seerhein_lab.jic.Pair;
 import de.seerhein_lab.jic.analyzer.BaseMethodAnalyzer;
 import de.seerhein_lab.jic.analyzer.BaseVisitor;
+import de.seerhein_lab.jic.analyzer.MethodInvocation;
 import de.seerhein_lab.jic.slot.Slot;
 import de.seerhein_lab.jic.vm.Frame;
 import de.seerhein_lab.jic.vm.Heap;
@@ -24,12 +25,12 @@ import edu.umd.cs.findbugs.ba.ClassContext;
 public final class PropConAnalyzer extends BaseMethodAnalyzer {
 
 	public PropConAnalyzer(ClassContext classContext, MethodGen methodGen) {
-		this(classContext, methodGen, new HashSet<Pair<Method, Slot[]>>(), -1);
+		this(classContext, methodGen, new HashSet<MethodInvocation>(), -1);
 	}
 
 	protected PropConAnalyzer(ClassContext classContext,
 			MethodGen methodGen,
-			Set<Pair<Method, Slot[]>> alreadyVisitedMethods, int depth) {
+			Set<MethodInvocation> alreadyVisitedMethods, int depth) {
 		super(classContext, methodGen, alreadyVisitedMethods, depth);
 	}
 

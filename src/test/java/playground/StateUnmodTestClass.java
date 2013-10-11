@@ -2,9 +2,9 @@ package playground;
 
 @SuppressWarnings("unused")
 public class StateUnmodTestClass {
-	private static Object i;
+	private final Object f = new Object();
 
-	public StateUnmodTestClass() {
-		i = this;
+	public Object publish() {
+		return f;
 	}
 }

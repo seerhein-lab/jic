@@ -15,6 +15,7 @@ import de.seerhein_lab.jic.ResultValue;
 import de.seerhein_lab.jic.ResultValue.Kind;
 import de.seerhein_lab.jic.analyzer.BaseMethodAnalyzer;
 import de.seerhein_lab.jic.analyzer.BaseVisitor;
+import de.seerhein_lab.jic.analyzer.MethodInvocation;
 import de.seerhein_lab.jic.slot.ReferenceSlot;
 import de.seerhein_lab.jic.slot.Slot;
 import de.seerhein_lab.jic.slot.VoidSlot;
@@ -32,7 +33,7 @@ public class FieldsNotPublishedVisitor extends BaseVisitor {
 			MethodGen methodGen, Frame frame, Heap heap,
 			ConstantPoolGen constantPoolGen, PC pc,
 			CodeExceptionGen[] exceptionHandlers,
-			Set<Pair<Method, Slot[]>> alreadyVisitedMethods, int depth,
+			Set<MethodInvocation> alreadyVisitedMethods, int depth,
 			Set<Pair<InstructionHandle, Boolean>> alreadyVisitedIfBranch) {
 		super(classContext, methodGen, frame, heap, constantPoolGen,
 				alreadyVisitedIfBranch, alreadyVisitedMethods, pc,

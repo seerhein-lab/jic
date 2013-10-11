@@ -98,7 +98,7 @@ public abstract class BaseVisitor extends SimpleVisitor {
 
 	protected final CodeExceptionGen[] exceptionHandlers;
 	protected Set<Pair<InstructionHandle, Boolean>> alreadyVisitedIfBranch;
-	protected final Set<Pair<Method, Slot[]>> alreadyVisitedMethods;
+	protected final Set<MethodInvocation> alreadyVisitedMethods;
 	protected SortedBugCollection bugs = new SortedBugCollection();
 	protected Set<ResultValue> result = new HashSet<ResultValue>();
 
@@ -135,7 +135,7 @@ public abstract class BaseVisitor extends SimpleVisitor {
 	protected BaseVisitor(ClassContext classContext, MethodGen methodGen,
 			Frame frame, Heap heap, ConstantPoolGen constantPoolGen,
 			Set<Pair<InstructionHandle, Boolean>> alreadyVisited,
-			Set<Pair<Method, Slot[]>> alreadyVisitedMethods, PC pc,
+			Set<MethodInvocation> alreadyVisitedMethods, PC pc,
 			CodeExceptionGen[] exceptionHandlers, int depth) {
 		super(frame, heap, constantPoolGen, pc, depth);
 
@@ -245,9 +245,14 @@ public abstract class BaseVisitor extends SimpleVisitor {
 		BaseMethodAnalyzer targetMethodAnalyzer = getMethodAnalyzer(targetMethodGen);
 
 		// for detection of recursion
-		Pair<Method, Slot[]> thisMethod = new Pair<Method, Slot[]>(
-				targetMethod, targetMethodAnalyzer.getActualParams(frame));
-		if (!alreadyVisitedMethods.add(thisMethod)) {
+//		Pair<Method, Slot[]> thisMethod = new Pair<Method, Slot[]>(
+//				targetMethod, targetMethodAnalyzer.getActualParams(frame));
+//		if (!alreadyVisitedMethods.add(thisMethod)) {
+		
+		MethodInvocation invocation = new MethodInvocation(targetClass, targetMethod);
+		
+		
+		if (!alreadyVisitedMethods.add(invocation)) {
 			logger.log(Level.FINE, indentation
 					+ "Recursion found: Method already analyzed.");
 			// if already visited then do not analyze again
@@ -255,6 +260,16 @@ public abstract class BaseVisitor extends SimpleVisitor {
 			return;
 		}
 
+		
+		if (alreadyVisitedMethods.contains(invocation)) {
+			logger.log(Level.FINE, indentation
+					+ "Recursion found: Method already analyzed.");
+			// if already visited then do not analyze again
+			handleVirtualMethod(obj, false);
+			return;
+		}
+		
+		
 		targetMethodAnalyzer.analyze(frame.getStack(), heap);
 
 		for (Iterator<BugInstance> it = targetMethodAnalyzer.getBugs()
