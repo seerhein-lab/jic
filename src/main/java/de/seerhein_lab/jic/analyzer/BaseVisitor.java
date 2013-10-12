@@ -252,13 +252,13 @@ public abstract class BaseVisitor extends SimpleVisitor {
 		MethodInvocation invocation = new MethodInvocation(targetClass, targetMethod);
 		
 		
-		if (!alreadyVisitedMethods.add(invocation)) {
-			logger.log(Level.FINE, indentation
-					+ "Recursion found: Method already analyzed.");
-			// if already visited then do not analyze again
-			handleVirtualMethod(obj, false);
-			return;
-		}
+//		if (!alreadyVisitedMethods.add(invocation)) {
+//			logger.log(Level.FINE, indentation
+//					+ "Recursion found: Method already analyzed.");
+//			// if already visited then do not analyze again
+//			handleVirtualMethod(obj, false);
+//			return;
+//		}
 
 		
 		if (alreadyVisitedMethods.contains(invocation)) {

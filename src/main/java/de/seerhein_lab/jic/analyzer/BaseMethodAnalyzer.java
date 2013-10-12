@@ -46,9 +46,9 @@ public abstract class BaseMethodAnalyzer {
 		if ( classContext == null || methodGen == null || alreadyVisitedMethods == null ) 
 			throw new AssertionError("Params must not be null.");
 		
-//		if ( depth > 10 ) 
-//			throw new OutOfMemoryError(
-//					"emergency break to avoid out of memory error (method stack depth exceeded)");
+		if ( depth > 25 ) 
+			throw new OutOfMemoryError(
+					"emergency brake to avoid out of memory error (method stack depth exceeded)");
 
 		
 		this.classContext = classContext;

@@ -36,10 +36,10 @@ public final class PropConAnalyzer extends BaseMethodAnalyzer {
 
 	protected BaseVisitor getInstructionVisitor(Frame frame,
 			Heap heap, PC pc, Set<Pair<InstructionHandle, Boolean>> alreadyVisitedIfBranch) {
-		if ( JicDetector.propConCounter > 5000 ) 
-			throw new OutOfMemoryError("emergency break to avoid out of memory error.");
+//		if ( JicDetector.propConCounter > 5000 ) 
+//			throw new OutOfMemoryError("emergency break to avoid out of memory error.");
 		
-		JicDetector.propConCounter++;
+//		JicDetector.propConCounter++;
 		return new PropConVisitor(classContext, methodGen, frame,
 				heap, methodGen.getConstantPool(),
 				pc, exceptionHandlers,

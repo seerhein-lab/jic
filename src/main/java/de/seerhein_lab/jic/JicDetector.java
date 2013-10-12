@@ -19,7 +19,7 @@ public final class JicDetector implements Detector {
 
 	private final BugReporter reporter;
 	
-	public static int propConCounter;
+//	public static int propConCounter;
 
 	public JicDetector(BugReporter reporter) {
 		this.reporter = reporter;
@@ -39,7 +39,7 @@ public final class JicDetector implements Detector {
 
 	@Override
 	public void visitClassContext(ClassContext classContext) {
-		propConCounter = 0;
+//		propConCounter = 0;
 
 		JavaClass clazz = classContext.getJavaClass();
 		boolean supposedlyImmutable = supposedlyImmutable(clazz);
