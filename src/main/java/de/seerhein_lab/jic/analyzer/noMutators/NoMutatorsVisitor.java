@@ -56,8 +56,7 @@ public class NoMutatorsVisitor extends
 //	}
 
 	@Override
-	protected BaseMethodAnalyzer getMethodAnalyzer(MethodGen targetMethodGen, 
-			Set<MethodInvocation> alreadyVisitedMethods) {
+	protected BaseMethodAnalyzer getMethodAnalyzer(MethodGen targetMethodGen) {
 		return new NoMutatorsAnalyzer(classContext,
 				targetMethodGen, alreadyVisitedMethods, depth);
 	}

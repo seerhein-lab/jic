@@ -56,8 +56,7 @@ public class CtorArgsCopiedVisitor extends
 //	}
 
 	@Override
-	protected BaseMethodAnalyzer getMethodAnalyzer(MethodGen targetMethodGen, 
-			Set<MethodInvocation> alreadyVisitedMethods) {
+	protected BaseMethodAnalyzer getMethodAnalyzer(MethodGen targetMethodGen) {
 		return new CtorArgsCopiedAnalyzer(classContext, targetMethodGen,
 				alreadyVisitedMethods, depth);
 	}

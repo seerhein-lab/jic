@@ -54,7 +54,11 @@ public abstract class BaseMethodAnalyzer {
 		this.classContext = classContext;
 		this.methodGen = methodGen;
 		exceptionHandlers = methodGen.getExceptionHandlers();
-		this.alreadyVisitedMethods = alreadyVisitedMethods;
+		
+		this.alreadyVisitedMethods = new HashSet<MethodInvocation>();
+		this.alreadyVisitedMethods.addAll(alreadyVisitedMethods);
+		this.alreadyVisitedMethods.add(new MethodInvocation(classContext.getJavaClass(), methodGen.getMethod()));
+		
 		this.depth = depth + 1;
 	}
 
