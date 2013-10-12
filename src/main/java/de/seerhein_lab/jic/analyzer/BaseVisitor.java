@@ -108,7 +108,7 @@ public abstract class BaseVisitor extends SimpleVisitor {
 	// InstructionHandle instructionHandle);
 
 	protected abstract BaseMethodAnalyzer getMethodAnalyzer(
-			MethodGen targetMethodGen);
+			MethodGen targetMethodGen, Set<MethodInvocation> alreadyVisitedMethods);
 
 	// methods for bug detection
 	protected abstract void detectVirtualMethodBug(ReferenceSlot argument);
@@ -178,7 +178,7 @@ public abstract class BaseVisitor extends SimpleVisitor {
 						+ exceptionHandler.toString() + ": start vvvvv");
 
 				// ************
-				BaseMethodAnalyzer analyzer = getMethodAnalyzer(methodGen);
+				BaseMethodAnalyzer analyzer = getMethodAnalyzer(methodGen, alreadyVisitedMethods);
 				analyzer.analyze(exceptionHandler.getHandlerPC(), new Frame(
 						frame), new Heap(heap), alreadyVisitedIfBranch);
 
@@ -249,18 +249,19 @@ public abstract class BaseVisitor extends SimpleVisitor {
 		
 		MethodInvocation invocation = new MethodInvocation(targetClass, targetMethod);
 		
-				
 		if (alreadyVisitedMethods.contains(invocation)) {
 			logger.log(Level.FINE, indentation
 					+ "Recursion found: Method already analyzed.");
 			// if already visited then do not analyze again
 			handleVirtualMethod(obj, false);
 			return;
-		}
+		}				
 		
-		
+		Set<MethodInvocation> nowVisitedMethods = new HashSet<MethodInvocation>();
+		nowVisitedMethods.addAll(alreadyVisitedMethods);
+		nowVisitedMethods.add(invocation);
 
-		BaseMethodAnalyzer targetMethodAnalyzer = getMethodAnalyzer(targetMethodGen);
+		BaseMethodAnalyzer targetMethodAnalyzer = getMethodAnalyzer(targetMethodGen, nowVisitedMethods);
 
 		
 		targetMethodAnalyzer.analyze(frame.getStack(), heap);
@@ -288,7 +289,7 @@ public abstract class BaseVisitor extends SimpleVisitor {
 			if (calleeResult.getKind().equals(Kind.REGULAR)) {
 
 				// ************
-				BaseMethodAnalyzer analyzer = getMethodAnalyzer(methodGen);
+				BaseMethodAnalyzer analyzer = getMethodAnalyzer(methodGen, alreadyVisitedMethods);
 
 				Frame newFrame = new Frame(frame);
 				newFrame.pushStackByRequiredSlots(calleeResult.getSlot());
@@ -595,7 +596,7 @@ public abstract class BaseVisitor extends SimpleVisitor {
 				.hasNext();) {
 
 			// ************
-			BaseMethodAnalyzer analyzer = getMethodAnalyzer(methodGen);
+			BaseMethodAnalyzer analyzer = getMethodAnalyzer(methodGen, alreadyVisitedMethods);
 
 			Frame newFrame = new Frame(frame);
 			newFrame.getStack().push(
@@ -716,7 +717,7 @@ public abstract class BaseVisitor extends SimpleVisitor {
 //				newAlreadyVisited.addAll(alreadyVisitedIfBranch);
 	
 				// ****************************
-				BaseMethodAnalyzer elseAnalyzer = getMethodAnalyzer(methodGen);
+				BaseMethodAnalyzer elseAnalyzer = getMethodAnalyzer(methodGen, alreadyVisitedMethods);
 	
 //	    		elseAnalyzer.analyze(pc.getCurrentInstruction().getNext(),
 //						new Frame(frame), new Heap(heap), newAlreadyVisited);
@@ -752,7 +753,7 @@ public abstract class BaseVisitor extends SimpleVisitor {
 //				newAlreadyVisited.addAll(alreadyVisitedIfBranch);
 	
 				// ****************************
-				BaseMethodAnalyzer thenAnalyzer = getMethodAnalyzer(methodGen);
+				BaseMethodAnalyzer thenAnalyzer = getMethodAnalyzer(methodGen, alreadyVisitedMethods);
 	
 //				thenAnalyzer.analyze(obj.getTarget(), new Frame(frame), new Heap(
 //						heap), newAlreadyVisited);
@@ -827,7 +828,7 @@ public abstract class BaseVisitor extends SimpleVisitor {
 					+ targets[i].getPosition() + " ---------------");
 
 			// ****************************
-			BaseMethodAnalyzer caseAnalyzer = getMethodAnalyzer(methodGen);
+			BaseMethodAnalyzer caseAnalyzer = getMethodAnalyzer(methodGen, alreadyVisitedMethods);
 
 			caseAnalyzer.analyze(targets[i], new Frame(frame), new Heap(heap),
 					alreadyVisitedIfBranch);
@@ -852,7 +853,7 @@ public abstract class BaseVisitor extends SimpleVisitor {
 		// target is the end of the switch without executing a case.
 
 		// ****************************
-		BaseMethodAnalyzer defaultAnalyzer = getMethodAnalyzer(methodGen);
+		BaseMethodAnalyzer defaultAnalyzer = getMethodAnalyzer(methodGen, alreadyVisitedMethods);
 
 		defaultAnalyzer.analyze(obj.getTarget(), new Frame(frame), new Heap(
 				heap), alreadyVisitedIfBranch);
@@ -911,7 +912,7 @@ public abstract class BaseVisitor extends SimpleVisitor {
 		}
 
 		// ****************************
-		BaseMethodAnalyzer analyzer = getMethodAnalyzer(methodGen);
+		BaseMethodAnalyzer analyzer = getMethodAnalyzer(methodGen, alreadyVisitedMethods);
 
 		analyzer.analyze(pc.getCurrentInstruction().getNext(),
 				new Frame(frame), new Heap(heap), alreadyVisitedIfBranch);

@@ -56,7 +56,7 @@ public class PropConVisitor extends BaseVisitor {
 //	}
 
 	@Override
-	protected BaseMethodAnalyzer getMethodAnalyzer(MethodGen targetMethodGen) {
+	protected BaseMethodAnalyzer getMethodAnalyzer(MethodGen targetMethodGen, Set<MethodInvocation> alreadyVisitedMethods) {
 		return new PropConAnalyzer(classContext, targetMethodGen,
 				alreadyVisitedMethods, depth);
 	}
