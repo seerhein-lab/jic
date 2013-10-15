@@ -25,6 +25,7 @@ public final class CtorArgsCopiedAnalyzer extends BaseMethodAnalyzer {
 
 	public CtorArgsCopiedAnalyzer(ClassContext classContext, MethodGen methodGen) {
 		this(classContext, methodGen, new HashSet<MethodInvocation>(), -1);
+		alreadyVisitedMethods.add(new MethodInvocation(classContext.getJavaClass(), methodGen.getMethod()));
 	}
 
 	protected CtorArgsCopiedAnalyzer(ClassContext classContext, MethodGen methodGen,

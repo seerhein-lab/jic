@@ -28,6 +28,7 @@ public class FieldsNotPublishedAnalyzer extends BaseMethodAnalyzer {
 	public FieldsNotPublishedAnalyzer(ClassContext classContext,
 			MethodGen methodGen, Heap heap) {
 		this(classContext, methodGen, new HashSet<MethodInvocation>(), -1);
+		alreadyVisitedMethods.add(new MethodInvocation(classContext.getJavaClass(), methodGen.getMethod()));
 		this.heap = heap;
 	}
 
