@@ -50,7 +50,6 @@ public abstract class BaseMethodAnalyzer {
 			throw new OutOfMemoryError(
 					"emergency brake to avoid out of memory error (method stack depth exceeded)");
 
-		
 		this.classContext = classContext;
 		this.methodGen = methodGen;
 		exceptionHandlers = methodGen.getExceptionHandlers();
@@ -63,9 +62,20 @@ public abstract class BaseMethodAnalyzer {
 			Set<Pair<InstructionHandle, Boolean>> alreadyVisitedIfBranch);
 
 	protected abstract Heap getHeap();
-//	protected abstract String getMessage4NativeMethod();
 
+	private Frame createCalleeFrame(OpStack callerOpStack) {
+		int numSlots = methodGen.isStatic() ? 0 : 1;
 
+		for (Type type : methodGen.getArgumentTypes()) {
+			numSlots += Slot.getDefaultSlotInstance(type).getNumSlots();
+		}
+
+		Frame calleeFrame = new Frame(methodGen.getMethod().getCode().getMaxLocals(),
+				callerOpStack, numSlots);
+		return calleeFrame;
+	}
+	
+	
 	public final synchronized void analyze() {
 		OpStack callerStack = new OpStack();
 		Heap callerHeap = getHeap();
@@ -90,6 +100,18 @@ public abstract class BaseMethodAnalyzer {
 
 		analyze(callerStack, callerHeap);
 	}
+
+	
+	public final synchronized void analyze(OpStack callerStack, Heap heap) {
+		Frame calleeFrame = createCalleeFrame(callerStack);
+		
+		InstructionHandle[] instructionHandles = new InstructionList(methodGen.getMethod()
+				.getCode().getCode()).getInstructionHandles();
+		
+		analyze(instructionHandles[0], calleeFrame, heap, new HashSet<Pair<InstructionHandle, Boolean>>());
+		
+	}
+	
 	
 	public final synchronized void analyze(InstructionHandle ih, Frame frame, Heap heap, 
 			Set<Pair<InstructionHandle, Boolean>> alreadyVisitedIfBranch) {
@@ -114,57 +136,9 @@ public abstract class BaseMethodAnalyzer {
 		}
 
 		logger.log(Level.FINE, Utils.formatLoggingOutput(this.depth)
-				+ "^^^^^^^^^^^^^^^^^^^^^^^^^^");
-		
+				+ "^^^^^^^^^^^^^^^^^^^^^^^^^^");	
 	}
 	
-
-	public final synchronized void analyze(OpStack callerStack, Heap heap) {
-		Frame calleeFrame = createCalleeFrame(callerStack);
-		
-		InstructionHandle[] instructionHandles = new InstructionList(methodGen.getMethod()
-				.getCode().getCode()).getInstructionHandles();
-		
-		analyze(instructionHandles[0], calleeFrame, heap, new HashSet<Pair<InstructionHandle, Boolean>>());
-		
-
-//		PC pc = new PC(instructionHandles[0]);
-//
-//		visitor = getInstructionVisitor(calleeFrame, heap, pc);
-//
-//		logger.log(Level.FINE, Utils.formatLoggingOutput(this.depth)
-//				+ "vvvvvvvvvvvvvvvvvvvvvvvvvv");
-//		while (pc.isValid()) {
-//			// visitor is expected to 
-//			// (1) either execute the current opcode and then update the pc, or 
-//			// (2) deliver a (possibly multi-value) result and invalidate the pc.
-//			//     The result can be computed by execution of the last opcode in 
-//			//     the list, or by recursively instantiating other analyzers.
-//			pc.getCurrentInstruction().accept(visitor);
-//			// TODO remove next line eventually
-//			pc.invalidate();
-//		}
-//
-//		logger.log(Level.FINE, Utils.formatLoggingOutput(this.depth)
-//				+ "^^^^^^^^^^^^^^^^^^^^^^^^^^");
-	}
-
-	private Frame createCalleeFrame(OpStack callerOpStack) {
-		int numSlots = methodGen.isStatic() ? 0 : 1;
-
-		for (Type type : methodGen.getArgumentTypes()) {
-			numSlots += Slot.getDefaultSlotInstance(type).getNumSlots();
-		}
-
-		Frame calleeFrame = new Frame(methodGen.getMethod().getCode().getMaxLocals(),
-				callerOpStack, numSlots);
-		return calleeFrame;
-	}
-
-	public final synchronized Slot[] getActualParams(Frame frame) {
-		OpStack opStack = new OpStack(frame.getStack());
-		return createCalleeFrame(opStack).getLocalVars();
-	}
 
 	/**
 	 * Returns the bugs found in the analysis. The method analyze() must be
