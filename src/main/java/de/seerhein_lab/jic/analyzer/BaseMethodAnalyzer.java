@@ -128,11 +128,7 @@ public abstract class BaseMethodAnalyzer {
 			// (2) deliver a (possibly multi-value) result and invalidate the pc.
 			//     The result can be computed by execution of the last opcode in 
 			//     the list, or by recursively instantiating other analyzers.
-//			InstructionHandle oldHandle = pc.getCurrentInstruction();
 			pc.getCurrentInstruction().accept(visitor);
-			// TODO remove next line eventually
-//			if ( oldHandle.equals(pc.getCurrentInstruction()))
-//				pc.invalidate();
 		}
 
 		logger.log(Level.FINE, Utils.formatLoggingOutput(this.depth)
