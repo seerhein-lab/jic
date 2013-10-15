@@ -251,10 +251,16 @@ public abstract class BaseVisitor extends SimpleVisitor {
 		
 		if (alreadyVisitedMethods.contains(invocation)) {
 			logger.log(Level.FINE, indentation
-					+ "Recursion found: Method already analyzed.");
+					+ "Recursion found: not analyzing again.");
 			// if already visited then do not analyze again
-			handleVirtualMethod(obj, false);
+//			handleVirtualMethod(obj, false);
+//			return;
+			
+			Slot returnValue = Slot.getDefaultSlotInstance(obj
+					.getReturnType(constantPoolGen));
+			handleSimpleInstruction(obj, returnValue);
 			return;
+			
 		}				
 		
 		Set<MethodInvocation> nowVisitedMethods = new HashSet<MethodInvocation>();
