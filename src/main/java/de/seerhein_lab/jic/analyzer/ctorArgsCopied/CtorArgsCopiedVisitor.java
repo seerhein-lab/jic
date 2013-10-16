@@ -22,43 +22,42 @@ import de.seerhein_lab.jic.vm.PC;
 import edu.umd.cs.findbugs.annotations.Confidence;
 import edu.umd.cs.findbugs.ba.ClassContext;
 
-public class CtorArgsCopiedVisitor extends
-		BaseVisitor {
+public class CtorArgsCopiedVisitor extends BaseVisitor {
 
-	protected CtorArgsCopiedVisitor(ClassContext classContext,
-			MethodGen methodGen, Frame frame, Heap heap, ConstantPoolGen constantPoolGen,
-			PC pc,
-			CodeExceptionGen[] exceptionHandlers,
-			Set<MethodInvocation> alreadyVisitedMethods,
+	protected CtorArgsCopiedVisitor(ClassContext classContext, MethodGen methodGen, Frame frame,
+			Heap heap, ConstantPoolGen constantPoolGen, PC pc,
+			CodeExceptionGen[] exceptionHandlers, Set<MethodInvocation> alreadyVisitedMethods,
 			int depth, Set<Pair<InstructionHandle, Boolean>> alreadyVisitedIfBranch) {
-		super(classContext, methodGen, frame, heap, constantPoolGen,
-				alreadyVisitedIfBranch, alreadyVisitedMethods,
-				pc, exceptionHandlers, depth);
+		super(classContext, methodGen, frame, heap, constantPoolGen, alreadyVisitedIfBranch,
+				alreadyVisitedMethods, pc, exceptionHandlers, depth);
 	}
 
-//	public CtorArgsCopiedVisitor(ClassContext classContext,
-//			MethodGen methodGen, Frame frame, Heap heap, ConstantPoolGen constantPoolGen,
-//			PC pc,
-//			CodeExceptionGen[] exceptionHandlers,
-//			Set<Pair<Method, Slot[]>> alreadyVisitedMethods, int depth) {
-//		this(classContext, methodGen, frame, heap, constantPoolGen, pc,
-//				exceptionHandlers, alreadyVisitedMethods, depth, new HashSet<Pair<InstructionHandle, Boolean>>());
-//	}
+	// public CtorArgsCopiedVisitor(ClassContext classContext,
+	// MethodGen methodGen, Frame frame, Heap heap, ConstantPoolGen
+	// constantPoolGen,
+	// PC pc,
+	// CodeExceptionGen[] exceptionHandlers,
+	// Set<Pair<Method, Slot[]>> alreadyVisitedMethods, int depth) {
+	// this(classContext, methodGen, frame, heap, constantPoolGen, pc,
+	// exceptionHandlers, alreadyVisitedMethods, depth, new
+	// HashSet<Pair<InstructionHandle, Boolean>>());
+	// }
 
-//	@Override
-//	protected BaseVisitor getInstructionsAnalysisVisitor(
-//			Frame frame, Heap heap,
-//			Set<Pair<InstructionHandle, Boolean>> alreadyVisitedIfBranch,
-//			InstructionHandle instructionHandle) {
-//		return new CtorArgsCopiedVisitor(classContext, methodGen, frame, heap,
-//				constantPoolGen, instructionHandle, exceptionHandlers,
-//				alreadyVisitedMethods, depth, alreadyVisitedIfBranch);
-//	}
+	// @Override
+	// protected BaseVisitor getInstructionsAnalysisVisitor(
+	// Frame frame, Heap heap,
+	// Set<Pair<InstructionHandle, Boolean>> alreadyVisitedIfBranch,
+	// InstructionHandle instructionHandle) {
+	// return new CtorArgsCopiedVisitor(classContext, methodGen, frame, heap,
+	// constantPoolGen, instructionHandle, exceptionHandlers,
+	// alreadyVisitedMethods, depth, alreadyVisitedIfBranch);
+	// }
 
 	@Override
-	protected BaseMethodAnalyzer getMethodAnalyzer(MethodGen targetMethodGen, Set<MethodInvocation> alreadyVisitedMethods) {
-		return new CtorArgsCopiedAnalyzer(classContext, targetMethodGen,
-				alreadyVisitedMethods, depth);
+	protected BaseMethodAnalyzer getMethodAnalyzer(MethodGen targetMethodGen,
+			Set<MethodInvocation> alreadyVisitedMethods) {
+		return new CtorArgsCopiedAnalyzer(classContext, targetMethodGen, alreadyVisitedMethods,
+				depth);
 	}
 
 	// ******************************************************************//
@@ -70,17 +69,14 @@ public class CtorArgsCopiedVisitor extends
 		if (argument.isNullReference())
 			return;
 
-		if (heap.get(argument.getID()).isTransitivelyReferredBy(
-				heap.getThisInstance())) {
-			addBug(Confidence.HIGH,
-					"a field of 'this' is passed to a virtual method and escapes",
+		if (heap.get(argument.getID()).isTransitivelyReferredBy(heap.getThisInstance())) {
+			addBug(Confidence.HIGH, "a field of 'this' is passed to a virtual method and escapes",
 					pc.getCurrentInstruction());
 		}
 	}
 
 	@Override
-	protected void detectXAStoreBug(ReferenceSlot arrayReference,
-			Slot valueToStore) {
+	protected void detectXAStoreBug(ReferenceSlot arrayReference, Slot valueToStore) {
 		if (!(valueToStore instanceof ReferenceSlot)) {
 			// if the value is not a reference we do not analyze
 			return;
@@ -90,16 +86,15 @@ public class CtorArgsCopiedVisitor extends
 		if (referenceToStore.isNullReference())
 			return;
 
-		if (heap.get(arrayReference.getID()).isTransitivelyReferredBy(
-				heap.getThisInstance())) {
+		if (heap.get(arrayReference.getID()).isTransitivelyReferredBy(heap.getThisInstance())) {
 			// array is referred by this
-			if ( heap.getObject(referenceToStore) instanceof ExternalObject ) {
+			if (heap.getObject(referenceToStore) instanceof ExternalObject) {
 				// external reference is assigned to an array referred by this
 				addBug(Confidence.HIGH,
 						"an external reference is assigned to an array referred by 'this'",
 						pc.getCurrentInstruction());
-			} else if (heap.getObject(referenceToStore).transitivelyRefers(
-					heap.getExternalObject())) {
+			} else if (heap.getObject(referenceToStore)
+					.transitivelyRefers(heap.getExternalObject())) {
 				// a reference containing an external reference is assigned to
 				// an array referred by this
 				addBug(Confidence.HIGH,
@@ -110,8 +105,7 @@ public class CtorArgsCopiedVisitor extends
 	}
 
 	@Override
-	protected void detectPutFieldBug(ReferenceSlot targetReference,
-			Slot valueToPut) {
+	protected void detectPutFieldBug(ReferenceSlot targetReference, Slot valueToPut) {
 		if (!(valueToPut instanceof ReferenceSlot)) {
 			// if the value is not a reference we do not analyze
 			return;
@@ -123,29 +117,25 @@ public class CtorArgsCopiedVisitor extends
 
 		if (targetReference.getID().equals(heap.getThisInstance().getId())) {
 			// left side is this
-			if ( heap.getObject(referenceToPut) instanceof ExternalObject ) {
+			if (heap.getObject(referenceToPut) instanceof ExternalObject) {
 				// right is external
-				addBug(Confidence.HIGH,
-						"an external object is assigned to 'this'",
+				addBug(Confidence.HIGH, "an external object is assigned to 'this'",
 						pc.getCurrentInstruction());
-			} else if (heap.getObject(referenceToPut).transitivelyRefers(
-					heap.getExternalObject())) {
+			} else if (heap.getObject(referenceToPut).transitivelyRefers(heap.getExternalObject())) {
 				// right refers external
 				addBug(Confidence.HIGH,
 						"an object containing an external reference is assigned to 'this'",
 						pc.getCurrentInstruction());
 			}
 		}
-		if (heap.get(targetReference.getID()).isTransitivelyReferredBy(
-				heap.getThisInstance())) {
+		if (heap.get(targetReference.getID()).isTransitivelyReferredBy(heap.getThisInstance())) {
 			// left is referred by this
-			if ( heap.getObject(referenceToPut) instanceof ExternalObject ) {
+			if (heap.getObject(referenceToPut) instanceof ExternalObject) {
 				// right is external
 				addBug(Confidence.HIGH,
 						"an external reference is assigned to an object referred by 'this'",
 						pc.getCurrentInstruction());
-			} else if (heap.getObject(referenceToPut).transitivelyRefers(
-					heap.getExternalObject())) {
+			} else if (heap.getObject(referenceToPut).transitivelyRefers(heap.getExternalObject())) {
 				// right refers external
 				addBug(Confidence.HIGH,
 						"a reference containing an external reference is assigned to an object referred by 'this'",
@@ -162,13 +152,11 @@ public class CtorArgsCopiedVisitor extends
 		// XXX this assigned to a static field?? Only starting class?!?
 		if (referenceToPut.getID().equals(heap.getThisInstance().getId())) {
 			// this is published
-			addBug(Confidence.HIGH,
-					"'this' is published by assignment to a static field",
+			addBug(Confidence.HIGH, "'this' is published by assignment to a static field",
 					pc.getCurrentInstruction());
 		}
 
-		if (heap.get(referenceToPut.getID()).isTransitivelyReferredBy(
-				heap.getThisInstance())) {
+		if (heap.get(referenceToPut.getID()).isTransitivelyReferredBy(heap.getThisInstance())) {
 			// a field referred by this is published
 			addBug(Confidence.HIGH,
 					"an object referred by 'this' is published by assignment to a static field",

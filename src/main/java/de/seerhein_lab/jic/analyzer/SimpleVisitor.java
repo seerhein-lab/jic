@@ -70,8 +70,7 @@ import de.seerhein_lab.jic.vm.PC;
  * </p>
  */
 public class SimpleVisitor extends EmptyVisitor {
-	protected static final Logger logger = Logger
-			.getLogger("SimpleInstructionsAnalysisVisitor");
+	protected static final Logger logger = Logger.getLogger("SimpleInstructionsAnalysisVisitor");
 
 	private final static Map<Short, Slot> ARRAY_LOAD_INSTRUCTIONS = new HashMap<Short, Slot>();
 	static {
@@ -96,8 +95,8 @@ public class SimpleVisitor extends EmptyVisitor {
 	// protected InstructionHandle instructionHandle;
 	protected final PC pc;
 
-	protected SimpleVisitor(Frame frame, Heap heap,
-			ConstantPoolGen constantPoolGen, PC pc, int depth) {
+	protected SimpleVisitor(Frame frame, Heap heap, ConstantPoolGen constantPoolGen, PC pc,
+			int depth) {
 		this.frame = frame;
 		this.heap = heap;
 		this.constantPoolGen = constantPoolGen;
@@ -150,8 +149,7 @@ public class SimpleVisitor extends EmptyVisitor {
 	 */
 	@Override
 	public void visitArithmeticInstruction(ArithmeticInstruction obj) {
-		handleSimpleInstruction(obj,
-				Slot.getDefaultSlotInstance(obj.getType(constantPoolGen)));
+		handleSimpleInstruction(obj, Slot.getDefaultSlotInstance(obj.getType(constantPoolGen)));
 	}
 
 	// -----------------------------------------------------------------
@@ -167,8 +165,7 @@ public class SimpleVisitor extends EmptyVisitor {
 			// instruction is not handled with this method
 			return;
 		}
-		handleSimpleInstruction(obj,
-				ARRAY_LOAD_INSTRUCTIONS.get(obj.getOpcode()));
+		handleSimpleInstruction(obj, ARRAY_LOAD_INSTRUCTIONS.get(obj.getOpcode()));
 	}
 
 	// -----------------------------------------------------------------
@@ -215,8 +212,7 @@ public class SimpleVisitor extends EmptyVisitor {
 	 */
 	@Override
 	public void visitConversionInstruction(ConversionInstruction obj) {
-		handleSimpleInstruction(obj,
-				Slot.getDefaultSlotInstance(obj.getType(constantPoolGen)));
+		handleSimpleInstruction(obj, Slot.getDefaultSlotInstance(obj.getType(constantPoolGen)));
 	}
 
 	/**

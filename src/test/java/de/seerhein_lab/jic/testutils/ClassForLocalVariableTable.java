@@ -5,7 +5,7 @@ package de.seerhein_lab.jic.testutils;
  * LocalVarsTest class.
  */
 public class ClassForLocalVariableTable {
-	public ClassForLocalVariableTable(byte b, short s, Object o, int i, long l,
-			float f, double d, char c, boolean bo) {
+	public ClassForLocalVariableTable(byte b, short s, Object o, int i, long l, float f, double d,
+			char c, boolean bo) {
 	}
 }

@@ -29,8 +29,8 @@ import edu.umd.cs.findbugs.BugInstance;
 import edu.umd.cs.findbugs.annotations.Confidence;
 import edu.umd.cs.findbugs.ba.ClassContext;
 
-
-@ThreadSafe // follows the Java monitor pattern
+@ThreadSafe
+// follows the Java monitor pattern
 public abstract class BaseMethodAnalyzer {
 	private static final Logger logger = Logger.getLogger("BaseMethodAnalyzer");
 	protected final ClassContext classContext;
@@ -40,13 +40,12 @@ public abstract class BaseMethodAnalyzer {
 	protected final CodeExceptionGen[] exceptionHandlers;
 	protected BaseVisitor visitor = null;
 
-
 	protected BaseMethodAnalyzer(ClassContext classContext, MethodGen methodGen,
 			Set<MethodInvocation> alreadyVisitedMethods, int depth) {
-		if ( classContext == null || methodGen == null || alreadyVisitedMethods == null ) 
+		if (classContext == null || methodGen == null || alreadyVisitedMethods == null)
 			throw new AssertionError("Params must not be null.");
-		
-		if ( depth > 25 ) 
+
+		if (depth > 25)
 			throw new OutOfMemoryError(
 					"emergency brake to avoid out of memory error (method stack depth exceeded)");
 
@@ -54,11 +53,11 @@ public abstract class BaseMethodAnalyzer {
 		this.methodGen = methodGen;
 		exceptionHandlers = methodGen.getExceptionHandlers();
 		this.alreadyVisitedMethods = alreadyVisitedMethods;
-		
+
 		this.depth = depth + 1;
 	}
 
-	protected abstract BaseVisitor getInstructionVisitor(Frame frame, Heap heap, PC pc, 
+	protected abstract BaseVisitor getInstructionVisitor(Frame frame, Heap heap, PC pc,
 			Set<Pair<InstructionHandle, Boolean>> alreadyVisitedIfBranch);
 
 	protected abstract Heap getHeap();
@@ -74,24 +73,21 @@ public abstract class BaseMethodAnalyzer {
 				callerOpStack, numSlots);
 		return calleeFrame;
 	}
-	
-	
+
 	public final synchronized void analyze() {
 		OpStack callerStack = new OpStack();
 		Heap callerHeap = getHeap();
 
 		// push this onto the stack, if not static
-//		if (!method.isStatic()) {
-			callerStack.push(ReferenceSlot.createNewInstance(callerHeap
-					.getThisInstance()));
-//		}
+		// if (!method.isStatic()) {
+		callerStack.push(ReferenceSlot.createNewInstance(callerHeap.getThisInstance()));
+		// }
 
 		// push args onto the stack
 		for (Type argType : methodGen.getArgumentTypes()) {
 			Slot argument = Slot.getDefaultSlotInstance(argType);
 			if (argument instanceof ReferenceSlot) {
-				argument = ReferenceSlot.createNewInstance(callerHeap
-						.getExternalObject());
+				argument = ReferenceSlot.createNewInstance(callerHeap.getExternalObject());
 			}
 			for (int i = 0; i < argument.getNumSlots(); i++) {
 				callerStack.push(argument);
@@ -101,40 +97,37 @@ public abstract class BaseMethodAnalyzer {
 		analyze(callerStack, callerHeap);
 	}
 
-	
 	public final synchronized void analyze(OpStack callerStack, Heap heap) {
 		Frame calleeFrame = createCalleeFrame(callerStack);
-		
+
 		InstructionHandle[] instructionHandles = new InstructionList(methodGen.getMethod()
 				.getCode().getCode()).getInstructionHandles();
-		
-		analyze(instructionHandles[0], calleeFrame, heap, new HashSet<Pair<InstructionHandle, Boolean>>());
-		
+
+		analyze(instructionHandles[0], calleeFrame, heap,
+				new HashSet<Pair<InstructionHandle, Boolean>>());
+
 	}
-	
-	
-	public final synchronized void analyze(InstructionHandle ih, Frame frame, Heap heap, 
+
+	public final synchronized void analyze(InstructionHandle ih, Frame frame, Heap heap,
 			Set<Pair<InstructionHandle, Boolean>> alreadyVisitedIfBranch) {
-		
+
 		PC pc = new PC(ih);
 
 		visitor = getInstructionVisitor(frame, heap, pc, alreadyVisitedIfBranch);
 
-		logger.log(Level.FINE, Utils.formatLoggingOutput(this.depth)
-				+ "vvvvvvvvvvvvvvvvvvvvvvvvvv");
+		logger.log(Level.FINE, Utils.formatLoggingOutput(this.depth) + "vvvvvvvvvvvvvvvvvvvvvvvvvv");
 		while (pc.isValid()) {
-			// visitor is expected to 
-			// (1) either execute the current opcode and then update the pc, or 
-			// (2) deliver a (possibly multi-value) result and invalidate the pc.
-			//     The result can be computed by execution of the last opcode in 
-			//     the list, or by recursively instantiating other analyzers.
+			// visitor is expected to
+			// (1) either execute the current opcode and then update the pc, or
+			// (2) deliver a (possibly multi-value) result and invalidate the
+			// pc.
+			// The result can be computed by execution of the last opcode in
+			// the list, or by recursively instantiating other analyzers.
 			pc.getCurrentInstruction().accept(visitor);
 		}
 
-		logger.log(Level.FINE, Utils.formatLoggingOutput(this.depth)
-				+ "^^^^^^^^^^^^^^^^^^^^^^^^^^");	
+		logger.log(Level.FINE, Utils.formatLoggingOutput(this.depth) + "^^^^^^^^^^^^^^^^^^^^^^^^^^");
 	}
-	
 
 	/**
 	 * Returns the bugs found in the analysis. The method analyze() must be
@@ -147,8 +140,7 @@ public abstract class BaseMethodAnalyzer {
 	 */
 	public final synchronized Collection<BugInstance> getBugs() {
 		if (visitor == null) {
-			throw new IllegalStateException(
-					"analyze() must be called before getBugs()");
+			throw new IllegalStateException("analyze() must be called before getBugs()");
 		}
 		return visitor.getBugs().getCollection();
 	}
@@ -166,8 +158,7 @@ public abstract class BaseMethodAnalyzer {
 	public final synchronized Set<ResultValue> getResult() {
 
 		if (visitor == null) {
-			throw new IllegalStateException(
-					"analyze() must be called before getResult()");
+			throw new IllegalStateException("analyze() must be called before getResult()");
 		}
 		return visitor.getResult();
 	}

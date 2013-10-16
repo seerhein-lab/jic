@@ -29,15 +29,12 @@ import edu.umd.cs.findbugs.ba.ClassContext;
 
 public class FieldsNotPublishedVisitor extends BaseVisitor {
 
-	protected FieldsNotPublishedVisitor(ClassContext classContext,
-			MethodGen methodGen, Frame frame, Heap heap,
-			ConstantPoolGen constantPoolGen, PC pc,
-			CodeExceptionGen[] exceptionHandlers,
-			Set<MethodInvocation> alreadyVisitedMethods, int depth,
-			Set<Pair<InstructionHandle, Boolean>> alreadyVisitedIfBranch) {
-		super(classContext, methodGen, frame, heap, constantPoolGen,
-				alreadyVisitedIfBranch, alreadyVisitedMethods, pc,
-				exceptionHandlers, depth);
+	protected FieldsNotPublishedVisitor(ClassContext classContext, MethodGen methodGen,
+			Frame frame, Heap heap, ConstantPoolGen constantPoolGen, PC pc,
+			CodeExceptionGen[] exceptionHandlers, Set<MethodInvocation> alreadyVisitedMethods,
+			int depth, Set<Pair<InstructionHandle, Boolean>> alreadyVisitedIfBranch) {
+		super(classContext, methodGen, frame, heap, constantPoolGen, alreadyVisitedIfBranch,
+				alreadyVisitedMethods, pc, exceptionHandlers, depth);
 	}
 
 	// public FieldsNotPublishedVisitor(ClassContext classContext,
@@ -62,9 +59,10 @@ public class FieldsNotPublishedVisitor extends BaseVisitor {
 	// }
 
 	@Override
-	protected BaseMethodAnalyzer getMethodAnalyzer(MethodGen targetMethodGen, Set<MethodInvocation> alreadyVisitedMethods) {
-		return new FieldsNotPublishedAnalyzer(classContext, targetMethodGen,
-				alreadyVisitedMethods, depth);
+	protected BaseMethodAnalyzer getMethodAnalyzer(MethodGen targetMethodGen,
+			Set<MethodInvocation> alreadyVisitedMethods) {
+		return new FieldsNotPublishedAnalyzer(classContext, targetMethodGen, alreadyVisitedMethods,
+				depth);
 	}
 
 	@Override
@@ -77,8 +75,7 @@ public class FieldsNotPublishedVisitor extends BaseVisitor {
 		// lreturn 0xad
 
 		logger.log(Level.FINE, indentation + obj.toString(false));
-		Slot returnType = Slot.getDefaultSlotInstance(obj
-				.getType(constantPoolGen));
+		Slot returnType = Slot.getDefaultSlotInstance(obj.getType(constantPoolGen));
 		logger.log(Level.FINEST, indentation + "\t" + returnType);
 
 		if (returnType instanceof VoidSlot)
@@ -104,27 +101,21 @@ public class FieldsNotPublishedVisitor extends BaseVisitor {
 		HeapObject argumentObject = heap.get(argument.getID());
 		if (argumentObject.equals(heap.getThisInstance())) {
 			// XXX problem or not?? Inheritance?!?
-			addBug(Confidence.HIGH,
-					"'this' is passed to a virtual method and published",
+			addBug(Confidence.HIGH, "'this' is passed to a virtual method and published",
 					pc.getCurrentInstruction());
-		} else if (argumentObject.isTransitivelyReferredBy(heap
-				.getThisInstance())) {
+		} else if (argumentObject.isTransitivelyReferredBy(heap.getThisInstance())) {
 			addBug(Confidence.HIGH,
 					"a field of 'this' is passed to a virtual mehtod and published",
 					pc.getCurrentInstruction());
-		} else if (argumentObject.refersObjectThatIsReferredBy(heap
-				.getThisInstance())) {
+		} else if (argumentObject.refersObjectThatIsReferredBy(heap.getThisInstance())) {
 			// publish Object that refers Object referedBy 'this'
-			addBug(Confidence.HIGH,
-					"an Object that refers an Object refered by 'this' is passed"
-							+ " to a virtual mehtod and published",
-					pc.getCurrentInstruction());
+			addBug(Confidence.HIGH, "an Object that refers an Object refered by 'this' is passed"
+					+ " to a virtual mehtod and published", pc.getCurrentInstruction());
 		}
 	}
 
 	@Override
-	protected void detectXAStoreBug(ReferenceSlot arrayReference,
-			Slot valueToStore) {
+	protected void detectXAStoreBug(ReferenceSlot arrayReference, Slot valueToStore) {
 		if (!(valueToStore instanceof ReferenceSlot)) {
 			// if the value is not a reference we do not analyze
 			return;
@@ -142,19 +133,16 @@ public class FieldsNotPublishedVisitor extends BaseVisitor {
 				addBug(Confidence.HIGH,
 						"field of 'this' is published by assignment to an external array",
 						pc.getCurrentInstruction());
-			} else if (objectToStore.refersObjectThatIsReferredBy(heap
-					.getThisInstance()))
+			} else if (objectToStore.refersObjectThatIsReferredBy(heap.getThisInstance()))
 				// publish Object that refers Object referedBy 'this'
 				addBug(Confidence.HIGH,
 						"an Object that refers an Object refered by 'this' is published"
-								+ " by assignment to an external array",
-						pc.getCurrentInstruction());
+								+ " by assignment to an external array", pc.getCurrentInstruction());
 		}
 	}
 
 	@Override
-	protected void detectPutFieldBug(ReferenceSlot targetReference,
-			Slot valueToPut) {
+	protected void detectPutFieldBug(ReferenceSlot targetReference, Slot valueToPut) {
 		if (!(valueToPut instanceof ReferenceSlot)) {
 			// if the value is not a reference we do not analyze
 			return;
@@ -172,8 +160,7 @@ public class FieldsNotPublishedVisitor extends BaseVisitor {
 				addBug(Confidence.HIGH,
 						"a field of 'this' is published by assignment to an external object",
 						pc.getCurrentInstruction());
-			} else if (objectToPut.refersObjectThatIsReferredBy(heap
-					.getThisInstance()))
+			} else if (objectToPut.refersObjectThatIsReferredBy(heap.getThisInstance()))
 				// publish Object that refers Object referedBy 'this'
 				addBug(Confidence.HIGH,
 						"an Object that refers an Object refered by 'this' is published"
@@ -190,21 +177,18 @@ public class FieldsNotPublishedVisitor extends BaseVisitor {
 		HeapObject objectToPut = heap.get(referenceToPut.getID());
 		// XXX only a problem if it is a static field of the class we analyze
 		if (objectToPut.equals(heap.getThisInstance())) {
-			addBug(Confidence.HIGH,
-					"'this' is published by assignment to a static field",
+			addBug(Confidence.HIGH, "'this' is published by assignment to a static field",
 					pc.getCurrentInstruction());
 		} else if (objectToPut.isTransitivelyReferredBy(heap.getThisInstance())) {
 			// publish Object referedBy 'this'
 			addBug(Confidence.HIGH,
 					"a field of 'this' is published by assignment to a static field",
 					pc.getCurrentInstruction());
-		} else if (objectToPut.refersObjectThatIsReferredBy(heap
-				.getThisInstance()))
+		} else if (objectToPut.refersObjectThatIsReferredBy(heap.getThisInstance()))
 			// publish Object that refers Object referedBy 'this'
 			addBug(Confidence.HIGH,
 					"an Object that refers an Object refered by 'this' is published"
-							+ " by assignment to a static field",
-					pc.getCurrentInstruction());
+							+ " by assignment to a static field", pc.getCurrentInstruction());
 	}
 
 	protected void detectAReturnBug(ReferenceSlot returnValue) {
@@ -216,8 +200,7 @@ public class FieldsNotPublishedVisitor extends BaseVisitor {
 			// publish Object referedBy 'this'
 			addBug(Confidence.HIGH, "a field of 'this' is published by return",
 					pc.getCurrentInstruction());
-		} else if (returnObject.refersObjectThatIsReferredBy(heap
-				.getThisInstance()))
+		} else if (returnObject.refersObjectThatIsReferredBy(heap.getThisInstance()))
 			// publish Object that refers Object referedBy 'this'
 			addBug(Confidence.HIGH,
 					"an Object that refers an Object refered by 'this' is published by return",

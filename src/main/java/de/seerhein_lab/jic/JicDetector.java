@@ -1,6 +1,5 @@
 package de.seerhein_lab.jic;
 
-
 import org.apache.bcel.classfile.AnnotationEntry;
 import org.apache.bcel.classfile.JavaClass;
 
@@ -18,8 +17,8 @@ public final class JicDetector implements Detector {
 	private final static String IMMUTABLE_ANNOTATION = "Lnet/jcip/annotations/Immutable;";
 
 	private final BugReporter reporter;
-	
-//	public static int propConCounter;
+
+	// public static int propConCounter;
 
 	public JicDetector(BugReporter reporter) {
 		this.reporter = reporter;
@@ -39,36 +38,35 @@ public final class JicDetector implements Detector {
 
 	@Override
 	public void visitClassContext(ClassContext classContext) {
-//		propConCounter = 0;
+		// propConCounter = 0;
 
 		JavaClass clazz = classContext.getJavaClass();
 		boolean supposedlyImmutable = supposedlyImmutable(clazz);
-		
-		if ( clazz.isAnnotation() || clazz.isInterface() ) {
-			if (  supposedlyImmutable ) 
-				reporter.reportBug(Utils.createBug(
-						Confidence.HIGH, "Type cannot be annotated as immutable", clazz));
+
+		if (clazz.isAnnotation() || clazz.isInterface()) {
+			if (supposedlyImmutable)
+				reporter.reportBug(Utils.createBug(Confidence.HIGH,
+						"Type cannot be annotated as immutable", clazz));
 			return;
 		}
 
 		SortedBugCollection bugs = new SortedBugCollection();
-		
-		if ( clazz.isAbstract() && supposedlyImmutable ) {
-			reporter.reportBug(Utils.createBug(
-					Confidence.HIGH, "Type cannot be annotated as immutable", clazz));
+
+		if (clazz.isAbstract() && supposedlyImmutable) {
+			reporter.reportBug(Utils.createBug(Confidence.HIGH,
+					"Type cannot be annotated as immutable", clazz));
 			supposedlyImmutable = false;
-		} 
+		}
 
 		try {
-			bugs.addAll(supposedlyImmutable? new ClassAnalyzer(
-					classContext).isImmutable() : new ClassAnalyzer(
-					classContext).properlyConstructed());
+			bugs.addAll(supposedlyImmutable ? new ClassAnalyzer(classContext).isImmutable()
+					: new ClassAnalyzer(classContext).properlyConstructed());
 		} catch (Throwable e) {
-			reporter.reportBug(Utils.createBug(Confidence.HIGH, 
-					"Class cannot be analyzed owing to internal problem (" + e + ")", 
+			reporter.reportBug(Utils.createBug(Confidence.HIGH,
+					"Class cannot be analyzed owing to internal problem (" + e + ")",
 					classContext.getJavaClass()));
 		}
-		
+
 		for (BugInstance bug : bugs) {
 			reporter.reportBug(bug);
 		}

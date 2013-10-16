@@ -7,16 +7,14 @@ import org.apache.bcel.generic.InstructionHandle;
 
 @Immutable
 public final class MethodHelper {
-	public static boolean protectsInstruction(
-			CodeExceptionGen exceptionHandler, InstructionHandle instruction) {
-		for (InstructionHandle protectedInstruction = exceptionHandler
-				.getStartPC(); !protectedInstruction.equals(exceptionHandler
-				.getEndPC()); protectedInstruction = protectedInstruction
+	public static boolean protectsInstruction(CodeExceptionGen exceptionHandler,
+			InstructionHandle instruction) {
+		for (InstructionHandle protectedInstruction = exceptionHandler.getStartPC(); !protectedInstruction
+				.equals(exceptionHandler.getEndPC()); protectedInstruction = protectedInstruction
 				.getNext()) {
 			if (protectedInstruction.getPosition() == instruction.getPosition())
 				return true;
 		}
-		return (exceptionHandler.getEndPC().getPosition() == instruction
-				.getPosition());
+		return (exceptionHandler.getEndPC().getPosition() == instruction.getPosition());
 	}
 }

@@ -7,20 +7,18 @@ import java.util.UUID;
 
 public final class ExternalObject extends HeapObject {
 	private final Set<UUID> refers = new HashSet<UUID>();
-	
-	
+
 	public ExternalObject(Heap heap) {
 		super(heap);
 		refers.add(getId());
 	}
-	
+
 	public ExternalObject(ExternalObject external, Heap heap) {
 		super(external, heap);
 	}
 
 	@Override
-	public void replaceAllOccurrencesOfReferredObject(HeapObject oldObject,
-			HeapObject newObject) {
+	public void replaceAllOccurrencesOfReferredObject(HeapObject oldObject, HeapObject newObject) {
 		throw new AssertionError("must not be called.");
 	}
 
@@ -34,13 +32,13 @@ public final class ExternalObject extends HeapObject {
 				lookAhead();
 			}
 
-			private void lookAhead(){
+			private void lookAhead() {
 				lookAhead = null;
-				while ( lookAhead == null && idIterator.hasNext() ) {
+				while (lookAhead == null && idIterator.hasNext()) {
 					lookAhead = idIterator.next();
 				}
 			}
-			
+
 			@Override
 			public boolean hasNext() {
 				return lookAhead != null;
@@ -64,5 +62,4 @@ public final class ExternalObject extends HeapObject {
 		return new ExternalObject(this, heap);
 	}
 
-	
 }

@@ -2,16 +2,16 @@ package de.seerhein_lab.jic;
 
 import org.junit.Test;
 
-
 /**
  * JUnit test for class ResultValue. Not testing auto-generated methods and
  * simple getter and setter.
  */
 public class ResultValueTest {
 
-	 @Test
-	 public void dummy() {}
-	
+	@Test
+	public void dummy() {
+	}
+
 	// /**
 	// * Tests combineReferences(Set) with matching reference pair but different
 	// * kind.

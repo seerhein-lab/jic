@@ -35,8 +35,8 @@ public class Frame {
 	public Frame(Frame frame) {
 		this.localVars = new Slot[frame.getLocalVars().length];
 		for (int i = 0; i < frame.getLocalVars().length; i++) {
-			this.localVars[i] = (frame.getLocalVars()[i] == null) ? null
-					: frame.getLocalVars()[i].copy();
+			this.localVars[i] = (frame.getLocalVars()[i] == null) ? null : frame.getLocalVars()[i]
+					.copy();
 		}
 		opStack = new OpStack(frame.getStack());
 	}

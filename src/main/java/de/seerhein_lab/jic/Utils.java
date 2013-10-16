@@ -19,14 +19,12 @@ public final class Utils {
 	private Utils() {
 		new AssertionError("must not be called.");
 	}
-	
+
 	public static BugInstance createBug(Confidence confidence, String message, JavaClass clazz) {
-		return new BugInstance("IMMUTABILITY_BUG", confidence.getConfidenceValue())
-				.addString(message)
-				.addClass(clazz);
+		return new BugInstance("IMMUTABILITY_BUG", confidence.getConfidenceValue()).addString(
+				message).addClass(clazz);
 	}
-	
-	
+
 	public static String formatLoggingOutput(int depth) {
 		StringBuilder indentation = new StringBuilder("");
 		for (int i = 0; i < depth; i++)
@@ -34,15 +32,13 @@ public final class Utils {
 		return indentation.toString();
 	}
 
-	public static Logger setUpLogger(String loggerName, String logFilePath)
-			throws IOException {
+	public static Logger setUpLogger(String loggerName, String logFilePath) throws IOException {
 		Logger globalLogger = Logger.getLogger("");
 		Handler[] globalLoggerHandlers = globalLogger.getHandlers();
 		for (Handler handler : globalLoggerHandlers) {
 			globalLogger.removeHandler(handler);
 		}
-		StreamHandler streamHandler = new StreamHandler(System.out,
-				new TestDriverFormater());
+		StreamHandler streamHandler = new StreamHandler(System.out, new TestDriverFormater());
 		streamHandler.setLevel(Level.ALL);
 		globalLogger.addHandler(streamHandler);
 		globalLogger.setLevel(Level.ALL);

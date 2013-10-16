@@ -13,12 +13,12 @@ import org.apache.bcel.generic.Type;
 
 @Immutable
 public final class ClassHelper {
-	private final Method[] methods; 
+	private final Method[] methods;
 
 	public ClassHelper(JavaClass clazz) {
-		if ( clazz == null ) 
+		if (clazz == null)
 			throw new NullPointerException("JavaClass must not be null.");
-		
+
 		this.methods = clazz.getMethods();
 	}
 
@@ -29,11 +29,12 @@ public final class ClassHelper {
 				ctors.add(method);
 		return ctors;
 	}
-	
+
 	List<Method> getNonPrivateNonStaticMethods() {
 		List<Method> methodsButCtors = new Vector<Method>();
 		for (Method method : methods)
-			if (!method.getName().equals(CONSTRUCTOR_NAME) && !method.isPrivate() && !method.isStatic())
+			if (!method.getName().equals(CONSTRUCTOR_NAME) && !method.isPrivate()
+					&& !method.isStatic())
 				methodsButCtors.add(method);
 		return methodsButCtors;
 	}
@@ -42,11 +43,9 @@ public final class ClassHelper {
 		for (Method method : methods) {
 			boolean different = false;
 			Type[] methodTypes = method.getArgumentTypes();
-			if (method.getName().equals(name)
-					&& methodTypes.length == types.length) {
+			if (method.getName().equals(name) && methodTypes.length == types.length) {
 				for (int i = 0; i < methodTypes.length; i++) {
-					if (!methodTypes[i].getSignature().equals(
-							types[i].getSignature())) {
+					if (!methodTypes[i].getSignature().equals(types[i].getSignature())) {
 						different = true;
 						break;
 					}
@@ -57,6 +56,5 @@ public final class ClassHelper {
 		}
 		return null;
 	}
-
 
 }

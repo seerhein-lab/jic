@@ -20,29 +20,29 @@ import de.seerhein_lab.jic.vm.Heap;
 import de.seerhein_lab.jic.vm.PC;
 import edu.umd.cs.findbugs.ba.ClassContext;
 
-@ThreadSafe // Superclass is thread-safe, this sub-class doesn't add any public methods
+@ThreadSafe
+// Superclass is thread-safe, this sub-class doesn't add any public methods
 public class FieldsNotPublishedAnalyzer extends BaseMethodAnalyzer {
 
 	private Heap heap;
 
-	public FieldsNotPublishedAnalyzer(ClassContext classContext,
-			MethodGen methodGen, Heap heap) {
+	public FieldsNotPublishedAnalyzer(ClassContext classContext, MethodGen methodGen, Heap heap) {
 		this(classContext, methodGen, new HashSet<MethodInvocation>(), -1);
-		alreadyVisitedMethods.add(new MethodInvocation(classContext.getJavaClass(), methodGen.getMethod()));
+		alreadyVisitedMethods.add(new MethodInvocation(classContext.getJavaClass(), methodGen
+				.getMethod()));
 		this.heap = heap;
 	}
 
-	protected FieldsNotPublishedAnalyzer(ClassContext classContext,
-			MethodGen methodGen,
+	protected FieldsNotPublishedAnalyzer(ClassContext classContext, MethodGen methodGen,
 			Set<MethodInvocation> alreadyVisitedMethods, int depth) {
 		super(classContext, methodGen, alreadyVisitedMethods, depth);
 	}
 
-	protected BaseVisitor getInstructionVisitor(Frame frame,
-			Heap heap, PC pc, Set<Pair<InstructionHandle, Boolean>> alreadyVisitedIfBranch) {
+	protected BaseVisitor getInstructionVisitor(Frame frame, Heap heap, PC pc,
+			Set<Pair<InstructionHandle, Boolean>> alreadyVisitedIfBranch) {
 		return new FieldsNotPublishedVisitor(classContext, methodGen, frame, heap,
-				methodGen.getConstantPool(),
-				pc, exceptionHandlers, alreadyVisitedMethods, depth, alreadyVisitedIfBranch);
+				methodGen.getConstantPool(), pc, exceptionHandlers, alreadyVisitedMethods, depth,
+				alreadyVisitedIfBranch);
 	}
 
 	@Override

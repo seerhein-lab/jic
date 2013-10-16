@@ -61,10 +61,8 @@ public class Heap {
 	 */
 	public HeapObject get(UUID id) {
 		if (id != null && !objects.containsKey(id))
-			throw new NoSuchElementException(
-					"HeapObject not found in this Heap");
-		return publishedObjects.contains(id) ? objects.get(externalID)
-				: objects.get(id);
+			throw new NoSuchElementException("HeapObject not found in this Heap");
+		return publishedObjects.contains(id) ? objects.get(externalID) : objects.get(id);
 	}
 
 	public ClassInstance getThisInstance() {
@@ -110,8 +108,7 @@ public class Heap {
 	 *            The object to be published
 	 */
 	public void publish(HeapObject obj) {
-		if (obj == null || obj.getId().equals(thisID)
-				|| obj.getId().equals(externalID)) {
+		if (obj == null || obj.getId().equals(thisID) || obj.getId().equals(externalID)) {
 			// do not publish 'this' in order not to cover further bugs
 			// do not publish 'external', is already published
 			return;
@@ -121,18 +118,15 @@ public class Heap {
 
 		HeapObject external = objects.get(externalID);
 
-		for (Iterator<HeapObject> iterator = obj.getReferringIterator(); iterator
-				.hasNext();) {
+		for (Iterator<HeapObject> iterator = obj.getReferringIterator(); iterator.hasNext();) {
 			HeapObject referringObject = iterator.next();
 			if (!referringObject.equals(external)) {
-				referringObject.replaceAllOccurrencesOfReferredObject(obj,
-						external);
+				referringObject.replaceAllOccurrencesOfReferredObject(obj, external);
 				external.addReferringObject(referringObject);
 			}
 		}
 
-		for (Iterator<HeapObject> iterator = obj.getReferredIterator(); iterator
-				.hasNext();) {
+		for (Iterator<HeapObject> iterator = obj.getReferredIterator(); iterator.hasNext();) {
 			HeapObject referred = iterator.next();
 			if (!referred.equals(external))
 				publish(referred);

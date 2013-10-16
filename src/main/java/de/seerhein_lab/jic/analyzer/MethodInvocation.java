@@ -8,10 +8,10 @@ public final class MethodInvocation {
 	private final Method method;
 
 	public MethodInvocation(JavaClass clazz, Method method) {
-		if ( clazz == null || method == null ) {
+		if (clazz == null || method == null) {
 			throw new NullPointerException("params must not be null");
 		}
-		
+
 		this.clazz = clazz;
 		this.method = method;
 	}
@@ -31,16 +31,13 @@ public final class MethodInvocation {
 			return true;
 		if (!(obj instanceof MethodInvocation))
 			return false;
-		
+
 		MethodInvocation other = (MethodInvocation) obj;
-		
+
 		if (!clazz.equals(other.clazz))
 			return false;
-		
+
 		return method.equals(other.method);
 	}
 
-
-	
-	
 }

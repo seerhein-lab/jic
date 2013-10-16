@@ -4,6 +4,7 @@ import org.junit.Test;
 
 public class ReferenceSlotTest {
 
-	 @Test
-	 public void dummy() {}
+	@Test
+	public void dummy() {
+	}
 }

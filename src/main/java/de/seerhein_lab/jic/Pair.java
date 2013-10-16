@@ -5,9 +5,9 @@ public class Pair<T, K> {
 	private K value2;
 
 	public Pair(T value1, K value2) {
-		if ( value1 == null || value2 == null) 
+		if (value1 == null || value2 == null)
 			throw new NullPointerException("Pair components must not be null");
-		
+
 		this.value1 = value1;
 		this.value2 = value2;
 	}
@@ -31,7 +31,7 @@ public class Pair<T, K> {
 			return false;
 		}
 		Pair<?, ?> other = (Pair<?, ?>) obj;
-		
+
 		return value1.equals(other.value1) && value2.equals(other.value2);
 	}
 

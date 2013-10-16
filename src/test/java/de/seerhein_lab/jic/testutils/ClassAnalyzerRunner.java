@@ -44,8 +44,8 @@ public class ClassAnalyzerRunner extends Runner {
 		Description description = Description.createSuiteDescription(testClass);
 		List<Class<?>> classes = getTestClasses(testClass);
 		for (Class<?> classToTest : classes) {
-			Description testDescription = Description.createTestDescription(
-					classToTest, classToTest.getSimpleName());
+			Description testDescription = Description.createTestDescription(classToTest,
+					classToTest.getSimpleName());
 			description.addChild(testDescription);
 		}
 		return description;
@@ -55,12 +55,11 @@ public class ClassAnalyzerRunner extends Runner {
 	public void run(RunNotifier notifier) {
 		List<Class<?>> classes = getTestClasses(testClass);
 		for (Class<?> classToTest : classes) {
-			Description testDescription = Description.createTestDescription(
-					classToTest, classToTest.getSimpleName());
+			Description testDescription = Description.createTestDescription(classToTest,
+					classToTest.getSimpleName());
 			notifier.fireTestStarted(testDescription);
 			try {
-				boolean ignoreTest = classToTest
-						.isAnnotationPresent(Ignore.class);
+				boolean ignoreTest = classToTest.isAnnotationPresent(Ignore.class);
 				if (ignoreTest) {
 					notifier.fireTestIgnored(testDescription);
 				} else {
@@ -75,8 +74,8 @@ public class ClassAnalyzerRunner extends Runner {
 		}
 	}
 
-	void runTest(RunNotifier notifier, Description testDescription,
-			Class<?> classToTest) throws Exception {
+	void runTest(RunNotifier notifier, Description testDescription, Class<?> classToTest)
+			throws Exception {
 		JavaClass javaClass = Repository.lookupClass(classToTest);
 
 		ClassContext classContextMock = mock(ClassContext.class);
@@ -103,8 +102,7 @@ public class ClassAnalyzerRunner extends Runner {
 	}
 
 	@SuppressWarnings("unchecked")
-	Collection<BugInstance> invokeBindMethod(Method method,
-			ClassAnalyzer analyzer) {
+	Collection<BugInstance> invokeBindMethod(Method method, ClassAnalyzer analyzer) {
 		try {
 			return (Collection<BugInstance>) method.invoke(null, analyzer);
 		} catch (Exception exp) {
@@ -117,20 +115,16 @@ public class ClassAnalyzerRunner extends Runner {
 		for (Method method : methods) {
 			if (method.isAnnotationPresent(BindAnalyzerMethod.class)) {
 				if (!Modifier.isStatic(method.getModifiers())) {
-					throw new RuntimeException(
-							"The bind method must be static. "
-									+ "Only static method should be marked with the Annotation: "
-									+ BindAnalyzerMethod.class);
+					throw new RuntimeException("The bind method must be static. "
+							+ "Only static method should be marked with the Annotation: "
+							+ BindAnalyzerMethod.class);
 				} else if (!method.getReturnType().equals(Collection.class)) {
-					throw new RuntimeException(
-							"bind method has wrong return typ. "
-									+ "The method should use BugCollection as return type.");
+					throw new RuntimeException("bind method has wrong return typ. "
+							+ "The method should use BugCollection as return type.");
 				} else if (!(method.getParameterTypes().length == 1)) {
-					throw new RuntimeException(
-							"bind method has no parameter. "
-									+ "The method should have a ClassAnaylzer as parameter.");
-				} else if (!method.getParameterTypes()[0]
-						.equals(ClassAnalyzer.class)) {
+					throw new RuntimeException("bind method has no parameter. "
+							+ "The method should have a ClassAnaylzer as parameter.");
+				} else if (!method.getParameterTypes()[0].equals(ClassAnalyzer.class)) {
 					throw new RuntimeException(
 							"The parameter type of the bind method must be ClassAnaylzer.");
 				} else {

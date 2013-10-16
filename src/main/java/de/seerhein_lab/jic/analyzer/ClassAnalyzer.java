@@ -48,8 +48,8 @@ public final class ClassAnalyzer {
 		for (Field field : fields)
 			if (!field.isStatic() && !field.isFinal())
 				bugs.add(Utils.createBug(Confidence.HIGH, "All fields must be final.", clazz)
-						.addField(clazz.getClassName(), field.getName(),
-								field.getSignature(), false));
+						.addField(clazz.getClassName(), field.getName(), field.getSignature(),
+								false));
 		return bugs.getCollection();
 	}
 
@@ -57,11 +57,10 @@ public final class ClassAnalyzer {
 		BugCollection bugs = new SortedBugCollection();
 		Field[] fields = clazz.getFields();
 		for (Field field : fields)
-			if (!field.isStatic() && !(field.getType() instanceof BasicType)
-					&& !field.isPrivate())
-				bugs.add(Utils.createBug(Confidence.HIGH, "Reference fields must be private.", clazz)
-						.addField(clazz.getClassName(), field.getName(),
-								field.getSignature(), false));
+			if (!field.isStatic() && !(field.getType() instanceof BasicType) && !field.isPrivate())
+				bugs.add(Utils.createBug(Confidence.HIGH, "Reference fields must be private.",
+						clazz).addField(clazz.getClassName(), field.getName(),
+						field.getSignature(), false));
 		return bugs.getCollection();
 	}
 
@@ -69,11 +68,10 @@ public final class ClassAnalyzer {
 		SortedBugCollection bugs = new SortedBugCollection();
 
 		for (Method ctor : classHelper.getConstructors()) {
-			MethodGen ctorGen = new MethodGen(ctor, clazz.getClassName(),
-					new ConstantPoolGen(clazz.getConstantPool()));
+			MethodGen ctorGen = new MethodGen(ctor, clazz.getClassName(), new ConstantPoolGen(
+					clazz.getConstantPool()));
 
-			BaseMethodAnalyzer ctorAnalyzer = new PropConAnalyzer(
-					classContext, ctorGen);
+			BaseMethodAnalyzer ctorAnalyzer = new PropConAnalyzer(classContext, ctorGen);
 			ctorAnalyzer.analyze();
 			bugs.addAll(ctorAnalyzer.getBugs());
 		}
@@ -85,11 +83,10 @@ public final class ClassAnalyzer {
 		SortedBugCollection bugs = new SortedBugCollection();
 
 		for (Method ctor : classHelper.getConstructors()) {
-			MethodGen ctorGen = new MethodGen(ctor, clazz.getClassName(),
-					new ConstantPoolGen(clazz.getConstantPool()));
+			MethodGen ctorGen = new MethodGen(ctor, clazz.getClassName(), new ConstantPoolGen(
+					clazz.getConstantPool()));
 
-			BaseMethodAnalyzer ctorAnalyzer = new CtorArgsCopiedAnalyzer(
-					classContext, ctorGen);
+			BaseMethodAnalyzer ctorAnalyzer = new CtorArgsCopiedAnalyzer(classContext, ctorGen);
 			ctorAnalyzer.analyze();
 			Collection<BugInstance> currentBugs = ctorAnalyzer.getBugs();
 			bugs.addAll(ctorAnalyzer.getBugs());
@@ -107,20 +104,19 @@ public final class ClassAnalyzer {
 		SortedBugCollection bugs = new SortedBugCollection();
 
 		for (Method method : classHelper.getNonPrivateNonStaticMethods()) {
-			if ( method.isNative() ) {
-				bugs.add(Utils.createBug(Confidence.MEDIUM, 
-						"Native method might publish reference fields of 'this' object", 
+			if (method.isNative()) {
+				bugs.add(Utils.createBug(Confidence.MEDIUM,
+						"Native method might publish reference fields of 'this' object",
 						classContext.getJavaClass()));
 				continue;
 			}
-			
-			for (Heap heap : heaps) {
-				MethodGen methodGen = new MethodGen(method,
-						clazz.getClassName(), new ConstantPoolGen(
-								clazz.getConstantPool()));
 
-				BaseMethodAnalyzer methodAnalyzer = new FieldsNotPublishedAnalyzer(
-						classContext, methodGen, new Heap(heap));
+			for (Heap heap : heaps) {
+				MethodGen methodGen = new MethodGen(method, clazz.getClassName(),
+						new ConstantPoolGen(clazz.getConstantPool()));
+
+				BaseMethodAnalyzer methodAnalyzer = new FieldsNotPublishedAnalyzer(classContext,
+						methodGen, new Heap(heap));
 				methodAnalyzer.analyze();
 				bugs.addAll(methodAnalyzer.getBugs());
 			}
@@ -133,20 +129,18 @@ public final class ClassAnalyzer {
 		SortedBugCollection bugs = new SortedBugCollection();
 
 		for (Method method : classHelper.getNonPrivateNonStaticMethods()) {
-			if ( method.isNative() ) {
-				bugs.add(Utils.createBug(Confidence.MEDIUM, 
-						"Native method might modify 'this' object", 
-						classContext.getJavaClass()));
+			if (method.isNative()) {
+				bugs.add(Utils.createBug(Confidence.MEDIUM,
+						"Native method might modify 'this' object", classContext.getJavaClass()));
 				continue;
 			}
-			
-			for (Heap heap : heaps) {
-				MethodGen methodGen = new MethodGen(method,
-						clazz.getClassName(), new ConstantPoolGen(
-								clazz.getConstantPool()));
 
-				BaseMethodAnalyzer methodAnalyzer = new NoMutatorsAnalyzer(
-						classContext, methodGen, new Heap(heap));
+			for (Heap heap : heaps) {
+				MethodGen methodGen = new MethodGen(method, clazz.getClassName(),
+						new ConstantPoolGen(clazz.getConstantPool()));
+
+				BaseMethodAnalyzer methodAnalyzer = new NoMutatorsAnalyzer(classContext, methodGen,
+						new Heap(heap));
 				methodAnalyzer.analyze();
 				bugs.addAll(methodAnalyzer.getBugs());
 			}

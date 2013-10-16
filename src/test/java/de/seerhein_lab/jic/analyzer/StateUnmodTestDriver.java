@@ -22,14 +22,12 @@ public class StateUnmodTestDriver {
 	private static final boolean analyzeFieldsMutate = true;
 	private static final boolean analyzeFieldsArePuplished = true;
 
-	public static void main(String[] args) throws ClassNotFoundException,
-			SecurityException, IOException {
+	public static void main(String[] args) throws ClassNotFoundException, SecurityException,
+			IOException {
 
-		Logger logger = Utils.setUpLogger("StateUnmodTestDriver",
-				LOGFILEPATH);
+		Logger logger = Utils.setUpLogger("StateUnmodTestDriver", LOGFILEPATH);
 
-		JavaClass clazz = Repository
-				.lookupClass("playground.StateUnmodTestClass");
+		JavaClass clazz = Repository.lookupClass("playground.StateUnmodTestClass");
 
 		SortedBugCollection bugs = new SortedBugCollection();
 
@@ -53,8 +51,7 @@ public class StateUnmodTestDriver {
 
 		logger.log(Level.SEVERE, "bugs: ");
 		for (BugInstance bug : bugs) {
-			logger.log(Level.SEVERE,
-					" " + bug.getType() + " (" + bug.getPriorityString() + ")");
+			logger.log(Level.SEVERE, " " + bug.getType() + " (" + bug.getPriorityString() + ")");
 		}
 
 		logger.log(Level.SEVERE, "end bugs");

@@ -20,12 +20,14 @@ import de.seerhein_lab.jic.vm.Heap;
 import de.seerhein_lab.jic.vm.PC;
 import edu.umd.cs.findbugs.ba.ClassContext;
 
-@ThreadSafe // Superclass is thread-safe, this sub-class doesn't add any public methods
+@ThreadSafe
+// Superclass is thread-safe, this sub-class doesn't add any public methods
 public final class CtorArgsCopiedAnalyzer extends BaseMethodAnalyzer {
 
 	public CtorArgsCopiedAnalyzer(ClassContext classContext, MethodGen methodGen) {
 		this(classContext, methodGen, new HashSet<MethodInvocation>(), -1);
-		alreadyVisitedMethods.add(new MethodInvocation(classContext.getJavaClass(), methodGen.getMethod()));
+		alreadyVisitedMethods.add(new MethodInvocation(classContext.getJavaClass(), methodGen
+				.getMethod()));
 	}
 
 	protected CtorArgsCopiedAnalyzer(ClassContext classContext, MethodGen methodGen,
@@ -33,12 +35,11 @@ public final class CtorArgsCopiedAnalyzer extends BaseMethodAnalyzer {
 		super(classContext, methodGen, alreadyVisitedMethods, depth);
 	}
 
-	protected BaseVisitor getInstructionVisitor(Frame frame,
-			Heap heap, PC pc, Set<Pair<InstructionHandle, Boolean>> alreadyVisitedIfBranch) {
+	protected BaseVisitor getInstructionVisitor(Frame frame, Heap heap, PC pc,
+			Set<Pair<InstructionHandle, Boolean>> alreadyVisitedIfBranch) {
 		return new CtorArgsCopiedVisitor(classContext, methodGen, frame, heap,
-				methodGen.getConstantPool(),
-				pc, exceptionHandlers,
-				alreadyVisitedMethods, depth, alreadyVisitedIfBranch);
+				methodGen.getConstantPool(), pc, exceptionHandlers, alreadyVisitedMethods, depth,
+				alreadyVisitedIfBranch);
 	}
 
 	@Override

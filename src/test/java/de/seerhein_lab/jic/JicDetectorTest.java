@@ -36,8 +36,7 @@ public class JicDetectorTest {
 
 	@Parameters
 	public static List<Object[]> data() throws ClassNotFoundException {
-		Class<?>[] classes = de.seerhein_lab.jic.JicDetectorTest.class
-				.getClasses();
+		Class<?>[] classes = de.seerhein_lab.jic.JicDetectorTest.class.getClasses();
 		List<Object[]> list = new ArrayList<Object[]>();
 		for (int i = 0; i < classes.length; i++) {
 			list.add(new Object[] { Repository.lookupClass(classes[i]) });
@@ -49,8 +48,7 @@ public class JicDetectorTest {
 	public void setUp() throws Exception {
 		jicDetector = new JicDetector(null);
 		isSupposedlyImmutable.put(PACKAGE + "ImmutableAnnotation", true);
-		isSupposedlyImmutable.put(PACKAGE + "immutableAndOtherAnnotations",
-				true);
+		isSupposedlyImmutable.put(PACKAGE + "immutableAndOtherAnnotations", true);
 		isSupposedlyImmutable.put(PACKAGE + "noAnnotation", false);
 		isSupposedlyImmutable.put(PACKAGE + "otherAnnotation", false);
 		isSupposedlyImmutable.put(PACKAGE + "otherImmutableAnnotation", false);

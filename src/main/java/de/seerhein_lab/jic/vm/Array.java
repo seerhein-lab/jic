@@ -43,13 +43,13 @@ public final class Array extends HeapObject {
 				lookAhead();
 			}
 
-			private void lookAhead(){
+			private void lookAhead() {
 				lookAhead = null;
-				while ( lookAhead == null && idIterator.hasNext() ) {
+				while (lookAhead == null && idIterator.hasNext()) {
 					lookAhead = idIterator.next();
 				}
 			}
-			
+
 			@Override
 			public boolean hasNext() {
 				return lookAhead != null;
@@ -72,8 +72,7 @@ public final class Array extends HeapObject {
 	 * Replace the oldObject by the newObject.
 	 */
 	@Override
-	public void replaceAllOccurrencesOfReferredObject(HeapObject oldObject,
-			HeapObject newObject) {
+	public void replaceAllOccurrencesOfReferredObject(HeapObject oldObject, HeapObject newObject) {
 		if (refers.remove(oldObject.getId()))
 			refers.add(newObject.getId());
 	}

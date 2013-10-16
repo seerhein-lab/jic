@@ -32,9 +32,9 @@ public class ResultValue {
 	 *            The returned value represented by a Slot.
 	 */
 	public ResultValue(Kind kind, Slot slot, Heap heap) {
-		if (kind == null || slot == null || heap == null) 
+		if (kind == null || slot == null || heap == null)
 			throw new NullPointerException("parameters must not be null");
-		
+
 		this.kind = kind;
 		this.slot = slot;
 		this.heap = heap;
@@ -54,7 +54,7 @@ public class ResultValue {
 	public boolean equals(Object obj) {
 		if (this == obj)
 			return true;
-		
+
 		if (!(obj instanceof ResultValue))
 			return false;
 		ResultValue other = (ResultValue) obj;

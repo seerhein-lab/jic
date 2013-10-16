@@ -404,8 +404,8 @@ public class ProperlyConstructedAcceptanceTest {
 	 */
 	@NoBugsExpected
 	public static class Story026_ClassWithSingleArgumentTryDoubleCatchFinallyMultipleExceptions {
-		public Story026_ClassWithSingleArgumentTryDoubleCatchFinallyMultipleExceptions(
-				int i) throws Exception {
+		public Story026_ClassWithSingleArgumentTryDoubleCatchFinallyMultipleExceptions(int i)
+				throws Exception {
 			try {
 				if (i > 2)
 					throw new IOException();
@@ -432,8 +432,7 @@ public class ProperlyConstructedAcceptanceTest {
 			throw new IOException();
 		}
 
-		public Story027_ClassWithSimpleExceptionThrowingMethod(int i)
-				throws Exception {
+		public Story027_ClassWithSimpleExceptionThrowingMethod(int i) throws Exception {
 			try {
 				thrower();
 			} catch (IOException e) {
@@ -457,8 +456,7 @@ public class ProperlyConstructedAcceptanceTest {
 			}
 		}
 
-		public Story028_ClassWithNestedExceptionhandling(int i)
-				throws Exception {
+		public Story028_ClassWithNestedExceptionhandling(int i) throws Exception {
 			try {
 				thrower(i);
 			} catch (IOException e) {
@@ -490,8 +488,7 @@ public class ProperlyConstructedAcceptanceTest {
 			i /= 5;
 		}
 
-		public Story029_ClassWithMultipleTryCatchFinally(int i)
-				throws IOException {
+		public Story029_ClassWithMultipleTryCatchFinally(int i) throws IOException {
 			try {
 				thrower(i);
 			} catch (IOException e) {
@@ -620,6 +617,22 @@ public class ProperlyConstructedAcceptanceTest {
 				equals("");
 			else
 				equals(this);
+		}
+	}
+
+	@NoBugsExpected
+	public static class Story039_SimpleRecursion {
+
+		private int f(int n) {
+			if (n > 0) {
+				return f(n - 1);
+			}
+			return 1;
+
+		}
+
+		public Story039_SimpleRecursion() {
+			f(5);
 		}
 	}
 
