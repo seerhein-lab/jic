@@ -91,6 +91,11 @@ import edu.umd.cs.findbugs.ba.ClassContext;
  * </p>
  */
 public abstract class BaseVisitor extends SimpleVisitor {
+
+	private enum Staticality {
+		STATIC, NONSTATIC
+	};
+
 	protected static final Logger logger = Logger.getLogger("BaseInstructionsAnalysisVisitor");
 	protected final ClassContext classContext;
 	protected final MethodGen methodGen;
@@ -179,17 +184,6 @@ public abstract class BaseVisitor extends SimpleVisitor {
 				logger.log(Level.FINE, indentation + "^^^^^ " + exceptionHandler.toString()
 						+ ": end ^^^^^");
 
-				// ************
-
-				// BaseVisitor excepHandlerVisitor =
-				// getInstructionsAnalysisVisitor(
-				// new Frame(frame), heap, alreadyVisitedIfBranch,
-				// exceptionHandler.getHandlerPC());
-				// exceptionHandler.getHandlerPC().accept(excepHandlerVisitor);
-				// bugs.addAll(excepHandlerVisitor.getBugs().getCollection());
-				// result.addAll(excepHandlerVisitor.getResult());
-				// logger.log(Level.FINE, indentation + "^^^^^ "
-				// + exceptionHandler.toString() + ": end ^^^^^");
 			}
 		}
 		result.add(new ResultValue(Kind.EXCEPTION, exception, heap));
@@ -224,7 +218,7 @@ public abstract class BaseVisitor extends SimpleVisitor {
 		if (targetMethod.isNative()) {
 			logger.log(Level.FINE, indentation
 					+ "Native method must be dealt with like virtual method.");
-			handleVirtualMethod(obj, true);
+			handleVirtualMethod(obj, Staticality.STATIC);
 			return;
 		}
 
@@ -233,9 +227,6 @@ public abstract class BaseVisitor extends SimpleVisitor {
 		if (alreadyVisitedMethods.contains(invocation)) {
 			logger.log(Level.FINE, indentation + "Recursion found: not analyzing again.");
 
-			// Slot returnValue =
-			// Slot.getDefaultSlotInstance(obj.getReturnType(constantPoolGen));
-			// handleSimpleInstruction(obj, returnValue);
 			pc.invalidate();
 			return;
 
@@ -277,20 +268,6 @@ public abstract class BaseVisitor extends SimpleVisitor {
 				bugs.addAll(analyzer.getBugs());
 				result.addAll(analyzer.getResult());
 
-				// ************
-
-				// BaseVisitor specificCalleeResultVisitor =
-				// getInstructionsAnalysisVisitor(
-				// new Frame(frame), calleeResult.getHeap(),
-				// alreadyVisitedIfBranch, instructionHandle.getNext());
-				//
-				// specificCalleeResultVisitor.frame
-				// .pushStackByRequiredSlots(calleeResult.getSlot());
-				// instructionHandle.getNext().accept(specificCalleeResultVisitor);
-				//
-				// bugs.addAll(specificCalleeResultVisitor.getBugs()
-				// .getCollection());
-				// result.addAll(specificCalleeResultVisitor.getResult());
 			} else {
 				Frame savedFrame = new Frame(frame);
 				InstructionHandle currentInstruction = pc.getCurrentInstruction();
@@ -308,7 +285,7 @@ public abstract class BaseVisitor extends SimpleVisitor {
 	 * @param obj
 	 *            node to be visited
 	 */
-	protected void handleVirtualMethod(InvokeInstruction obj, boolean isStatic) {
+	protected void handleVirtualMethod(InvokeInstruction obj, Staticality staticality) {
 		logger.log(Level.FINE, indentation + obj.toString(false));
 		logger.log(Level.FINEST, indentation + "\t" + obj.getSignature(constantPoolGen));
 		// get number of args
@@ -318,7 +295,7 @@ public abstract class BaseVisitor extends SimpleVisitor {
 		Slot argument;
 		// pop a value for each arg and 1 for the hidden 'this' reference
 
-		int arguments = isStatic ? type.length : type.length + 1;
+		int arguments = (staticality == Staticality.STATIC) ? type.length : type.length + 1;
 
 		for (int i = 0; i < arguments; i++) {
 			argument = frame.popStackByRequiredSlots();
@@ -1054,7 +1031,7 @@ public abstract class BaseVisitor extends SimpleVisitor {
 	 */
 	@Override
 	public void visitINVOKEINTERFACE(INVOKEINTERFACE obj) {
-		handleVirtualMethod(obj, false);
+		handleVirtualMethod(obj, Staticality.NONSTATIC);
 	}
 
 	/**
@@ -1084,7 +1061,7 @@ public abstract class BaseVisitor extends SimpleVisitor {
 	 */
 	@Override
 	public void visitINVOKEVIRTUAL(INVOKEVIRTUAL obj) {
-		handleVirtualMethod(obj, false);
+		handleVirtualMethod(obj, Staticality.NONSTATIC);
 	}
 
 	/**
