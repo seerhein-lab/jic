@@ -48,6 +48,7 @@ import de.seerhein_lab.jic.Pair;
 import de.seerhein_lab.jic.ResultValue;
 import de.seerhein_lab.jic.ResultValue.Kind;
 import de.seerhein_lab.jic.Utils;
+import de.seerhein_lab.jic.analyzer.recursion.RecursionAnalyzer;
 import de.seerhein_lab.jic.slot.DoubleSlot;
 import de.seerhein_lab.jic.slot.LongSlot;
 import de.seerhein_lab.jic.slot.ReferenceSlot;
@@ -59,6 +60,7 @@ import de.seerhein_lab.jic.vm.ExternalObject;
 import de.seerhein_lab.jic.vm.Frame;
 import de.seerhein_lab.jic.vm.Heap;
 import de.seerhein_lab.jic.vm.HeapObject;
+import de.seerhein_lab.jic.vm.OpStack;
 import de.seerhein_lab.jic.vm.PC;
 import edu.umd.cs.findbugs.BugCollection;
 import edu.umd.cs.findbugs.BugInstance;
@@ -201,11 +203,8 @@ public abstract class BaseVisitor extends SimpleVisitor {
 		MethodInvocation invocation = new MethodInvocation(targetClass, targetMethod);
 
 		if (alreadyVisitedMethods.contains(invocation)) {
-			logger.log(Level.FINE, indentation + "Recursion found: not analyzing again.");
-
-			pc.invalidate();
+			handleRecursion(obj, targetMethodGen);
 			return;
-
 		}
 
 		Set<MethodInvocation> nowVisitedMethods = new HashSet<MethodInvocation>();
@@ -255,6 +254,36 @@ public abstract class BaseVisitor extends SimpleVisitor {
 		pc.invalidate();
 	}
 
+	protected void handleRecursion(InvokeInstruction obj, MethodGen targetMethodGen) {
+		logger.log(Level.FINE, indentation + "Recursion found: Get result of recursive call.");
+
+		BaseMethodAnalyzer recursionAnalyzer = new RecursionAnalyzer(classContext, targetMethodGen,
+				alreadyVisitedMethods, depth);
+
+		recursionAnalyzer.analyze(new OpStack(frame.getStack()), heap);
+		Set<ResultValue> recursionResults = recursionAnalyzer.getResult();
+
+		Frame currentFrame = frame;
+		Heap currentHeap = heap;
+
+		for (ResultValue res : recursionResults) {
+			logger.log(Level.FINE, indentation + "Result of recursive call: " + res.getSlot());
+			frame = new Frame(currentFrame);
+			heap = new Heap(currentHeap);
+
+			BaseMethodAnalyzer analyzer = getMethodAnalyzer(methodGen, alreadyVisitedMethods);
+			handleSimpleInstruction(obj, res.getSlot());
+			analyzer.analyze(pc.getCurrentInstruction().getNext(), currentFrame, currentHeap,
+					alreadyVisitedIfBranch);
+
+			bugs.addAll(analyzer.getBugs());
+			result.addAll(analyzer.getResult());
+		}
+
+		pc.invalidate();
+		return;
+	}
+
 	private void dontAnalyzeMethod(InvokeInstruction obj, Staticality staticality) {
 		logger.log(Level.FINE, indentation + obj.toString(false));
 		logger.log(Level.FINEST, indentation + "\t" + obj.getLoadClassType(constantPoolGen) + "."
@@ -289,7 +318,6 @@ public abstract class BaseVisitor extends SimpleVisitor {
 		frame.pushStackByRequiredSlots(returnValue);
 
 		pc.advance();
-
 	}
 
 	// ******************************************************************//
