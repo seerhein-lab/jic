@@ -9,11 +9,10 @@ import javax.swing.JButton;
 
 import org.junit.runner.RunWith;
 
-import de.seerhein_lab.jic.analyzer.ClassAnalyzer;
 import de.seerhein_lab.jic.testutils.BugsExpected;
 import de.seerhein_lab.jic.testutils.ClassAnalyzerRunner;
-import de.seerhein_lab.jic.testutils.NoBugsExpected;
 import de.seerhein_lab.jic.testutils.ClassAnalyzerRunner.BindAnalyzerMethod;
+import de.seerhein_lab.jic.testutils.NoBugsExpected;
 import edu.umd.cs.findbugs.BugInstance;
 
 /**
@@ -628,11 +627,78 @@ public class ProperlyConstructedAcceptanceTest {
 				return f(n - 1);
 			}
 			return 1;
-
 		}
 
 		public Story039_SimpleRecursion() {
 			f(5);
+		}
+	}
+
+	@BugsExpected
+	public static class Story040_BugBeforeRecursion {
+
+		public Story040_BugBeforeRecursion(Object x) {
+			f(this, x);
+		}
+
+		private Object f(Object o, Object x) {
+			if (o == x) {
+				equals(o);
+				return f(o, x);
+			}
+			return null;
+		}
+	}
+
+	@BugsExpected
+	public static class Story041_BugAfterRecursion {
+
+		public Story041_BugAfterRecursion(Object x) {
+			f(this, x);
+		}
+
+		private Object f(Object o, Object x) {
+			if (o == x) {
+				f(o, x);
+				equals(o);
+				return o;
+			}
+			return null;
+		}
+	}
+
+	@BugsExpected
+	public static class Story042_BugAfterRecursion2 {
+
+		public Story042_BugAfterRecursion2(Object x) {
+			f(this, x);
+		}
+
+		private Object f(Object o, Object x) {
+			if (o == x) {
+				f(o, x);
+				equals(o);
+				return o;
+			}
+			if (o == x)
+				o = x;
+			return null;
+		}
+	}
+
+	@BugsExpected
+	public static class Story043_BugInBreakConditionRecursion {
+
+		public Story043_BugInBreakConditionRecursion(Object x) {
+			f(this, x);
+		}
+
+		private Object f(Object o, Object x) {
+			if (o == x) {
+				return f(o, x);
+			}
+			equals(o);
+			return null;
 		}
 	}
 
