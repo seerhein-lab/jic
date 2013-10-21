@@ -15,6 +15,7 @@ import org.apache.bcel.generic.ACONST_NULL;
 import org.apache.bcel.generic.ANEWARRAY;
 import org.apache.bcel.generic.ATHROW;
 import org.apache.bcel.generic.ArrayInstruction;
+import org.apache.bcel.generic.BasicType;
 import org.apache.bcel.generic.CHECKCAST;
 import org.apache.bcel.generic.CodeExceptionGen;
 import org.apache.bcel.generic.ConstantPoolGen;
@@ -256,6 +257,16 @@ public abstract class BaseVisitor extends SimpleVisitor {
 
 	protected void handleRecursion(InvokeInstruction obj, MethodGen targetMethodGen) {
 		logger.log(Level.FINE, indentation + "Recursion found: Get result of recursive call.");
+
+		Type returnType = obj.getReturnType(constantPoolGen);
+		if (returnType instanceof BasicType) {
+			handleSimpleInstruction(obj, Slot.getDefaultSlotInstance(returnType));
+			logger.log(
+					Level.FINE,
+					indentation + "Result of recursive call: "
+							+ Slot.getDefaultSlotInstance(returnType));
+			return;
+		}
 
 		BaseMethodAnalyzer recursionAnalyzer = new RecursionAnalyzer(classContext, targetMethodGen,
 				alreadyVisitedMethods, depth);
