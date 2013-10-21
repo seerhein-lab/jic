@@ -190,37 +190,13 @@ public abstract class BaseVisitor extends SimpleVisitor {
 		pc.invalidate();
 	}
 
-	/**
-	 * used by visitINVOKESTATIC and visitINVOKESPECIAL
-	 * 
-	 * @param obj
-	 *            node to be visited
-	 */
-	protected void handleNonVirtualMethod(InvokeInstruction obj) {
+	private void analyzeMethod(InvokeInstruction obj, JavaClass targetClass, Method targetMethod) {
 		logger.log(Level.FINE, indentation + obj.toString(false));
 		logger.log(Level.FINEST, indentation + "\t" + obj.getLoadClassType(constantPoolGen) + "."
 				+ obj.getMethodName(constantPoolGen) + obj.getSignature(constantPoolGen));
-		JavaClass targetClass = null;
-		try {
-			targetClass = Repository.lookupClass(obj.getReferenceType(constantPoolGen).toString());
-		} catch (ClassNotFoundException e) {
-			throw new AssertionError(obj.getReferenceType(constantPoolGen).toString()
-					+ " cannot be loaded.");
-		}
 
-		Method targetMethod = new ClassHelper(targetClass).getMethod(
-				obj.getMethodName(constantPoolGen), obj.getArgumentTypes(constantPoolGen));
-		if (targetMethod == null)
-			throw new AssertionError("targetMethod not found in Class");
 		MethodGen targetMethodGen = new MethodGen(targetMethod, targetClass.getClassName(),
 				new ConstantPoolGen(targetClass.getConstantPool()));
-
-		if (targetMethod.isNative()) {
-			logger.log(Level.FINE, indentation
-					+ "Native method must be dealt with like virtual method.");
-			handleVirtualMethod(obj, Staticality.STATIC);
-			return;
-		}
 
 		MethodInvocation invocation = new MethodInvocation(targetClass, targetMethod);
 
@@ -279,15 +255,11 @@ public abstract class BaseVisitor extends SimpleVisitor {
 		pc.invalidate();
 	}
 
-	/**
-	 * used by visitINVOKEINTERFACE and visitINVOKEVIRTUAL
-	 * 
-	 * @param obj
-	 *            node to be visited
-	 */
-	protected void handleVirtualMethod(InvokeInstruction obj, Staticality staticality) {
+	private void dontAnalyzeMethod(InvokeInstruction obj, Staticality staticality) {
 		logger.log(Level.FINE, indentation + obj.toString(false));
-		logger.log(Level.FINEST, indentation + "\t" + obj.getSignature(constantPoolGen));
+		logger.log(Level.FINEST, indentation + "\t" + obj.getLoadClassType(constantPoolGen) + "."
+				+ obj.getMethodName(constantPoolGen) + obj.getSignature(constantPoolGen));
+
 		// get number of args
 		Type[] type = obj.getArgumentTypes(constantPoolGen);
 		// get return value
@@ -317,6 +289,7 @@ public abstract class BaseVisitor extends SimpleVisitor {
 		frame.pushStackByRequiredSlots(returnValue);
 
 		pc.advance();
+
 	}
 
 	// ******************************************************************//
@@ -1031,7 +1004,31 @@ public abstract class BaseVisitor extends SimpleVisitor {
 	 */
 	@Override
 	public void visitINVOKEINTERFACE(INVOKEINTERFACE obj) {
-		handleVirtualMethod(obj, Staticality.NONSTATIC);
+		dontAnalyzeMethod(obj, Staticality.NONSTATIC);
+	}
+
+	private void handleSpecialAndStaticInvocations(InvokeInstruction obj) {
+		JavaClass targetClass = null;
+		try {
+			targetClass = Repository.lookupClass(obj.getLoadClassType(constantPoolGen).toString());
+		} catch (ClassNotFoundException e) {
+			throw new AssertionError(obj.getLoadClassType(constantPoolGen).toString()
+					+ " cannot be loaded.");
+		}
+
+		Method targetMethod = new ClassHelper(targetClass).getMethod(
+				obj.getMethodName(constantPoolGen), obj.getArgumentTypes(constantPoolGen));
+		if (targetMethod == null)
+			throw new AssertionError("targetMethod not found in Class");
+
+		if (targetMethod.isNative()) {
+			logger.log(Level.FINE, indentation
+					+ "Native method must be dealt with like virtual method.");
+
+			dontAnalyzeMethod(obj, targetMethod.isStatic() ? Staticality.STATIC
+					: Staticality.NONSTATIC);
+		} else
+			analyzeMethod(obj, targetClass, targetMethod);
 	}
 
 	/**
@@ -1041,7 +1038,7 @@ public abstract class BaseVisitor extends SimpleVisitor {
 	 */
 	@Override
 	public void visitINVOKESPECIAL(INVOKESPECIAL obj) {
-		handleNonVirtualMethod(obj);
+		handleSpecialAndStaticInvocations(obj);
 	}
 
 	/**
@@ -1051,7 +1048,7 @@ public abstract class BaseVisitor extends SimpleVisitor {
 	 */
 	@Override
 	public void visitINVOKESTATIC(INVOKESTATIC obj) {
-		handleNonVirtualMethod(obj);
+		handleSpecialAndStaticInvocations(obj);
 	}
 
 	/**
@@ -1061,7 +1058,32 @@ public abstract class BaseVisitor extends SimpleVisitor {
 	 */
 	@Override
 	public void visitINVOKEVIRTUAL(INVOKEVIRTUAL obj) {
-		handleVirtualMethod(obj, Staticality.NONSTATIC);
+		JavaClass targetClass = null;
+		try {
+			targetClass = Repository.lookupClass(obj.getLoadClassType(constantPoolGen).toString());
+		} catch (ClassNotFoundException e) {
+			throw new AssertionError(obj.getLoadClassType(constantPoolGen).toString()
+					+ " cannot be loaded.");
+		}
+
+		Method targetMethod = new ClassHelper(targetClass).getMethod(
+				obj.getMethodName(constantPoolGen), obj.getArgumentTypes(constantPoolGen));
+
+		while (targetMethod == null) {
+			try {
+				targetClass = targetClass.getSuperClass();
+				targetMethod = new ClassHelper(targetClass).getMethod(
+						obj.getMethodName(constantPoolGen), obj.getArgumentTypes(constantPoolGen));
+			} catch (ClassNotFoundException e) {
+				throw new AssertionError("targetMethod not found in Class");
+			}
+		}
+
+		if (targetMethod.isFinal()) {
+			logger.log(Level.FINE, indentation + "Final virtual method can be analyzed.");
+			analyzeMethod(obj, targetClass, targetMethod);
+		} else
+			dontAnalyzeMethod(obj, Staticality.NONSTATIC);
 	}
 
 	/**

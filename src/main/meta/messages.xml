@@ -15,7 +15,7 @@
         </Detector>
 
         <BugPattern type="IMMUTABILITY_BUG">
-                <ShortDescription>Immutability bug [v2.0]</ShortDescription>
+                <ShortDescription>Immutability bug [v2.1]</ShortDescription>
                 <LongDescription>Immutability bug: {0}</LongDescription>
                 <Details>
 <![CDATA[
