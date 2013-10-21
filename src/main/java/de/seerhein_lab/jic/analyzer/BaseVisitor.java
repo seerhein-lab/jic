@@ -284,8 +284,8 @@ public abstract class BaseVisitor extends SimpleVisitor {
 
 			BaseMethodAnalyzer analyzer = getMethodAnalyzer(methodGen, alreadyVisitedMethods);
 			handleSimpleInstruction(obj, res.getSlot());
-			analyzer.analyze(pc.getCurrentInstruction().getNext(), currentFrame, currentHeap,
-					alreadyVisitedIfBranch);
+			analyzer.analyze(pc.getCurrentInstruction().getNext(), new Frame(currentFrame),
+					new Heap(currentHeap), alreadyVisitedIfBranch);
 
 			bugs.addAll(analyzer.getBugs());
 			result.addAll(analyzer.getResult());
