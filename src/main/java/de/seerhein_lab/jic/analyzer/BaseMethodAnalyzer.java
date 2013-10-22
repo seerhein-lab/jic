@@ -8,14 +8,12 @@ import java.util.logging.Logger;
 
 import net.jcip.annotations.ThreadSafe;
 
-import org.apache.bcel.classfile.Method;
 import org.apache.bcel.generic.CodeExceptionGen;
 import org.apache.bcel.generic.InstructionHandle;
 import org.apache.bcel.generic.InstructionList;
 import org.apache.bcel.generic.MethodGen;
 import org.apache.bcel.generic.Type;
 
-import de.seerhein_lab.jic.JicDetector;
 import de.seerhein_lab.jic.Pair;
 import de.seerhein_lab.jic.ResultValue;
 import de.seerhein_lab.jic.Utils;
@@ -26,7 +24,6 @@ import de.seerhein_lab.jic.vm.Heap;
 import de.seerhein_lab.jic.vm.OpStack;
 import de.seerhein_lab.jic.vm.PC;
 import edu.umd.cs.findbugs.BugInstance;
-import edu.umd.cs.findbugs.annotations.Confidence;
 import edu.umd.cs.findbugs.ba.ClassContext;
 
 @ThreadSafe

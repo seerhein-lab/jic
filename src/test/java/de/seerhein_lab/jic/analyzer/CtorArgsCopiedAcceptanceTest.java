@@ -4,11 +4,10 @@ import java.util.Collection;
 
 import org.junit.runner.RunWith;
 
-import de.seerhein_lab.jic.analyzer.ClassAnalyzer;
 import de.seerhein_lab.jic.testutils.BugsExpected;
 import de.seerhein_lab.jic.testutils.ClassAnalyzerRunner;
-import de.seerhein_lab.jic.testutils.NoBugsExpected;
 import de.seerhein_lab.jic.testutils.ClassAnalyzerRunner.BindAnalyzerMethod;
+import de.seerhein_lab.jic.testutils.NoBugsExpected;
 import edu.umd.cs.findbugs.BugInstance;
 
 /**

@@ -5,18 +5,6 @@ import static org.junit.Assert.assertTrue;
 import org.apache.bcel.generic.Type;
 import org.junit.Test;
 
-import de.seerhein_lab.jic.slot.BooleanSlot;
-import de.seerhein_lab.jic.slot.ByteSlot;
-import de.seerhein_lab.jic.slot.CharSlot;
-import de.seerhein_lab.jic.slot.DoubleSlot;
-import de.seerhein_lab.jic.slot.FloatSlot;
-import de.seerhein_lab.jic.slot.IntSlot;
-import de.seerhein_lab.jic.slot.LongSlot;
-import de.seerhein_lab.jic.slot.ReferenceSlot;
-import de.seerhein_lab.jic.slot.ShortSlot;
-import de.seerhein_lab.jic.slot.Slot;
-import de.seerhein_lab.jic.slot.VoidSlot;
-
 public class SlotTest {
 
 	@Test

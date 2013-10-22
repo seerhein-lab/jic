@@ -5,8 +5,6 @@ import java.util.Set;
 
 import net.jcip.annotations.ThreadSafe;
 
-import org.apache.bcel.classfile.Method;
-import org.apache.bcel.generic.ConstantPoolGen;
 import org.apache.bcel.generic.InstructionHandle;
 import org.apache.bcel.generic.MethodGen;
 
@@ -14,7 +12,6 @@ import de.seerhein_lab.jic.Pair;
 import de.seerhein_lab.jic.analyzer.BaseMethodAnalyzer;
 import de.seerhein_lab.jic.analyzer.BaseVisitor;
 import de.seerhein_lab.jic.analyzer.MethodInvocation;
-import de.seerhein_lab.jic.slot.Slot;
 import de.seerhein_lab.jic.vm.Frame;
 import de.seerhein_lab.jic.vm.Heap;
 import de.seerhein_lab.jic.vm.PC;

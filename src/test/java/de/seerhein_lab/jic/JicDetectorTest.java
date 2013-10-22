@@ -20,8 +20,6 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
 
-import de.seerhein_lab.jic.JicDetector;
-
 @RunWith(Parameterized.class)
 public class JicDetectorTest {
 

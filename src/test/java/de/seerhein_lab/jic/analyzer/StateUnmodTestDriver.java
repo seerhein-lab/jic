@@ -11,7 +11,6 @@ import org.apache.bcel.Repository;
 import org.apache.bcel.classfile.JavaClass;
 
 import de.seerhein_lab.jic.Utils;
-import de.seerhein_lab.jic.analyzer.ClassAnalyzer;
 import edu.umd.cs.findbugs.BugInstance;
 import edu.umd.cs.findbugs.SortedBugCollection;
 import edu.umd.cs.findbugs.ba.ClassContext;

@@ -1,9 +1,7 @@
 package de.seerhein_lab.jic.analyzer.noMutators;
 
-import java.util.HashSet;
 import java.util.Set;
 
-import org.apache.bcel.classfile.Method;
 import org.apache.bcel.generic.CodeExceptionGen;
 import org.apache.bcel.generic.ConstantPoolGen;
 import org.apache.bcel.generic.InstructionHandle;

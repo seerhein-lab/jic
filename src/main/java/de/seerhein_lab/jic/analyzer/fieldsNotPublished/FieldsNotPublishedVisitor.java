@@ -3,7 +3,6 @@ package de.seerhein_lab.jic.analyzer.fieldsNotPublished;
 import java.util.Set;
 import java.util.logging.Level;
 
-import org.apache.bcel.classfile.Method;
 import org.apache.bcel.generic.CodeExceptionGen;
 import org.apache.bcel.generic.ConstantPoolGen;
 import org.apache.bcel.generic.InstructionHandle;

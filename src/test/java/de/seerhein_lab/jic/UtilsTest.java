@@ -4,8 +4,6 @@ import static org.junit.Assert.assertEquals;
 
 import org.junit.Test;
 
-import de.seerhein_lab.jic.Utils;
-
 public class UtilsTest {
 
 	@Test
