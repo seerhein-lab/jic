@@ -1046,7 +1046,7 @@ public abstract class BaseVisitor extends SimpleVisitor {
 		dontAnalyzeMethod(obj, Staticality.NONSTATIC);
 	}
 
-	private void handleSpecialAndStaticInvocations(InvokeInstruction obj) {
+	private void handleSpecialOrStaticInvocation(InvokeInstruction obj) {
 		JavaClass targetClass = null;
 		try {
 			targetClass = Repository.lookupClass(obj.getLoadClassType(constantPoolGen).toString());
@@ -1077,7 +1077,7 @@ public abstract class BaseVisitor extends SimpleVisitor {
 	 */
 	@Override
 	public void visitINVOKESPECIAL(INVOKESPECIAL obj) {
-		handleSpecialAndStaticInvocations(obj);
+		handleSpecialOrStaticInvocation(obj);
 	}
 
 	/**
@@ -1087,7 +1087,7 @@ public abstract class BaseVisitor extends SimpleVisitor {
 	 */
 	@Override
 	public void visitINVOKESTATIC(INVOKESTATIC obj) {
-		handleSpecialAndStaticInvocations(obj);
+		handleSpecialOrStaticInvocation(obj);
 	}
 
 	/**
@@ -1118,7 +1118,7 @@ public abstract class BaseVisitor extends SimpleVisitor {
 			}
 		}
 
-		if (targetMethod.isFinal()) {
+		if (targetClass.isFinal() || targetMethod.isFinal()) {
 			logger.log(Level.FINE, indentation + "Final virtual method can be analyzed.");
 			analyzeMethod(obj, targetClass, targetMethod);
 		} else
