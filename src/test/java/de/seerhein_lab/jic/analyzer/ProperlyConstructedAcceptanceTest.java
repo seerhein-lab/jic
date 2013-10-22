@@ -702,4 +702,44 @@ public class ProperlyConstructedAcceptanceTest {
 		}
 	}
 
+	@NoBugsExpected
+	public static class Story044_RecursionOverlaodedMethod {
+
+		public Story044_RecursionOverlaodedMethod(Object x) {
+			f(this);
+		}
+
+		private Object f(Object o) {
+			Object x = new Object();
+			return f(o, x);
+		}
+
+		private Object f(Object o, Object x) {
+			return x;
+		}
+	}
+
+	@NoBugsExpected
+	public static class Story045_RecursionDifferentClasses {
+
+		public Story045_RecursionDifferentClasses(Object x) {
+			A a = new A();
+			a.f(this);
+		}
+
+		public static class A {
+			private Object f(Object o) {
+				B b = new B();
+				return b.f(o);
+			}
+		}
+
+		public static class B {
+			private Object f(Object o) {
+				return o;
+			}
+		}
+
+	}
+
 }
