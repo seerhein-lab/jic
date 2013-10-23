@@ -702,6 +702,7 @@ public class ProperlyConstructedAcceptanceTest {
 		}
 	}
 
+
 	@NoBugsExpected
 	public static class Story044_RecursionOverlaodedMethod {
 
@@ -740,6 +741,69 @@ public class ProperlyConstructedAcceptanceTest {
 			}
 		}
 
+	@BugsExpected
+	public static class Story046_LeakyPrivateMethod {
+		public static Story046_LeakyPrivateMethod staticRef;
+
+		private void f() {
+			staticRef = this;
+		}
+
+		public Story046_LeakyPrivateMethod() {
+			f();
+		}
 	}
+
+	@NoBugsExpected
+	public static class Story047_CorrectPrivateMethod {
+		private void f() {
+		}
+
+		public Story047_CorrectPrivateMethod() {
+			f();
+		}
+	}
+
+	@BugsExpected
+	public static class Story048_LeakyPublicNonFinalMethod {
+		public static Story048_LeakyPublicNonFinalMethod staticRef;
+
+		public void f() {
+			staticRef = this;
+		}
+
+		public Story048_LeakyPublicNonFinalMethod() {
+			f();
+		}
+	}
+
+	@BugsExpected
+	public static class Story049_CorrectPublicNonFinalMethod {
+		public void f() {
+		}
+
+		public Story049_CorrectPublicNonFinalMethod() {
+			f();
+		}
+	}
+
+	@NoBugsExpected
+	public static class Story050_CorrectPublicFinalMethod {
+		public final void f() {
+		}
+
+		public Story050_CorrectPublicFinalMethod() {
+			f();
+		}
+	}
+
+	@NoBugsExpected
+	public final static class Story051_CorrectPublicMethodOfFinalClass {
+		public void f() {
+		}
+
+		public Story051_CorrectPublicMethodOfFinalClass() {
+			f();
+		}
 
 }
