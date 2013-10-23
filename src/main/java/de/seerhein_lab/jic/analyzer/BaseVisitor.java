@@ -1118,7 +1118,7 @@ public abstract class BaseVisitor extends SimpleVisitor {
 			}
 		}
 
-		if (targetClass.isFinal() || targetMethod.isFinal()) {
+		if ((targetClass.isFinal() || targetMethod.isFinal()) && !targetMethod.isNative()) {
 			logger.log(Level.FINE, indentation + "Final virtual method can be analyzed.");
 			analyzeMethod(obj, targetClass, targetMethod);
 		} else
