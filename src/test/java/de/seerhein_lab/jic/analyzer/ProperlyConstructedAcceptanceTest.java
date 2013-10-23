@@ -702,7 +702,6 @@ public class ProperlyConstructedAcceptanceTest {
 		}
 	}
 
-
 	@NoBugsExpected
 	public static class Story044_RecursionOverlaodedMethod {
 
@@ -740,6 +739,7 @@ public class ProperlyConstructedAcceptanceTest {
 				return o;
 			}
 		}
+	}
 
 	@BugsExpected
 	public static class Story046_LeakyPrivateMethod {
@@ -805,5 +805,5 @@ public class ProperlyConstructedAcceptanceTest {
 		public Story051_CorrectPublicMethodOfFinalClass() {
 			f();
 		}
-
+	}
 }
