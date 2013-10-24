@@ -12,6 +12,7 @@ import org.apache.bcel.generic.BasicType;
 import org.apache.bcel.generic.ConstantPoolGen;
 import org.apache.bcel.generic.MethodGen;
 
+import de.seerhein_lab.jic.AnalysisCache;
 import de.seerhein_lab.jic.ResultValue;
 import de.seerhein_lab.jic.Utils;
 import de.seerhein_lab.jic.analyzer.ctorArgsCopied.CtorArgsCopiedAnalyzer;
@@ -32,14 +33,16 @@ public final class ClassAnalyzer {
 	private final JavaClass clazz;
 	private final HashSet<Heap> heaps = new HashSet<Heap>();
 	private final ClassHelper classHelper;
+	private final AnalysisCache cache;
 
-	public ClassAnalyzer(ClassContext classContext) {
+	public ClassAnalyzer(ClassContext classContext, AnalysisCache cache) {
 		if (classContext == null)
 			throw new NullPointerException("ClassContext must not be null.");
 
 		this.classContext = classContext;
 		this.clazz = classContext.getJavaClass();
 		classHelper = new ClassHelper(clazz);
+		this.cache = cache;
 	}
 
 	private Collection<BugInstance> allFieldsFinal() {

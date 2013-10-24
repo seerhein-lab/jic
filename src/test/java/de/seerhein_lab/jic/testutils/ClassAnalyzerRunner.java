@@ -22,6 +22,7 @@ import org.junit.runner.Runner;
 import org.junit.runner.notification.Failure;
 import org.junit.runner.notification.RunNotifier;
 
+import de.seerhein_lab.jic.AnalysisCache;
 import de.seerhein_lab.jic.analyzer.ClassAnalyzer;
 import edu.umd.cs.findbugs.BugInstance;
 import edu.umd.cs.findbugs.ba.ClassContext;
@@ -82,7 +83,7 @@ public class ClassAnalyzerRunner extends Runner {
 
 		when(classContextMock.getJavaClass()).thenReturn(javaClass);
 
-		ClassAnalyzer analyzer = new ClassAnalyzer(classContextMock);
+		ClassAnalyzer analyzer = new ClassAnalyzer(classContextMock, new AnalysisCache());
 
 		Collection<BugInstance> bugs = runCheckMethod(analyzer);
 

@@ -806,4 +806,18 @@ public class ProperlyConstructedAcceptanceTest {
 			f();
 		}
 	}
+
+	@BugsExpected
+	public static class Story052_LeakyPublicFinalMethod {
+		public static Story052_LeakyPublicFinalMethod staticRef;
+
+		public final void f() {
+			staticRef = this;
+		}
+
+		public Story052_LeakyPublicFinalMethod() {
+			f();
+		}
+	}
+
 }

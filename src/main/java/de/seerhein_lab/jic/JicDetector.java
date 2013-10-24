@@ -15,10 +15,8 @@ import edu.umd.cs.findbugs.ba.ClassContext;
 // reporter.reportBug() can result in race conditions.
 public final class JicDetector implements Detector {
 	private final static String IMMUTABLE_ANNOTATION = "Lnet/jcip/annotations/Immutable;";
-
 	private final BugReporter reporter;
-
-	// public static int propConCounter;
+	private final AnalysisCache cache = new AnalysisCache();
 
 	public JicDetector(BugReporter reporter) {
 		this.reporter = reporter;
@@ -38,8 +36,6 @@ public final class JicDetector implements Detector {
 
 	@Override
 	public void visitClassContext(ClassContext classContext) {
-		// propConCounter = 0;
-
 		JavaClass clazz = classContext.getJavaClass();
 		boolean supposedlyImmutable = supposedlyImmutable(clazz);
 
@@ -59,8 +55,8 @@ public final class JicDetector implements Detector {
 		}
 
 		try {
-			bugs.addAll(supposedlyImmutable ? new ClassAnalyzer(classContext).isImmutable()
-					: new ClassAnalyzer(classContext).properlyConstructed());
+			bugs.addAll(supposedlyImmutable ? new ClassAnalyzer(classContext, cache).isImmutable()
+					: new ClassAnalyzer(classContext, cache).properlyConstructed());
 		} catch (Throwable e) {
 			reporter.reportBug(Utils.createBug(Confidence.HIGH,
 					"Class cannot be analyzed owing to internal problem (" + e + ")",

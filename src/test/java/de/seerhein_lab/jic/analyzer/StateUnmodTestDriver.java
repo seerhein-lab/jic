@@ -10,6 +10,7 @@ import java.util.logging.Logger;
 import org.apache.bcel.Repository;
 import org.apache.bcel.classfile.JavaClass;
 
+import de.seerhein_lab.jic.AnalysisCache;
 import de.seerhein_lab.jic.Utils;
 import edu.umd.cs.findbugs.BugInstance;
 import edu.umd.cs.findbugs.SortedBugCollection;
@@ -34,7 +35,7 @@ public class StateUnmodTestDriver {
 
 		when(classContextMock.getJavaClass()).thenReturn(clazz);
 
-		ClassAnalyzer classAnalyzer = new ClassAnalyzer(classContextMock);
+		ClassAnalyzer classAnalyzer = new ClassAnalyzer(classContextMock, new AnalysisCache());
 		if (analyzeCtorCopy) {
 			logger.log(Level.FINE, "Analyzing CtorCopy");
 			bugs.addAll(classAnalyzer.ctorArgsAreCopied());
