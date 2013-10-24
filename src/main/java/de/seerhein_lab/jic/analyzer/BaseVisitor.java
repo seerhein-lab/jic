@@ -219,6 +219,11 @@ public abstract class BaseVisitor extends SimpleVisitor {
 
 		for (Iterator<BugInstance> it = targetMethodAnalyzer.getBugs().iterator(); it.hasNext();) {
 			BugInstance bug = it.next();
+
+			if (targetClass.equals(classContext.getJavaClass())) {
+				bugs.add(bug);
+			}
+
 			addBug(Confidence.HIGH,
 					"subsequent bug caused by [" + bug.getMessage() + " in "
 							+ targetClass.getClassName() + "." + targetMethod.getName()
