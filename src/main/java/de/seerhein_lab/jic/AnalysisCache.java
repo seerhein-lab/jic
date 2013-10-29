@@ -10,6 +10,10 @@ public final class AnalysisCache {
 	private static class AnalysisResult {
 	}
 
+	private enum Check {
+		PropCon;
+	}
+
 	private final Map<AnalyzedMethod, AnalysisResult> map = new ConcurrentHashMap<AnalyzedMethod, AnalysisResult>();
 
 }
