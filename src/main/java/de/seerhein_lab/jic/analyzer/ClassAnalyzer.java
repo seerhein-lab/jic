@@ -74,7 +74,7 @@ public final class ClassAnalyzer {
 			MethodGen ctorGen = new MethodGen(ctor, clazz.getClassName(), new ConstantPoolGen(
 					clazz.getConstantPool()));
 
-			BaseMethodAnalyzer ctorAnalyzer = new PropConAnalyzer(classContext, ctorGen);
+			BaseMethodAnalyzer ctorAnalyzer = new PropConAnalyzer(classContext, ctorGen, cache);
 			ctorAnalyzer.analyze();
 			bugs.addAll(ctorAnalyzer.getBugs());
 		}
@@ -89,7 +89,8 @@ public final class ClassAnalyzer {
 			MethodGen ctorGen = new MethodGen(ctor, clazz.getClassName(), new ConstantPoolGen(
 					clazz.getConstantPool()));
 
-			BaseMethodAnalyzer ctorAnalyzer = new CtorArgsCopiedAnalyzer(classContext, ctorGen);
+			BaseMethodAnalyzer ctorAnalyzer = new CtorArgsCopiedAnalyzer(classContext, ctorGen,
+					cache);
 			ctorAnalyzer.analyze();
 			Collection<BugInstance> currentBugs = ctorAnalyzer.getBugs();
 			bugs.addAll(ctorAnalyzer.getBugs());
@@ -119,7 +120,7 @@ public final class ClassAnalyzer {
 						new ConstantPoolGen(clazz.getConstantPool()));
 
 				BaseMethodAnalyzer methodAnalyzer = new FieldsNotPublishedAnalyzer(classContext,
-						methodGen, new Heap(heap));
+						methodGen, new Heap(heap), cache);
 				methodAnalyzer.analyze();
 				bugs.addAll(methodAnalyzer.getBugs());
 			}
@@ -143,7 +144,7 @@ public final class ClassAnalyzer {
 						new ConstantPoolGen(clazz.getConstantPool()));
 
 				BaseMethodAnalyzer methodAnalyzer = new NoMutatorsAnalyzer(classContext, methodGen,
-						new Heap(heap));
+						new Heap(heap), cache);
 				methodAnalyzer.analyze();
 				bugs.addAll(methodAnalyzer.getBugs());
 			}

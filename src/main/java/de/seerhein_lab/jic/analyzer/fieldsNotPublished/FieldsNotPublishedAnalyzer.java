@@ -8,6 +8,7 @@ import net.jcip.annotations.ThreadSafe;
 import org.apache.bcel.generic.InstructionHandle;
 import org.apache.bcel.generic.MethodGen;
 
+import de.seerhein_lab.jic.AnalysisCache;
 import de.seerhein_lab.jic.Pair;
 import de.seerhein_lab.jic.analyzer.BaseMethodAnalyzer;
 import de.seerhein_lab.jic.analyzer.BaseVisitor;
@@ -23,23 +24,24 @@ public class FieldsNotPublishedAnalyzer extends BaseMethodAnalyzer {
 
 	private Heap heap;
 
-	public FieldsNotPublishedAnalyzer(ClassContext classContext, MethodGen methodGen, Heap heap) {
-		this(classContext, methodGen, new HashSet<MethodInvocation>(), -1);
+	public FieldsNotPublishedAnalyzer(ClassContext classContext, MethodGen methodGen, Heap heap,
+			AnalysisCache cache) {
+		this(classContext, methodGen, new HashSet<MethodInvocation>(), -1, cache);
 		alreadyVisitedMethods.add(new MethodInvocation(classContext.getJavaClass(), methodGen
 				.getMethod()));
 		this.heap = heap;
 	}
 
 	protected FieldsNotPublishedAnalyzer(ClassContext classContext, MethodGen methodGen,
-			Set<MethodInvocation> alreadyVisitedMethods, int depth) {
-		super(classContext, methodGen, alreadyVisitedMethods, depth);
+			Set<MethodInvocation> alreadyVisitedMethods, int depth, AnalysisCache cache) {
+		super(classContext, methodGen, alreadyVisitedMethods, depth, cache);
 	}
 
 	protected BaseVisitor getInstructionVisitor(Frame frame, Heap heap, PC pc,
 			Set<Pair<InstructionHandle, Boolean>> alreadyVisitedIfBranch) {
 		return new FieldsNotPublishedVisitor(classContext, methodGen, frame, heap,
 				methodGen.getConstantPool(), pc, exceptionHandlers, alreadyVisitedMethods, depth,
-				alreadyVisitedIfBranch);
+				alreadyVisitedIfBranch, cache);
 	}
 
 	@Override

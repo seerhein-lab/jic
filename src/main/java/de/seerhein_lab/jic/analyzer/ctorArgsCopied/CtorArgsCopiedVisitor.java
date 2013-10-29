@@ -7,6 +7,7 @@ import org.apache.bcel.generic.ConstantPoolGen;
 import org.apache.bcel.generic.InstructionHandle;
 import org.apache.bcel.generic.MethodGen;
 
+import de.seerhein_lab.jic.AnalysisCache;
 import de.seerhein_lab.jic.Pair;
 import de.seerhein_lab.jic.analyzer.BaseMethodAnalyzer;
 import de.seerhein_lab.jic.analyzer.BaseVisitor;
@@ -25,9 +26,10 @@ public class CtorArgsCopiedVisitor extends BaseVisitor {
 	protected CtorArgsCopiedVisitor(ClassContext classContext, MethodGen methodGen, Frame frame,
 			Heap heap, ConstantPoolGen constantPoolGen, PC pc,
 			CodeExceptionGen[] exceptionHandlers, Set<MethodInvocation> alreadyVisitedMethods,
-			int depth, Set<Pair<InstructionHandle, Boolean>> alreadyVisitedIfBranch) {
+			int depth, Set<Pair<InstructionHandle, Boolean>> alreadyVisitedIfBranch,
+			AnalysisCache cache) {
 		super(classContext, methodGen, frame, heap, constantPoolGen, alreadyVisitedIfBranch,
-				alreadyVisitedMethods, pc, exceptionHandlers, depth);
+				alreadyVisitedMethods, pc, exceptionHandlers, depth, cache);
 	}
 
 	// public CtorArgsCopiedVisitor(ClassContext classContext,
@@ -55,7 +57,7 @@ public class CtorArgsCopiedVisitor extends BaseVisitor {
 	protected BaseMethodAnalyzer getMethodAnalyzer(MethodGen targetMethodGen,
 			Set<MethodInvocation> alreadyVisitedMethods) {
 		return new CtorArgsCopiedAnalyzer(classContext, targetMethodGen, alreadyVisitedMethods,
-				depth);
+				depth, cache);
 	}
 
 	// ******************************************************************//

@@ -9,6 +9,7 @@ import org.apache.bcel.generic.InstructionHandle;
 import org.apache.bcel.generic.InvokeInstruction;
 import org.apache.bcel.generic.MethodGen;
 
+import de.seerhein_lab.jic.AnalysisCache;
 import de.seerhein_lab.jic.Pair;
 import de.seerhein_lab.jic.analyzer.BaseMethodAnalyzer;
 import de.seerhein_lab.jic.analyzer.BaseVisitor;
@@ -25,15 +26,16 @@ public class RecursionVisitor extends BaseVisitor {
 	public RecursionVisitor(ClassContext classContext, MethodGen methodGen, Frame frame, Heap heap,
 			ConstantPoolGen constantPoolGen, PC pc, CodeExceptionGen[] exceptionHandlers,
 			Set<MethodInvocation> alreadyVisitedMethods, int depth,
-			Set<Pair<InstructionHandle, Boolean>> alreadyVisitedIfBranch) {
+			Set<Pair<InstructionHandle, Boolean>> alreadyVisitedIfBranch, AnalysisCache cache) {
 		super(classContext, methodGen, frame, heap, constantPoolGen, alreadyVisitedIfBranch,
-				alreadyVisitedMethods, pc, exceptionHandlers, depth);
+				alreadyVisitedMethods, pc, exceptionHandlers, depth, cache);
 	}
 
 	@Override
 	protected BaseMethodAnalyzer getMethodAnalyzer(MethodGen targetMethodGen,
 			Set<MethodInvocation> alreadyVisitedMethods) {
-		return new RecursionAnalyzer(classContext, targetMethodGen, alreadyVisitedMethods, depth);
+		return new RecursionAnalyzer(classContext, targetMethodGen, alreadyVisitedMethods, depth,
+				cache);
 	}
 
 	@Override

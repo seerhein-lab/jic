@@ -9,6 +9,7 @@ import org.apache.bcel.generic.InstructionHandle;
 import org.apache.bcel.generic.MethodGen;
 import org.apache.bcel.generic.ReturnInstruction;
 
+import de.seerhein_lab.jic.AnalysisCache;
 import de.seerhein_lab.jic.Pair;
 import de.seerhein_lab.jic.ResultValue;
 import de.seerhein_lab.jic.ResultValue.Kind;
@@ -31,9 +32,10 @@ public class FieldsNotPublishedVisitor extends BaseVisitor {
 	protected FieldsNotPublishedVisitor(ClassContext classContext, MethodGen methodGen,
 			Frame frame, Heap heap, ConstantPoolGen constantPoolGen, PC pc,
 			CodeExceptionGen[] exceptionHandlers, Set<MethodInvocation> alreadyVisitedMethods,
-			int depth, Set<Pair<InstructionHandle, Boolean>> alreadyVisitedIfBranch) {
+			int depth, Set<Pair<InstructionHandle, Boolean>> alreadyVisitedIfBranch,
+			AnalysisCache cache) {
 		super(classContext, methodGen, frame, heap, constantPoolGen, alreadyVisitedIfBranch,
-				alreadyVisitedMethods, pc, exceptionHandlers, depth);
+				alreadyVisitedMethods, pc, exceptionHandlers, depth, cache);
 	}
 
 	// public FieldsNotPublishedVisitor(ClassContext classContext,
@@ -61,7 +63,7 @@ public class FieldsNotPublishedVisitor extends BaseVisitor {
 	protected BaseMethodAnalyzer getMethodAnalyzer(MethodGen targetMethodGen,
 			Set<MethodInvocation> alreadyVisitedMethods) {
 		return new FieldsNotPublishedAnalyzer(classContext, targetMethodGen, alreadyVisitedMethods,
-				depth);
+				depth, cache);
 	}
 
 	@Override

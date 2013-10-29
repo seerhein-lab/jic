@@ -45,6 +45,7 @@ import org.apache.bcel.generic.StackInstruction;
 import org.apache.bcel.generic.StoreInstruction;
 import org.apache.bcel.generic.Type;
 
+import de.seerhein_lab.jic.AnalysisCache;
 import de.seerhein_lab.jic.Pair;
 import de.seerhein_lab.jic.ResultValue;
 import de.seerhein_lab.jic.ResultValue.Kind;
@@ -107,6 +108,7 @@ public abstract class BaseVisitor extends SimpleVisitor {
 	protected Set<Pair<InstructionHandle, Boolean>> alreadyVisitedIfBranch;
 	protected final Set<MethodInvocation> alreadyVisitedMethods;
 	protected SortedBugCollection bugs = new SortedBugCollection();
+	protected final AnalysisCache cache;
 	protected Set<ResultValue> result = new HashSet<ResultValue>();
 
 	// protected abstract BaseVisitor getInstructionsAnalysisVisitor(
@@ -140,7 +142,7 @@ public abstract class BaseVisitor extends SimpleVisitor {
 	protected BaseVisitor(ClassContext classContext, MethodGen methodGen, Frame frame, Heap heap,
 			ConstantPoolGen constantPoolGen, Set<Pair<InstructionHandle, Boolean>> alreadyVisited,
 			Set<MethodInvocation> alreadyVisitedMethods, PC pc,
-			CodeExceptionGen[] exceptionHandlers, int depth) {
+			CodeExceptionGen[] exceptionHandlers, int depth, AnalysisCache cache) {
 		super(frame, heap, constantPoolGen, pc, depth);
 
 		this.classContext = classContext;
@@ -148,6 +150,7 @@ public abstract class BaseVisitor extends SimpleVisitor {
 		this.alreadyVisitedIfBranch = alreadyVisited;
 		this.alreadyVisitedMethods = alreadyVisitedMethods;
 		this.exceptionHandlers = exceptionHandlers;
+		this.cache = cache;
 	}
 
 	public BugCollection getBugs() {
@@ -274,7 +277,7 @@ public abstract class BaseVisitor extends SimpleVisitor {
 		}
 
 		BaseMethodAnalyzer recursionAnalyzer = new RecursionAnalyzer(classContext, targetMethodGen,
-				alreadyVisitedMethods, depth);
+				alreadyVisitedMethods, depth, cache);
 
 		recursionAnalyzer.analyze(new OpStack(frame.getStack()), heap);
 		Set<ResultValue> recursionResults = recursionAnalyzer.getResult();

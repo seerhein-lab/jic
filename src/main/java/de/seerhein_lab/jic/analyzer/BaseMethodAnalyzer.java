@@ -14,6 +14,7 @@ import org.apache.bcel.generic.InstructionList;
 import org.apache.bcel.generic.MethodGen;
 import org.apache.bcel.generic.Type;
 
+import de.seerhein_lab.jic.AnalysisCache;
 import de.seerhein_lab.jic.Pair;
 import de.seerhein_lab.jic.ResultValue;
 import de.seerhein_lab.jic.Utils;
@@ -36,9 +37,10 @@ public abstract class BaseMethodAnalyzer {
 	protected final MethodGen methodGen;
 	protected final CodeExceptionGen[] exceptionHandlers;
 	protected BaseVisitor visitor = null;
+	protected final AnalysisCache cache;
 
 	protected BaseMethodAnalyzer(ClassContext classContext, MethodGen methodGen,
-			Set<MethodInvocation> alreadyVisitedMethods, int depth) {
+			Set<MethodInvocation> alreadyVisitedMethods, int depth, AnalysisCache cache) {
 		if (classContext == null || methodGen == null || alreadyVisitedMethods == null)
 			throw new AssertionError("Params must not be null.");
 
@@ -52,6 +54,7 @@ public abstract class BaseMethodAnalyzer {
 		this.alreadyVisitedMethods = alreadyVisitedMethods;
 
 		this.depth = depth + 1;
+		this.cache = cache;
 	}
 
 	protected abstract BaseVisitor getInstructionVisitor(Frame frame, Heap heap, PC pc,
@@ -94,7 +97,7 @@ public abstract class BaseMethodAnalyzer {
 		analyze(callerStack, callerHeap);
 	}
 
-	public final synchronized void analyze(OpStack callerStack, Heap heap) {
+	public synchronized void analyze(OpStack callerStack, Heap heap) {
 		Frame calleeFrame = createCalleeFrame(callerStack);
 
 		InstructionHandle[] instructionHandles = new InstructionList(methodGen.getMethod()
