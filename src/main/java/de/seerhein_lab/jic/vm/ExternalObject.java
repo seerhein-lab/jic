@@ -2,6 +2,7 @@ package de.seerhein_lab.jic.vm;
 
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 
@@ -60,6 +61,16 @@ public final class ExternalObject extends HeapObject {
 	@Override
 	ExternalObject copy(Heap heap) {
 		return new ExternalObject(this, heap);
+	}
+
+	@Override
+	public HeapObject deepCopy(Heap heap) {
+		return heap.getExternalObject();
+	}
+
+	@Override
+	protected HeapObject deepCopy(Heap heap, Map<HeapObject, HeapObject> visited) {
+		return heap.getExternalObject();
 	}
 
 }

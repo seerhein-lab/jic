@@ -3,6 +3,7 @@ package de.seerhein_lab.jic.vm;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.UUID;
 
 /**
@@ -47,6 +48,34 @@ public final class ClassInstance extends HeapObject {
 	@Override
 	HeapObject copy(Heap heap) {
 		return new ClassInstance(this, heap);
+	}
+
+	@Override
+	protected HeapObject deepCopy(Heap heap, Map<HeapObject, HeapObject> visited) {
+		ClassInstance copiedObject = heap.newClassInstance();
+
+		for (Entry<String, UUID> entry : this.refers.entrySet()) {
+			HeapObject referred = this.heap.get(entry.getValue());
+			if (visited.containsKey(referred)) {
+				visited.put(this, copiedObject);
+				copiedObject.setField(entry.getKey(), visited.get(referred));
+			} else {
+				visited.put(this, copiedObject);
+				copiedObject.setField(entry.getKey(), referred.deepCopy(heap, visited));
+			}
+		}
+
+		return copiedObject;
+	}
+
+	protected void copyReferredObjectsTo(ClassInstance object, Heap heap,
+			Map<HeapObject, HeapObject> visited) {
+
+		for (Entry<String, UUID> entry : this.refers.entrySet()) {
+			HeapObject referred = this.heap.get(entry.getValue());
+			visited.put(this, object);
+			object.setField(entry.getKey(), referred.deepCopy(heap, visited));
+		}
 	}
 
 	/*

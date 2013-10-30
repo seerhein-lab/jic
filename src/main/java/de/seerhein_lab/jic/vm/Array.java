@@ -2,6 +2,7 @@ package de.seerhein_lab.jic.vm;
 
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 
@@ -80,6 +81,23 @@ public final class Array extends HeapObject {
 	public void addComponent(HeapObject obj) {
 		if (obj != null && refers.add(obj.getId()))
 			obj.addReferringObject(this);
+	}
+
+	@Override
+	public HeapObject deepCopy(Heap heap, Map<HeapObject, HeapObject> visited) {
+		Array copiedArray = heap.newArray();
+
+		for (UUID id : this.refers) {
+			HeapObject referred = this.heap.get(id);
+			if (visited.containsKey(referred)) {
+				visited.put(this, copiedArray);
+				copiedArray.addComponent(visited.get(referred));
+			} else {
+				visited.put(this, copiedArray);
+				copiedArray.addComponent(referred.deepCopy(heap, visited));
+			}
+		}
+		return copiedArray;
 	}
 
 	// @Override

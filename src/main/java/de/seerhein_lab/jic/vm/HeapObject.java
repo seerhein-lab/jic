@@ -1,8 +1,10 @@
 package de.seerhein_lab.jic.vm;
 
 import java.util.ArrayDeque;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.Map;
 import java.util.Queue;
 import java.util.Set;
 import java.util.UUID;
@@ -172,6 +174,13 @@ public abstract class HeapObject {
 		}
 		return false;
 	}
+
+	public HeapObject deepCopy(Heap heap) {
+		Map<HeapObject, HeapObject> visited = new HashMap<HeapObject, HeapObject>();
+		return deepCopy(heap, visited);
+	}
+
+	protected abstract HeapObject deepCopy(Heap heap, Map<HeapObject, HeapObject> visited);
 
 	// @Override
 	// public int hashCode() {

@@ -48,6 +48,50 @@ public class HeapObjectTest {
 	}
 
 	@Test
+	public void testDeepCopy() {
+		HeapObject copyA = a.deepCopy(new Heap());
+
+		Iterator<HeapObject> referredIterator;
+
+		referredIterator = copyA.getReferredIterator();
+		assertTrue(referredIterator.hasNext());
+		HeapObject copyB = referredIterator.next();
+
+		referredIterator = copyB.getReferredIterator();
+		assertTrue(referredIterator.hasNext());
+		HeapObject copyC = referredIterator.next();
+
+		assertTrue(referredIterator.hasNext());
+		HeapObject copyD = referredIterator.next();
+
+		assertFalse(referredIterator.hasNext());
+
+		referredIterator = copyC.getReferredIterator();
+		assertTrue(referredIterator.hasNext());
+		HeapObject copyE = referredIterator.next();
+
+		assertFalse(referredIterator.hasNext());
+
+		referredIterator = copyD.getReferredIterator();
+		assertTrue(referredIterator.hasNext());
+		assertTrue(referredIterator.next().equals(copyE));
+
+		assertFalse(referredIterator.hasNext());
+
+		referredIterator = copyE.getReferredIterator();
+		assertTrue(referredIterator.hasNext());
+		HeapObject copyF = referredIterator.next();
+
+		assertFalse(referredIterator.hasNext());
+
+		referredIterator = copyF.getReferredIterator();
+		assertTrue(referredIterator.hasNext());
+		assertTrue(referredIterator.next().equals(copyD));
+
+		assertFalse(referredIterator.hasNext());
+	}
+
+	@Test
 	public void testLinkObjects() {
 		assertTrue(a.transitivelyRefers(b));
 		assertTrue(b.transitivelyRefers(c));
