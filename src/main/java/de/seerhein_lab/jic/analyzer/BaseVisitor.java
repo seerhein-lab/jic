@@ -45,12 +45,12 @@ import org.apache.bcel.generic.StackInstruction;
 import org.apache.bcel.generic.StoreInstruction;
 import org.apache.bcel.generic.Type;
 
-import de.seerhein_lab.jic.AnalysisCache;
 import de.seerhein_lab.jic.Pair;
 import de.seerhein_lab.jic.ResultValue;
 import de.seerhein_lab.jic.ResultValue.Kind;
 import de.seerhein_lab.jic.Utils;
 import de.seerhein_lab.jic.analyzer.recursion.RecursionAnalyzer;
+import de.seerhein_lab.jic.cache.AnalysisCache;
 import de.seerhein_lab.jic.slot.DoubleSlot;
 import de.seerhein_lab.jic.slot.LongSlot;
 import de.seerhein_lab.jic.slot.ReferenceSlot;

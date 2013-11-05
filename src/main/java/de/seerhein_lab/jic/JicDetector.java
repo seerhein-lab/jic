@@ -4,6 +4,7 @@ import org.apache.bcel.classfile.AnnotationEntry;
 import org.apache.bcel.classfile.JavaClass;
 
 import de.seerhein_lab.jic.analyzer.ClassAnalyzer;
+import de.seerhein_lab.jic.cache.AnalysisCache;
 import edu.umd.cs.findbugs.BugInstance;
 import edu.umd.cs.findbugs.BugReporter;
 import edu.umd.cs.findbugs.Detector;

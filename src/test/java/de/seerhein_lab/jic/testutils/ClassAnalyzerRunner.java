@@ -22,8 +22,8 @@ import org.junit.runner.Runner;
 import org.junit.runner.notification.Failure;
 import org.junit.runner.notification.RunNotifier;
 
-import de.seerhein_lab.jic.AnalysisCache;
 import de.seerhein_lab.jic.analyzer.ClassAnalyzer;
+import de.seerhein_lab.jic.cache.AnalysisCache;
 import edu.umd.cs.findbugs.BugInstance;
 import edu.umd.cs.findbugs.ba.ClassContext;
 

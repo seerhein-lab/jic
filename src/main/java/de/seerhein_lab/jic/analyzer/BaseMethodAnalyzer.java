@@ -14,10 +14,10 @@ import org.apache.bcel.generic.InstructionList;
 import org.apache.bcel.generic.MethodGen;
 import org.apache.bcel.generic.Type;
 
-import de.seerhein_lab.jic.AnalysisCache;
 import de.seerhein_lab.jic.Pair;
 import de.seerhein_lab.jic.ResultValue;
 import de.seerhein_lab.jic.Utils;
+import de.seerhein_lab.jic.cache.AnalysisCache;
 import de.seerhein_lab.jic.slot.ReferenceSlot;
 import de.seerhein_lab.jic.slot.Slot;
 import de.seerhein_lab.jic.vm.Frame;

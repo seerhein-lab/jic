@@ -12,13 +12,13 @@ import org.apache.bcel.generic.BasicType;
 import org.apache.bcel.generic.ConstantPoolGen;
 import org.apache.bcel.generic.MethodGen;
 
-import de.seerhein_lab.jic.AnalysisCache;
 import de.seerhein_lab.jic.ResultValue;
 import de.seerhein_lab.jic.Utils;
 import de.seerhein_lab.jic.analyzer.ctorArgsCopied.CtorArgsCopiedAnalyzer;
 import de.seerhein_lab.jic.analyzer.fieldsNotPublished.FieldsNotPublishedAnalyzer;
 import de.seerhein_lab.jic.analyzer.noMutators.NoMutatorsAnalyzer;
 import de.seerhein_lab.jic.analyzer.propCon.PropConAnalyzer;
+import de.seerhein_lab.jic.cache.AnalysisCache;
 import de.seerhein_lab.jic.vm.Heap;
 import edu.umd.cs.findbugs.BugCollection;
 import edu.umd.cs.findbugs.BugInstance;
