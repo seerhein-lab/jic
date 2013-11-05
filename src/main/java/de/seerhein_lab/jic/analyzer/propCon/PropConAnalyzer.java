@@ -15,7 +15,6 @@ import de.seerhein_lab.jic.analyzer.MethodInvocation;
 import de.seerhein_lab.jic.cache.AnalysisCache;
 import de.seerhein_lab.jic.vm.Frame;
 import de.seerhein_lab.jic.vm.Heap;
-import de.seerhein_lab.jic.vm.OpStack;
 import de.seerhein_lab.jic.vm.PC;
 import edu.umd.cs.findbugs.ba.ClassContext;
 
@@ -43,19 +42,6 @@ public final class PropConAnalyzer extends BaseMethodAnalyzer {
 		return new PropConVisitor(classContext, methodGen, frame, heap,
 				methodGen.getConstantPool(), pc, exceptionHandlers, alreadyVisitedMethods, depth,
 				alreadyVisitedIfBranch, cache);
-	}
-
-	@Override
-	public final synchronized void analyze(OpStack callerStack, Heap heap) {
-		if (cache.contains(new AnalysisCache.AnalyzedMethod(classContext.getClass(), methodGen
-				.getMethod(), AnalysisCache.Check.PropCon))) {
-			// decide whether bugs matter (if first param != this, they dont)
-			// put cache.result into place
-			// put cache.bugs into place
-			// return;
-		}
-		super.analyze(callerStack, heap);
-		// cache.putIfAbsent(result, bugs);
 	}
 
 	@Override
