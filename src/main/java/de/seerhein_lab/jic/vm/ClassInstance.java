@@ -68,8 +68,8 @@ public final class ClassInstance extends HeapObject {
 		return copiedObject;
 	}
 
-	protected void copyReferredObjectsTo(ClassInstance object, Heap heap,
-			Map<HeapObject, HeapObject> visited) {
+	public void copyReferredObjectsTo(ClassInstance object, Heap heap) {
+		Map<HeapObject, HeapObject> visited = new HashMap<HeapObject, HeapObject>();
 
 		for (Entry<String, UUID> entry : this.refers.entrySet()) {
 			HeapObject referred = this.heap.get(entry.getValue());
