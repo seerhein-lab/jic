@@ -1,5 +1,7 @@
 package de.seerhein_lab.jic.analyzer;
 
+import static org.apache.bcel.Constants.CONSTRUCTOR_NAME;
+
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
@@ -49,6 +51,7 @@ import de.seerhein_lab.jic.Pair;
 import de.seerhein_lab.jic.ResultValue;
 import de.seerhein_lab.jic.ResultValue.Kind;
 import de.seerhein_lab.jic.Utils;
+import de.seerhein_lab.jic.analyzer.eval.EvaluationOnlyAnalyzer;
 import de.seerhein_lab.jic.analyzer.recursion.RecursionAnalyzer;
 import de.seerhein_lab.jic.cache.AnalysisCache;
 import de.seerhein_lab.jic.slot.DoubleSlot;
@@ -215,8 +218,20 @@ public abstract class BaseVisitor extends SimpleVisitor {
 		nowVisitedMethods.addAll(alreadyVisitedMethods);
 		nowVisitedMethods.add(invocation);
 
-		BaseMethodAnalyzer targetMethodAnalyzer = getMethodAnalyzer(targetMethodGen,
-				nowVisitedMethods);
+		Slot firstParam = frame.getStack().size() == 0 ? null : new OpStack(frame.getStack()).pop();
+
+		BaseMethodAnalyzer targetMethodAnalyzer;
+
+		if (targetMethod.getName().equals(CONSTRUCTOR_NAME)
+				&& targetMethod.getArgumentTypes().length == 0
+				&& firstParam instanceof ReferenceSlot
+				&& !heap.getObject(((ReferenceSlot) firstParam)).equals(heap.getThisInstance())) {
+
+			targetMethodAnalyzer = new EvaluationOnlyAnalyzer(classContext, targetMethodGen,
+					alreadyVisitedMethods, depth, cache);
+		} else {
+			targetMethodAnalyzer = getMethodAnalyzer(targetMethodGen, nowVisitedMethods);
+		}
 
 		targetMethodAnalyzer.analyze(frame.getStack(), heap);
 
