@@ -56,6 +56,10 @@ public final class ClassInstance extends HeapObject {
 
 		for (Entry<String, UUID> entry : this.refers.entrySet()) {
 			HeapObject referred = this.heap.get(entry.getValue());
+			if (referred == null) {
+				copiedObject.setField(entry.getKey(), null);
+				continue;
+			}
 			if (visited.containsKey(referred)) {
 				visited.put(this, copiedObject);
 				copiedObject.setField(entry.getKey(), visited.get(referred));
@@ -68,13 +72,13 @@ public final class ClassInstance extends HeapObject {
 		return copiedObject;
 	}
 
-	public void copyReferredObjectsTo(ClassInstance object, Heap heap) {
+	public void copyReferredObjectsTo(ClassInstance origin, Heap heap) {
 		Map<HeapObject, HeapObject> visited = new HashMap<HeapObject, HeapObject>();
 
-		for (Entry<String, UUID> entry : this.refers.entrySet()) {
-			HeapObject referred = this.heap.get(entry.getValue());
-			visited.put(this, object);
-			object.setField(entry.getKey(), referred.deepCopy(heap, visited));
+		for (Entry<String, UUID> entry : origin.refers.entrySet()) {
+			HeapObject referred = origin.heap.get(entry.getValue());
+			visited.put(origin, this);
+			this.setField(entry.getKey(), referred.deepCopy(heap, visited));
 		}
 	}
 
