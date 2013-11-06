@@ -1,5 +1,7 @@
 package de.seerhein_lab.jic.analyzer;
 
+import static org.apache.bcel.Constants.CONSTRUCTOR_NAME;
+
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
@@ -18,8 +20,12 @@ import de.seerhein_lab.jic.Pair;
 import de.seerhein_lab.jic.ResultValue;
 import de.seerhein_lab.jic.Utils;
 import de.seerhein_lab.jic.cache.AnalysisCache;
+import de.seerhein_lab.jic.cache.AnalysisCache.Check;
+import de.seerhein_lab.jic.cache.AnalysisResult;
+import de.seerhein_lab.jic.cache.AnalyzedMethod;
 import de.seerhein_lab.jic.slot.ReferenceSlot;
 import de.seerhein_lab.jic.slot.Slot;
+import de.seerhein_lab.jic.vm.ClassInstance;
 import de.seerhein_lab.jic.vm.Frame;
 import de.seerhein_lab.jic.vm.Heap;
 import de.seerhein_lab.jic.vm.OpStack;
@@ -38,6 +44,8 @@ public abstract class BaseMethodAnalyzer {
 	protected final CodeExceptionGen[] exceptionHandlers;
 	protected BaseVisitor visitor = null;
 	protected final AnalysisCache cache;
+	private Collection<BugInstance> cachedBugs;
+	private HashSet<ResultValue> cachedResults;
 
 	protected BaseMethodAnalyzer(ClassContext classContext, MethodGen methodGen,
 			Set<MethodInvocation> alreadyVisitedMethods, int depth, AnalysisCache cache) {
@@ -97,16 +105,51 @@ public abstract class BaseMethodAnalyzer {
 		analyze(callerStack, callerHeap);
 	}
 
-	public final synchronized void analyze(OpStack callerStack, Heap heap) {
-		Frame calleeFrame = createCalleeFrame(callerStack);
+	public synchronized void analyze(OpStack callerStack, Heap heap) {
 
-		InstructionHandle[] instructionHandles = new InstructionList(methodGen.getMethod()
-				.getCode().getCode()).getInstructionHandles();
+		AnalyzedMethod method = new AnalyzedMethod(classContext.getJavaClass(),
+				methodGen.getMethod());
 
-		analyze(instructionHandles[0], calleeFrame, heap,
-				new HashSet<Pair<InstructionHandle, Boolean>>());
+		if (cache.contains(method) && cache.get(method).isCached(getCheck())) {
+			logger.log(Level.FINE, "Method already evaluated - taking result out of the cache");
 
+			cachedBugs = cache.get(method).getBugs(getCheck());
+			cachedResults = new HashSet<ResultValue>();
+
+			for (ResultValue resultValue : cache.get(method).getResults()) {
+				ClassInstance resultObject = (ClassInstance) resultValue.getHeap().getObject(
+						(ReferenceSlot) resultValue.getSlot());
+				ClassInstance cacheObject;
+				if (resultValue.getKind().equals(ResultValue.Kind.EXCEPTION)) {
+					cacheObject = (ClassInstance) resultObject.deepCopy(heap);
+				} else {
+					cacheObject = (ClassInstance) heap.getObject((ReferenceSlot) callerStack.pop());
+					cacheObject.copyReferredObjectsTo(resultObject, heap);
+				}
+				cachedResults.add(new ResultValue(resultValue.getKind(), ReferenceSlot
+						.createNewInstance(cacheObject), heap));
+			}
+
+		} else {
+			Slot firstParam = callerStack.size() == 0 ? null : new OpStack(callerStack).pop();
+			Frame calleeFrame = createCalleeFrame(callerStack);
+
+			InstructionHandle[] instructionHandles = new InstructionList(methodGen.getMethod()
+					.getCode().getCode()).getInstructionHandles();
+
+			analyze(instructionHandles[0], calleeFrame, heap,
+					new HashSet<Pair<InstructionHandle, Boolean>>());
+
+			if (methodGen.getMethod().getName().equals(CONSTRUCTOR_NAME)
+					&& methodGen.getMethod().getArgumentTypes().length == 0) {
+				AnalysisResult result = new AnalysisResult(getResult(), firstParam);
+				result.setBugs(getCheck(), getBugs());
+				cache.add(method, result, getCheck());
+			}
+		}
 	}
+
+	protected abstract Check getCheck();
 
 	public final synchronized void analyze(InstructionHandle ih, Frame frame, Heap heap,
 			Set<Pair<InstructionHandle, Boolean>> alreadyVisitedIfBranch) {
@@ -140,7 +183,9 @@ public abstract class BaseMethodAnalyzer {
 	 */
 	public final synchronized Collection<BugInstance> getBugs() {
 		if (visitor == null) {
-			throw new IllegalStateException("analyze() must be called before getBugs()");
+			// throw new
+			// IllegalStateException("analyze() must be called before getBugs()");
+			return cachedBugs;
 		}
 		return visitor.getBugs().getCollection();
 	}
@@ -156,9 +201,10 @@ public abstract class BaseMethodAnalyzer {
 	 *             if analyze() was not called beforehand.
 	 */
 	public final synchronized Set<ResultValue> getResult() {
-
 		if (visitor == null) {
-			throw new IllegalStateException("analyze() must be called before getResult()");
+			return cachedResults;
+			// throw new
+			// IllegalStateException("analyze() must be called before getResult()");
 		}
 		return visitor.getResult();
 	}
