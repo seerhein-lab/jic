@@ -13,6 +13,7 @@ import de.seerhein_lab.jic.analyzer.BaseMethodAnalyzer;
 import de.seerhein_lab.jic.analyzer.BaseVisitor;
 import de.seerhein_lab.jic.analyzer.MethodInvocation;
 import de.seerhein_lab.jic.cache.AnalysisCache;
+import de.seerhein_lab.jic.cache.AnalysisCache.Check;
 import de.seerhein_lab.jic.vm.Frame;
 import de.seerhein_lab.jic.vm.Heap;
 import de.seerhein_lab.jic.vm.PC;
@@ -29,7 +30,7 @@ public final class EvaluationOnlyAnalyzer extends BaseMethodAnalyzer {
 				.getMethod()));
 	}
 
-	protected EvaluationOnlyAnalyzer(ClassContext classContext, MethodGen methodGen,
+	public EvaluationOnlyAnalyzer(ClassContext classContext, MethodGen methodGen,
 			Set<MethodInvocation> alreadyVisitedMethods, int depth, AnalysisCache cache) {
 		super(classContext, methodGen, alreadyVisitedMethods, depth, cache);
 	}
@@ -44,5 +45,10 @@ public final class EvaluationOnlyAnalyzer extends BaseMethodAnalyzer {
 	@Override
 	protected Heap getHeap() {
 		return new Heap();
+	}
+
+	@Override
+	protected Check getCheck() {
+		return null;
 	}
 }

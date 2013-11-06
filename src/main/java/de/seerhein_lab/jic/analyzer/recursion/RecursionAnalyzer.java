@@ -13,6 +13,7 @@ import de.seerhein_lab.jic.analyzer.BaseMethodAnalyzer;
 import de.seerhein_lab.jic.analyzer.BaseVisitor;
 import de.seerhein_lab.jic.analyzer.MethodInvocation;
 import de.seerhein_lab.jic.cache.AnalysisCache;
+import de.seerhein_lab.jic.cache.AnalysisCache.Check;
 import de.seerhein_lab.jic.vm.Frame;
 import de.seerhein_lab.jic.vm.Heap;
 import de.seerhein_lab.jic.vm.PC;
@@ -43,5 +44,10 @@ public final class RecursionAnalyzer extends BaseMethodAnalyzer {
 	@Override
 	protected Heap getHeap() {
 		return new Heap();
+	}
+
+	@Override
+	protected Check getCheck() {
+		return null;
 	}
 }
