@@ -1,14 +1,13 @@
 package de.seerhein_lab.jic.cache;
 
-import org.apache.bcel.classfile.JavaClass;
 import org.apache.bcel.classfile.Method;
 
 public class AnalyzedMethod {
 
-	private final JavaClass clazz;
+	private final String clazz;
 	private final Method method;
 
-	public AnalyzedMethod(JavaClass clazz, Method method) {
+	public AnalyzedMethod(String clazz, Method method) {
 		this.clazz = clazz;
 		this.method = method;
 	}
@@ -19,7 +18,7 @@ public class AnalyzedMethod {
 
 	@Override
 	public String toString() {
-		return clazz.getClassName() + method.getName();
+		return clazz + "." + method.getName();
 	}
 
 	@Override
@@ -59,4 +58,5 @@ public class AnalyzedMethod {
 		}
 		return true;
 	}
+
 }

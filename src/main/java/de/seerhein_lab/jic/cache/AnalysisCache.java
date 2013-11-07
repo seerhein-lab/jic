@@ -18,6 +18,10 @@ public final class AnalysisCache {
 			return map.containsKey(method);
 		}
 		return false;
+		// for (Type type : method.getMethod().getArgumentTypes()) {
+		// if (!(type instanceof BasicType))
+		// return false;
+		// }
 	}
 
 	public AnalysisResult get(AnalyzedMethod method) {
