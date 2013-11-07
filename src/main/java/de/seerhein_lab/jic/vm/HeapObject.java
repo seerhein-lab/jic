@@ -182,6 +182,15 @@ public abstract class HeapObject {
 
 	protected abstract HeapObject deepCopy(Heap heap, Map<HeapObject, HeapObject> visited);
 
+	@Override
+	public String toString() {
+		if (this.equals(heap.getThisInstance()))
+			return "This";
+		if (this.equals(heap.getExternalObject()))
+			return "External";
+		return super.toString();
+	}
+
 	// @Override
 	// public int hashCode() {
 	// final int prime = 31;

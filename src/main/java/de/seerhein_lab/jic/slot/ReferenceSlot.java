@@ -53,6 +53,13 @@ public class ReferenceSlot extends Slot {
 	}
 
 	@Override
+	public String toString() {
+		if (this.isNullReference())
+			return "NullReferenceSlot";
+		return super.toString();
+	}
+
+	@Override
 	public int hashCode() {
 		final int prime = 31;
 		int result = 1;
