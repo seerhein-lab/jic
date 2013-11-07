@@ -410,11 +410,11 @@ public abstract class BaseVisitor extends SimpleVisitor {
 
 	@Override
 	public void visitStackInstruction(StackInstruction obj) {
-		logger.log(Level.FINE, indentation + obj.toString(false));
 		Slot slot1, slot2, slot3, slot4;
 		switch (obj.getOpcode()) {
 		case 0x59:
 			// DUB
+			logger.log(Level.FINE, indentation + obj.toString(false));
 			slot1 = frame.getStack().pop();
 
 			frame.getStack().push(slot1);
@@ -422,6 +422,7 @@ public abstract class BaseVisitor extends SimpleVisitor {
 			break;
 		case 0x5a:
 			// DUB_X1
+			logger.log(Level.FINE, indentation + obj.toString(false));
 			slot1 = frame.getStack().pop();
 			slot2 = frame.getStack().pop();
 
@@ -432,6 +433,7 @@ public abstract class BaseVisitor extends SimpleVisitor {
 		case 0x5b:
 			// DUB_X2
 			// pop values
+			logger.log(Level.FINE, indentation + obj.toString(false));
 			slot1 = frame.getStack().pop();
 			slot2 = frame.getStack().pop();
 			slot3 = frame.getStack().pop();
@@ -445,6 +447,7 @@ public abstract class BaseVisitor extends SimpleVisitor {
 		case 0x5c:
 			// DUB2
 			// pop slots
+			logger.log(Level.FINE, indentation + obj.toString(false));
 			slot1 = frame.getStack().pop();
 			slot2 = frame.getStack().pop();
 
@@ -457,6 +460,7 @@ public abstract class BaseVisitor extends SimpleVisitor {
 		case 0x5d:
 			// DUB2_X1
 			// pop the slots
+			logger.log(Level.FINE, indentation + obj.toString(false));
 			slot1 = frame.getStack().pop();
 			slot2 = frame.getStack().pop();
 			slot3 = frame.getStack().pop();
@@ -471,6 +475,7 @@ public abstract class BaseVisitor extends SimpleVisitor {
 		case 0x5e:
 			// DUB2_X2
 			// pop the slots
+			logger.log(Level.FINE, indentation + obj.toString(false));
 			slot1 = frame.getStack().pop();
 			slot2 = frame.getStack().pop();
 			slot3 = frame.getStack().pop();
@@ -487,6 +492,7 @@ public abstract class BaseVisitor extends SimpleVisitor {
 		case 0x5f:
 			// SWAP
 			// pop the values
+			logger.log(Level.FINE, indentation + obj.toString(false));
 			slot1 = frame.getStack().pop();
 			slot2 = frame.getStack().pop();
 
@@ -950,7 +956,8 @@ public abstract class BaseVisitor extends SimpleVisitor {
 		}
 		frame.pushStackByRequiredSlots(f);
 
-		logger.log(Level.FINEST, indentation + "\t" + o + "." + obj.getFieldName(constantPoolGen));
+		logger.log(Level.FINEST,
+				indentation + "\t" + heap.getObject(o) + "." + obj.getFieldName(constantPoolGen));
 
 		pc.advance();
 	}
@@ -1006,9 +1013,10 @@ public abstract class BaseVisitor extends SimpleVisitor {
 		// pop left side of assignment off the stack, too
 		ReferenceSlot oRef = (ReferenceSlot) frame.getStack().pop();
 		detectPutFieldBug(oRef, vRef);
+		HeapObject o = heap.getObject(oRef);
+		HeapObject v = null;
 		if (vRef instanceof ReferenceSlot) {
-			HeapObject v = heap.getObject((ReferenceSlot) vRef);
-			HeapObject o = heap.getObject(oRef);
+			v = heap.getObject((ReferenceSlot) vRef);
 
 			if (o instanceof ExternalObject)
 				heap.publish(v);
@@ -1016,13 +1024,8 @@ public abstract class BaseVisitor extends SimpleVisitor {
 				((ClassInstance) o).setField(obj.getFieldName(constantPoolGen), v);
 		}
 
-		logger.log(Level.FINEST, indentation
-				+ oRef
-				+ "."
-				+ obj.getFieldName(constantPoolGen)
-				+ " <--"
-				+ ((vRef instanceof DoubleSlot || vRef instanceof LongSlot) ? vRef + ", " + vRef
-						: vRef));
+		logger.log(Level.FINEST, indentation + o + "." + obj.getFieldName(constantPoolGen) + " <--"
+				+ ((vRef instanceof ReferenceSlot) ? v : vRef));
 
 		pc.advance();
 	}
