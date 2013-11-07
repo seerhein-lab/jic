@@ -25,9 +25,11 @@ import de.seerhein_lab.jic.cache.AnalysisResult;
 import de.seerhein_lab.jic.cache.AnalyzedMethod;
 import de.seerhein_lab.jic.slot.ReferenceSlot;
 import de.seerhein_lab.jic.slot.Slot;
+import de.seerhein_lab.jic.slot.VoidSlot;
 import de.seerhein_lab.jic.vm.ClassInstance;
 import de.seerhein_lab.jic.vm.Frame;
 import de.seerhein_lab.jic.vm.Heap;
+import de.seerhein_lab.jic.vm.HeapObject;
 import de.seerhein_lab.jic.vm.OpStack;
 import de.seerhein_lab.jic.vm.PC;
 import edu.umd.cs.findbugs.BugInstance;
@@ -52,9 +54,9 @@ public abstract class BaseMethodAnalyzer {
 		if (classContext == null || methodGen == null || alreadyVisitedMethods == null)
 			throw new AssertionError("Params must not be null.");
 
-		if (depth > 25)
-			throw new OutOfMemoryError(
-					"emergency brake to avoid out of memory error (method stack depth exceeded)");
+		// if (depth > 25)
+		// throw new OutOfMemoryError(
+		// "emergency brake to avoid out of memory error (method stack depth exceeded)");
 
 		this.classContext = classContext;
 		this.methodGen = methodGen;
@@ -107,27 +109,27 @@ public abstract class BaseMethodAnalyzer {
 
 	public synchronized void analyze(OpStack callerStack, Heap heap) {
 
-		AnalyzedMethod method = new AnalyzedMethod(classContext.getJavaClass(),
-				methodGen.getMethod());
+		AnalyzedMethod method = new AnalyzedMethod(methodGen.getClassName(), methodGen.getMethod());
 
 		if (cache.contains(method) && cache.get(method).isCached(getCheck())) {
-			logger.log(Level.FINE, "Method already evaluated - taking result out of the cache");
+			logger.log(Level.FINE, Utils.formatLoggingOutput(this.depth) + method
+					+ " already evaluated - taking result out of the cache");
 
 			cachedBugs = cache.get(method).getBugs(getCheck());
 			cachedResults = new HashSet<ResultValue>();
 
 			for (ResultValue resultValue : cache.get(method).getResults()) {
-				ClassInstance resultObject = (ClassInstance) resultValue.getHeap().getObject(
+				HeapObject resultObject = resultValue.getHeap().getObject(
 						(ReferenceSlot) resultValue.getSlot());
-				ClassInstance cacheObject;
 				if (resultValue.getKind().equals(ResultValue.Kind.EXCEPTION)) {
-					cacheObject = (ClassInstance) resultObject.deepCopy(heap);
+					cachedResults.add(new ResultValue(resultValue.getKind(), ReferenceSlot
+							.createNewInstance((ClassInstance) resultObject.deepCopy(heap)), heap));
 				} else {
-					cacheObject = (ClassInstance) heap.getObject((ReferenceSlot) callerStack.pop());
-					cacheObject.copyReferredObjectsTo(resultObject, heap);
+					((ClassInstance) heap.getObject((ReferenceSlot) callerStack.pop()))
+							.copyReferredObjectsTo(resultObject, heap);
+					cachedResults.add(new ResultValue(ResultValue.Kind.REGULAR, VoidSlot
+							.getInstance(), heap));
 				}
-				cachedResults.add(new ResultValue(resultValue.getKind(), ReferenceSlot
-						.createNewInstance(cacheObject), heap));
 			}
 
 		} else {
@@ -142,6 +144,9 @@ public abstract class BaseMethodAnalyzer {
 
 			if (methodGen.getMethod().getName().equals(CONSTRUCTOR_NAME)
 					&& methodGen.getMethod().getArgumentTypes().length == 0) {
+				logger.log(Level.FINE,
+						Utils.formatLoggingOutput(this.depth) + "Put " + methodGen.getClassName()
+								+ methodGen.getMethod().getName() + " in the Cache");
 				AnalysisResult result = new AnalysisResult(getResult(), firstParam);
 				result.setBugs(getCheck(), getBugs());
 				cache.add(method, result, getCheck());
