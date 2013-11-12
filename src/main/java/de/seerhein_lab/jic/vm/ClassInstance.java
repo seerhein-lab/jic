@@ -85,6 +85,10 @@ public final class ClassInstance extends HeapObject {
 		for (Entry<String, UUID> entry : originClassInstance.refers.entrySet()) {
 			HeapObject referred = originClassInstance.heap.get(entry.getValue());
 			visited.put(originClassInstance, this);
+			if (referred == null) {
+				this.setField(entry.getKey(), null);
+				continue;
+			}
 			this.setField(entry.getKey(), referred.deepCopy(heap, visited));
 		}
 	}
