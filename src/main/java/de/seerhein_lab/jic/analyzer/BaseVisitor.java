@@ -2,6 +2,7 @@ package de.seerhein_lab.jic.analyzer;
 
 import static org.apache.bcel.Constants.CONSTRUCTOR_NAME;
 
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
@@ -54,6 +55,9 @@ import de.seerhein_lab.jic.Utils;
 import de.seerhein_lab.jic.analyzer.eval.EvaluationOnlyAnalyzer;
 import de.seerhein_lab.jic.analyzer.recursion.RecursionAnalyzer;
 import de.seerhein_lab.jic.cache.AnalysisCache;
+import de.seerhein_lab.jic.cache.AnalysisCache.Check;
+import de.seerhein_lab.jic.cache.AnalysisResult;
+import de.seerhein_lab.jic.cache.AnalyzedMethod;
 import de.seerhein_lab.jic.slot.DoubleSlot;
 import de.seerhein_lab.jic.slot.LongSlot;
 import de.seerhein_lab.jic.slot.ReferenceSlot;
@@ -199,6 +203,8 @@ public abstract class BaseVisitor extends SimpleVisitor {
 		pc.invalidate();
 	}
 
+	protected abstract Check getCheck();
+
 	private void analyzeMethod(InvokeInstruction obj, JavaClass targetClass, Method targetMethod) {
 		logger.log(Level.FINE, indentation + obj.toString(false));
 		logger.log(Level.FINEST, indentation + "\t" + obj.getLoadClassType(constantPoolGen) + "."
@@ -218,24 +224,73 @@ public abstract class BaseVisitor extends SimpleVisitor {
 		nowVisitedMethods.addAll(alreadyVisitedMethods);
 		nowVisitedMethods.add(invocation);
 
-		Slot firstParam = frame.getStack().size() == 0 ? null : new OpStack(frame.getStack()).pop();
+		AnalyzedMethod method = new AnalyzedMethod(targetMethodGen.getClassName(),
+				targetMethodGen.getMethod());
 
-		BaseMethodAnalyzer targetMethodAnalyzer;
+		Collection<BugInstance> targetBugs = null;
+		Set<ResultValue> targetResults = null;
 
-		if (targetMethod.getName().equals(CONSTRUCTOR_NAME)
-				&& targetMethod.getArgumentTypes().length == 0
-				&& firstParam instanceof ReferenceSlot
-				&& !heap.getObject(((ReferenceSlot) firstParam)).equals(heap.getThisInstance())) {
+		if (cache.contains(method) && cache.get(method).isCached(getCheck())) {
+			logger.log(Level.FINE, Utils.formatLoggingOutput(this.depth) + method
+					+ " already evaluated - taking result out of the cache");
 
-			targetMethodAnalyzer = new EvaluationOnlyAnalyzer(classContext, targetMethodGen,
-					alreadyVisitedMethods, depth, cache);
+			targetBugs = cache.get(method).getBugs(getCheck());
+			targetResults = new HashSet<ResultValue>();
+
+			ReferenceSlot topOfStack = (ReferenceSlot) frame.getStack().pop();
+
+			for (ResultValue resultValue : cache.get(method).getResults()) {
+				Heap resultHeap = new Heap(heap);
+				HeapObject resultObject = resultValue.getHeap().getObject(
+						(ReferenceSlot) resultValue.getSlot());
+
+				if (resultValue.getKind().equals(ResultValue.Kind.EXCEPTION)) {
+					targetResults.add(new ResultValue(resultValue.getKind(), ReferenceSlot
+							.createNewInstance((ClassInstance) resultObject.deepCopy(resultHeap)),
+							resultHeap));
+				} else {
+					((ClassInstance) resultHeap.getObject((ReferenceSlot) topOfStack))
+							.copyReferredObjectsTo(resultObject, resultHeap);
+					targetResults.add(new ResultValue(ResultValue.Kind.REGULAR, VoidSlot
+							.getInstance(), resultHeap));
+				}
+			}
+
 		} else {
-			targetMethodAnalyzer = getMethodAnalyzer(targetMethodGen, nowVisitedMethods);
+			Slot firstParam = frame.getStack().size() == 0 ? null : new OpStack(frame.getStack())
+					.pop();
+
+			BaseMethodAnalyzer targetMethodAnalyzer;
+
+			if (targetMethod.getName().equals(CONSTRUCTOR_NAME)
+					&& targetMethod.getArgumentTypes().length == 0
+					&& firstParam instanceof ReferenceSlot
+					&& !heap.getObject(((ReferenceSlot) firstParam)).equals(heap.getThisInstance())) {
+
+				targetMethodAnalyzer = new EvaluationOnlyAnalyzer(classContext, targetMethodGen,
+						alreadyVisitedMethods, depth, cache);
+			} else {
+				targetMethodAnalyzer = getMethodAnalyzer(targetMethodGen, nowVisitedMethods);
+			}
+
+			targetMethodAnalyzer.analyze(frame.getStack(), heap);
+
+			targetBugs = targetMethodAnalyzer.getBugs();
+			targetResults = targetMethodAnalyzer.getResult();
+
+			if (targetMethodGen.getMethod().getName().equals(CONSTRUCTOR_NAME)
+					&& targetMethodGen.getMethod().getArgumentTypes().length == 0) {
+				logger.log(Level.FINE, Utils.formatLoggingOutput(this.depth) + "Put "
+						+ targetMethodGen.getClassName() + targetMethodGen.getMethod().getName()
+						+ " in the Cache");
+
+				AnalysisResult result = new AnalysisResult(targetResults, firstParam);
+				result.setBugs(getCheck(), targetBugs);
+				cache.add(method, result, getCheck());
+			}
 		}
 
-		targetMethodAnalyzer.analyze(frame.getStack(), heap);
-
-		for (Iterator<BugInstance> it = targetMethodAnalyzer.getBugs().iterator(); it.hasNext();) {
+		for (Iterator<BugInstance> it = targetBugs.iterator(); it.hasNext();) {
 			BugInstance bug = it.next();
 
 			if (targetClass.equals(classContext.getJavaClass())) {
@@ -250,9 +305,7 @@ public abstract class BaseVisitor extends SimpleVisitor {
 					pc.getCurrentInstruction());
 		}
 
-		Set<ResultValue> calleeResults = targetMethodAnalyzer.getResult();
-
-		for (ResultValue calleeResult : calleeResults) {
+		for (ResultValue calleeResult : targetResults) {
 			if (calleeResult.getKind().equals(Kind.REGULAR)) {
 
 				// ************

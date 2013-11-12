@@ -12,6 +12,7 @@ import de.seerhein_lab.jic.analyzer.BaseMethodAnalyzer;
 import de.seerhein_lab.jic.analyzer.BaseVisitor;
 import de.seerhein_lab.jic.analyzer.MethodInvocation;
 import de.seerhein_lab.jic.cache.AnalysisCache;
+import de.seerhein_lab.jic.cache.AnalysisCache.Check;
 import de.seerhein_lab.jic.slot.ReferenceSlot;
 import de.seerhein_lab.jic.slot.Slot;
 import de.seerhein_lab.jic.vm.Frame;
@@ -28,6 +29,11 @@ public class EvaluationOnlyVisitor extends BaseVisitor {
 			AnalysisCache cache) {
 		super(classContext, methodGen, frame, heap, constantPoolGen, alreadyVisitedIfBranch,
 				alreadyVisitedMethods, pc, exceptionHandlers, depth, cache);
+	}
+
+	@Override
+	protected Check getCheck() {
+		return null;
 	}
 
 	@Override

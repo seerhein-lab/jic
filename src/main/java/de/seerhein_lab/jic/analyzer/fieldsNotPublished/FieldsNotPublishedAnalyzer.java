@@ -13,7 +13,6 @@ import de.seerhein_lab.jic.analyzer.BaseMethodAnalyzer;
 import de.seerhein_lab.jic.analyzer.BaseVisitor;
 import de.seerhein_lab.jic.analyzer.MethodInvocation;
 import de.seerhein_lab.jic.cache.AnalysisCache;
-import de.seerhein_lab.jic.cache.AnalysisCache.Check;
 import de.seerhein_lab.jic.vm.Frame;
 import de.seerhein_lab.jic.vm.Heap;
 import de.seerhein_lab.jic.vm.PC;
@@ -50,8 +49,4 @@ public class FieldsNotPublishedAnalyzer extends BaseMethodAnalyzer {
 		return heap;
 	}
 
-	@Override
-	protected Check getCheck() {
-		return null;
-	}
 }
