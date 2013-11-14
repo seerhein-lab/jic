@@ -205,6 +205,85 @@ public abstract class BaseVisitor extends SimpleVisitor {
 
 	protected abstract Check getCheck();
 
+	private Set<ResultValue> useCachedResults(AnalyzedMethod method) {
+		Set<ResultValue> targetResults;
+		targetResults = new HashSet<ResultValue>();
+
+		ReferenceSlot topOfStack = (ReferenceSlot) frame.getStack().pop();
+
+		for (ResultValue resultValue : cache.get(method).getResults()) {
+			Heap resultHeap = new Heap(heap);
+			HeapObject resultObject = resultValue.getHeap().getObject(
+					(ReferenceSlot) resultValue.getSlot());
+
+			if (resultValue.getKind().equals(ResultValue.Kind.EXCEPTION)) {
+				targetResults.add(new ResultValue(resultValue.getKind(), ReferenceSlot
+						.createNewInstance((ClassInstance) resultObject.deepCopy(resultHeap)),
+						resultHeap));
+			} else {
+				((ClassInstance) resultHeap.getObject((ReferenceSlot) topOfStack))
+						.copyReferredObjectsTo(resultObject, resultHeap);
+				targetResults.add(new ResultValue(ResultValue.Kind.REGULAR, VoidSlot.getInstance(),
+						resultHeap));
+			}
+		}
+		return targetResults;
+	}
+
+	private void cacheResults(MethodGen targetMethodGen, AnalyzedMethod method,
+			Collection<BugInstance> targetBugs, Set<ResultValue> targetResults, Slot firstParam) {
+		logger.log(Level.FINE,
+				Utils.formatLoggingOutput(this.depth) + "Put " + targetMethodGen.getClassName()
+						+ targetMethodGen.getMethod().getName() + " in the Cache");
+
+		AnalysisResult result = new AnalysisResult(targetResults, firstParam);
+		result.setBugs(getCheck(), targetBugs);
+		cache.add(method, result, getCheck());
+	}
+
+	private void wrapNestedBugs(JavaClass targetClass, Method targetMethod,
+			Collection<BugInstance> targetBugs) {
+		for (Iterator<BugInstance> it = targetBugs.iterator(); it.hasNext();) {
+			BugInstance bug = it.next();
+
+			if (targetClass.equals(classContext.getJavaClass())) {
+				bugs.add(bug);
+			}
+
+			addBug(Confidence.HIGH,
+					"subsequent bug caused by [" + bug.getMessage() + " in "
+							+ targetClass.getClassName() + "." + targetMethod.getName()
+							+ targetMethod.getSignature() + ":"
+							+ bug.getPrimarySourceLineAnnotation().getStartLine() + "]",
+					pc.getCurrentInstruction());
+		}
+	}
+
+	private void continueWithResults(Set<ResultValue> targetResults) {
+		for (ResultValue calleeResult : targetResults) {
+			if (calleeResult.getKind().equals(Kind.REGULAR)) {
+
+				BaseMethodAnalyzer analyzer = getMethodAnalyzer(methodGen, alreadyVisitedMethods);
+
+				Frame newFrame = new Frame(frame);
+				newFrame.pushStackByRequiredSlots(calleeResult.getSlot());
+
+				analyzer.analyze(pc.getCurrentInstruction().getNext(), newFrame,
+						calleeResult.getHeap(), alreadyVisitedIfBranch);
+
+				bugs.addAll(analyzer.getBugs());
+				result.addAll(analyzer.getResult());
+
+			} else {
+				Frame savedFrame = new Frame(frame);
+				InstructionHandle currentInstruction = pc.getCurrentInstruction();
+				handleException((ReferenceSlot) calleeResult.getSlot());
+				pc.setInstruction(currentInstruction);
+				frame = savedFrame;
+			}
+		}
+	}
+
 	private void analyzeMethod(InvokeInstruction obj, JavaClass targetClass, Method targetMethod) {
 		logger.log(Level.FINE, indentation + obj.toString(false));
 		logger.log(Level.FINEST, indentation + "\t" + obj.getLoadClassType(constantPoolGen) + "."
@@ -235,26 +314,7 @@ public abstract class BaseVisitor extends SimpleVisitor {
 					+ " already evaluated - taking result out of the cache");
 
 			targetBugs = cache.get(method).getBugs(getCheck());
-			targetResults = new HashSet<ResultValue>();
-
-			ReferenceSlot topOfStack = (ReferenceSlot) frame.getStack().pop();
-
-			for (ResultValue resultValue : cache.get(method).getResults()) {
-				Heap resultHeap = new Heap(heap);
-				HeapObject resultObject = resultValue.getHeap().getObject(
-						(ReferenceSlot) resultValue.getSlot());
-
-				if (resultValue.getKind().equals(ResultValue.Kind.EXCEPTION)) {
-					targetResults.add(new ResultValue(resultValue.getKind(), ReferenceSlot
-							.createNewInstance((ClassInstance) resultObject.deepCopy(resultHeap)),
-							resultHeap));
-				} else {
-					((ClassInstance) resultHeap.getObject((ReferenceSlot) topOfStack))
-							.copyReferredObjectsTo(resultObject, resultHeap);
-					targetResults.add(new ResultValue(ResultValue.Kind.REGULAR, VoidSlot
-							.getInstance(), resultHeap));
-				}
-			}
+			targetResults = useCachedResults(method);
 
 		} else {
 			Slot firstParam = frame.getStack().size() == 0 ? null : new OpStack(frame.getStack())
@@ -280,54 +340,13 @@ public abstract class BaseVisitor extends SimpleVisitor {
 
 			if (targetMethodGen.getMethod().getName().equals(CONSTRUCTOR_NAME)
 					&& targetMethodGen.getMethod().getArgumentTypes().length == 0) {
-				logger.log(Level.FINE, Utils.formatLoggingOutput(this.depth) + "Put "
-						+ targetMethodGen.getClassName() + targetMethodGen.getMethod().getName()
-						+ " in the Cache");
-
-				AnalysisResult result = new AnalysisResult(targetResults, firstParam);
-				result.setBugs(getCheck(), targetBugs);
-				cache.add(method, result, getCheck());
+				cacheResults(targetMethodGen, method, targetBugs, targetResults, firstParam);
 			}
 		}
 
-		for (Iterator<BugInstance> it = targetBugs.iterator(); it.hasNext();) {
-			BugInstance bug = it.next();
+		wrapNestedBugs(targetClass, targetMethod, targetBugs);
+		continueWithResults(targetResults);
 
-			if (targetClass.equals(classContext.getJavaClass())) {
-				bugs.add(bug);
-			}
-
-			addBug(Confidence.HIGH,
-					"subsequent bug caused by [" + bug.getMessage() + " in "
-							+ targetClass.getClassName() + "." + targetMethod.getName()
-							+ targetMethod.getSignature() + ":"
-							+ bug.getPrimarySourceLineAnnotation().getStartLine() + "]",
-					pc.getCurrentInstruction());
-		}
-
-		for (ResultValue calleeResult : targetResults) {
-			if (calleeResult.getKind().equals(Kind.REGULAR)) {
-
-				// ************
-				BaseMethodAnalyzer analyzer = getMethodAnalyzer(methodGen, alreadyVisitedMethods);
-
-				Frame newFrame = new Frame(frame);
-				newFrame.pushStackByRequiredSlots(calleeResult.getSlot());
-
-				analyzer.analyze(pc.getCurrentInstruction().getNext(), newFrame,
-						calleeResult.getHeap(), alreadyVisitedIfBranch);
-
-				bugs.addAll(analyzer.getBugs());
-				result.addAll(analyzer.getResult());
-
-			} else {
-				Frame savedFrame = new Frame(frame);
-				InstructionHandle currentInstruction = pc.getCurrentInstruction();
-				handleException((ReferenceSlot) calleeResult.getSlot());
-				pc.setInstruction(currentInstruction);
-				frame = savedFrame;
-			}
-		}
 		pc.invalidate();
 	}
 
