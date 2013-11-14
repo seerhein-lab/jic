@@ -21,7 +21,8 @@ import edu.umd.cs.findbugs.ba.ClassContext;
 // This class must either be used thread-confined, or reporter must be thread-safe, otherwise concurrent calls to
 // reporter.reportBug() can result in race conditions.
 public final class JicDetector implements Detector {
-	private static final String LOGPATH = ".\\"; // Pfad anpassen
+	private static final String LOGPATH = "/Users/haase/tmp/log/"; // Pfad
+																	// anpassen
 	protected static final Logger logger = Logger.getLogger("JicDetector");
 	private final static String IMMUTABLE_ANNOTATION = "Lnet/jcip/annotations/Immutable;";
 	private final BugReporter reporter;

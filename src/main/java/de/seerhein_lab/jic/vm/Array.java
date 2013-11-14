@@ -100,29 +100,27 @@ public final class Array extends HeapObject {
 		return copiedArray;
 	}
 
-	// @Override
-	// public int hashCode() {
-	// final int prime = 31;
-	// int result = super.hashCode();
-	// result = prime * result + ((refers == null) ? 0 : refers.hashCode());
-	// return result;
-	// }
-	//
-	// @Override
-	// public boolean equals(Object obj) {
-	// if (this == obj)
-	// return true;
-	// if (!super.equals(obj))
-	// return false;
-	// if (!(obj instanceof Array))
-	// return false;
-	// Array other = (Array) obj;
-	// if (refers == null) {
-	// if (other.refers != null)
-	// return false;
-	// } else if (!refers.equals(other.refers))
-	// return false;
-	// return true;
-	// }
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = super.hashCode();
+		result = prime * result + ((refers == null) ? 0 : refers.hashCode());
+		return result;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (!super.equals(obj))
+			return false;
+
+		if (!(obj instanceof Array))
+			return false;
+		Array other = (Array) obj;
+
+		return refers.equals(other.refers);
+
+	}
 
 }

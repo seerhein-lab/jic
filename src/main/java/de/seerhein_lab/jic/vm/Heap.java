@@ -133,36 +133,43 @@ public class Heap {
 		}
 	}
 
-	// @Override
-	// public int hashCode() {
-	// final int prime = 31;
-	// int result = 1;
-	// result = prime * result + ((objects == null) ? 0 : objects.hashCode());
-	// result = prime
-	// * result
-	// + ((publishedObjects == null) ? 0 : publishedObjects.hashCode());
-	// return result;
-	// }
-	//
-	// @Override
-	// public boolean equals(Object obj) {
-	// if (this == obj)
-	// return true;
-	// if (obj == null)
-	// return false;
-	// if (!(obj instanceof Heap))
-	// return false;
-	// Heap other = (Heap) obj;
-	// if (objects == null) {
-	// if (other.objects != null)
-	// return false;
-	// } else if (!objects.equals(other.objects))
-	// return false;
-	// if (publishedObjects == null) {
-	// if (other.publishedObjects != null)
-	// return false;
-	// } else if (!publishedObjects.equals(other.publishedObjects))
-	// return false;
-	// return true;
-	// }
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + ((externalID == null) ? 0 : externalID.hashCode());
+		result = prime * result + ((objects == null) ? 0 : objects.hashCode());
+		result = prime * result + ((publishedObjects == null) ? 0 : publishedObjects.hashCode());
+		result = prime * result + ((thisID == null) ? 0 : thisID.hashCode());
+		return result;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+
+		if (!(obj instanceof Heap))
+			return false;
+
+		Heap other = (Heap) obj;
+
+		if (externalID == null) {
+			if (other.externalID != null)
+				return false;
+		} else if (!externalID.equals(other.externalID))
+			return false;
+
+		if (thisID == null) {
+			if (other.thisID != null)
+				return false;
+		} else if (!thisID.equals(other.thisID))
+			return false;
+
+		if (!objects.equals(other.objects))
+			return false;
+
+		return (publishedObjects.equals(other.publishedObjects));
+	}
+
 }

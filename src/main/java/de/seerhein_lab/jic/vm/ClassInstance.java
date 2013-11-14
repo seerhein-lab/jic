@@ -162,28 +162,25 @@ public final class ClassInstance extends HeapObject {
 		return heap.get(refers.get(name));
 	}
 
-	// @Override
-	// public int hashCode() {
-	// final int prime = 31;
-	// int result = super.hashCode();
-	// result = prime * result + ((refers == null) ? 0 : refers.hashCode());
-	// return result;
-	// }
-	//
-	// @Override
-	// public boolean equals(Object obj) {
-	// if (this == obj)
-	// return true;
-	// if (!super.equals(obj))
-	// return false;
-	// if (!(obj instanceof ClassInstance))
-	// return false;
-	// ClassInstance other = (ClassInstance) obj;
-	// if (refers == null) {
-	// if (other.refers != null)
-	// return false;
-	// } else if (!refers.equals(other.refers))
-	// return false;
-	// return true;
-	// }
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = super.hashCode();
+		result = prime * result + ((refers == null) ? 0 : refers.hashCode());
+		return result;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (!super.equals(obj))
+			return false;
+		if (!(obj instanceof ClassInstance))
+			return false;
+		ClassInstance other = (ClassInstance) obj;
+
+		return refers.equals(other.refers);
+	}
+
 }
