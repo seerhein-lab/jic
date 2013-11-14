@@ -32,19 +32,20 @@ public final class Utils {
 		return indentation.toString();
 	}
 
-	public static Logger setUpLogger(String loggerName, String logFilePath) throws IOException {
+	public static Logger setUpLogger(String loggerName, String logFilePath, Level level)
+			throws IOException {
 		Logger globalLogger = Logger.getLogger("");
 		Handler[] globalLoggerHandlers = globalLogger.getHandlers();
 		for (Handler handler : globalLoggerHandlers) {
 			globalLogger.removeHandler(handler);
 		}
 		StreamHandler streamHandler = new StreamHandler(System.out, new TestDriverFormater());
-		streamHandler.setLevel(Level.ALL);
+		streamHandler.setLevel(level);
 		globalLogger.addHandler(streamHandler);
-		globalLogger.setLevel(Level.ALL);
+		globalLogger.setLevel(level);
 		FileHandler fh = new FileHandler(logFilePath);
 		fh.setFormatter(new TestDriverFormater());
-		fh.setLevel(Level.ALL);
+		fh.setLevel(level);
 		globalLogger.addHandler(fh);
 		Logger logger = Logger.getLogger(loggerName);
 		return logger;

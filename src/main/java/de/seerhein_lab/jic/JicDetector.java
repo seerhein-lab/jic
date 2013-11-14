@@ -1,8 +1,14 @@
 package de.seerhein_lab.jic;
 
+import java.io.IOException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
 import org.apache.bcel.classfile.AnnotationEntry;
 import org.apache.bcel.classfile.JavaClass;
+import org.apache.commons.lang.time.DateFormatUtils;
 
+import de.seerhein_lab.jic.analyzer.BaseVisitor;
 import de.seerhein_lab.jic.analyzer.ClassAnalyzer;
 import de.seerhein_lab.jic.cache.AnalysisCache;
 import edu.umd.cs.findbugs.BugInstance;
@@ -15,12 +21,28 @@ import edu.umd.cs.findbugs.ba.ClassContext;
 // This class must either be used thread-confined, or reporter must be thread-safe, otherwise concurrent calls to
 // reporter.reportBug() can result in race conditions.
 public final class JicDetector implements Detector {
+	private static final String LOGPATH = ".\\"; // Pfad anpassen
+	protected static final Logger logger = Logger.getLogger("JicDetector");
 	private final static String IMMUTABLE_ANNOTATION = "Lnet/jcip/annotations/Immutable;";
 	private final BugReporter reporter;
 	private final AnalysisCache cache = new AnalysisCache();
+	private long cacheHitsBeforeThisClass;
+	private long cacheMissesBeforeThisClass;
 
 	public JicDetector(BugReporter reporter) {
 		this.reporter = reporter;
+		cacheHitsBeforeThisClass = 0;
+		cacheMissesBeforeThisClass = 0;
+		try {
+			Utils.setUpLogger(
+					"ProperlyConstructedTestDriver",
+					LOGPATH
+							+ "log-"
+							+ DateFormatUtils.format(System.currentTimeMillis(),
+									"dd-MM-yyyy_HH-mm-ss") + ".txt", Level.INFO);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 	}
 
 	@Override
@@ -67,5 +89,14 @@ public final class JicDetector implements Detector {
 		for (BugInstance bug : bugs) {
 			reporter.reportBug(bug);
 		}
+
+		logger.log(Level.INFO, "CacheHits: " + (BaseVisitor.cacheHits - cacheHitsBeforeThisClass)
+				+ " [" + BaseVisitor.cacheHits + "]\t, CacheMisses: "
+				+ (BaseVisitor.cacheMisses - cacheMissesBeforeThisClass) + " ["
+				+ BaseVisitor.cacheMisses + "]\t-> in "
+				+ classContext.getJavaClass().getClassName());
+		cacheHitsBeforeThisClass = BaseVisitor.cacheHits;
+		cacheMissesBeforeThisClass = BaseVisitor.cacheMisses;
+
 	}
 }

@@ -117,6 +117,8 @@ public abstract class BaseVisitor extends SimpleVisitor {
 	protected SortedBugCollection bugs = new SortedBugCollection();
 	protected final AnalysisCache cache;
 	protected Set<ResultValue> result = new HashSet<ResultValue>();
+	public static long cacheMisses = 0;
+	public static long cacheHits = 0;
 
 	// protected abstract BaseVisitor getInstructionsAnalysisVisitor(
 	// Frame frame, Heap heap,
@@ -312,11 +314,13 @@ public abstract class BaseVisitor extends SimpleVisitor {
 		if (cache.contains(method) && cache.get(method).isCached(getCheck())) {
 			logger.log(Level.FINE, Utils.formatLoggingOutput(this.depth) + method
 					+ " already evaluated - taking result out of the cache");
+			cacheHits++;
 
 			targetBugs = cache.get(method).getBugs(getCheck());
 			targetResults = useCachedResults(method);
 
 		} else {
+			cacheMisses++;
 			Slot firstParam = frame.getStack().size() == 0 ? null : new OpStack(frame.getStack())
 					.pop();
 
