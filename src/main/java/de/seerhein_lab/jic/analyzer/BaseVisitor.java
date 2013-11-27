@@ -375,16 +375,21 @@ public abstract class BaseVisitor extends SimpleVisitor {
 
 		Frame currentFrame = frame;
 		Heap currentHeap = heap;
+		pc.advance();
+		InstructionHandle next = pc.getCurrentInstruction().getNext();
 
 		for (ResultValue res : recursionResults) {
 			logger.log(Level.FINE, indentation + "Result of recursive call: " + res.getSlot());
 			frame = new Frame(currentFrame);
 			heap = new Heap(currentHeap);
 
+			frame.getStack().pop();
+			frame.getStack().pop();
+			frame.getStack().push(res.getSlot());
+
 			BaseMethodAnalyzer analyzer = getMethodAnalyzer(methodGen, alreadyVisitedMethods);
-			handleSimpleInstruction(obj, res.getSlot());
-			analyzer.analyze(pc.getCurrentInstruction().getNext(), new Frame(currentFrame),
-					new Heap(currentHeap), alreadyVisitedIfBranch);
+			analyzer.analyze(next, new Frame(currentFrame), new Heap(currentHeap),
+					alreadyVisitedIfBranch);
 
 			bugs.addAll(analyzer.getBugs());
 			result.addAll(analyzer.getResult());
@@ -443,6 +448,8 @@ public abstract class BaseVisitor extends SimpleVisitor {
 	@Override
 	public void visitLoadInstruction(LoadInstruction obj) {
 		logger.log(Level.FINE, indentation + obj.toString(false));
+		if (frame.getLocalVars()[obj.getIndex()] == null)
+			throw new AssertionError("wrong index for local vars");
 		frame.pushStackByRequiredSlots(frame.getLocalVars()[obj.getIndex()]);
 		pc.advance();
 	}
