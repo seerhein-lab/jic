@@ -651,8 +651,18 @@ public abstract class BaseVisitor extends SimpleVisitor {
 
 		Array array = (Array) heap.getObject(arrayReference);
 
-		if (array == null)
-			throw new AssertionError("AALOAD on null");
+		if (array == null) {
+			logger.log(
+					Level.WARNING,
+					"AALOAD on null in "
+							+ classContext.getFullyQualifiedMethodName(methodGen.getMethod())
+							+ " - stopping evaluation of an unreachable path");
+			pc.invalidate();
+			return;
+			// throw new AssertionError("AALOAD on null in "
+			// +
+			// classContext.getFullyQualifiedMethodName(methodGen.getMethod()));
+		}
 
 		for (Iterator<HeapObject> iterator = array.getReferredIterator(); iterator.hasNext();) {
 
@@ -1015,8 +1025,16 @@ public abstract class BaseVisitor extends SimpleVisitor {
 		// pop object reference
 		ReferenceSlot o = (ReferenceSlot) frame.getStack().pop();
 
-		if (o.getID() == null)
-			throw new AssertionError("GETFIELD on null");
+		if (o.getID() == null) {
+			logger.log(
+					Level.WARNING,
+					"GETFIELD on null in "
+							+ classContext.getFullyQualifiedMethodName(methodGen.getMethod())
+							+ " - stopping evaluation of an unreachable path");
+			pc.invalidate();
+			return;
+			// throw new AssertionError("GETFIELD on null");
+		}
 
 		// obj.getSignature() refers to desired field
 		Slot f = Slot.getDefaultSlotInstance(obj.getType(constantPoolGen));
@@ -1160,7 +1178,9 @@ public abstract class BaseVisitor extends SimpleVisitor {
 		Method targetMethod = new ClassHelper(targetClass).getMethod(
 				obj.getMethodName(constantPoolGen), obj.getArgumentTypes(constantPoolGen));
 		if (targetMethod == null)
-			throw new AssertionError("targetMethod not found in Class");
+			throw new AssertionError("targetMethod " + obj.getMethodName(constantPoolGen)
+					+ " not found in " + obj.getLoadClassType(constantPoolGen) + ": "
+					+ obj.toString(true));
 
 		if (targetMethod.isNative()) {
 			logger.log(Level.FINE, indentation
