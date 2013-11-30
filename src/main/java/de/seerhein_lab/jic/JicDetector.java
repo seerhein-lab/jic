@@ -1,6 +1,7 @@
 package de.seerhein_lab.jic;
 
 import java.io.IOException;
+import java.util.Collection;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -14,7 +15,6 @@ import de.seerhein_lab.jic.cache.AnalysisCache;
 import edu.umd.cs.findbugs.BugInstance;
 import edu.umd.cs.findbugs.BugReporter;
 import edu.umd.cs.findbugs.Detector;
-import edu.umd.cs.findbugs.SortedBugCollection;
 import edu.umd.cs.findbugs.annotations.Confidence;
 import edu.umd.cs.findbugs.ba.ClassContext;
 
@@ -70,8 +70,6 @@ public final class JicDetector implements Detector {
 			return;
 		}
 
-		SortedBugCollection bugs = new SortedBugCollection();
-
 		if (clazz.isAbstract() && supposedlyImmutable) {
 			reporter.reportBug(Utils.createBug(Confidence.HIGH,
 					"Type cannot be annotated as immutable", clazz));
@@ -79,16 +77,18 @@ public final class JicDetector implements Detector {
 		}
 
 		try {
-			bugs.addAll(supposedlyImmutable ? new ClassAnalyzer(classContext, cache).isImmutable()
-					: new ClassAnalyzer(classContext, cache).properlyConstructed());
+			Collection<BugInstance> bugs = supposedlyImmutable ? new ClassAnalyzer(classContext,
+					cache).isImmutable() : new ClassAnalyzer(classContext, cache)
+					.properlyConstructed();
+
+			for (BugInstance bug : bugs) {
+				reporter.reportBug(bug);
+			}
+
 		} catch (Throwable e) {
 			reporter.reportBug(Utils.createBug(Confidence.HIGH,
 					"Class cannot be analyzed owing to internal problem (" + e + ")",
 					classContext.getJavaClass()));
-		}
-
-		for (BugInstance bug : bugs) {
-			reporter.reportBug(bug);
 		}
 
 		logger.log(Level.INFO, "CacheHits: " + (BaseVisitor.cacheHits - cacheHitsBeforeThisClass)
