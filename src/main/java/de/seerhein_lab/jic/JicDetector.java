@@ -27,13 +27,14 @@ public final class JicDetector implements Detector {
 	private final static String IMMUTABLE_ANNOTATION = "Lnet/jcip/annotations/Immutable;";
 	private final BugReporter reporter;
 	private final AnalysisCache cache = new AnalysisCache();
-	private long cacheHitsBeforeThisClass;
-	private long cacheMissesBeforeThisClass;
+
+	// private long cacheHitsBeforeThisClass;
+	// private long cacheMissesBeforeThisClass;
 
 	public JicDetector(BugReporter reporter) {
 		this.reporter = reporter;
-		cacheHitsBeforeThisClass = 0;
-		cacheMissesBeforeThisClass = 0;
+		// cacheHitsBeforeThisClass = 0;
+		// cacheMissesBeforeThisClass = 0;
 		try {
 			Utils.setUpLogger(
 					"ProperlyConstructedTestDriver",
@@ -48,6 +49,8 @@ public final class JicDetector implements Detector {
 
 	@Override
 	public void report() {
+		logger.log(Level.INFO, "cache hits: " + BaseVisitor.cacheHits + "\t" + "cache misses: "
+				+ BaseVisitor.cacheMisses);
 	}
 
 	// package private for testing purposes
@@ -91,13 +94,14 @@ public final class JicDetector implements Detector {
 					classContext.getJavaClass()));
 		}
 
-		logger.log(Level.INFO, "CacheHits: " + (BaseVisitor.cacheHits - cacheHitsBeforeThisClass)
-				+ " [" + BaseVisitor.cacheHits + "]\t, CacheMisses: "
-				+ (BaseVisitor.cacheMisses - cacheMissesBeforeThisClass) + " ["
-				+ BaseVisitor.cacheMisses + "]\t-> in "
-				+ classContext.getJavaClass().getClassName());
-		cacheHitsBeforeThisClass = BaseVisitor.cacheHits;
-		cacheMissesBeforeThisClass = BaseVisitor.cacheMisses;
+		// logger.log(Level.INFO, "CacheHits: " + (BaseVisitor.cacheHits -
+		// cacheHitsBeforeThisClass)
+		// + " [" + BaseVisitor.cacheHits + "]\t, CacheMisses: "
+		// + (BaseVisitor.cacheMisses - cacheMissesBeforeThisClass) + " ["
+		// + BaseVisitor.cacheMisses + "]\t-> in "
+		// + classContext.getJavaClass().getClassName());
+		// cacheHitsBeforeThisClass = BaseVisitor.cacheHits;
+		// cacheMissesBeforeThisClass = BaseVisitor.cacheMisses;
 
 	}
 }
