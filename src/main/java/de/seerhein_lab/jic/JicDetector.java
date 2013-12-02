@@ -12,6 +12,8 @@ import org.apache.commons.lang.time.DateFormatUtils;
 import de.seerhein_lab.jic.analyzer.BaseVisitor;
 import de.seerhein_lab.jic.analyzer.ClassAnalyzer;
 import de.seerhein_lab.jic.cache.AnalysisCache;
+import de.seerhein_lab.jic.vm.Frame;
+import de.seerhein_lab.jic.vm.Heap;
 import edu.umd.cs.findbugs.BugInstance;
 import edu.umd.cs.findbugs.BugReporter;
 import edu.umd.cs.findbugs.Detector;
@@ -28,13 +30,9 @@ public final class JicDetector implements Detector {
 	private final BugReporter reporter;
 	private final AnalysisCache cache = new AnalysisCache();
 
-	// private long cacheHitsBeforeThisClass;
-	// private long cacheMissesBeforeThisClass;
-
 	public JicDetector(BugReporter reporter) {
 		this.reporter = reporter;
-		// cacheHitsBeforeThisClass = 0;
-		// cacheMissesBeforeThisClass = 0;
+
 		try {
 			Utils.setUpLogger(
 					"ProperlyConstructedTestDriver",
@@ -49,8 +47,10 @@ public final class JicDetector implements Detector {
 
 	@Override
 	public void report() {
-		logger.log(Level.INFO, "cache hits: " + BaseVisitor.cacheHits + "\t" + "cache misses: "
-				+ BaseVisitor.cacheMisses);
+		logger.log(Level.INFO, "cache hits: " + BaseVisitor.cacheHits);
+		logger.log(Level.INFO, "cache misses: " + BaseVisitor.cacheMisses);
+		logger.log(Level.INFO, "heaps: " + Heap.count.get());
+		logger.log(Level.INFO, "frames: " + Frame.count.get());
 	}
 
 	// package private for testing purposes
@@ -93,15 +93,6 @@ public final class JicDetector implements Detector {
 					"Class cannot be analyzed owing to internal problem (" + e + ")",
 					classContext.getJavaClass()));
 		}
-
-		// logger.log(Level.INFO, "CacheHits: " + (BaseVisitor.cacheHits -
-		// cacheHitsBeforeThisClass)
-		// + " [" + BaseVisitor.cacheHits + "]\t, CacheMisses: "
-		// + (BaseVisitor.cacheMisses - cacheMissesBeforeThisClass) + " ["
-		// + BaseVisitor.cacheMisses + "]\t-> in "
-		// + classContext.getJavaClass().getClassName());
-		// cacheHitsBeforeThisClass = BaseVisitor.cacheHits;
-		// cacheMissesBeforeThisClass = BaseVisitor.cacheMisses;
 
 	}
 }

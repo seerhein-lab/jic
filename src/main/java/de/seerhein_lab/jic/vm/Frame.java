@@ -1,11 +1,14 @@
 package de.seerhein_lab.jic.vm;
 
+import java.util.concurrent.atomic.AtomicLong;
+
 import de.seerhein_lab.jic.slot.Slot;
 
 /**
  * Class representing a method frame. Contains LocalVars and a method stack.
  */
 public class Frame {
+	public static AtomicLong count = new AtomicLong();
 	private final Slot[] localVars;
 	private final OpStack opStack;
 
@@ -30,6 +33,7 @@ public class Frame {
 			localVars[i] = callerOpStack.pop();
 
 		opStack = new OpStack();
+		count.incrementAndGet();
 	}
 
 	public Frame(Frame frame) {
@@ -39,6 +43,7 @@ public class Frame {
 					.copy();
 		}
 		opStack = new OpStack(frame.getStack());
+		count.incrementAndGet();
 	}
 
 	public OpStack getStack() {

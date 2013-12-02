@@ -7,6 +7,7 @@ import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.atomic.AtomicLong;
 
 import de.seerhein_lab.jic.slot.ReferenceSlot;
 
@@ -15,6 +16,7 @@ import de.seerhein_lab.jic.slot.ReferenceSlot;
  * for "this" and the "external".
  */
 public class Heap {
+	public static AtomicLong count = new AtomicLong();
 	private final Map<UUID, HeapObject> objects = new HashMap<UUID, HeapObject>();
 	private final Set<UUID> publishedObjects = new HashSet<UUID>();
 
@@ -32,6 +34,7 @@ public class Heap {
 		ExternalObject externalObject = new ExternalObject(this);
 		externalID = externalObject.getId();
 		objects.put(externalID, externalObject);
+		count.incrementAndGet();
 	}
 
 	/**
@@ -49,6 +52,7 @@ public class Heap {
 
 		thisID = original.thisID;
 		externalID = original.externalID;
+		count.incrementAndGet();
 	}
 
 	/**
