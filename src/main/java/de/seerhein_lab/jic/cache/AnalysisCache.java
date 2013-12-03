@@ -1,7 +1,5 @@
 package de.seerhein_lab.jic.cache;
 
-import static org.apache.bcel.Constants.CONSTRUCTOR_NAME;
-
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -13,15 +11,12 @@ public final class AnalysisCache {
 	private final Map<AnalyzedMethod, AnalysisResult> map = new ConcurrentHashMap<AnalyzedMethod, AnalysisResult>();
 
 	public boolean contains(AnalyzedMethod method) {
-		if (method.getMethod().getName().equals(CONSTRUCTOR_NAME)
-				&& method.getMethod().getArgumentTypes().length == 0) {
-			return map.containsKey(method);
-		}
-		return false;
-		// for (Type type : method.getMethod().getArgumentTypes()) {
-		// if (!(type instanceof BasicType))
-		// return false;
+		// if (method.getMethod().getName().equals(CONSTRUCTOR_NAME)
+		// && method.getMethod().getArgumentTypes().length == 0) {
+		return map.containsKey(method);
 		// }
+		// return false;
+
 	}
 
 	public AnalysisResult get(AnalyzedMethod method) {
