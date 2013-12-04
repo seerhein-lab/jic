@@ -258,6 +258,13 @@ public abstract class BaseVisitor extends SimpleVisitor {
 		for (EvaluationResult calleeResult : targetResults) {
 			if (calleeResult.getKind().equals(Kind.REGULAR)) {
 
+				if (targetResults.size() == 1) {
+					frame.pushStackByRequiredSlots(calleeResult.getSlot());
+					heap = calleeResult.getHeap();
+					pc.advance();
+					return;
+				}
+
 				BaseMethodAnalyzer analyzer = getMethodAnalyzer(methodGen, alreadyVisitedMethods);
 
 				Frame newFrame = new Frame(frame);
@@ -277,6 +284,7 @@ public abstract class BaseVisitor extends SimpleVisitor {
 				frame = savedFrame;
 			}
 		}
+		pc.invalidate();
 	}
 
 	private void analyzeMethod(InvokeInstruction obj, QualifiedMethod targetMethod) {
@@ -338,8 +346,6 @@ public abstract class BaseVisitor extends SimpleVisitor {
 
 		wrapNestedBugs(targetMethod, targetBugs);
 		continueWithResults(targetResults);
-
-		pc.invalidate();
 	}
 
 	protected void handleRecursion(InvokeInstruction obj, MethodGen targetMethodGen) {
@@ -371,9 +377,13 @@ public abstract class BaseVisitor extends SimpleVisitor {
 			frame = new Frame(currentFrame);
 			heap = new Heap(currentHeap);
 
-			frame.getStack().pop();
-			frame.getStack().pop();
-			frame.getStack().push(res.getSlot());
+			for (int i = 0; i < obj.consumeStack(constantPoolGen); i++) {
+				frame.getStack().pop();
+			}
+
+			for (int i = 0; i < obj.produceStack(constantPoolGen); i++) {
+				frame.getStack().push(res.getSlot());
+			}
 
 			BaseMethodAnalyzer analyzer = getMethodAnalyzer(methodGen, alreadyVisitedMethods);
 			AnalysisResult analysisResult = analyzer.analyze(next, new Frame(currentFrame),
