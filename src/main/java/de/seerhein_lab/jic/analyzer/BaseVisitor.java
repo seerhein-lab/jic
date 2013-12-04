@@ -332,7 +332,7 @@ public abstract class BaseVisitor extends SimpleVisitor {
 					&& !heap.getObject(((ReferenceSlot) firstParam)).equals(heap.getThisInstance())) {
 
 				targetMethodAnalyzer = new EvaluationOnlyAnalyzer(classContext, targetMethodGen,
-						alreadyVisitedMethods, depth, cache);
+						nowVisitedMethods, depth, cache);
 			} else {
 				targetMethodAnalyzer = getMethodAnalyzer(targetMethodGen, nowVisitedMethods);
 			}
