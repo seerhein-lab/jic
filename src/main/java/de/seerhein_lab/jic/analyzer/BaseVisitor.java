@@ -833,21 +833,7 @@ public abstract class BaseVisitor extends SimpleVisitor {
 	 */
 	@Override
 	public void visitJsrInstruction(JsrInstruction obj) {
-		logger.log(Level.FINE, indentation + obj.toString(false));
-		logger.log(Level.WARNING, "Untested Code Warning: Executing JSR instruction");
-		bugs.add(new BugInstance("Untested Code Warning: Executing JSR instruction", 1));
-		frame.getStack().push(ReferenceSlot.createNewInstance(heap.newClassInstance()));
-
-		// TODO: Broken with introduction of PC!
-
-		pc.setInstruction(obj.getTarget());
-
-		// InstructionHandle savedInstructionHandle = instructionHandle;
-		// instructionHandle = obj.getTarget();
-		// instructionHandle.accept(this);
-		//
-		// instructionHandle = savedInstructionHandle.getNext();
-		// instructionHandle.accept(this);
+		throw new AssertionError("handling of jsr instruction is not yet implemented.");
 	}
 
 	/**
@@ -892,8 +878,7 @@ public abstract class BaseVisitor extends SimpleVisitor {
 		// ****************************
 		BaseMethodAnalyzer defaultAnalyzer = getMethodAnalyzer(methodGen, alreadyVisitedMethods);
 
-		defaultAnalyzer.analyze(obj.getTarget(), new Frame(frame), new Heap(heap),
-				alreadyVisitedIfBranch);
+		defaultAnalyzer.analyze(obj.getTarget(), frame, heap, alreadyVisitedIfBranch);
 
 		bugs.addAll(defaultAnalyzer.getBugs());
 		result.addAll(defaultAnalyzer.getResult());
