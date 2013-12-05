@@ -14,7 +14,7 @@ import de.seerhein_lab.jic.ResultValue;
 import de.seerhein_lab.jic.ResultValue.Kind;
 import de.seerhein_lab.jic.analyzer.BaseMethodAnalyzer;
 import de.seerhein_lab.jic.analyzer.BaseVisitor;
-import de.seerhein_lab.jic.analyzer.MethodInvocation;
+import de.seerhein_lab.jic.analyzer.QualifiedMethod;
 import de.seerhein_lab.jic.cache.AnalysisCache;
 import de.seerhein_lab.jic.cache.AnalysisCache.Check;
 import de.seerhein_lab.jic.slot.ReferenceSlot;
@@ -32,7 +32,7 @@ public class FieldsNotPublishedVisitor extends BaseVisitor {
 
 	protected FieldsNotPublishedVisitor(ClassContext classContext, MethodGen methodGen,
 			Frame frame, Heap heap, ConstantPoolGen constantPoolGen, PC pc,
-			CodeExceptionGen[] exceptionHandlers, Set<MethodInvocation> alreadyVisitedMethods,
+			CodeExceptionGen[] exceptionHandlers, Set<QualifiedMethod> alreadyVisitedMethods,
 			int depth, Set<Pair<InstructionHandle, Boolean>> alreadyVisitedIfBranch,
 			AnalysisCache cache) {
 		super(classContext, methodGen, frame, heap, constantPoolGen, alreadyVisitedIfBranch,
@@ -67,7 +67,7 @@ public class FieldsNotPublishedVisitor extends BaseVisitor {
 
 	@Override
 	protected BaseMethodAnalyzer getMethodAnalyzer(MethodGen targetMethodGen,
-			Set<MethodInvocation> alreadyVisitedMethods) {
+			Set<QualifiedMethod> alreadyVisitedMethods) {
 		return new FieldsNotPublishedAnalyzer(classContext, targetMethodGen, alreadyVisitedMethods,
 				depth, cache);
 	}

@@ -11,7 +11,7 @@ import org.apache.bcel.generic.MethodGen;
 import de.seerhein_lab.jic.Pair;
 import de.seerhein_lab.jic.analyzer.BaseMethodAnalyzer;
 import de.seerhein_lab.jic.analyzer.BaseVisitor;
-import de.seerhein_lab.jic.analyzer.MethodInvocation;
+import de.seerhein_lab.jic.analyzer.QualifiedMethod;
 import de.seerhein_lab.jic.cache.AnalysisCache;
 import de.seerhein_lab.jic.vm.Frame;
 import de.seerhein_lab.jic.vm.Heap;
@@ -26,14 +26,14 @@ public class FieldsNotPublishedAnalyzer extends BaseMethodAnalyzer {
 
 	public FieldsNotPublishedAnalyzer(ClassContext classContext, MethodGen methodGen, Heap heap,
 			AnalysisCache cache) {
-		this(classContext, methodGen, new HashSet<MethodInvocation>(), -1, cache);
-		alreadyVisitedMethods.add(new MethodInvocation(classContext.getJavaClass(), methodGen
+		this(classContext, methodGen, new HashSet<QualifiedMethod>(), -1, cache);
+		alreadyVisitedMethods.add(new QualifiedMethod(classContext.getJavaClass(), methodGen
 				.getMethod()));
 		this.heap = heap;
 	}
 
 	protected FieldsNotPublishedAnalyzer(ClassContext classContext, MethodGen methodGen,
-			Set<MethodInvocation> alreadyVisitedMethods, int depth, AnalysisCache cache) {
+			Set<QualifiedMethod> alreadyVisitedMethods, int depth, AnalysisCache cache) {
 		super(classContext, methodGen, alreadyVisitedMethods, depth, cache);
 	}
 

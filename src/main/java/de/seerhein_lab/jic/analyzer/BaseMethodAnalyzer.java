@@ -32,7 +32,7 @@ import edu.umd.cs.findbugs.ba.ClassContext;
 public abstract class BaseMethodAnalyzer {
 	private static final Logger logger = Logger.getLogger("BaseMethodAnalyzer");
 	protected final ClassContext classContext;
-	protected final Set<MethodInvocation> alreadyVisitedMethods;
+	protected final Set<QualifiedMethod> alreadyVisitedMethods;
 	protected final int depth;
 	protected final MethodGen methodGen;
 	protected final CodeExceptionGen[] exceptionHandlers;
@@ -42,7 +42,7 @@ public abstract class BaseMethodAnalyzer {
 	private HashSet<ResultValue> cachedResults;
 
 	protected BaseMethodAnalyzer(ClassContext classContext, MethodGen methodGen,
-			Set<MethodInvocation> alreadyVisitedMethods, int depth, AnalysisCache cache) {
+			Set<QualifiedMethod> alreadyVisitedMethods, int depth, AnalysisCache cache) {
 		if (classContext == null || methodGen == null || alreadyVisitedMethods == null)
 			throw new AssertionError("Params must not be null.");
 

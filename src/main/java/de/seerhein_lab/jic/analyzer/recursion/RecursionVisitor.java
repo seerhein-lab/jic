@@ -12,7 +12,7 @@ import org.apache.bcel.generic.MethodGen;
 import de.seerhein_lab.jic.Pair;
 import de.seerhein_lab.jic.analyzer.BaseMethodAnalyzer;
 import de.seerhein_lab.jic.analyzer.BaseVisitor;
-import de.seerhein_lab.jic.analyzer.MethodInvocation;
+import de.seerhein_lab.jic.analyzer.QualifiedMethod;
 import de.seerhein_lab.jic.cache.AnalysisCache;
 import de.seerhein_lab.jic.cache.AnalysisCache.Check;
 import de.seerhein_lab.jic.slot.ReferenceSlot;
@@ -26,7 +26,7 @@ public class RecursionVisitor extends BaseVisitor {
 
 	public RecursionVisitor(ClassContext classContext, MethodGen methodGen, Frame frame, Heap heap,
 			ConstantPoolGen constantPoolGen, PC pc, CodeExceptionGen[] exceptionHandlers,
-			Set<MethodInvocation> alreadyVisitedMethods, int depth,
+			Set<QualifiedMethod> alreadyVisitedMethods, int depth,
 			Set<Pair<InstructionHandle, Boolean>> alreadyVisitedIfBranch, AnalysisCache cache) {
 		super(classContext, methodGen, frame, heap, constantPoolGen, alreadyVisitedIfBranch,
 				alreadyVisitedMethods, pc, exceptionHandlers, depth, cache);
@@ -39,7 +39,7 @@ public class RecursionVisitor extends BaseVisitor {
 
 	@Override
 	protected BaseMethodAnalyzer getMethodAnalyzer(MethodGen targetMethodGen,
-			Set<MethodInvocation> alreadyVisitedMethods) {
+			Set<QualifiedMethod> alreadyVisitedMethods) {
 		return new RecursionAnalyzer(classContext, targetMethodGen, alreadyVisitedMethods, depth,
 				cache);
 	}

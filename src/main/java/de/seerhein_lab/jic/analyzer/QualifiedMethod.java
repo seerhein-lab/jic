@@ -3,11 +3,11 @@ package de.seerhein_lab.jic.analyzer;
 import org.apache.bcel.classfile.JavaClass;
 import org.apache.bcel.classfile.Method;
 
-public final class MethodInvocation {
+public final class QualifiedMethod {
 	private final JavaClass clazz;
 	private final Method method;
 
-	public MethodInvocation(JavaClass clazz, Method method) {
+	public QualifiedMethod(JavaClass clazz, Method method) {
 		if (clazz == null || method == null) {
 			throw new NullPointerException("params must not be null");
 		}
@@ -29,10 +29,10 @@ public final class MethodInvocation {
 	public boolean equals(Object obj) {
 		if (this == obj)
 			return true;
-		if (!(obj instanceof MethodInvocation))
+		if (!(obj instanceof QualifiedMethod))
 			return false;
 
-		MethodInvocation other = (MethodInvocation) obj;
+		QualifiedMethod other = (QualifiedMethod) obj;
 
 		if (!clazz.equals(other.clazz))
 			return false;

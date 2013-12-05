@@ -113,7 +113,7 @@ public abstract class BaseVisitor extends SimpleVisitor {
 
 	protected final CodeExceptionGen[] exceptionHandlers;
 	protected Set<Pair<InstructionHandle, Boolean>> alreadyVisitedIfBranch;
-	protected final Set<MethodInvocation> alreadyVisitedMethods;
+	protected final Set<QualifiedMethod> alreadyVisitedMethods;
 	protected SortedBugCollection bugs = new SortedBugCollection();
 	protected final AnalysisCache cache;
 	protected Set<ResultValue> result = new HashSet<ResultValue>();
@@ -126,7 +126,7 @@ public abstract class BaseVisitor extends SimpleVisitor {
 	// InstructionHandle instructionHandle);
 
 	protected abstract BaseMethodAnalyzer getMethodAnalyzer(MethodGen targetMethodGen,
-			Set<MethodInvocation> alreadyVisitedMethods);
+			Set<QualifiedMethod> alreadyVisitedMethods);
 
 	// methods for bug detection
 	protected abstract void detectVirtualMethodBug(ReferenceSlot argument);
@@ -150,7 +150,7 @@ public abstract class BaseVisitor extends SimpleVisitor {
 
 	protected BaseVisitor(ClassContext classContext, MethodGen methodGen, Frame frame, Heap heap,
 			ConstantPoolGen constantPoolGen, Set<Pair<InstructionHandle, Boolean>> alreadyVisited,
-			Set<MethodInvocation> alreadyVisitedMethods, PC pc,
+			Set<QualifiedMethod> alreadyVisitedMethods, PC pc,
 			CodeExceptionGen[] exceptionHandlers, int depth, AnalysisCache cache) {
 		super(frame, heap, constantPoolGen, pc, depth);
 
@@ -294,14 +294,14 @@ public abstract class BaseVisitor extends SimpleVisitor {
 		MethodGen targetMethodGen = new MethodGen(targetMethod, targetClass.getClassName(),
 				new ConstantPoolGen(targetClass.getConstantPool()));
 
-		MethodInvocation invocation = new MethodInvocation(targetClass, targetMethod);
+		QualifiedMethod invocation = new QualifiedMethod(targetClass, targetMethod);
 
 		if (alreadyVisitedMethods.contains(invocation)) {
 			handleRecursion(obj, targetMethodGen);
 			return;
 		}
 
-		Set<MethodInvocation> nowVisitedMethods = new HashSet<MethodInvocation>();
+		Set<QualifiedMethod> nowVisitedMethods = new HashSet<QualifiedMethod>();
 		nowVisitedMethods.addAll(alreadyVisitedMethods);
 		nowVisitedMethods.add(invocation);
 

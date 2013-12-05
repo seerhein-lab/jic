@@ -10,7 +10,7 @@ import org.apache.bcel.generic.MethodGen;
 import de.seerhein_lab.jic.Pair;
 import de.seerhein_lab.jic.analyzer.BaseMethodAnalyzer;
 import de.seerhein_lab.jic.analyzer.BaseVisitor;
-import de.seerhein_lab.jic.analyzer.MethodInvocation;
+import de.seerhein_lab.jic.analyzer.QualifiedMethod;
 import de.seerhein_lab.jic.cache.AnalysisCache;
 import de.seerhein_lab.jic.cache.AnalysisCache.Check;
 import de.seerhein_lab.jic.slot.ReferenceSlot;
@@ -24,7 +24,7 @@ public class EvaluationOnlyVisitor extends BaseVisitor {
 
 	protected EvaluationOnlyVisitor(ClassContext classContext, MethodGen methodGen, Frame frame,
 			Heap heap, ConstantPoolGen constantPoolGen, PC pc,
-			CodeExceptionGen[] exceptionHandlers, Set<MethodInvocation> alreadyVisitedMethods,
+			CodeExceptionGen[] exceptionHandlers, Set<QualifiedMethod> alreadyVisitedMethods,
 			int depth, Set<Pair<InstructionHandle, Boolean>> alreadyVisitedIfBranch,
 			AnalysisCache cache) {
 		super(classContext, methodGen, frame, heap, constantPoolGen, alreadyVisitedIfBranch,
@@ -38,7 +38,7 @@ public class EvaluationOnlyVisitor extends BaseVisitor {
 
 	@Override
 	protected BaseMethodAnalyzer getMethodAnalyzer(MethodGen targetMethodGen,
-			Set<MethodInvocation> alreadyVisitedMethods) {
+			Set<QualifiedMethod> alreadyVisitedMethods) {
 		return new EvaluationOnlyAnalyzer(classContext, targetMethodGen, alreadyVisitedMethods,
 				depth, cache);
 	}
