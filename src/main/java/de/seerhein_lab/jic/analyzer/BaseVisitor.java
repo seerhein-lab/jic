@@ -321,14 +321,13 @@ public abstract class BaseVisitor extends SimpleVisitor {
 
 		} else {
 			cacheMisses++;
-			Slot firstParam = frame.getStack().size() == 0 ? null : new OpStack(frame.getStack())
-					.pop();
+			Slot firstParam = frame.getStack().size() == 0 ? null : frame.getStack().peek();
 
 			BaseMethodAnalyzer targetMethodAnalyzer;
 
 			if (targetMethod.getName().equals(CONSTRUCTOR_NAME)
 					&& targetMethod.getArgumentTypes().length == 0
-					&& firstParam instanceof ReferenceSlot
+					// && firstParam instanceof ReferenceSlot
 					&& !heap.getObject(((ReferenceSlot) firstParam)).equals(heap.getThisInstance())) {
 
 				targetMethodAnalyzer = new EvaluationOnlyAnalyzer(classContext, targetMethodGen,
@@ -861,12 +860,13 @@ public abstract class BaseVisitor extends SimpleVisitor {
 	@Override
 	public void visitSelect(Select obj) {
 		logger.log(Level.FINE, indentation + obj.toString(false));
+
 		// pops integer index
 		frame.getStack().pop();
 
-		// gets all targets excluding the default case
+		// gets all targets except the default case
 		InstructionHandle[] targets = obj.getTargets();
-		// follows all targets excluding the default case
+		// follows all targets except the default case
 		for (int i = 0; i < targets.length; i++) {
 			logger.log(Level.FINEST,
 					indentation + "--------------- Line " + targets[i].getPosition()
@@ -882,13 +882,6 @@ public abstract class BaseVisitor extends SimpleVisitor {
 			result.addAll(caseAnalyzer.getResult());
 			// ****************************
 
-			// caseToFollow = getInstructionsAnalysisVisitor(new Frame(frame),
-			// new Heap(heap), alreadyVisitedIfBranch, targets[i]);
-			// targets[i].accept(caseToFollow);
-			// // adding occurred bugs to bug-collection
-			// bugs.addAll(caseToFollow.getBugs().getCollection());
-			// // adding result of the case to a result-list
-			// result.addAll(caseToFollow.getResult());
 		}
 		// handles the default case and follows it
 		logger.log(Level.FINEST, indentation + "--------------- Line "
@@ -905,14 +898,6 @@ public abstract class BaseVisitor extends SimpleVisitor {
 		bugs.addAll(defaultAnalyzer.getBugs());
 		result.addAll(defaultAnalyzer.getResult());
 		// ****************************
-
-		// caseToFollow = getInstructionsAnalysisVisitor(new Frame(frame),
-		// new Heap(heap), alreadyVisitedIfBranch, obj.getTarget());
-		// obj.getTarget().accept(caseToFollow);
-		// // adding occurred bugs to bug-collection
-		// bugs.addAll(caseToFollow.getBugs().getCollection());
-		// // adding result of the case to a result-list
-		// result.addAll(caseToFollow.getResult());
 
 		pc.invalidate();
 	}
@@ -947,8 +932,7 @@ public abstract class BaseVisitor extends SimpleVisitor {
 	@Override
 	public void visitCHECKCAST(CHECKCAST obj) {
 		logger.log(Level.FINE, indentation + obj.toString(false));
-		ReferenceSlot objRef = (ReferenceSlot) frame.getStack().pop();
-		frame.getStack().push(objRef);
+		ReferenceSlot objRef = (ReferenceSlot) frame.getStack().peek();
 
 		if (objRef.isNullReference()) {
 			pc.advance();
