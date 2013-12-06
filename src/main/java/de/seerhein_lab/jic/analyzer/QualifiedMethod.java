@@ -26,6 +26,11 @@ public final class QualifiedMethod {
 	}
 
 	@Override
+	public String toString() {
+		return clazz.getClassName() + "." + method.getName();
+	}
+
+	@Override
 	public boolean equals(Object obj) {
 		if (this == obj)
 			return true;
@@ -38,6 +43,10 @@ public final class QualifiedMethod {
 			return false;
 
 		return method.equals(other.method);
+	}
+
+	public Method getMethod() {
+		return method;
 	}
 
 }
