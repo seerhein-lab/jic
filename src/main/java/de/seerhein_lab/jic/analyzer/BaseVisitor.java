@@ -101,11 +101,6 @@ import edu.umd.cs.findbugs.ba.ClassContext;
  * </p>
  */
 public abstract class BaseVisitor extends SimpleVisitor {
-
-	private enum Staticality {
-		STATIC, NONSTATIC
-	};
-
 	protected static final Logger logger = Logger.getLogger("BaseInstructionsAnalysisVisitor");
 	protected final ClassContext classContext;
 	protected final MethodGen methodGen;
