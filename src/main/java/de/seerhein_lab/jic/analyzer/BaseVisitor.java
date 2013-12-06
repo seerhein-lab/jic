@@ -57,7 +57,6 @@ import de.seerhein_lab.jic.analyzer.recursion.RecursionAnalyzer;
 import de.seerhein_lab.jic.cache.AnalysisCache;
 import de.seerhein_lab.jic.cache.AnalysisCache.Check;
 import de.seerhein_lab.jic.cache.AnalysisResult;
-import de.seerhein_lab.jic.cache.AnalyzedMethod;
 import de.seerhein_lab.jic.slot.DoubleSlot;
 import de.seerhein_lab.jic.slot.LongSlot;
 import de.seerhein_lab.jic.slot.ReferenceSlot;
@@ -207,7 +206,7 @@ public abstract class BaseVisitor extends SimpleVisitor {
 
 	protected abstract Check getCheck();
 
-	private Set<ResultValue> useCachedResults(AnalyzedMethod method) {
+	private Set<ResultValue> useCachedResults(QualifiedMethod method) {
 		Set<ResultValue> targetResults;
 		targetResults = new HashSet<ResultValue>();
 
@@ -232,7 +231,7 @@ public abstract class BaseVisitor extends SimpleVisitor {
 		return targetResults;
 	}
 
-	private void cacheResults(MethodGen targetMethodGen, AnalyzedMethod method,
+	private void cacheResults(MethodGen targetMethodGen, QualifiedMethod method,
 			Collection<BugInstance> targetBugs, Set<ResultValue> targetResults, Slot firstParam) {
 		logger.log(Level.FINE,
 				Utils.formatLoggingOutput(this.depth) + "Put " + targetMethodGen.getClassName()
@@ -243,20 +242,18 @@ public abstract class BaseVisitor extends SimpleVisitor {
 		cache.add(method, result, getCheck());
 	}
 
-	private void wrapNestedBugs(JavaClass targetClass, Method targetMethod,
-			Collection<BugInstance> targetBugs) {
+	private void wrapNestedBugs(QualifiedMethod targetMethod, Collection<BugInstance> targetBugs) {
 		for (Iterator<BugInstance> it = targetBugs.iterator(); it.hasNext();) {
 			BugInstance bug = it.next();
 
-			if (targetClass.equals(classContext.getJavaClass())) {
+			if (targetMethod.getJavaClass().equals(classContext.getJavaClass())) {
 				bugs.add(bug);
 			}
 
-			addBug(Confidence.HIGH,
-					"subsequent bug caused by [" + bug.getMessage() + " in "
-							+ targetClass.getClassName() + "." + targetMethod.getName()
-							+ targetMethod.getSignature() + ":"
-							+ bug.getPrimarySourceLineAnnotation().getStartLine() + "]",
+			addBug(Confidence.HIGH, "subsequent bug caused by [" + bug.getMessage() + " in "
+					+ targetMethod.getJavaClass().getClassName() + "."
+					+ targetMethod.getMethod().getName() + targetMethod.getMethod().getSignature()
+					+ ":" + bug.getPrimarySourceLineAnnotation().getStartLine() + "]",
 					pc.getCurrentInstruction());
 		}
 	}
@@ -286,38 +283,34 @@ public abstract class BaseVisitor extends SimpleVisitor {
 		}
 	}
 
-	private void analyzeMethod(InvokeInstruction obj, JavaClass targetClass, Method targetMethod) {
+	private void analyzeMethod(InvokeInstruction obj, QualifiedMethod targetMethod) {
 		logger.log(Level.FINE, indentation + obj.toString(false));
 		logger.log(Level.FINEST, indentation + "\t" + obj.getLoadClassType(constantPoolGen) + "."
 				+ obj.getMethodName(constantPoolGen) + obj.getSignature(constantPoolGen));
 
-		MethodGen targetMethodGen = new MethodGen(targetMethod, targetClass.getClassName(),
-				new ConstantPoolGen(targetClass.getConstantPool()));
+		MethodGen targetMethodGen = new MethodGen(targetMethod.getMethod(), targetMethod
+				.getJavaClass().getClassName(), new ConstantPoolGen(targetMethod.getJavaClass()
+				.getConstantPool()));
 
-		QualifiedMethod invocation = new QualifiedMethod(targetClass, targetMethod);
-
-		if (alreadyVisitedMethods.contains(invocation)) {
+		if (alreadyVisitedMethods.contains(targetMethod)) {
 			handleRecursion(obj, targetMethodGen);
 			return;
 		}
 
 		Set<QualifiedMethod> nowVisitedMethods = new HashSet<QualifiedMethod>();
 		nowVisitedMethods.addAll(alreadyVisitedMethods);
-		nowVisitedMethods.add(invocation);
-
-		AnalyzedMethod method = new AnalyzedMethod(targetMethodGen.getClassName(),
-				targetMethodGen.getMethod());
+		nowVisitedMethods.add(targetMethod);
 
 		Collection<BugInstance> targetBugs = null;
 		Set<ResultValue> targetResults = null;
 
-		if (cache.contains(method) && cache.get(method).isCached(getCheck())) {
-			logger.log(Level.FINE, Utils.formatLoggingOutput(this.depth) + method
+		if (cache.contains(targetMethod) && cache.get(targetMethod).isCached(getCheck())) {
+			logger.log(Level.FINE, Utils.formatLoggingOutput(this.depth) + targetMethod
 					+ " already evaluated - taking result out of the cache");
 			cacheHits++;
 
-			targetBugs = cache.get(method).getBugs(getCheck());
-			targetResults = useCachedResults(method);
+			targetBugs = cache.get(targetMethod).getBugs(getCheck());
+			targetResults = useCachedResults(targetMethod);
 
 		} else {
 			cacheMisses++;
@@ -325,8 +318,8 @@ public abstract class BaseVisitor extends SimpleVisitor {
 
 			BaseMethodAnalyzer targetMethodAnalyzer;
 
-			if (targetMethod.getName().equals(CONSTRUCTOR_NAME)
-					&& targetMethod.getArgumentTypes().length == 0
+			if (targetMethod.getMethod().getName().equals(CONSTRUCTOR_NAME)
+					&& targetMethod.getMethod().getArgumentTypes().length == 0
 					// && firstParam instanceof ReferenceSlot
 					&& !heap.getObject(((ReferenceSlot) firstParam)).equals(heap.getThisInstance())) {
 
@@ -343,11 +336,11 @@ public abstract class BaseVisitor extends SimpleVisitor {
 
 			if (targetMethodGen.getMethod().getName().equals(CONSTRUCTOR_NAME)
 					&& targetMethodGen.getMethod().getArgumentTypes().length == 0) {
-				cacheResults(targetMethodGen, method, targetBugs, targetResults, firstParam);
+				cacheResults(targetMethodGen, targetMethod, targetBugs, targetResults, firstParam);
 			}
 		}
 
-		wrapNestedBugs(targetClass, targetMethod, targetBugs);
+		wrapNestedBugs(targetMethod, targetBugs);
 		continueWithResults(targetResults);
 
 		pc.invalidate();
@@ -1108,30 +1101,39 @@ public abstract class BaseVisitor extends SimpleVisitor {
 		dontAnalyzeMethod(obj, Staticality.NONSTATIC);
 	}
 
-	private void handleSpecialOrStaticInvocation(InvokeInstruction obj) {
+	private QualifiedMethod getTargetMethod(InvokeInstruction instruction) {
 		JavaClass targetClass = null;
 		try {
-			targetClass = Repository.lookupClass(obj.getLoadClassType(constantPoolGen).toString());
+			targetClass = Repository.lookupClass(instruction.getLoadClassType(constantPoolGen)
+					.toString());
 		} catch (ClassNotFoundException e) {
-			throw new AssertionError(obj.getLoadClassType(constantPoolGen).toString()
+			throw new AssertionError(instruction.getLoadClassType(constantPoolGen).toString()
 					+ " cannot be loaded.");
 		}
 
 		Method targetMethod = new ClassHelper(targetClass).getMethod(
-				obj.getMethodName(constantPoolGen), obj.getArgumentTypes(constantPoolGen));
+				instruction.getMethodName(constantPoolGen),
+				instruction.getArgumentTypes(constantPoolGen));
 		if (targetMethod == null)
-			throw new AssertionError("targetMethod " + obj.getMethodName(constantPoolGen)
-					+ " not found in " + obj.getLoadClassType(constantPoolGen) + ": "
-					+ obj.toString(true));
+			throw new AssertionError("targetMethod " + instruction.getMethodName(constantPoolGen)
+					+ " not found in " + instruction.getLoadClassType(constantPoolGen) + ": "
+					+ instruction.toString(true));
 
-		if (targetMethod.isNative()) {
+		return new QualifiedMethod(targetClass, targetMethod);
+
+	}
+
+	private void handleSpecialOrStaticInvocation(InvokeInstruction obj) {
+		QualifiedMethod targetMethod = getTargetMethod(obj);
+
+		if (targetMethod.getMethod().isNative()) {
 			logger.log(Level.FINE, indentation
 					+ "Native method must be dealt with like virtual method.");
 
-			dontAnalyzeMethod(obj, targetMethod.isStatic() ? Staticality.STATIC
+			dontAnalyzeMethod(obj, targetMethod.getMethod().isStatic() ? Staticality.STATIC
 					: Staticality.NONSTATIC);
 		} else
-			analyzeMethod(obj, targetClass, targetMethod);
+			analyzeMethod(obj, targetMethod);
 	}
 
 	/**
@@ -1184,7 +1186,7 @@ public abstract class BaseVisitor extends SimpleVisitor {
 
 		if ((targetClass.isFinal() || targetMethod.isFinal()) && !targetMethod.isNative()) {
 			logger.log(Level.FINE, indentation + "Final virtual method can be analyzed.");
-			analyzeMethod(obj, targetClass, targetMethod);
+			analyzeMethod(obj, new QualifiedMethod(targetClass, targetMethod));
 		} else
 			dontAnalyzeMethod(obj, Staticality.NONSTATIC);
 	}

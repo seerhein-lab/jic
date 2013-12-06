@@ -16,6 +16,14 @@ public final class QualifiedMethod {
 		this.method = method;
 	}
 
+	public JavaClass getJavaClass() {
+		return clazz;
+	}
+
+	public Method getMethod() {
+		return method;
+	}
+
 	@Override
 	public int hashCode() {
 		final int prime = 31;
@@ -43,10 +51,6 @@ public final class QualifiedMethod {
 			return false;
 
 		return method.equals(other.method);
-	}
-
-	public Method getMethod() {
-		return method;
 	}
 
 }
