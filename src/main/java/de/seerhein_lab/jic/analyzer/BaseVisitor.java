@@ -391,22 +391,13 @@ public abstract class BaseVisitor extends SimpleVisitor {
 		return;
 	}
 
-	private void dontAnalyzeMethod(InvokeInstruction obj, Staticality staticality) {
+	private void dontAnalyzeMethod(InvokeInstruction obj) {
 		logger.log(Level.FINE, indentation + obj.toString(false));
 		logger.log(Level.FINEST, indentation + "\t" + obj.getLoadClassType(constantPoolGen) + "."
 				+ obj.getMethodName(constantPoolGen) + obj.getSignature(constantPoolGen));
 
-		// get number of args
-		Type[] type = obj.getArgumentTypes(constantPoolGen);
-		// get return value
-
-		Slot argument;
-		// pop a value for each arg and 1 for the hidden 'this' reference
-
-		int arguments = (staticality == Staticality.STATIC) ? type.length : type.length + 1;
-
-		for (int i = 0; i < arguments; i++) {
-			argument = frame.popStackByRequiredSlots();
+		for (int i = 0; i < obj.consumeStack(constantPoolGen); i++) {
+			Slot argument = frame.getStack().pop();
 			if (argument instanceof ReferenceSlot) {
 				ReferenceSlot reference = (ReferenceSlot) argument;
 				// check for bugs
@@ -1098,7 +1089,7 @@ public abstract class BaseVisitor extends SimpleVisitor {
 	 */
 	@Override
 	public void visitINVOKEINTERFACE(INVOKEINTERFACE obj) {
-		dontAnalyzeMethod(obj, Staticality.NONSTATIC);
+		dontAnalyzeMethod(obj);
 	}
 
 	private QualifiedMethod getTargetMethod(InvokeInstruction instruction) {
@@ -1130,8 +1121,8 @@ public abstract class BaseVisitor extends SimpleVisitor {
 			logger.log(Level.FINE, indentation
 					+ "Native method must be dealt with like virtual method.");
 
-			dontAnalyzeMethod(obj, targetMethod.getMethod().isStatic() ? Staticality.STATIC
-					: Staticality.NONSTATIC);
+			dontAnalyzeMethod(obj);
+
 		} else
 			analyzeMethod(obj, targetMethod);
 	}
@@ -1188,7 +1179,7 @@ public abstract class BaseVisitor extends SimpleVisitor {
 			logger.log(Level.FINE, indentation + "Final virtual method can be analyzed.");
 			analyzeMethod(obj, new QualifiedMethod(targetClass, targetMethod));
 		} else
-			dontAnalyzeMethod(obj, Staticality.NONSTATIC);
+			dontAnalyzeMethod(obj);
 	}
 
 	/**
