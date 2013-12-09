@@ -10,7 +10,7 @@ public final class AnalysisCache {
 		PropCon, CtorArgsCopied;
 	}
 
-	private final Map<QualifiedMethod, AnalysisResult> map = new ConcurrentHashMap<QualifiedMethod, AnalysisResult>();
+	private final Map<QualifiedMethod, AnalysisResults> map = new ConcurrentHashMap<QualifiedMethod, AnalysisResults>();
 
 	public boolean contains(QualifiedMethod method) {
 		// if (method.getMethod().getName().equals(CONSTRUCTOR_NAME)
@@ -21,11 +21,11 @@ public final class AnalysisCache {
 
 	}
 
-	public AnalysisResult get(QualifiedMethod method) {
+	public AnalysisResults get(QualifiedMethod method) {
 		return map.get(method);
 	}
 
-	public void add(QualifiedMethod method, AnalysisResult result, Check check) {
+	public void add(QualifiedMethod method, AnalysisResults result, Check check) {
 		if (!map.containsKey(method)) {
 			map.put(method, result);
 		} else {

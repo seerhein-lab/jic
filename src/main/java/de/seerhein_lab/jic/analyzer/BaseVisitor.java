@@ -56,7 +56,7 @@ import de.seerhein_lab.jic.analyzer.eval.EvaluationOnlyAnalyzer;
 import de.seerhein_lab.jic.analyzer.recursion.RecursionAnalyzer;
 import de.seerhein_lab.jic.cache.AnalysisCache;
 import de.seerhein_lab.jic.cache.AnalysisCache.Check;
-import de.seerhein_lab.jic.cache.AnalysisResult;
+import de.seerhein_lab.jic.cache.AnalysisResults;
 import de.seerhein_lab.jic.slot.DoubleSlot;
 import de.seerhein_lab.jic.slot.LongSlot;
 import de.seerhein_lab.jic.slot.ReferenceSlot;
@@ -232,7 +232,7 @@ public abstract class BaseVisitor extends SimpleVisitor {
 				Utils.formatLoggingOutput(this.depth) + "Put " + targetMethodGen.getClassName()
 						+ targetMethodGen.getMethod().getName() + " in the Cache");
 
-		AnalysisResult result = new AnalysisResult(targetResults, firstParam);
+		AnalysisResults result = new AnalysisResults(targetResults, firstParam);
 		result.setBugs(getCheck(), targetBugs);
 		cache.add(method, result, getCheck());
 	}

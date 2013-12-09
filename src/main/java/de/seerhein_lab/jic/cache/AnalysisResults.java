@@ -13,12 +13,12 @@ import de.seerhein_lab.jic.vm.HeapObject;
 import edu.umd.cs.findbugs.BugInstance;
 import edu.umd.cs.findbugs.SortedBugCollection;
 
-public class AnalysisResult {
+public class AnalysisResults {
 	private Collection<BugInstance>[] bugs;
 	private Set<EvaluationResult> results;
 
 	@SuppressWarnings("unchecked")
-	public AnalysisResult(Set<EvaluationResult> results, Slot target) {
+	public AnalysisResults(Set<EvaluationResult> results, Slot target) {
 		this.bugs = (Collection<BugInstance>[]) new Collection<?>[AnalysisCache.Check.values().length];
 		this.results = new HashSet<EvaluationResult>();
 
