@@ -48,9 +48,10 @@ import org.apache.bcel.generic.StackInstruction;
 import org.apache.bcel.generic.StoreInstruction;
 import org.apache.bcel.generic.Type;
 
-import de.seerhein_lab.jic.Pair;
+import de.seerhein_lab.jic.AnalysisResult;
 import de.seerhein_lab.jic.EvaluationResult;
 import de.seerhein_lab.jic.EvaluationResult.Kind;
+import de.seerhein_lab.jic.Pair;
 import de.seerhein_lab.jic.Utils;
 import de.seerhein_lab.jic.analyzer.eval.EvaluationOnlyAnalyzer;
 import de.seerhein_lab.jic.analyzer.recursion.RecursionAnalyzer;
@@ -185,11 +186,11 @@ public abstract class BaseVisitor extends SimpleVisitor {
 
 				// ************
 				BaseMethodAnalyzer analyzer = getMethodAnalyzer(methodGen, alreadyVisitedMethods);
-				analyzer.analyze(exceptionHandler.getHandlerPC(), new Frame(frame), new Heap(heap),
-						alreadyVisitedIfBranch);
+				AnalysisResult analysisResult = analyzer.analyze(exceptionHandler.getHandlerPC(),
+						new Frame(frame), new Heap(heap), alreadyVisitedIfBranch);
 
-				bugs.addAll(analyzer.getBugs());
-				result.addAll(analyzer.getResult());
+				bugs.addAll(analysisResult.getBugs());
+				result.addAll(analysisResult.getResults());
 				logger.log(Level.FINE, indentation + "^^^^^ " + exceptionHandler.toString()
 						+ ": end ^^^^^");
 
@@ -219,8 +220,8 @@ public abstract class BaseVisitor extends SimpleVisitor {
 			} else {
 				((ClassInstance) resultHeap.getObject((ReferenceSlot) topOfStack))
 						.copyReferredObjectsTo(resultObject, resultHeap);
-				targetResults.add(new EvaluationResult(EvaluationResult.Kind.REGULAR, VoidSlot.getInstance(),
-						resultHeap));
+				targetResults.add(new EvaluationResult(EvaluationResult.Kind.REGULAR, VoidSlot
+						.getInstance(), resultHeap));
 			}
 		}
 		return targetResults;
@@ -262,11 +263,11 @@ public abstract class BaseVisitor extends SimpleVisitor {
 				Frame newFrame = new Frame(frame);
 				newFrame.pushStackByRequiredSlots(calleeResult.getSlot());
 
-				analyzer.analyze(pc.getCurrentInstruction().getNext(), newFrame,
-						calleeResult.getHeap(), alreadyVisitedIfBranch);
+				AnalysisResult analysisResult = analyzer.analyze(pc.getCurrentInstruction()
+						.getNext(), newFrame, calleeResult.getHeap(), alreadyVisitedIfBranch);
 
-				bugs.addAll(analyzer.getBugs());
-				result.addAll(analyzer.getResult());
+				bugs.addAll(analysisResult.getBugs());
+				result.addAll(analysisResult.getResults());
 
 			} else {
 				Frame savedFrame = new Frame(frame);
@@ -324,10 +325,10 @@ public abstract class BaseVisitor extends SimpleVisitor {
 				targetMethodAnalyzer = getMethodAnalyzer(targetMethodGen, nowVisitedMethods);
 			}
 
-			targetMethodAnalyzer.analyze(frame.getStack(), heap);
+			AnalysisResult analysisResult = targetMethodAnalyzer.analyze(frame.getStack(), heap);
 
-			targetBugs = targetMethodAnalyzer.getBugs();
-			targetResults = targetMethodAnalyzer.getResult();
+			targetBugs = analysisResult.getBugs();
+			targetResults = analysisResult.getResults();
 
 			if (targetMethodGen.getMethod().getName().equals(CONSTRUCTOR_NAME)
 					&& targetMethodGen.getMethod().getArgumentTypes().length == 0) {
@@ -357,8 +358,8 @@ public abstract class BaseVisitor extends SimpleVisitor {
 		BaseMethodAnalyzer recursionAnalyzer = new RecursionAnalyzer(classContext, targetMethodGen,
 				alreadyVisitedMethods, depth, cache);
 
-		recursionAnalyzer.analyze(new OpStack(frame.getStack()), heap);
-		Set<EvaluationResult> recursionResults = recursionAnalyzer.getResult();
+		Set<EvaluationResult> recursionResults = recursionAnalyzer.analyze(
+				new OpStack(frame.getStack()), heap).getResults();
 
 		Frame currentFrame = frame;
 		Heap currentHeap = heap;
@@ -375,11 +376,11 @@ public abstract class BaseVisitor extends SimpleVisitor {
 			frame.getStack().push(res.getSlot());
 
 			BaseMethodAnalyzer analyzer = getMethodAnalyzer(methodGen, alreadyVisitedMethods);
-			analyzer.analyze(next, new Frame(currentFrame), new Heap(currentHeap),
-					alreadyVisitedIfBranch);
+			AnalysisResult analysisResult = analyzer.analyze(next, new Frame(currentFrame),
+					new Heap(currentHeap), alreadyVisitedIfBranch);
 
-			bugs.addAll(analyzer.getBugs());
-			result.addAll(analyzer.getResult());
+			bugs.addAll(analysisResult.getBugs());
+			result.addAll(analysisResult.getResults());
 		}
 
 		pc.invalidate();
@@ -657,11 +658,11 @@ public abstract class BaseVisitor extends SimpleVisitor {
 			Frame newFrame = new Frame(frame);
 			newFrame.getStack().push(ReferenceSlot.createNewInstance(iterator.next()));
 
-			analyzer.analyze(pc.getCurrentInstruction().getNext(), newFrame, new Heap(heap),
-					alreadyVisitedIfBranch);
+			AnalysisResult analysisResult = analyzer.analyze(pc.getCurrentInstruction().getNext(),
+					newFrame, new Heap(heap), alreadyVisitedIfBranch);
 
-			bugs.addAll(analyzer.getBugs());
-			result.addAll(analyzer.getResult());
+			bugs.addAll(analysisResult.getBugs());
+			result.addAll(analysisResult.getResults());
 
 			// ************
 
@@ -771,11 +772,11 @@ public abstract class BaseVisitor extends SimpleVisitor {
 				BaseMethodAnalyzer elseAnalyzer = getMethodAnalyzer(methodGen,
 						alreadyVisitedMethods);
 
-				elseAnalyzer.analyze(pc.getCurrentInstruction().getNext(), new Frame(frame),
-						new Heap(heap), alreadyVisitedIfBranch);
+				AnalysisResult analysisResult = elseAnalyzer.analyze(pc.getCurrentInstruction()
+						.getNext(), new Frame(frame), new Heap(heap), alreadyVisitedIfBranch);
 
-				bugs.addAll(elseAnalyzer.getBugs());
-				result.addAll(elseAnalyzer.getResult());
+				bugs.addAll(analysisResult.getBugs());
+				result.addAll(analysisResult.getResults());
 
 			} else {
 				logger.log(Level.FINEST, indentation + "Loop detected, do not re-enter.");
@@ -793,10 +794,11 @@ public abstract class BaseVisitor extends SimpleVisitor {
 				BaseMethodAnalyzer thenAnalyzer = getMethodAnalyzer(methodGen,
 						alreadyVisitedMethods);
 
-				thenAnalyzer.analyze(obj.getTarget(), frame, heap, alreadyVisitedIfBranch);
+				AnalysisResult analysisResult = thenAnalyzer.analyze(obj.getTarget(), frame, heap,
+						alreadyVisitedIfBranch);
 
-				bugs.addAll(thenAnalyzer.getBugs());
-				result.addAll(thenAnalyzer.getResult());
+				bugs.addAll(analysisResult.getBugs());
+				result.addAll(analysisResult.getResults());
 
 			} else {
 				logger.log(Level.FINEST, indentation + "Loop detected, do not re-enter.");
@@ -840,11 +842,12 @@ public abstract class BaseVisitor extends SimpleVisitor {
 			// ****************************
 			BaseMethodAnalyzer caseAnalyzer = getMethodAnalyzer(methodGen, alreadyVisitedMethods);
 
-			caseAnalyzer.analyze(targets[i], new Frame(frame), new Heap(heap),
-					alreadyVisitedIfBranch);
+			AnalysisResult analysisResult = caseAnalyzer.analyze(targets[i], new Frame(frame),
+					new Heap(heap), alreadyVisitedIfBranch);
 
-			bugs.addAll(caseAnalyzer.getBugs());
-			result.addAll(caseAnalyzer.getResult());
+			bugs.addAll(analysisResult.getBugs());
+			result.addAll(analysisResult.getResults());
+
 			// ****************************
 
 		}
@@ -857,10 +860,12 @@ public abstract class BaseVisitor extends SimpleVisitor {
 		// ****************************
 		BaseMethodAnalyzer defaultAnalyzer = getMethodAnalyzer(methodGen, alreadyVisitedMethods);
 
-		defaultAnalyzer.analyze(obj.getTarget(), frame, heap, alreadyVisitedIfBranch);
+		AnalysisResult analysisResult = defaultAnalyzer.analyze(obj.getTarget(), frame, heap,
+				alreadyVisitedIfBranch);
 
-		bugs.addAll(defaultAnalyzer.getBugs());
-		result.addAll(defaultAnalyzer.getResult());
+		bugs.addAll(analysisResult.getBugs());
+		result.addAll(analysisResult.getResults());
+
 		// ****************************
 
 		pc.invalidate();
@@ -906,11 +911,12 @@ public abstract class BaseVisitor extends SimpleVisitor {
 		// ****************************
 		BaseMethodAnalyzer analyzer = getMethodAnalyzer(methodGen, alreadyVisitedMethods);
 
-		analyzer.analyze(pc.getCurrentInstruction().getNext(), new Frame(frame), new Heap(heap),
-				alreadyVisitedIfBranch);
+		AnalysisResult analysisResult = analyzer.analyze(pc.getCurrentInstruction().getNext(),
+				new Frame(frame), new Heap(heap), alreadyVisitedIfBranch);
 
-		bugs.addAll(analyzer.getBugs());
-		result.addAll(analyzer.getResult());
+		bugs.addAll(analysisResult.getBugs());
+		result.addAll(analysisResult.getResults());
+
 		// ****************************
 
 		// BaseVisitor regularCaseVisitor = getInstructionsAnalysisVisitor(

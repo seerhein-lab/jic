@@ -12,6 +12,7 @@ import org.apache.bcel.generic.BasicType;
 import org.apache.bcel.generic.ConstantPoolGen;
 import org.apache.bcel.generic.MethodGen;
 
+import de.seerhein_lab.jic.AnalysisResult;
 import de.seerhein_lab.jic.EvaluationResult;
 import de.seerhein_lab.jic.Utils;
 import de.seerhein_lab.jic.analyzer.ctorArgsCopied.CtorArgsCopiedAnalyzer;
@@ -75,8 +76,10 @@ public final class ClassAnalyzer {
 					clazz.getConstantPool()));
 
 			BaseMethodAnalyzer ctorAnalyzer = new PropConAnalyzer(classContext, ctorGen, cache);
-			ctorAnalyzer.analyze();
-			bugs.addAll(ctorAnalyzer.getBugs());
+			// ctorAnalyzer.analyze();
+			// bugs.addAll(ctorAnalyzer.getBugs());
+
+			bugs.addAll(ctorAnalyzer.analyze().getBugs());
 		}
 		return bugs.getCollection();
 	}
@@ -91,12 +94,15 @@ public final class ClassAnalyzer {
 
 			BaseMethodAnalyzer ctorAnalyzer = new CtorArgsCopiedAnalyzer(classContext, ctorGen,
 					cache);
-			ctorAnalyzer.analyze();
-			Collection<BugInstance> currentBugs = ctorAnalyzer.getBugs();
-			bugs.addAll(ctorAnalyzer.getBugs());
+			// ctorAnalyzer.analyze();
+			// Collection<BugInstance> currentBugs = ctorAnalyzer.getBugs();
+			// bugs.addAll(ctorAnalyzer.getBugs());
 
-			if (currentBugs.isEmpty()) {
-				for (EvaluationResult result : ctorAnalyzer.getResult())
+			AnalysisResult analysisResult = ctorAnalyzer.analyze();
+			bugs.addAll(analysisResult.getBugs());
+
+			if (analysisResult.getBugs().isEmpty()) {
+				for (EvaluationResult result : analysisResult.getResults())
 					heaps.add(result.getHeap());
 			}
 		}
@@ -121,8 +127,7 @@ public final class ClassAnalyzer {
 
 				BaseMethodAnalyzer methodAnalyzer = new FieldsNotPublishedAnalyzer(classContext,
 						methodGen, new Heap(heap), cache);
-				methodAnalyzer.analyze();
-				bugs.addAll(methodAnalyzer.getBugs());
+				bugs.addAll(methodAnalyzer.analyze().getBugs());
 			}
 		}
 		return bugs.getCollection();
@@ -145,8 +150,7 @@ public final class ClassAnalyzer {
 
 				BaseMethodAnalyzer methodAnalyzer = new NoMutatorsAnalyzer(classContext, methodGen,
 						new Heap(heap), cache);
-				methodAnalyzer.analyze();
-				bugs.addAll(methodAnalyzer.getBugs());
+				bugs.addAll(methodAnalyzer.analyze().getBugs());
 			}
 		}
 		return bugs.getCollection();

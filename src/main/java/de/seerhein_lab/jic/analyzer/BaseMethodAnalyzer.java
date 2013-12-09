@@ -1,6 +1,5 @@
 package de.seerhein_lab.jic.analyzer;
 
-import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.logging.Level;
@@ -14,8 +13,8 @@ import org.apache.bcel.generic.InstructionList;
 import org.apache.bcel.generic.MethodGen;
 import org.apache.bcel.generic.Type;
 
+import de.seerhein_lab.jic.AnalysisResult;
 import de.seerhein_lab.jic.Pair;
-import de.seerhein_lab.jic.EvaluationResult;
 import de.seerhein_lab.jic.Utils;
 import de.seerhein_lab.jic.cache.AnalysisCache;
 import de.seerhein_lab.jic.slot.ReferenceSlot;
@@ -24,7 +23,6 @@ import de.seerhein_lab.jic.vm.Frame;
 import de.seerhein_lab.jic.vm.Heap;
 import de.seerhein_lab.jic.vm.OpStack;
 import de.seerhein_lab.jic.vm.PC;
-import edu.umd.cs.findbugs.BugInstance;
 import edu.umd.cs.findbugs.ba.ClassContext;
 
 @ThreadSafe
@@ -36,10 +34,7 @@ public abstract class BaseMethodAnalyzer {
 	protected final int depth;
 	protected final MethodGen methodGen;
 	protected final CodeExceptionGen[] exceptionHandlers;
-	protected BaseVisitor visitor = null;
 	protected final AnalysisCache cache;
-	private Collection<BugInstance> cachedBugs;
-	private HashSet<EvaluationResult> cachedResults;
 
 	protected BaseMethodAnalyzer(ClassContext classContext, MethodGen methodGen,
 			Set<QualifiedMethod> alreadyVisitedMethods, int depth, AnalysisCache cache) {
@@ -76,7 +71,7 @@ public abstract class BaseMethodAnalyzer {
 		return calleeFrame;
 	}
 
-	public final synchronized void analyze() {
+	public final synchronized AnalysisResult analyze() {
 		OpStack callerStack = new OpStack();
 		Heap callerHeap = getHeap();
 
@@ -96,25 +91,25 @@ public abstract class BaseMethodAnalyzer {
 			}
 		}
 
-		analyze(callerStack, callerHeap);
+		return analyze(callerStack, callerHeap);
 	}
 
-	public synchronized void analyze(OpStack callerStack, Heap heap) {
+	public synchronized AnalysisResult analyze(OpStack callerStack, Heap heap) {
 		Frame calleeFrame = createCalleeFrame(callerStack);
 
 		InstructionHandle[] instructionHandles = new InstructionList(methodGen.getMethod()
 				.getCode().getCode()).getInstructionHandles();
 
-		analyze(instructionHandles[0], calleeFrame, heap,
+		return analyze(instructionHandles[0], calleeFrame, heap,
 				new HashSet<Pair<InstructionHandle, Boolean>>());
 	}
 
-	public final synchronized void analyze(InstructionHandle ih, Frame frame, Heap heap,
+	public final synchronized AnalysisResult analyze(InstructionHandle ih, Frame frame, Heap heap,
 			Set<Pair<InstructionHandle, Boolean>> alreadyVisitedIfBranch) {
 
 		PC pc = new PC(ih);
 
-		visitor = getInstructionVisitor(frame, heap, pc, alreadyVisitedIfBranch);
+		BaseVisitor visitor = getInstructionVisitor(frame, heap, pc, alreadyVisitedIfBranch);
 
 		logger.log(Level.FINE, Utils.formatLoggingOutput(this.depth) + "vvvvvvvvvvvvvvvvvvvvvvvvvv");
 		while (pc.isValid()) {
@@ -128,43 +123,8 @@ public abstract class BaseMethodAnalyzer {
 		}
 
 		logger.log(Level.FINE, Utils.formatLoggingOutput(this.depth) + "^^^^^^^^^^^^^^^^^^^^^^^^^^");
-	}
 
-	/**
-	 * Returns the bugs found in the analysis. The method analyze() must be
-	 * called before this method is called.
-	 * 
-	 * @return the bug list, not null.
-	 * 
-	 * @throws IllegalStateException
-	 *             if analyze() was not called beforehand.
-	 */
-	public final synchronized Collection<BugInstance> getBugs() {
-		if (visitor == null) {
-			// throw new
-			// IllegalStateException("analyze() must be called before getBugs()");
-			return cachedBugs;
-		}
-		return visitor.getBugs().getCollection();
-	}
-
-	/**
-	 * Returns the result of the method call. The method analyze() must be
-	 * called before this method is called.
-	 * 
-	 * @return the result of the method call, or null if the method is a void
-	 *         method.
-	 * 
-	 * @throws IllegalStateException
-	 *             if analyze() was not called beforehand.
-	 */
-	public final synchronized Set<EvaluationResult> getResult() {
-		if (visitor == null) {
-			return cachedResults;
-			// throw new
-			// IllegalStateException("analyze() must be called before getResult()");
-		}
-		return visitor.getResult();
+		return new AnalysisResult(visitor.getResult(), visitor.getBugs().getCollection());
 	}
 
 }
