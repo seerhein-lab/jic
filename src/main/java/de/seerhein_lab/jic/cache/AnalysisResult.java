@@ -4,7 +4,7 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
 
-import de.seerhein_lab.jic.ResultValue;
+import de.seerhein_lab.jic.EvaluationResult;
 import de.seerhein_lab.jic.cache.AnalysisCache.Check;
 import de.seerhein_lab.jic.slot.ReferenceSlot;
 import de.seerhein_lab.jic.slot.Slot;
@@ -15,19 +15,19 @@ import edu.umd.cs.findbugs.SortedBugCollection;
 
 public class AnalysisResult {
 	private Collection<BugInstance>[] bugs;
-	private Set<ResultValue> results;
+	private Set<EvaluationResult> results;
 
 	@SuppressWarnings("unchecked")
-	public AnalysisResult(Set<ResultValue> results, Slot target) {
+	public AnalysisResult(Set<EvaluationResult> results, Slot target) {
 		this.bugs = (Collection<BugInstance>[]) new Collection<?>[AnalysisCache.Check.values().length];
-		this.results = new HashSet<ResultValue>();
+		this.results = new HashSet<EvaluationResult>();
 
-		for (ResultValue result : results) {
+		for (EvaluationResult result : results) {
 			Heap cacheHeap = new Heap(); // TODO reuse ?
 
 			HeapObject deepCopy = result.getHeap().getObject(((ReferenceSlot) target))
 					.deepCopy(cacheHeap);
-			this.results.add(new ResultValue(result.getKind(), ReferenceSlot
+			this.results.add(new EvaluationResult(result.getKind(), ReferenceSlot
 					.createNewInstance(deepCopy), cacheHeap));
 		}
 	}
@@ -43,7 +43,7 @@ public class AnalysisResult {
 			this.bugs[check.ordinal()] = bugs;
 	}
 
-	public Set<ResultValue> getResults() {
+	public Set<EvaluationResult> getResults() {
 		return results;
 	}
 

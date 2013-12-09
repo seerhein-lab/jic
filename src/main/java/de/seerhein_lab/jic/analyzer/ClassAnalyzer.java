@@ -12,7 +12,7 @@ import org.apache.bcel.generic.BasicType;
 import org.apache.bcel.generic.ConstantPoolGen;
 import org.apache.bcel.generic.MethodGen;
 
-import de.seerhein_lab.jic.ResultValue;
+import de.seerhein_lab.jic.EvaluationResult;
 import de.seerhein_lab.jic.Utils;
 import de.seerhein_lab.jic.analyzer.ctorArgsCopied.CtorArgsCopiedAnalyzer;
 import de.seerhein_lab.jic.analyzer.fieldsNotPublished.FieldsNotPublishedAnalyzer;
@@ -96,7 +96,7 @@ public final class ClassAnalyzer {
 			bugs.addAll(ctorAnalyzer.getBugs());
 
 			if (currentBugs.isEmpty()) {
-				for (ResultValue result : ctorAnalyzer.getResult())
+				for (EvaluationResult result : ctorAnalyzer.getResult())
 					heaps.add(result.getHeap());
 			}
 		}

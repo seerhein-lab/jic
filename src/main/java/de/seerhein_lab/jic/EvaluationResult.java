@@ -9,7 +9,7 @@ import de.seerhein_lab.jic.vm.Heap;
  * contains a Kind which says, if the return value is regular or a thrown
  * exception and a Slot standing for the returned DataType.
  */
-public class ResultValue {
+public class EvaluationResult {
 
 	/**
 	 * Internal enumeration. EXCEPTION is used for all kinds of thrown
@@ -31,7 +31,7 @@ public class ResultValue {
 	 * @param slot
 	 *            The returned value represented by a Slot.
 	 */
-	public ResultValue(Kind kind, Slot slot, Heap heap) {
+	public EvaluationResult(Kind kind, Slot slot, Heap heap) {
 		if (kind == null || slot == null || heap == null)
 			throw new NullPointerException("parameters must not be null");
 
@@ -55,9 +55,9 @@ public class ResultValue {
 		if (this == obj)
 			return true;
 
-		if (!(obj instanceof ResultValue))
+		if (!(obj instanceof EvaluationResult))
 			return false;
-		ResultValue other = (ResultValue) obj;
+		EvaluationResult other = (EvaluationResult) obj;
 
 		return heap.equals(other.heap) && kind == other.kind && slot.equals(other.slot);
 	}

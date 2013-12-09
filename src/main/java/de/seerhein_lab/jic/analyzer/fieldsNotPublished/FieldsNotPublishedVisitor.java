@@ -10,8 +10,8 @@ import org.apache.bcel.generic.MethodGen;
 import org.apache.bcel.generic.ReturnInstruction;
 
 import de.seerhein_lab.jic.Pair;
-import de.seerhein_lab.jic.ResultValue;
-import de.seerhein_lab.jic.ResultValue.Kind;
+import de.seerhein_lab.jic.EvaluationResult;
+import de.seerhein_lab.jic.EvaluationResult.Kind;
 import de.seerhein_lab.jic.analyzer.BaseMethodAnalyzer;
 import de.seerhein_lab.jic.analyzer.BaseVisitor;
 import de.seerhein_lab.jic.analyzer.QualifiedMethod;
@@ -86,12 +86,12 @@ public class FieldsNotPublishedVisitor extends BaseVisitor {
 		logger.log(Level.FINEST, indentation + "\t" + returnType);
 
 		if (returnType instanceof VoidSlot)
-			result.add(new ResultValue(Kind.REGULAR, returnType, heap));
+			result.add(new EvaluationResult(Kind.REGULAR, returnType, heap));
 		else {
 			Slot returnSlot = frame.popStackByRequiredSlots();
 			if (returnType instanceof ReferenceSlot)
 				detectAReturnBug((ReferenceSlot) returnSlot);
-			result.add(new ResultValue(Kind.REGULAR, returnSlot, heap));
+			result.add(new EvaluationResult(Kind.REGULAR, returnSlot, heap));
 		}
 		pc.invalidate();
 	}

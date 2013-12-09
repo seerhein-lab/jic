@@ -49,8 +49,8 @@ import org.apache.bcel.generic.StoreInstruction;
 import org.apache.bcel.generic.Type;
 
 import de.seerhein_lab.jic.Pair;
-import de.seerhein_lab.jic.ResultValue;
-import de.seerhein_lab.jic.ResultValue.Kind;
+import de.seerhein_lab.jic.EvaluationResult;
+import de.seerhein_lab.jic.EvaluationResult.Kind;
 import de.seerhein_lab.jic.Utils;
 import de.seerhein_lab.jic.analyzer.eval.EvaluationOnlyAnalyzer;
 import de.seerhein_lab.jic.analyzer.recursion.RecursionAnalyzer;
@@ -110,7 +110,7 @@ public abstract class BaseVisitor extends SimpleVisitor {
 	protected final Set<QualifiedMethod> alreadyVisitedMethods;
 	protected SortedBugCollection bugs = new SortedBugCollection();
 	protected final AnalysisCache cache;
-	protected Set<ResultValue> result = new HashSet<ResultValue>();
+	protected Set<EvaluationResult> result = new HashSet<EvaluationResult>();
 	public static long cacheMisses = 0;
 	public static long cacheHits = 0;
 
@@ -160,7 +160,7 @@ public abstract class BaseVisitor extends SimpleVisitor {
 		return bugs;
 	}
 
-	public Set<ResultValue> getResult() {
+	public Set<EvaluationResult> getResult() {
 		return result;
 	}
 
@@ -195,31 +195,31 @@ public abstract class BaseVisitor extends SimpleVisitor {
 
 			}
 		}
-		result.add(new ResultValue(Kind.EXCEPTION, exception, heap));
+		result.add(new EvaluationResult(Kind.EXCEPTION, exception, heap));
 		pc.invalidate();
 	}
 
 	protected abstract Check getCheck();
 
-	private Set<ResultValue> useCachedResults(QualifiedMethod method) {
-		Set<ResultValue> targetResults;
-		targetResults = new HashSet<ResultValue>();
+	private Set<EvaluationResult> useCachedResults(QualifiedMethod method) {
+		Set<EvaluationResult> targetResults;
+		targetResults = new HashSet<EvaluationResult>();
 
 		ReferenceSlot topOfStack = (ReferenceSlot) frame.getStack().pop();
 
-		for (ResultValue resultValue : cache.get(method).getResults()) {
+		for (EvaluationResult resultValue : cache.get(method).getResults()) {
 			Heap resultHeap = new Heap(heap);
 			HeapObject resultObject = resultValue.getHeap().getObject(
 					(ReferenceSlot) resultValue.getSlot());
 
-			if (resultValue.getKind().equals(ResultValue.Kind.EXCEPTION)) {
-				targetResults.add(new ResultValue(resultValue.getKind(), ReferenceSlot
+			if (resultValue.getKind().equals(EvaluationResult.Kind.EXCEPTION)) {
+				targetResults.add(new EvaluationResult(resultValue.getKind(), ReferenceSlot
 						.createNewInstance((ClassInstance) resultObject.deepCopy(resultHeap)),
 						resultHeap));
 			} else {
 				((ClassInstance) resultHeap.getObject((ReferenceSlot) topOfStack))
 						.copyReferredObjectsTo(resultObject, resultHeap);
-				targetResults.add(new ResultValue(ResultValue.Kind.REGULAR, VoidSlot.getInstance(),
+				targetResults.add(new EvaluationResult(EvaluationResult.Kind.REGULAR, VoidSlot.getInstance(),
 						resultHeap));
 			}
 		}
@@ -227,7 +227,7 @@ public abstract class BaseVisitor extends SimpleVisitor {
 	}
 
 	private void cacheResults(MethodGen targetMethodGen, QualifiedMethod method,
-			Collection<BugInstance> targetBugs, Set<ResultValue> targetResults, Slot firstParam) {
+			Collection<BugInstance> targetBugs, Set<EvaluationResult> targetResults, Slot firstParam) {
 		logger.log(Level.FINE,
 				Utils.formatLoggingOutput(this.depth) + "Put " + targetMethodGen.getClassName()
 						+ targetMethodGen.getMethod().getName() + " in the Cache");
@@ -253,8 +253,8 @@ public abstract class BaseVisitor extends SimpleVisitor {
 		}
 	}
 
-	private void continueWithResults(Set<ResultValue> targetResults) {
-		for (ResultValue calleeResult : targetResults) {
+	private void continueWithResults(Set<EvaluationResult> targetResults) {
+		for (EvaluationResult calleeResult : targetResults) {
 			if (calleeResult.getKind().equals(Kind.REGULAR)) {
 
 				BaseMethodAnalyzer analyzer = getMethodAnalyzer(methodGen, alreadyVisitedMethods);
@@ -297,7 +297,7 @@ public abstract class BaseVisitor extends SimpleVisitor {
 		nowVisitedMethods.add(targetMethod);
 
 		Collection<BugInstance> targetBugs = null;
-		Set<ResultValue> targetResults = null;
+		Set<EvaluationResult> targetResults = null;
 
 		if (cache.contains(targetMethod) && cache.get(targetMethod).isCached(getCheck())) {
 			logger.log(Level.FINE, Utils.formatLoggingOutput(this.depth) + targetMethod
@@ -358,14 +358,14 @@ public abstract class BaseVisitor extends SimpleVisitor {
 				alreadyVisitedMethods, depth, cache);
 
 		recursionAnalyzer.analyze(new OpStack(frame.getStack()), heap);
-		Set<ResultValue> recursionResults = recursionAnalyzer.getResult();
+		Set<EvaluationResult> recursionResults = recursionAnalyzer.getResult();
 
 		Frame currentFrame = frame;
 		Heap currentHeap = heap;
 		pc.advance();
 		InstructionHandle next = pc.getCurrentInstruction().getNext();
 
-		for (ResultValue res : recursionResults) {
+		for (EvaluationResult res : recursionResults) {
 			logger.log(Level.FINE, indentation + "Result of recursive call: " + res.getSlot());
 			frame = new Frame(currentFrame);
 			heap = new Heap(currentHeap);
@@ -461,9 +461,9 @@ public abstract class BaseVisitor extends SimpleVisitor {
 		logger.log(Level.FINEST, indentation + "\t" + returnType);
 
 		if (returnType instanceof VoidSlot)
-			result.add(new ResultValue(Kind.REGULAR, returnType, heap));
+			result.add(new EvaluationResult(Kind.REGULAR, returnType, heap));
 		else
-			result.add(new ResultValue(Kind.REGULAR, frame.popStackByRequiredSlots(), heap));
+			result.add(new EvaluationResult(Kind.REGULAR, frame.popStackByRequiredSlots(), heap));
 		pc.invalidate();
 	}
 

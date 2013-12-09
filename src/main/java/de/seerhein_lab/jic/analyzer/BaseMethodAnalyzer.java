@@ -15,7 +15,7 @@ import org.apache.bcel.generic.MethodGen;
 import org.apache.bcel.generic.Type;
 
 import de.seerhein_lab.jic.Pair;
-import de.seerhein_lab.jic.ResultValue;
+import de.seerhein_lab.jic.EvaluationResult;
 import de.seerhein_lab.jic.Utils;
 import de.seerhein_lab.jic.cache.AnalysisCache;
 import de.seerhein_lab.jic.slot.ReferenceSlot;
@@ -39,7 +39,7 @@ public abstract class BaseMethodAnalyzer {
 	protected BaseVisitor visitor = null;
 	protected final AnalysisCache cache;
 	private Collection<BugInstance> cachedBugs;
-	private HashSet<ResultValue> cachedResults;
+	private HashSet<EvaluationResult> cachedResults;
 
 	protected BaseMethodAnalyzer(ClassContext classContext, MethodGen methodGen,
 			Set<QualifiedMethod> alreadyVisitedMethods, int depth, AnalysisCache cache) {
@@ -158,7 +158,7 @@ public abstract class BaseMethodAnalyzer {
 	 * @throws IllegalStateException
 	 *             if analyze() was not called beforehand.
 	 */
-	public final synchronized Set<ResultValue> getResult() {
+	public final synchronized Set<EvaluationResult> getResult() {
 		if (visitor == null) {
 			return cachedResults;
 			// throw new
