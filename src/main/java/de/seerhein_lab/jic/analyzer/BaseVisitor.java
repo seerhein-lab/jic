@@ -1106,13 +1106,21 @@ public abstract class BaseVisitor extends SimpleVisitor {
 		Method targetMethod = new ClassHelper(targetClass).getMethod(
 				instruction.getMethodName(constantPoolGen),
 				instruction.getArgumentTypes(constantPoolGen));
-		if (targetMethod == null)
-			throw new AssertionError("targetMethod " + instruction.getMethodName(constantPoolGen)
-					+ " not found in " + instruction.getLoadClassType(constantPoolGen) + ": "
-					+ instruction.toString(true));
+
+		while (targetMethod == null) {
+			try {
+				targetClass = targetClass.getSuperClass();
+				targetMethod = new ClassHelper(targetClass).getMethod(
+						instruction.getMethodName(constantPoolGen),
+						instruction.getArgumentTypes(constantPoolGen));
+			} catch (ClassNotFoundException e) {
+				throw new AssertionError("targetMethod "
+						+ instruction.getMethodName(constantPoolGen) + " not found in "
+						+ instruction.getLoadClassType(constantPoolGen) + " or its supertypes");
+			}
+		}
 
 		return new QualifiedMethod(targetClass, targetMethod);
-
 	}
 
 	private void handleSpecialOrStaticInvocation(InvokeInstruction obj) {
@@ -1155,30 +1163,12 @@ public abstract class BaseVisitor extends SimpleVisitor {
 	 */
 	@Override
 	public void visitINVOKEVIRTUAL(INVOKEVIRTUAL obj) {
-		JavaClass targetClass = null;
-		try {
-			targetClass = Repository.lookupClass(obj.getLoadClassType(constantPoolGen).toString());
-		} catch (ClassNotFoundException e) {
-			throw new AssertionError(obj.getLoadClassType(constantPoolGen).toString()
-					+ " cannot be loaded.");
-		}
+		QualifiedMethod targetMethod = getTargetMethod(obj);
 
-		Method targetMethod = new ClassHelper(targetClass).getMethod(
-				obj.getMethodName(constantPoolGen), obj.getArgumentTypes(constantPoolGen));
-
-		while (targetMethod == null) {
-			try {
-				targetClass = targetClass.getSuperClass();
-				targetMethod = new ClassHelper(targetClass).getMethod(
-						obj.getMethodName(constantPoolGen), obj.getArgumentTypes(constantPoolGen));
-			} catch (ClassNotFoundException e) {
-				throw new AssertionError("targetMethod not found in Class");
-			}
-		}
-
-		if ((targetClass.isFinal() || targetMethod.isFinal()) && !targetMethod.isNative()) {
+		if ((targetMethod.getJavaClass().isFinal() || targetMethod.getMethod().isFinal())
+				&& !targetMethod.getMethod().isNative()) {
 			logger.log(Level.FINE, indentation + "Final virtual method can be analyzed.");
-			analyzeMethod(obj, new QualifiedMethod(targetClass, targetMethod));
+			analyzeMethod(obj, targetMethod);
 		} else
 			dontAnalyzeMethod(obj);
 	}
