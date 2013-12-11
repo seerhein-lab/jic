@@ -228,13 +228,14 @@ public abstract class BaseVisitor extends SimpleVisitor {
 	}
 
 	private void cacheResults(MethodGen targetMethodGen, QualifiedMethod method,
-			Collection<BugInstance> targetBugs, Set<EvaluationResult> targetResults, Slot firstParam) {
+			AnalysisResult methodResult, Slot firstParam) {
 		logger.log(Level.FINE,
 				Utils.formatLoggingOutput(this.depth) + "Put " + targetMethodGen.getClassName()
 						+ targetMethodGen.getMethod().getName() + " in the Cache");
 
-		AnalysisResults result = new AnalysisResults(targetResults, firstParam);
-		result.setBugs(getCheck(), targetBugs);
+		AnalysisResults result = new AnalysisResults(methodResult.getResults(), firstParam);
+		result.setBugs(getCheck(), methodResult.getBugs());
+
 		cache.add(method, result, getCheck());
 	}
 
@@ -287,7 +288,7 @@ public abstract class BaseVisitor extends SimpleVisitor {
 		pc.invalidate();
 	}
 
-	private void analyzeMethod(InvokeInstruction obj, QualifiedMethod targetMethod) {
+	private void handleEarlyBoundMethod(InvokeInstruction obj, QualifiedMethod targetMethod) {
 		logger.log(Level.FINE, indentation + obj.toString(false));
 		logger.log(Level.FINEST, indentation + "\t" + obj.getLoadClassType(constantPoolGen) + "."
 				+ obj.getMethodName(constantPoolGen) + obj.getSignature(constantPoolGen));
@@ -296,56 +297,75 @@ public abstract class BaseVisitor extends SimpleVisitor {
 				.getJavaClass().getClassName(), new ConstantPoolGen(targetMethod.getJavaClass()
 				.getConstantPool()));
 
-		if (alreadyVisitedMethods.contains(targetMethod)) {
-			handleRecursion(obj, targetMethodGen);
-			return;
+		AnalysisResult methodResult;
+
+		if (cache.isCacheable(targetMethod)) {
+			if (cache.contains(targetMethod) && cache.get(targetMethod).isCached(getCheck())) {
+				logger.log(Level.FINE, Utils.formatLoggingOutput(this.depth) + targetMethod
+						+ " already evaluated - taking result out of the cache");
+				cacheHits++;
+
+				methodResult = new AnalysisResult(useCachedResults(targetMethod), cache.get(
+						targetMethod).getBugs(getCheck()));
+
+			} else {
+				cacheMisses++;
+
+				if (alreadyVisitedMethods.contains(targetMethod)) {
+					handleRecursion(obj, targetMethodGen);
+					return;
+				}
+
+				Slot firstParam = frame.getStack().size() == 0 ? null : frame.getStack().peek();
+
+				methodResult = analyzeMethod(targetMethod, targetMethodGen, alreadyVisitedMethods,
+						firstParam);
+
+				cacheResults(targetMethodGen, targetMethod, methodResult, firstParam);
+			}
+		} else {
+			cacheMisses++;
+
+			if (alreadyVisitedMethods.contains(targetMethod)) {
+				handleRecursion(obj, targetMethodGen);
+				return;
+			}
+
+			Slot firstParam = frame.getStack().size() == 0 ? null : frame.getStack().peek();
+
+			methodResult = analyzeMethod(targetMethod, targetMethodGen, alreadyVisitedMethods,
+					firstParam);
+
 		}
+
+		wrapNestedBugs(targetMethod, methodResult.getBugs());
+		continueWithResults(methodResult.getResults());
+
+		pc.invalidate();
+	}
+
+	private AnalysisResult analyzeMethod(QualifiedMethod targetMethod, MethodGen targetMethodGen,
+			Set<QualifiedMethod> alreadyVisitedMethods, Slot firstParam) {
 
 		Set<QualifiedMethod> nowVisitedMethods = new HashSet<QualifiedMethod>();
 		nowVisitedMethods.addAll(alreadyVisitedMethods);
 		nowVisitedMethods.add(targetMethod);
 
-		Collection<BugInstance> targetBugs = null;
-		Set<EvaluationResult> targetResults = null;
+		AnalysisResult methodResult;
+		BaseMethodAnalyzer targetMethodAnalyzer;
 
-		if (cache.contains(targetMethod) && cache.get(targetMethod).isCached(getCheck())) {
-			logger.log(Level.FINE, Utils.formatLoggingOutput(this.depth) + targetMethod
-					+ " already evaluated - taking result out of the cache");
-			cacheHits++;
+		if (targetMethod.getMethod().getName().equals(CONSTRUCTOR_NAME)
+				&& targetMethod.getMethod().getArgumentTypes().length == 0
+				// && firstParam instanceof ReferenceSlot
+				&& !heap.getObject(((ReferenceSlot) firstParam)).equals(heap.getThisInstance())) {
 
-			targetBugs = cache.get(targetMethod).getBugs(getCheck());
-			targetResults = useCachedResults(targetMethod);
-
+			targetMethodAnalyzer = new EvaluationOnlyAnalyzer(classContext, targetMethodGen,
+					nowVisitedMethods, depth, cache);
 		} else {
-			cacheMisses++;
-			Slot firstParam = frame.getStack().size() == 0 ? null : frame.getStack().peek();
-
-			BaseMethodAnalyzer targetMethodAnalyzer;
-
-			if (targetMethod.getMethod().getName().equals(CONSTRUCTOR_NAME)
-					&& targetMethod.getMethod().getArgumentTypes().length == 0
-					// && firstParam instanceof ReferenceSlot
-					&& !heap.getObject(((ReferenceSlot) firstParam)).equals(heap.getThisInstance())) {
-
-				targetMethodAnalyzer = new EvaluationOnlyAnalyzer(classContext, targetMethodGen,
-						nowVisitedMethods, depth, cache);
-			} else {
-				targetMethodAnalyzer = getMethodAnalyzer(targetMethodGen, nowVisitedMethods);
-			}
-
-			AnalysisResult analysisResult = targetMethodAnalyzer.analyze(frame.getStack(), heap);
-
-			targetBugs = analysisResult.getBugs();
-			targetResults = analysisResult.getResults();
-
-			if (targetMethodGen.getMethod().getName().equals(CONSTRUCTOR_NAME)
-					&& targetMethodGen.getMethod().getArgumentTypes().length == 0) {
-				cacheResults(targetMethodGen, targetMethod, targetBugs, targetResults, firstParam);
-			}
+			targetMethodAnalyzer = getMethodAnalyzer(targetMethodGen, nowVisitedMethods);
 		}
-
-		wrapNestedBugs(targetMethod, targetBugs);
-		continueWithResults(targetResults);
+		methodResult = targetMethodAnalyzer.analyze(frame.getStack(), heap);
+		return methodResult;
 	}
 
 	protected void handleRecursion(InvokeInstruction obj, MethodGen targetMethodGen) {
@@ -390,7 +410,7 @@ public abstract class BaseVisitor extends SimpleVisitor {
 		return;
 	}
 
-	private void dontAnalyzeMethod(InvokeInstruction obj) {
+	private void handleLatelyBoundMethod(InvokeInstruction obj) {
 		logger.log(Level.FINE, indentation + obj.toString(false));
 		logger.log(Level.FINEST, indentation + "\t" + obj.getLoadClassType(constantPoolGen) + "."
 				+ obj.getMethodName(constantPoolGen) + obj.getSignature(constantPoolGen));
@@ -1093,7 +1113,7 @@ public abstract class BaseVisitor extends SimpleVisitor {
 	 */
 	@Override
 	public void visitINVOKEINTERFACE(INVOKEINTERFACE obj) {
-		dontAnalyzeMethod(obj);
+		handleLatelyBoundMethod(obj);
 	}
 
 	private QualifiedMethod getTargetMethod(InvokeInstruction instruction) {
@@ -1133,10 +1153,10 @@ public abstract class BaseVisitor extends SimpleVisitor {
 			logger.log(Level.FINE, indentation
 					+ "Native method must be dealt with like virtual method.");
 
-			dontAnalyzeMethod(obj);
+			handleLatelyBoundMethod(obj);
 
 		} else
-			analyzeMethod(obj, targetMethod);
+			handleEarlyBoundMethod(obj, targetMethod);
 	}
 
 	/**
@@ -1171,9 +1191,9 @@ public abstract class BaseVisitor extends SimpleVisitor {
 		if ((targetMethod.getJavaClass().isFinal() || targetMethod.getMethod().isFinal())
 				&& !targetMethod.getMethod().isNative()) {
 			logger.log(Level.FINE, indentation + "Final virtual method can be analyzed.");
-			analyzeMethod(obj, targetMethod);
+			handleEarlyBoundMethod(obj, targetMethod);
 		} else
-			dontAnalyzeMethod(obj);
+			handleLatelyBoundMethod(obj);
 	}
 
 	/**
