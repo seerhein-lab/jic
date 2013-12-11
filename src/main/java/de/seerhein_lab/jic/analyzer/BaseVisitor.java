@@ -367,27 +367,20 @@ public abstract class BaseVisitor extends SimpleVisitor {
 		Set<EvaluationResult> recursionResults = recursionAnalyzer.analyze(
 				new OpStack(frame.getStack()), heap).getResults();
 
-		Frame currentFrame = frame;
-		Heap currentHeap = heap;
 		pc.advance();
-		InstructionHandle next = pc.getCurrentInstruction().getNext();
 
 		for (EvaluationResult res : recursionResults) {
 			logger.log(Level.FINE, indentation + "Result of recursive call: " + res.getSlot());
-			frame = new Frame(currentFrame);
-			heap = new Heap(currentHeap);
+			Frame currentFrame = new Frame(frame);
 
-			for (int i = 0; i < obj.consumeStack(constantPoolGen); i++) {
-				frame.getStack().pop();
-			}
-
-			for (int i = 0; i < obj.produceStack(constantPoolGen); i++) {
-				frame.getStack().push(res.getSlot());
-			}
+			for (int i = 0; i < obj.consumeStack(constantPoolGen); i++)
+				currentFrame.getStack().pop();
+			for (int i = 0; i < obj.produceStack(constantPoolGen); i++)
+				currentFrame.getStack().push(res.getSlot());
 
 			BaseMethodAnalyzer analyzer = getMethodAnalyzer(methodGen, alreadyVisitedMethods);
-			AnalysisResult analysisResult = analyzer.analyze(next, new Frame(currentFrame),
-					new Heap(currentHeap), alreadyVisitedIfBranch);
+			AnalysisResult analysisResult = analyzer.analyze(pc.getCurrentInstruction().getNext(),
+					currentFrame, new Heap(heap), alreadyVisitedIfBranch);
 
 			bugs.addAll(analysisResult.getBugs());
 			result.addAll(analysisResult.getResults());
