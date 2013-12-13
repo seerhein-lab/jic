@@ -6,9 +6,9 @@ import java.util.logging.Level;
 import org.apache.bcel.generic.CodeExceptionGen;
 import org.apache.bcel.generic.ConstantPoolGen;
 import org.apache.bcel.generic.InstructionHandle;
-import org.apache.bcel.generic.InvokeInstruction;
 import org.apache.bcel.generic.MethodGen;
 
+import de.seerhein_lab.jic.AnalysisResult;
 import de.seerhein_lab.jic.Pair;
 import de.seerhein_lab.jic.analyzer.BaseMethodAnalyzer;
 import de.seerhein_lab.jic.analyzer.BaseVisitor;
@@ -45,9 +45,9 @@ public class RecursionVisitor extends BaseVisitor {
 	}
 
 	@Override
-	protected void handleRecursion(InvokeInstruction obj, MethodGen targetMethodGen) {
+	protected AnalysisResult handleRecursion(MethodGen targetMethodGen) {
 		logger.log(Level.FINE, indentation + "Branch without break condition: not analyzing again.");
-		pc.invalidate();
+		return new AnalysisResult();
 	}
 
 	@Override
