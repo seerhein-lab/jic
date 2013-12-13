@@ -18,7 +18,6 @@ import org.apache.bcel.generic.ACONST_NULL;
 import org.apache.bcel.generic.ANEWARRAY;
 import org.apache.bcel.generic.ATHROW;
 import org.apache.bcel.generic.ArrayInstruction;
-import org.apache.bcel.generic.BasicType;
 import org.apache.bcel.generic.CHECKCAST;
 import org.apache.bcel.generic.CodeExceptionGen;
 import org.apache.bcel.generic.ConstantPoolGen;
@@ -46,7 +45,6 @@ import org.apache.bcel.generic.ReturnInstruction;
 import org.apache.bcel.generic.Select;
 import org.apache.bcel.generic.StackInstruction;
 import org.apache.bcel.generic.StoreInstruction;
-import org.apache.bcel.generic.Type;
 
 import de.seerhein_lab.jic.AnalysisResult;
 import de.seerhein_lab.jic.EvaluationResult;
@@ -115,11 +113,6 @@ public abstract class BaseVisitor extends SimpleVisitor {
 	public static long cacheMisses = 0;
 	public static long cacheHits = 0;
 
-	// protected abstract BaseVisitor getInstructionsAnalysisVisitor(
-	// Frame frame, Heap heap,
-	// Set<Pair<InstructionHandle, Boolean>> alreadyVisited,
-	// InstructionHandle instructionHandle);
-
 	protected abstract BaseMethodAnalyzer getMethodAnalyzer(MethodGen targetMethodGen,
 			Set<QualifiedMethod> alreadyVisitedMethods);
 
@@ -131,17 +124,6 @@ public abstract class BaseVisitor extends SimpleVisitor {
 	protected abstract void detectPutFieldBug(ReferenceSlot targetReference, Slot valueToPut);
 
 	protected abstract void detectPutStaticBug(ReferenceSlot referenceToPut);
-
-	// public BaseVisitor(ClassContext classContext, Method method,
-	// Frame frame, Heap heap, ConstantPoolGen constantPoolGen,
-	// InstructionHandle instructionHandle,
-	// CodeExceptionGen[] exceptionHandlers,
-	// Set<Pair<Method, Slot[]>> alreadyVisitedMethods, int depth) {
-	// this(classContext, method, frame, heap, constantPoolGen,
-	// new HashSet<Pair<InstructionHandle, Boolean>>(),
-	// alreadyVisitedMethods, instructionHandle, exceptionHandlers,
-	// depth);
-	// }
 
 	protected BaseVisitor(ClassContext classContext, MethodGen methodGen, Frame frame, Heap heap,
 			ConstantPoolGen constantPoolGen, Set<Pair<InstructionHandle, Boolean>> alreadyVisited,
@@ -311,13 +293,7 @@ public abstract class BaseVisitor extends SimpleVisitor {
 			} else {
 				cacheMisses++;
 
-				if (alreadyVisitedMethods.contains(targetMethod)) {
-					handleRecursion(obj, targetMethodGen);
-					return;
-				}
-
 				Slot firstParam = frame.getStack().size() == 0 ? null : frame.getStack().peek();
-
 				methodResult = analyzeMethod(targetMethod, targetMethodGen, alreadyVisitedMethods,
 						firstParam);
 
@@ -326,13 +302,7 @@ public abstract class BaseVisitor extends SimpleVisitor {
 		} else {
 			cacheMisses++;
 
-			if (alreadyVisitedMethods.contains(targetMethod)) {
-				handleRecursion(obj, targetMethodGen);
-				return;
-			}
-
 			Slot firstParam = frame.getStack().size() == 0 ? null : frame.getStack().peek();
-
 			methodResult = analyzeMethod(targetMethod, targetMethodGen, alreadyVisitedMethods,
 					firstParam);
 
@@ -352,6 +322,10 @@ public abstract class BaseVisitor extends SimpleVisitor {
 		AnalysisResult methodResult;
 		BaseMethodAnalyzer targetMethodAnalyzer;
 
+		if (alreadyVisitedMethods.contains(targetMethod)) {
+			return handleRecursion(targetMethodGen);
+		}
+
 		if (targetMethod.getMethod().getName().equals(CONSTRUCTOR_NAME)
 				&& targetMethod.getMethod().getArgumentTypes().length == 0
 				// && firstParam instanceof ReferenceSlot
@@ -366,46 +340,15 @@ public abstract class BaseVisitor extends SimpleVisitor {
 		return methodResult;
 	}
 
-	protected void handleRecursion(InvokeInstruction obj, MethodGen targetMethodGen) {
+	protected AnalysisResult handleRecursion(
+	// InvokeInstruction obj,
+			MethodGen targetMethodGen) {
 		logger.log(Level.FINE, indentation + "Recursion found: Get result of recursive call.");
-
-		Type returnType = obj.getReturnType(constantPoolGen);
-		if (returnType instanceof BasicType) {
-			handleSimpleInstruction(obj, Slot.getDefaultSlotInstance(returnType));
-			logger.log(
-					Level.FINE,
-					indentation + "Result of recursive call: "
-							+ Slot.getDefaultSlotInstance(returnType));
-			return;
-		}
 
 		BaseMethodAnalyzer recursionAnalyzer = new RecursionAnalyzer(classContext, targetMethodGen,
 				alreadyVisitedMethods, depth, cache);
 
-		Set<EvaluationResult> recursionResults = recursionAnalyzer.analyze(
-				new OpStack(frame.getStack()), heap).getResults();
-
-		pc.advance();
-
-		for (EvaluationResult res : recursionResults) {
-			logger.log(Level.FINE, indentation + "Result of recursive call: " + res.getSlot());
-			Frame currentFrame = new Frame(frame);
-
-			for (int i = 0; i < obj.consumeStack(constantPoolGen); i++)
-				currentFrame.getStack().pop();
-			for (int i = 0; i < obj.produceStack(constantPoolGen); i++)
-				currentFrame.getStack().push(res.getSlot());
-
-			BaseMethodAnalyzer analyzer = getMethodAnalyzer(methodGen, alreadyVisitedMethods);
-			AnalysisResult analysisResult = analyzer.analyze(pc.getCurrentInstruction().getNext(),
-					currentFrame, new Heap(heap), alreadyVisitedIfBranch);
-
-			bugs.addAll(analysisResult.getBugs());
-			result.addAll(analysisResult.getResults());
-		}
-
-		pc.invalidate();
-		return;
+		return recursionAnalyzer.analyze(new OpStack(frame.getStack()), heap);
 	}
 
 	private void handleLatelyBoundMethod(InvokeInstruction obj) {
