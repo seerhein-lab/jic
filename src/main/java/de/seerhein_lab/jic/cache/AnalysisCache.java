@@ -1,5 +1,7 @@
 package de.seerhein_lab.jic.cache;
 
+import static org.apache.bcel.Constants.CONSTRUCTOR_NAME;
+
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -32,5 +34,10 @@ public final class AnalysisCache {
 			map.get(method).setBugs(check, result.getBugs(check));
 		}
 
+	}
+
+	public boolean isCacheable(QualifiedMethod targetMethod) {
+		return targetMethod.getMethod().getName().equals(CONSTRUCTOR_NAME)
+				&& targetMethod.getMethod().getArgumentTypes().length == 0;
 	}
 }
