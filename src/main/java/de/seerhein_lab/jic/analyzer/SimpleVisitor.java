@@ -132,9 +132,7 @@ public class SimpleVisitor extends EmptyVisitor {
 		logger.log(Level.FINEST, indentation + log);
 
 		pc.advance();
-		// instructionHandle = instructionHandle.getNext();
-		// instructionHandle.accept(this);
-		// pc.getCurrentInstruction().accept(this);
+
 	}
 
 	// ******************************************************************//
@@ -369,8 +367,7 @@ public class SimpleVisitor extends EmptyVisitor {
 
 	@Override
 	public void visitIINC(IINC obj) {
-		// no effect on operand stack
-		pc.advance();
+		handleSimpleInstruction(obj, null);
 	}
 
 	// -----------------------------------------------------------------
@@ -402,9 +399,7 @@ public class SimpleVisitor extends EmptyVisitor {
 	 */
 	@Override
 	public void visitNOP(NOP obj) {
-		// NOP
-		// instructionHandle = instructionHandle.getNext();
-		// instructionHandle.accept(this);
+		handleSimpleInstruction(obj, null);
 	}
 
 	// -----------------------------------------------------------------
@@ -415,9 +410,7 @@ public class SimpleVisitor extends EmptyVisitor {
 	 */
 	@Override
 	public void visitRET(RET obj) {
-		logger.log(Level.FINE, indentation + obj.toString(false));
-		// instructionHandle = instructionHandle.getNext();
-		// instructionHandle.accept(this);
+		handleSimpleInstruction(obj, null);
 	}
 
 	// -----------------------------------------------------------------
