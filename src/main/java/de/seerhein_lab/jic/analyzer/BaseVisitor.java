@@ -340,8 +340,6 @@ public abstract class BaseVisitor extends SimpleVisitor {
 
 		wrapNestedBugs(targetMethod, methodResult.getBugs());
 		continueWithResults(methodResult.getResults());
-
-		pc.invalidate();
 	}
 
 	private AnalysisResult analyzeMethod(QualifiedMethod targetMethod, MethodGen targetMethodGen,
