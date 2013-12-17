@@ -89,6 +89,7 @@ public class SimpleVisitor extends EmptyVisitor {
 
 	protected final String indentation;
 	protected final int depth;
+	protected final int methodInvocationDepth;
 	protected Frame frame;
 	protected Heap heap;
 	protected final ConstantPoolGen constantPoolGen;
@@ -96,14 +97,15 @@ public class SimpleVisitor extends EmptyVisitor {
 	protected final PC pc;
 
 	protected SimpleVisitor(Frame frame, Heap heap, ConstantPoolGen constantPoolGen, PC pc,
-			int depth) {
+			int depth, int methodInvocationDepth) {
 		this.frame = frame;
 		this.heap = heap;
 		this.constantPoolGen = constantPoolGen;
 		this.pc = pc;
 		// this.instructionHandle = pc.getCurrentInstruction();
 		this.depth = depth;
-		this.indentation = Utils.formatLoggingOutput(depth);
+		this.methodInvocationDepth = methodInvocationDepth;
+		this.indentation = Utils.formatLoggingOutput(methodInvocationDepth);
 	}
 
 	// handle section

@@ -24,23 +24,23 @@ public class NoMutatorsAnalyzer extends BaseMethodAnalyzer {
 	private Heap heap;
 
 	public NoMutatorsAnalyzer(ClassContext classContext, MethodGen methodGen, Heap heap,
-			AnalysisCache cache) {
-		this(classContext, methodGen, new HashSet<QualifiedMethod>(), -1, cache);
+			AnalysisCache cache, int methodInvocationDepth) {
+		this(classContext, methodGen, new HashSet<QualifiedMethod>(), -1, cache,	methodInvocationDepth);
 		alreadyVisitedMethods.add(new QualifiedMethod(classContext.getJavaClass(), methodGen
 				.getMethod()));
 		this.heap = heap;
 	}
 
 	protected NoMutatorsAnalyzer(ClassContext classContext, MethodGen methodGen,
-			Set<QualifiedMethod> alreadyVisitedMethods, int depth, AnalysisCache cache) {
-		super(classContext, methodGen, alreadyVisitedMethods, depth, cache);
+			Set<QualifiedMethod> alreadyVisitedMethods, int depth, AnalysisCache cache,	int methodInvocationDepth) {
+		super(classContext, methodGen, alreadyVisitedMethods, depth, cache, methodInvocationDepth);
 	}
 
 	protected BaseVisitor getInstructionVisitor(Frame frame, Heap heap, PC pc,
 			Set<Pair<InstructionHandle, Boolean>> alreadyVisitedIfBranch) {
 		return new NoMutatorsVisitor(classContext, methodGen, frame, heap,
 				methodGen.getConstantPool(), pc, exceptionHandlers, alreadyVisitedMethods, depth,
-				alreadyVisitedIfBranch, cache);
+				alreadyVisitedIfBranch, cache, methodInvocationDepth);
 	}
 
 	@Override

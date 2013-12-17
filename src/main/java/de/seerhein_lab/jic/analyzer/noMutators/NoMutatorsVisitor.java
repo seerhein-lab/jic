@@ -27,9 +27,9 @@ public class NoMutatorsVisitor extends BaseVisitor {
 			Heap heap, ConstantPoolGen constantPoolGen, PC pc,
 			CodeExceptionGen[] exceptionHandlers, Set<QualifiedMethod> alreadyVisitedMethods,
 			int depth, Set<Pair<InstructionHandle, Boolean>> alreadyVisitedIfBranch,
-			AnalysisCache cache) {
+			AnalysisCache cache, int methodInvocationDepth) {
 		super(classContext, methodGen, frame, heap, constantPoolGen, alreadyVisitedIfBranch,
-				alreadyVisitedMethods, pc, exceptionHandlers, depth, cache);
+				alreadyVisitedMethods, pc, exceptionHandlers, depth, cache, methodInvocationDepth);
 	}
 
 	@Override
@@ -61,9 +61,9 @@ public class NoMutatorsVisitor extends BaseVisitor {
 
 	@Override
 	protected BaseMethodAnalyzer getMethodAnalyzer(MethodGen targetMethodGen,
-			Set<QualifiedMethod> alreadyVisitedMethods) {
+			Set<QualifiedMethod> alreadyVisitedMethods, int methodInvocationDepth) {
 		return new NoMutatorsAnalyzer(classContext, targetMethodGen, alreadyVisitedMethods, depth,
-				cache);
+				cache, methodInvocationDepth);
 	}
 
 	// ******************************************************************//

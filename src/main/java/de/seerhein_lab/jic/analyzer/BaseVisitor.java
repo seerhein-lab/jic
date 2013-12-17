@@ -114,7 +114,7 @@ public abstract class BaseVisitor extends SimpleVisitor {
 	public static long cacheHits = 0;
 
 	protected abstract BaseMethodAnalyzer getMethodAnalyzer(MethodGen targetMethodGen,
-			Set<QualifiedMethod> alreadyVisitedMethods);
+			Set<QualifiedMethod> alreadyVisitedMethods, int methodInvocationDepth);
 
 	// methods for bug detection
 	protected abstract void detectVirtualMethodBug(ReferenceSlot argument);
@@ -128,8 +128,9 @@ public abstract class BaseVisitor extends SimpleVisitor {
 	protected BaseVisitor(ClassContext classContext, MethodGen methodGen, Frame frame, Heap heap,
 			ConstantPoolGen constantPoolGen, Set<Pair<InstructionHandle, Boolean>> alreadyVisited,
 			Set<QualifiedMethod> alreadyVisitedMethods, PC pc,
-			CodeExceptionGen[] exceptionHandlers, int depth, AnalysisCache cache) {
-		super(frame, heap, constantPoolGen, pc, depth);
+			CodeExceptionGen[] exceptionHandlers, int depth, AnalysisCache cache,
+			int methodInvocationDepth) {
+		super(frame, heap, constantPoolGen, pc, depth, methodInvocationDepth);
 
 		this.classContext = classContext;
 		this.methodGen = methodGen;
@@ -167,7 +168,8 @@ public abstract class BaseVisitor extends SimpleVisitor {
 						+ ": start vvvvv");
 
 				// ************
-				BaseMethodAnalyzer analyzer = getMethodAnalyzer(methodGen, alreadyVisitedMethods);
+				BaseMethodAnalyzer analyzer = getMethodAnalyzer(methodGen, alreadyVisitedMethods,
+						methodInvocationDepth + 1);
 				AnalysisResult analysisResult = analyzer.analyze(exceptionHandler.getHandlerPC(),
 						new Frame(frame), new Heap(heap), alreadyVisitedIfBranch);
 
@@ -211,9 +213,8 @@ public abstract class BaseVisitor extends SimpleVisitor {
 
 	private void cacheResults(MethodGen targetMethodGen, QualifiedMethod method,
 			AnalysisResult methodResult, Slot firstParam) {
-		logger.log(Level.FINE,
-				Utils.formatLoggingOutput(this.depth) + "Put " + targetMethodGen.getClassName()
-						+ targetMethodGen.getMethod().getName() + " in the Cache");
+		logger.log(Level.FINE, indentation + "Put " + targetMethodGen.getClassName()
+				+ targetMethodGen.getMethod().getName() + " in the Cache");
 
 		AnalysisResults result = new AnalysisResults(methodResult.getResults(), firstParam);
 		result.setBugs(getCheck(), methodResult.getBugs());
@@ -248,7 +249,8 @@ public abstract class BaseVisitor extends SimpleVisitor {
 					return;
 				}
 
-				BaseMethodAnalyzer analyzer = getMethodAnalyzer(methodGen, alreadyVisitedMethods);
+				BaseMethodAnalyzer analyzer = getMethodAnalyzer(methodGen, alreadyVisitedMethods,
+						methodInvocationDepth);
 
 				Frame newFrame = new Frame(frame);
 				newFrame.pushStackByRequiredSlots(calleeResult.getSlot());
@@ -283,7 +285,7 @@ public abstract class BaseVisitor extends SimpleVisitor {
 
 		if (cache.isCacheable(targetMethod)) {
 			if (cache.contains(targetMethod) && cache.get(targetMethod).isCached(getCheck())) {
-				logger.log(Level.FINE, Utils.formatLoggingOutput(this.depth) + targetMethod
+				logger.log(Level.FINE, indentation + targetMethod
 						+ " already evaluated - taking result out of the cache");
 				cacheHits++;
 
@@ -332,9 +334,10 @@ public abstract class BaseVisitor extends SimpleVisitor {
 				&& !heap.getObject(((ReferenceSlot) firstParam)).equals(heap.getThisInstance())) {
 
 			targetMethodAnalyzer = new EvaluationOnlyAnalyzer(classContext, targetMethodGen,
-					nowVisitedMethods, depth, cache);
+					nowVisitedMethods, depth, cache, methodInvocationDepth + 1);
 		} else {
-			targetMethodAnalyzer = getMethodAnalyzer(targetMethodGen, nowVisitedMethods);
+			targetMethodAnalyzer = getMethodAnalyzer(targetMethodGen, nowVisitedMethods,
+					methodInvocationDepth + 1);
 		}
 		methodResult = targetMethodAnalyzer.analyze(frame.getStack(), heap);
 		return methodResult;
@@ -343,10 +346,10 @@ public abstract class BaseVisitor extends SimpleVisitor {
 	protected AnalysisResult handleRecursion(
 	// InvokeInstruction obj,
 			MethodGen targetMethodGen) {
-		logger.log(Level.FINE, indentation + "Recursion found: Get result of recursive call.");
+		logger.log(Level.FINE, indentation + "\tRecursion found: Get result of recursive call.");
 
 		BaseMethodAnalyzer recursionAnalyzer = new RecursionAnalyzer(classContext, targetMethodGen,
-				alreadyVisitedMethods, depth, cache);
+				alreadyVisitedMethods, depth, cache, methodInvocationDepth + 1);
 
 		return recursionAnalyzer.analyze(new OpStack(frame.getStack()), heap);
 	}
@@ -609,7 +612,8 @@ public abstract class BaseVisitor extends SimpleVisitor {
 
 		for (Iterator<HeapObject> iterator = array.getReferredIterator(); iterator.hasNext();) {
 
-			BaseMethodAnalyzer analyzer = getMethodAnalyzer(methodGen, alreadyVisitedMethods);
+			BaseMethodAnalyzer analyzer = getMethodAnalyzer(methodGen, alreadyVisitedMethods,
+					methodInvocationDepth);
 
 			Frame newFrame = new Frame(frame);
 			newFrame.getStack().push(ReferenceSlot.createNewInstance(iterator.next()));
@@ -739,7 +743,7 @@ public abstract class BaseVisitor extends SimpleVisitor {
 
 			if (alreadyVisitedIfBranch.add(elseBranch)) {
 				BaseMethodAnalyzer elseAnalyzer = getMethodAnalyzer(methodGen,
-						alreadyVisitedMethods);
+						alreadyVisitedMethods, methodInvocationDepth);
 
 				AnalysisResult analysisResult = elseAnalyzer.analyze(pc.getCurrentInstruction()
 						.getNext(), new Frame(frame), new Heap(heap), alreadyVisitedIfBranch);
@@ -761,7 +765,7 @@ public abstract class BaseVisitor extends SimpleVisitor {
 
 			if (alreadyVisitedIfBranch.add(thenBranch)) {
 				BaseMethodAnalyzer thenAnalyzer = getMethodAnalyzer(methodGen,
-						alreadyVisitedMethods);
+						alreadyVisitedMethods, methodInvocationDepth);
 
 				AnalysisResult analysisResult = thenAnalyzer.analyze(obj.getTarget(), frame, heap,
 						alreadyVisitedIfBranch);
@@ -809,7 +813,8 @@ public abstract class BaseVisitor extends SimpleVisitor {
 							+ " ---------------");
 
 			// ****************************
-			BaseMethodAnalyzer caseAnalyzer = getMethodAnalyzer(methodGen, alreadyVisitedMethods);
+			BaseMethodAnalyzer caseAnalyzer = getMethodAnalyzer(methodGen, alreadyVisitedMethods,
+					methodInvocationDepth);
 
 			AnalysisResult analysisResult = caseAnalyzer.analyze(targets[i], new Frame(frame),
 					new Heap(heap), alreadyVisitedIfBranch);
@@ -827,7 +832,8 @@ public abstract class BaseVisitor extends SimpleVisitor {
 		// target is the end of the switch without executing a case.
 
 		// ****************************
-		BaseMethodAnalyzer defaultAnalyzer = getMethodAnalyzer(methodGen, alreadyVisitedMethods);
+		BaseMethodAnalyzer defaultAnalyzer = getMethodAnalyzer(methodGen, alreadyVisitedMethods,
+				methodInvocationDepth);
 
 		AnalysisResult analysisResult = defaultAnalyzer.analyze(obj.getTarget(), frame, heap,
 				alreadyVisitedIfBranch);
@@ -877,7 +883,8 @@ public abstract class BaseVisitor extends SimpleVisitor {
 			return;
 		}
 
-		BaseMethodAnalyzer analyzer = getMethodAnalyzer(methodGen, alreadyVisitedMethods);
+		BaseMethodAnalyzer analyzer = getMethodAnalyzer(methodGen, alreadyVisitedMethods,
+				methodInvocationDepth + 1);
 
 		AnalysisResult analysisResult = analyzer.analyze(pc.getCurrentInstruction().getNext(),
 				new Frame(frame), new Heap(heap), alreadyVisitedIfBranch);

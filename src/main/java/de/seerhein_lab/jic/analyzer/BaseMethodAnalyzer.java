@@ -32,12 +32,14 @@ public abstract class BaseMethodAnalyzer {
 	protected final ClassContext classContext;
 	protected final Set<QualifiedMethod> alreadyVisitedMethods;
 	protected final int depth;
+	protected final int methodInvocationDepth;
 	protected final MethodGen methodGen;
 	protected final CodeExceptionGen[] exceptionHandlers;
 	protected final AnalysisCache cache;
 
 	protected BaseMethodAnalyzer(ClassContext classContext, MethodGen methodGen,
-			Set<QualifiedMethod> alreadyVisitedMethods, int depth, AnalysisCache cache) {
+			Set<QualifiedMethod> alreadyVisitedMethods, int depth, AnalysisCache cache,
+			int methodInvocationDepth) {
 		if (classContext == null || methodGen == null || alreadyVisitedMethods == null)
 			throw new AssertionError("Params must not be null.");
 
@@ -52,6 +54,7 @@ public abstract class BaseMethodAnalyzer {
 
 		this.depth = depth + 1;
 		this.cache = cache;
+		this.methodInvocationDepth = methodInvocationDepth;
 	}
 
 	protected abstract BaseVisitor getInstructionVisitor(Frame frame, Heap heap, PC pc,
@@ -111,7 +114,8 @@ public abstract class BaseMethodAnalyzer {
 
 		BaseVisitor visitor = getInstructionVisitor(frame, heap, pc, alreadyVisitedIfBranch);
 
-		logger.log(Level.FINE, Utils.formatLoggingOutput(this.depth) + "vvvvvvvvvvvvvvvvvvvvvvvvvv");
+		logger.log(Level.FINE, Utils.formatLoggingOutput(this.methodInvocationDepth)
+				+ "vvvvvvvvvvvvvvvvvvvvvvvvvv");
 		while (pc.isValid()) {
 			// visitor is expected to
 			// (1) either execute the current opcode and then update the pc, or
@@ -122,7 +126,8 @@ public abstract class BaseMethodAnalyzer {
 			pc.getCurrentInstruction().accept(visitor);
 		}
 
-		logger.log(Level.FINE, Utils.formatLoggingOutput(this.depth) + "^^^^^^^^^^^^^^^^^^^^^^^^^^");
+		logger.log(Level.FINE, Utils.formatLoggingOutput(this.methodInvocationDepth)
+				+ "^^^^^^^^^^^^^^^^^^^^^^^^^^");
 
 		return new AnalysisResult(visitor.getResult(), visitor.getBugs().getCollection());
 	}
