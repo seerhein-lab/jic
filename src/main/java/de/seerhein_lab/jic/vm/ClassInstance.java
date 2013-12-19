@@ -159,7 +159,8 @@ public final class ClassInstance extends HeapObject {
 	}
 
 	public HeapObject getField(String name) {
-		return heap.get(refers.get(name));
+		// return heap.get(refers.get(name));
+		return refers.get(name) == null ? null : heap.get(refers.get(name));
 	}
 
 	@Override
