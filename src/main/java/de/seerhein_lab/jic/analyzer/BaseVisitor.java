@@ -589,19 +589,7 @@ public abstract class BaseVisitor extends SimpleVisitor {
 		// pop array reference
 		ReferenceSlot arrayReference = (ReferenceSlot) frame.getStack().pop();
 
-		// CAUTION: try to make this also work with external object
-
-		if (heap.getObject(arrayReference) instanceof ExternalObject) {
-			frame.getStack().push(ReferenceSlot.createNewInstance(heap.getExternalObject()));
-			pc.advance();
-			return;
-		}
-
-		// END CAUTION: try to make this also work with external object
-
-		Array array = (Array) heap.getObject(arrayReference);
-
-		if (array == null) {
+		if (arrayReference.isNullReference()) {
 			logger.log(
 					Level.WARNING,
 					"AALOAD on null in "
@@ -609,10 +597,15 @@ public abstract class BaseVisitor extends SimpleVisitor {
 							+ " - stopping evaluation of an unreachable path");
 			pc.invalidate();
 			return;
-			// throw new AssertionError("AALOAD on null in "
-			// +
-			// classContext.getFullyQualifiedMethodName(methodGen.getMethod()));
 		}
+
+		if (heap.getObject(arrayReference) instanceof ExternalObject) {
+			frame.getStack().push(ReferenceSlot.createNewInstance(heap.getExternalObject()));
+			pc.advance();
+			return;
+		}
+
+		Array array = (Array) heap.getObject(arrayReference);
 
 		for (Iterator<HeapObject> iterator = array.getReferredIterator(); iterator.hasNext();) {
 
@@ -627,19 +620,20 @@ public abstract class BaseVisitor extends SimpleVisitor {
 
 			bugs.addAll(analysisResult.getBugs());
 			result.addAll(analysisResult.getResults());
-
-			// ************
-
-			// Frame newFrame = new Frame(frame);
-			// newFrame.getStack().push(
-			// ReferenceSlot.createNewInstance(iterator.next()));
-			// BaseVisitor visitor = getInstructionsAnalysisVisitor(
-			// newFrame, new Heap(heap), alreadyVisitedIfBranch,
-			// instructionHandle.getNext());
-			// instructionHandle.getNext().accept(visitor);
-			// bugs.addAll(visitor.getBugs().getCollection());
-			// result.addAll(visitor.getResult());
 		}
+
+		logger.log(Level.INFO, "special treatment for array without components");
+
+		// final option: component is null
+
+		BaseMethodAnalyzer analyzer = getMethodAnalyzer(methodGen, alreadyVisitedMethods);
+		frame.getStack().push(ReferenceSlot.getNullReference());
+		AnalysisResult analysisResult = analyzer.analyze(pc.getCurrentInstruction().getNext(),
+				frame, heap, alreadyVisitedIfBranch);
+
+		bugs.addAll(analysisResult.getBugs());
+		result.addAll(analysisResult.getResults());
+
 		pc.invalidate();
 	}
 
@@ -655,6 +649,14 @@ public abstract class BaseVisitor extends SimpleVisitor {
 		frame.getStack().pop();
 		// pop array reference
 		ReferenceSlot arrayReference = (ReferenceSlot) frame.getStack().pop();
+
+		if (arrayReference.isNullReference()) {
+			logger.warning("AASTORE on null in "
+					+ classContext.getFullyQualifiedMethodName(methodGen.getMethod())
+					+ " - stopping evaluation of an unreachable path");
+			pc.invalidate();
+			return;
+		}
 
 		detectXAStoreBug(arrayReference, value);
 
@@ -916,7 +918,7 @@ public abstract class BaseVisitor extends SimpleVisitor {
 		// pop object reference
 		ReferenceSlot o = (ReferenceSlot) frame.getStack().pop();
 
-		if (o.getID() == null) {
+		if (o.isNullReference()) {
 			logger.log(
 					Level.WARNING,
 					"GETFIELD on null in "
@@ -997,6 +999,17 @@ public abstract class BaseVisitor extends SimpleVisitor {
 
 		// pop left side of assignment off the stack, too
 		ReferenceSlot oRef = (ReferenceSlot) frame.getStack().pop();
+
+		if (oRef.isNullReference()) {
+			logger.log(
+					Level.WARNING,
+					"PUTFIELD on null in "
+							+ classContext.getFullyQualifiedMethodName(methodGen.getMethod())
+							+ " - stopping evaluation of an unreachable path");
+			pc.invalidate();
+			return;
+		}
+
 		detectPutFieldBug(oRef, vRef);
 		HeapObject o = heap.getObject(oRef);
 		HeapObject v = null;
