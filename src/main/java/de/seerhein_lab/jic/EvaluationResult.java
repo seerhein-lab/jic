@@ -73,4 +73,12 @@ public class EvaluationResult {
 	public Heap getHeap() {
 		return heap;
 	}
+
+	@Override
+	public String toString() {
+		if (kind == Kind.EXCEPTION)
+			return "EvaluationResult[" + kind + "]";
+		return "EvaluationResult[" + kind + ", " + slot + ", " + heap + "]";
+	}
+
 }

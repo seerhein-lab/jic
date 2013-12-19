@@ -188,7 +188,7 @@ public abstract class HeapObject {
 			return "This";
 		if (this.equals(heap.getExternalObject()))
 			return "External";
-		return super.toString();
+		return getClass().getSimpleName() + "@" + Integer.toHexString(hashCode());
 	}
 
 	@Override

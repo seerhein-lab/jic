@@ -149,6 +149,8 @@ public abstract class BaseVisitor extends SimpleVisitor {
 	}
 
 	protected void addBug(Confidence confidence, String message, InstructionHandle instructionHandle) {
+		logger.log(Level.FINE,
+				indentation + "\t" + message + " (" + instructionHandle.getInstruction() + ")");
 		BugInstance bugInstance = Utils.createBug(confidence, message, classContext.getJavaClass());
 
 		bugInstance.addSourceLine(classContext, methodGen.getMethod(), instructionHandle);
@@ -316,6 +318,9 @@ public abstract class BaseVisitor extends SimpleVisitor {
 
 	private AnalysisResult analyzeMethod(QualifiedMethod targetMethod, MethodGen targetMethodGen,
 			Set<QualifiedMethod> alreadyVisitedMethods, Slot firstParam) {
+		if (targetMethod.toString().equals(
+				"org.apache.tomcat.util.bcel.classfile.AnnotationElementValue.<init>"))
+			System.out.println("sdsd");
 
 		Set<QualifiedMethod> nowVisitedMethods = new HashSet<QualifiedMethod>();
 		nowVisitedMethods.addAll(alreadyVisitedMethods);
@@ -351,7 +356,9 @@ public abstract class BaseVisitor extends SimpleVisitor {
 		BaseMethodAnalyzer recursionAnalyzer = new RecursionAnalyzer(classContext, targetMethodGen,
 				alreadyVisitedMethods, depth, cache, methodInvocationDepth + 1);
 
-		return recursionAnalyzer.analyze(new OpStack(frame.getStack()), heap);
+		AnalysisResult result = recursionAnalyzer.analyze(new OpStack(frame.getStack()), heap);
+		logger.log(Level.FINE, indentation + "Recursion results: " + result.getResults());
+		return result;
 	}
 
 	private void handleLatelyBoundMethod(InvokeInstruction obj) {
@@ -393,7 +400,13 @@ public abstract class BaseVisitor extends SimpleVisitor {
 	 */
 	@Override
 	public void visitLoadInstruction(LoadInstruction obj) {
-		logger.log(Level.FINE, indentation + obj.toString(false));
+		logger.log(
+				Level.FINE,
+				indentation
+						+ obj.toString(false)
+						+ (frame.getLocalVars()[obj.getIndex()] instanceof ReferenceSlot ? " ("
+								+ heap.getObject((ReferenceSlot) frame.getLocalVars()[obj
+										.getIndex()]) + ")" : ""));
 		if (frame.getLocalVars()[obj.getIndex()] == null)
 			throw new AssertionError("wrong index for local vars");
 		frame.pushStackByRequiredSlots(frame.getLocalVars()[obj.getIndex()]);
@@ -408,7 +421,14 @@ public abstract class BaseVisitor extends SimpleVisitor {
 	 */
 	@Override
 	public void visitStoreInstruction(StoreInstruction obj) {
-		logger.log(Level.FINE, indentation + obj.toString(false));
+		logger.log(
+				Level.FINE,
+				indentation
+						+ obj.toString(false)
+						+ (frame.getStack().peek() instanceof ReferenceSlot ? " ("
+								+ heap.getObject((ReferenceSlot) frame.getStack().peek()) + ")"
+								: " (" + frame.getStack().peek() + ")"));
+
 		for (int i = 0; i < obj.consumeStack(constantPoolGen); i++) {
 			frame.getLocalVars()[obj.getIndex() + i] = frame.getStack().pop();
 		}
@@ -1020,8 +1040,8 @@ public abstract class BaseVisitor extends SimpleVisitor {
 				((ClassInstance) o).setField(obj.getFieldName(constantPoolGen), v);
 		}
 
-		logger.log(Level.FINEST, indentation + o + "." + obj.getFieldName(constantPoolGen) + " <--"
-				+ ((vRef instanceof ReferenceSlot) ? v : vRef));
+		logger.log(Level.FINEST, indentation + "\t" + o + "." + obj.getFieldName(constantPoolGen)
+				+ " <--" + ((vRef instanceof ReferenceSlot) ? v : vRef));
 
 		pc.advance();
 	}
@@ -1239,10 +1259,11 @@ public abstract class BaseVisitor extends SimpleVisitor {
 	 */
 	@Override
 	public void visitNEW(NEW obj) {
-		logger.log(Level.FINE, indentation + obj.toString(false));
-
 		ClassInstance instance = heap.newClassInstance();
 		ReferenceSlot slot = ReferenceSlot.createNewInstance(instance);
+
+		logger.log(Level.FINE, indentation + obj.toString(false) + " (" + heap.getObject(slot)
+				+ ")");
 
 		frame.getStack().push(slot);
 

@@ -56,7 +56,7 @@ public class ReferenceSlot extends Slot {
 	public String toString() {
 		if (this.isNullReference())
 			return "NullReferenceSlot";
-		return super.toString();
+		return getClass().getSimpleName() + "@" + Integer.toHexString(hashCode());
 	}
 
 	@Override
