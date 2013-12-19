@@ -609,7 +609,6 @@ public abstract class BaseVisitor extends SimpleVisitor {
 
 		for (Iterator<HeapObject> iterator = array.getReferredIterator(); iterator.hasNext();) {
 
-			// ************
 			BaseMethodAnalyzer analyzer = getMethodAnalyzer(methodGen, alreadyVisitedMethods);
 
 			Frame newFrame = new Frame(frame);
@@ -621,8 +620,6 @@ public abstract class BaseVisitor extends SimpleVisitor {
 			bugs.addAll(analysisResult.getBugs());
 			result.addAll(analysisResult.getResults());
 		}
-
-		logger.log(Level.INFO, "special treatment for array without components");
 
 		// final option: component is null
 
@@ -642,8 +639,7 @@ public abstract class BaseVisitor extends SimpleVisitor {
 		logger.log(Level.FINE, indentation + obj.toString(false));
 
 		// pop value
-		ReferenceSlot value = (ReferenceSlot) frame.popStackByRequiredSlots();
-		HeapObject component = heap.getObject(value);
+		ReferenceSlot valueRef = (ReferenceSlot) frame.popStackByRequiredSlots();
 
 		// pop array index
 		frame.getStack().pop();
@@ -658,14 +654,16 @@ public abstract class BaseVisitor extends SimpleVisitor {
 			return;
 		}
 
-		detectXAStoreBug(arrayReference, value);
+		detectXAStoreBug(arrayReference, valueRef);
 
-		HeapObject array = heap.getObject(arrayReference);
+		if (!valueRef.isNullReference()) {
+			HeapObject array = heap.getObject(arrayReference);
 
-		if (array instanceof ExternalObject)
-			heap.publish(component);
-		else
-			((Array) array).addComponent(component);
+			if (array instanceof ExternalObject)
+				heap.publish(heap.getObject(valueRef));
+			else
+				((Array) array).addComponent(heap.getObject(valueRef));
+		}
 
 		pc.advance();
 	}
@@ -680,6 +678,11 @@ public abstract class BaseVisitor extends SimpleVisitor {
 	public void visitATHROW(ATHROW obj) {
 		logger.log(Level.FINE, indentation + obj.toString(false));
 		ReferenceSlot exception = (ReferenceSlot) frame.getStack().pop();
+
+		if (exception.isNullReference()) {
+			exception = ReferenceSlot.createNewInstance(heap.newClassInstance());
+		}
+
 		handleException(exception);
 	}
 
@@ -874,7 +877,6 @@ public abstract class BaseVisitor extends SimpleVisitor {
 			return;
 		}
 
-		// ****************************
 		BaseMethodAnalyzer analyzer = getMethodAnalyzer(methodGen, alreadyVisitedMethods);
 
 		AnalysisResult analysisResult = analyzer.analyze(pc.getCurrentInstruction().getNext(),
@@ -883,23 +885,9 @@ public abstract class BaseVisitor extends SimpleVisitor {
 		bugs.addAll(analysisResult.getBugs());
 		result.addAll(analysisResult.getResults());
 
-		// ****************************
-
-		// BaseVisitor regularCaseVisitor = getInstructionsAnalysisVisitor(
-		// new Frame(frame), new Heap(heap), alreadyVisitedIfBranch,
-		// instructionHandle.getNext());
-		//
-		// regularCaseVisitor.frame.getStack().push(objRef);
-
 		logger.log(Level.FINEST,
 				indentation + "\t" + objRef + " ?= " + obj.getLoadClassType(constantPoolGen));
 
-		// instructionHandle.getNext().accept(regularCaseVisitor);
-		//
-		// bugs.addAll(regularCaseVisitor.getBugs().getCollection());
-		// result.addAll(regularCaseVisitor.getResult());
-
-		// 2nd case: type cast is invalid, throw ClassCastException
 		handleException(ReferenceSlot.createNewInstance(heap.newClassInstance()));
 	}
 
@@ -926,19 +914,22 @@ public abstract class BaseVisitor extends SimpleVisitor {
 							+ " - stopping evaluation of an unreachable path");
 			pc.invalidate();
 			return;
-			// throw new AssertionError("GETFIELD on null");
 		}
 
-		// obj.getSignature() refers to desired field
 		Slot f = Slot.getDefaultSlotInstance(obj.getType(constantPoolGen));
 		if (f instanceof ReferenceSlot) {
 			if (heap.getObject(o) instanceof ExternalObject) {
 				// if left side is external return external
 				f = ReferenceSlot.createNewInstance(heap.getExternalObject());
 			} else {
-				// get the ClassInstance linked to the desired field
-				f = ReferenceSlot.createNewInstance(((ClassInstance) heap.get(o.getID()))
-						.getField(obj.getFieldName(constantPoolGen)));
+				// get the HeapObject linked to the desired field
+				HeapObject referredByF = ((ClassInstance) heap.getObject(o)).getField(obj
+						.getFieldName(constantPoolGen));
+				if (referredByF == null) {
+					f = ReferenceSlot.getNullReference();
+				} else {
+					f = ReferenceSlot.createNewInstance(referredByF);
+				}
 			}
 		}
 		frame.pushStackByRequiredSlots(f);
@@ -967,7 +958,7 @@ public abstract class BaseVisitor extends SimpleVisitor {
 				+ " (");
 
 		Slot f = Slot.getDefaultSlotInstance(obj.getFieldType(constantPoolGen));
-		// if a reference is expected
+
 		if (f instanceof ReferenceSlot) {
 			// static values are always external
 			f = ReferenceSlot.createNewInstance(heap.getExternalObject());
