@@ -81,9 +81,9 @@ public class FieldsNotPublishedVisitor extends BaseVisitor {
 		// ireturn 0xac
 		// lreturn 0xad
 
-		logger.log(Level.FINE, indentation + obj.toString(false));
+		logger.fine(indentation + obj.toString(false));
 		Slot returnType = Slot.getDefaultSlotInstance(obj.getType(constantPoolGen));
-		logger.log(Level.FINEST, indentation + "\t" + returnType);
+		logger.finest( indentation + "\t" + returnType);
 
 		if (returnType instanceof VoidSlot)
 			result.add(new EvaluationResult(Kind.REGULAR, returnType, heap));

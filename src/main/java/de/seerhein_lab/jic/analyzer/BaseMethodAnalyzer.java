@@ -114,7 +114,7 @@ public abstract class BaseMethodAnalyzer {
 
 		BaseVisitor visitor = getInstructionVisitor(frame, heap, pc, alreadyVisitedIfBranch);
 
-		logger.log(Level.FINE, Utils.formatLoggingOutput(this.methodInvocationDepth)
+		logger.fine(Utils.formatLoggingOutput(this.methodInvocationDepth)
 				+ "vvvvvvvvvvvvvvvvvvvvvvvvvv");
 		while (pc.isValid()) {
 			// visitor is expected to
@@ -126,7 +126,7 @@ public abstract class BaseMethodAnalyzer {
 			pc.getCurrentInstruction().accept(visitor);
 		}
 
-		logger.log(Level.FINE, Utils.formatLoggingOutput(this.methodInvocationDepth)
+		logger.fine(Utils.formatLoggingOutput(this.methodInvocationDepth)
 				+ "^^^^^^^^^^^^^^^^^^^^^^^^^^");
 
 		return new AnalysisResult(visitor.getResult(), visitor.getBugs().getCollection());

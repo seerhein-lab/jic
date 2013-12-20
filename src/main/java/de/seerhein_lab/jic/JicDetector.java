@@ -47,10 +47,10 @@ public final class JicDetector implements Detector {
 
 	@Override
 	public void report() {
-		logger.log(Level.INFO, "cache hits: " + BaseVisitor.cacheHits);
-		logger.log(Level.INFO, "cache misses: " + BaseVisitor.cacheMisses);
-		logger.log(Level.INFO, "heaps: " + Heap.count.get());
-		logger.log(Level.INFO, "frames: " + Frame.count.get());
+		logger.info("cache hits: " + BaseVisitor.cacheHits);
+		logger.info("cache misses: " + BaseVisitor.cacheMisses);
+		logger.info("heaps: " + Heap.count.get());
+		logger.info("frames: " + Frame.count.get());
 	}
 
 	// package private for testing purposes

@@ -47,7 +47,7 @@ public class RecursionVisitor extends BaseVisitor {
 
 	@Override
 	protected AnalysisResult handleRecursion(MethodGen targetMethodGen) {
-		logger.log(Level.FINE, indentation + "Branch without break condition: not analyzing again.");
+		logger.fine(indentation + "Branch without break condition: not analyzing again.");
 		return new AnalysisResult();
 	}
 

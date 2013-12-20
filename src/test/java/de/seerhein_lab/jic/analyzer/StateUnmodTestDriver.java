@@ -37,24 +37,24 @@ public class StateUnmodTestDriver {
 
 		ClassAnalyzer classAnalyzer = new ClassAnalyzer(classContextMock, new AnalysisCache());
 		if (analyzeCtorCopy) {
-			logger.log(Level.FINE, "Analyzing CtorCopy");
+			logger.fine("Analyzing CtorCopy");
 			bugs.addAll(classAnalyzer.ctorArgsAreCopied());
 		}
 		if (analyzeFieldsMutate) {
-			logger.log(Level.FINE, "Analyzing FieldsMutate");
+			logger.fine("Analyzing FieldsMutate");
 			bugs.addAll(classAnalyzer.noMutators());
 		}
 		if (analyzeFieldsArePuplished) {
-			logger.log(Level.FINE, "Analyzing FieldsNotPublished");
+			logger.fine("Analyzing FieldsNotPublished");
 			bugs.addAll(classAnalyzer.fieldsAreNotPublished());
 		}
 
-		logger.log(Level.SEVERE, "bugs: ");
+		logger.severe("bugs: ");
 		for (BugInstance bug : bugs) {
-			logger.log(Level.SEVERE, " " + bug.getType() + " (" + bug.getPriorityString() + ")");
+			logger.severe(" " + bug.getType() + " (" + bug.getPriorityString() + ")");
 		}
 
-		logger.log(Level.SEVERE, "end bugs");
+		logger.severe("end bugs");
 
 	}
 }

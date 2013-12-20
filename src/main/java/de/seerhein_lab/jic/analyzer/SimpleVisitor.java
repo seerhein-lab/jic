@@ -111,7 +111,7 @@ public class SimpleVisitor extends EmptyVisitor {
 	// handle section
 
 	protected void handleSimpleInstruction(Instruction obj, Slot slot) {
-		logger.log(Level.FINE, indentation + obj.toString(false));
+		logger.fine(indentation + obj.toString(false));
 		StringBuilder log = new StringBuilder();
 		log.append("\t" + "(");
 
@@ -131,7 +131,7 @@ public class SimpleVisitor extends EmptyVisitor {
 		}
 
 		log.append(")");
-		logger.log(Level.FINEST, indentation + log);
+		logger.finest( indentation + log);
 
 		pc.advance();
 
