@@ -24,41 +24,6 @@ public final class ExternalObject extends HeapObject {
 	}
 
 	@Override
-	public Iterator<HeapObject> getReferredIterator() {
-		return new Iterator<HeapObject>() {
-			Iterator<UUID> idIterator = refers.iterator();
-
-			UUID lookAhead;
-			{
-				lookAhead();
-			}
-
-			private void lookAhead() {
-				lookAhead = null;
-				while (lookAhead == null && idIterator.hasNext()) {
-					lookAhead = idIterator.next();
-				}
-			}
-
-			@Override
-			public boolean hasNext() {
-				return lookAhead != null;
-			}
-
-			public HeapObject next() {
-				HeapObject result = heap.get(lookAhead);
-				lookAhead();
-				return result;
-			}
-
-			@Override
-			public void remove() {
-				throw new UnsupportedOperationException();
-			}
-		};
-	}
-
-	@Override
 	ExternalObject copy(Heap heap) {
 		return new ExternalObject(this, heap);
 	}
@@ -71,6 +36,46 @@ public final class ExternalObject extends HeapObject {
 	@Override
 	protected HeapObject deepCopy(Heap heap, Map<HeapObject, HeapObject> visited) {
 		return heap.getExternalObject();
+	}
+
+	@Override
+	public Iterable<HeapObject> getReferredObjects() {
+		return new Iterable<HeapObject>() {
+			@Override
+			public Iterator<HeapObject> iterator() {
+				return new Iterator<HeapObject>() {
+					Iterator<UUID> idIterator = refers.iterator();
+					UUID lookAhead;
+					{
+						lookAhead();
+					}
+
+					private void lookAhead() {
+						lookAhead = null;
+						while (lookAhead == null && idIterator.hasNext()) {
+							lookAhead = idIterator.next();
+						}
+					}
+
+					@Override
+					public boolean hasNext() {
+						return lookAhead != null;
+					}
+
+					public HeapObject next() {
+						HeapObject result = heap.get(lookAhead);
+						lookAhead();
+						return result;
+					}
+
+					@Override
+					public void remove() {
+						throw new UnsupportedOperationException();
+					}
+				};
+			}
+
+		};
 	}
 
 	@Override

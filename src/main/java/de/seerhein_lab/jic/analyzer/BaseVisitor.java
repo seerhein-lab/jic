@@ -620,13 +620,13 @@ public abstract class BaseVisitor extends SimpleVisitor {
 
 		Array array = (Array) heap.getObject(arrayReference);
 
-		for (Iterator<HeapObject> iterator = array.getReferredIterator(); iterator.hasNext();) {
+		for (HeapObject referredObject : array.getReferredObjects()) {
 
 			BaseMethodAnalyzer analyzer = getMethodAnalyzer(methodGen, alreadyVisitedMethods,
 					methodInvocationDepth);
 
 			Frame newFrame = new Frame(frame);
-			newFrame.getStack().push(ReferenceSlot.createNewInstance(iterator.next()));
+			newFrame.getStack().push(ReferenceSlot.createNewInstance(referredObject));
 
 			AnalysisResult analysisResult = analyzer.analyze(pc.getCurrentInstruction().getNext(),
 					newFrame, new Heap(heap), alreadyVisitedIfBranch);

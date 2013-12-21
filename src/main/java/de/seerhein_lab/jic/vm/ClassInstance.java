@@ -97,38 +97,44 @@ public final class ClassInstance extends HeapObject {
 	 * Note that the iterator returned by this method skips references to null,
 	 * i.e. it returns only valid objects.
 	 */
+
 	@Override
-	public Iterator<HeapObject> getReferredIterator() {
-		return new Iterator<HeapObject>() {
-			Iterator<UUID> idIterator = refers.values().iterator();
-			UUID lookAhead;
-			{
-				lookAhead();
-			}
-
-			private void lookAhead() {
-				lookAhead = null;
-				while (lookAhead == null && idIterator.hasNext()) {
-					lookAhead = idIterator.next();
-				}
-			}
-
+	public Iterable<HeapObject> getReferredObjects() {
+		return new Iterable<HeapObject>() {
 			@Override
-			public boolean hasNext() {
-				return lookAhead != null;
+			public Iterator<HeapObject> iterator() {
+				return new Iterator<HeapObject>() {
+					Iterator<UUID> idIterator = refers.values().iterator();
+					UUID lookAhead;
+					{
+						lookAhead();
+					}
+
+					private void lookAhead() {
+						lookAhead = null;
+						while (lookAhead == null && idIterator.hasNext()) {
+							lookAhead = idIterator.next();
+						}
+					}
+
+					@Override
+					public boolean hasNext() {
+						return lookAhead != null;
+					}
+
+					public HeapObject next() {
+						HeapObject result = heap.get(lookAhead);
+						lookAhead();
+						return result;
+					}
+
+					@Override
+					public void remove() {
+						throw new UnsupportedOperationException();
+					}
+				};
 			}
 
-			@Override
-			public HeapObject next() {
-				HeapObject result = heap.get(lookAhead);
-				lookAhead();
-				return result;
-			}
-
-			@Override
-			public void remove() {
-				throw new UnsupportedOperationException();
-			}
 		};
 	}
 

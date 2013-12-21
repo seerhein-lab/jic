@@ -2,7 +2,6 @@ package de.seerhein_lab.jic.vm;
 
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Set;
@@ -122,16 +121,14 @@ public class Heap {
 
 		HeapObject external = objects.get(externalID);
 
-		for (Iterator<HeapObject> iterator = obj.getReferringIterator(); iterator.hasNext();) {
-			HeapObject referringObject = iterator.next();
+		for (HeapObject referringObject : obj.getReferringObjects()) {
 			if (!referringObject.equals(external)) {
 				referringObject.replaceAllOccurrencesOfReferredObject(obj, external);
 				external.addReferringObject(referringObject);
 			}
 		}
 
-		for (Iterator<HeapObject> iterator = obj.getReferredIterator(); iterator.hasNext();) {
-			HeapObject referred = iterator.next();
+		for (HeapObject referred : obj.getReferredObjects()) {
 			if (!referred.equals(external))
 				publish(referred);
 		}

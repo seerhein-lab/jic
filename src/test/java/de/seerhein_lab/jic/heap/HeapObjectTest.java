@@ -52,12 +52,11 @@ public class HeapObjectTest {
 		HeapObject copyA = a.deepCopy(new Heap());
 
 		Iterator<HeapObject> referredIterator;
-
-		referredIterator = copyA.getReferredIterator();
+		referredIterator = copyA.getReferredObjects().iterator();
 		assertTrue(referredIterator.hasNext());
 		HeapObject copyB = referredIterator.next();
 
-		referredIterator = copyB.getReferredIterator();
+		referredIterator = copyB.getReferredObjects().iterator();
 		assertTrue(referredIterator.hasNext());
 		HeapObject copyC = referredIterator.next();
 
@@ -66,25 +65,25 @@ public class HeapObjectTest {
 
 		assertFalse(referredIterator.hasNext());
 
-		referredIterator = copyC.getReferredIterator();
+		referredIterator = copyC.getReferredObjects().iterator();
 		assertTrue(referredIterator.hasNext());
 		HeapObject copyE = referredIterator.next();
 
 		assertFalse(referredIterator.hasNext());
 
-		referredIterator = copyD.getReferredIterator();
+		referredIterator = copyD.getReferredObjects().iterator();
 		assertTrue(referredIterator.hasNext());
 		assertTrue(referredIterator.next().equals(copyE));
 
 		assertFalse(referredIterator.hasNext());
 
-		referredIterator = copyE.getReferredIterator();
+		referredIterator = copyE.getReferredObjects().iterator();
 		assertTrue(referredIterator.hasNext());
 		HeapObject copyF = referredIterator.next();
 
 		assertFalse(referredIterator.hasNext());
 
-		referredIterator = copyF.getReferredIterator();
+		referredIterator = copyF.getReferredObjects().iterator();
 		assertTrue(referredIterator.hasNext());
 		assertTrue(referredIterator.next().equals(copyD));
 
@@ -197,7 +196,7 @@ public class HeapObjectTest {
 
 	public void checkReferredIterator(HashSet<HeapObject> referredObjects) {
 
-		Iterator<HeapObject> referredIterator = a.getReferredIterator();
+		Iterator<HeapObject> referredIterator = a.getReferredObjects().iterator();
 
 		while (referredIterator.hasNext()) {
 			assertTrue(referredObjects.contains(referredIterator.next()));

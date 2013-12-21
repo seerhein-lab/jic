@@ -11,9 +11,7 @@ import java.util.UUID;
 
 /**
  * Class representing a heapObject. A HeapObject has an Id, a reference to the
- * heap where its stored and a set of referring objects. This class should only
- * be instantiated for "the external" object, for other cases use Array or
- * ClassInstance.
+ * heap where its stored and a set of referring objects.
  */
 public abstract class HeapObject {
 	private final UUID id;
@@ -67,7 +65,7 @@ public abstract class HeapObject {
 	 *            Obj which refers this.
 	 */
 	final void addReferringObject(HeapObject obj) {
-		referredBy.add(obj.getId());
+		referredBy.add(obj.id);
 	}
 
 	final void removeReferringObj(HeapObject obj) {
@@ -77,25 +75,30 @@ public abstract class HeapObject {
 	public abstract void replaceAllOccurrencesOfReferredObject(HeapObject oldObject,
 			HeapObject newObject);
 
-	public abstract Iterator<HeapObject> getReferredIterator();
+	public abstract Iterable<HeapObject> getReferredObjects();
 
-	public final Iterator<HeapObject> getReferringIterator() {
-		return new Iterator<HeapObject>() {
-			Iterator<UUID> idIterator = referredBy.iterator();
-
+	public final Iterable<HeapObject> getReferringObjects() {
+		return new Iterable<HeapObject>() {
 			@Override
-			public boolean hasNext() {
-				return idIterator.hasNext();
-			}
+			public Iterator<HeapObject> iterator() {
+				return new Iterator<HeapObject>() {
+					Iterator<UUID> idIterator = referredBy.iterator();
 
-			@Override
-			public HeapObject next() {
-				return heap.get(idIterator.next());
-			}
+					@Override
+					public boolean hasNext() {
+						return idIterator.hasNext();
+					}
 
-			@Override
-			public void remove() {
-				idIterator.remove();
+					@Override
+					public HeapObject next() {
+						return heap.get(idIterator.next());
+					}
+
+					@Override
+					public void remove() {
+						idIterator.remove();
+					}
+				};
 			}
 		};
 	}
@@ -113,9 +116,8 @@ public abstract class HeapObject {
 		while (!queue.isEmpty()) {
 			HeapObject obj = queue.poll();
 
-			for (Iterator<HeapObject> it = (direction == Direction.FORTH) ? obj
-					.getReferredIterator() : obj.getReferringIterator(); it.hasNext();) {
-				HeapObject next = it.next();
+			for (HeapObject next : (direction == Direction.FORTH) ? obj.getReferredObjects() : obj
+					.getReferringObjects()) {
 
 				if (next.equals(target))
 					return true;
@@ -139,19 +141,19 @@ public abstract class HeapObject {
 		Set<HeapObject> closure = new HashSet<HeapObject>();
 		Queue<HeapObject> queue = new ArrayDeque<HeapObject>();
 
-		for (Iterator<HeapObject> it = (direction == Direction.FORTH) ? getReferredIterator()
-				: getReferringIterator(); it.hasNext();) {
-			queue.add(it.next());
+		for (HeapObject next : (direction == Direction.FORTH) ? getReferredObjects()
+				: getReferringObjects()) {
+			queue.add(next);
 		}
 
 		while (!queue.isEmpty()) {
 			HeapObject obj = queue.poll();
 
-			for (Iterator<HeapObject> it = (direction == Direction.FORTH) ? obj
-					.getReferredIterator() : obj.getReferringIterator(); it.hasNext();) {
-				HeapObject referring = it.next();
-				if (!queue.contains(referring) && !closure.contains(referring))
-					queue.add(referring);
+			for (HeapObject next : (direction == Direction.FORTH) ? obj.getReferredObjects() : obj
+					.getReferringObjects()) {
+
+				if (!queue.contains(next) && !closure.contains(next))
+					queue.add(next);
 			}
 			closure.add(obj);
 		}
