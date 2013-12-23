@@ -396,11 +396,12 @@ public abstract class BaseVisitor extends SimpleVisitor {
 	 */
 	@Override
 	public void visitLoadInstruction(LoadInstruction obj) {
-		logger.fine(indentation
-				+ obj.toString(false)
-				+ (frame.getLocalVars()[obj.getIndex()] instanceof ReferenceSlot ? " ("
-						+ heap.getObject((ReferenceSlot) frame.getLocalVars()[obj.getIndex()])
-						+ ")" : ""));
+		logger.fine(indentation + obj.toString(false));
+		// + (frame.getLocalVars()[obj.getIndex()] instanceof ReferenceSlot ?
+		// " ("
+		// + heap.getObject((ReferenceSlot)
+		// frame.getLocalVars()[obj.getIndex()])
+		// + ")" : ""));
 		if (frame.getLocalVars()[obj.getIndex()] == null)
 			throw new AssertionError("wrong index for local vars");
 		frame.pushStackByRequiredSlots(frame.getLocalVars()[obj.getIndex()]);
@@ -415,11 +416,11 @@ public abstract class BaseVisitor extends SimpleVisitor {
 	 */
 	@Override
 	public void visitStoreInstruction(StoreInstruction obj) {
-		logger.fine(indentation
-				+ obj.toString(false)
-				+ (frame.getStack().peek() instanceof ReferenceSlot ? " ("
-						+ heap.getObject((ReferenceSlot) frame.getStack().peek()) + ")" : " ("
-						+ frame.getStack().peek() + ")"));
+		logger.fine(indentation + obj.toString(false));
+		// + (frame.getStack().peek() instanceof ReferenceSlot ? " ("
+		// + heap.getObject((ReferenceSlot) frame.getStack().peek()) + ")" :
+		// " ("
+		// + frame.getStack().peek() + ")"));
 
 		for (int i = 0; i < obj.consumeStack(constantPoolGen); i++) {
 			frame.getLocalVars()[obj.getIndex() + i] = frame.getStack().pop();
