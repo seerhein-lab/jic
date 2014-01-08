@@ -69,7 +69,7 @@ public abstract class HeapObject {
 	}
 
 	final void removeReferringObj(HeapObject obj) {
-		referredBy.remove(obj);
+		referredBy.remove(obj.id);
 	}
 
 	public abstract void replaceAllOccurrencesOfReferredObject(HeapObject oldObject,
