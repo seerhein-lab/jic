@@ -79,9 +79,9 @@ public final class Array extends HeapObject {
 	 * Replace the oldObject by the newObject.
 	 */
 	@Override
-	public void replaceAllOccurrencesOfReferredObject(HeapObject oldObject, HeapObject newObject) {
+	public void replaceAllOccurrencesOfReferredObjectByExternal(HeapObject oldObject) {
 		if (refers.remove(oldObject.getId()))
-			refers.add(newObject.getId());
+			refers.add(heap.getExternalObject().getId());
 	}
 
 	public void addComponent(HeapObject obj) {

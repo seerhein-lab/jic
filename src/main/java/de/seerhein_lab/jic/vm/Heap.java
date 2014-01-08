@@ -123,7 +123,7 @@ public class Heap {
 
 		for (HeapObject referringObject : obj.getReferringObjects()) {
 			if (!referringObject.equals(external)) {
-				referringObject.replaceAllOccurrencesOfReferredObject(obj, external);
+				referringObject.replaceAllOccurrencesOfReferredObjectByExternal(obj);
 				external.addReferringObject(referringObject);
 			}
 		}

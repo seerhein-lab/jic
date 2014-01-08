@@ -1,17 +1,14 @@
 package de.seerhein_lab.jic.vm;
 
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
-import java.util.Set;
-import java.util.UUID;
+import java.util.NoSuchElementException;
 
 public final class ExternalObject extends HeapObject {
-	private final Set<UUID> refers = new HashSet<UUID>();
 
 	public ExternalObject(Heap heap) {
 		super(heap);
-		refers.add(getId());
+		referredBy.add(getId());
 	}
 
 	public ExternalObject(ExternalObject external, Heap heap) {
@@ -19,7 +16,7 @@ public final class ExternalObject extends HeapObject {
 	}
 
 	@Override
-	public void replaceAllOccurrencesOfReferredObject(HeapObject oldObject, HeapObject newObject) {
+	public void replaceAllOccurrencesOfReferredObjectByExternal(HeapObject oldObject) {
 		throw new AssertionError("must not be called.");
 	}
 
@@ -44,28 +41,19 @@ public final class ExternalObject extends HeapObject {
 			@Override
 			public Iterator<HeapObject> iterator() {
 				return new Iterator<HeapObject>() {
-					Iterator<UUID> idIterator = refers.iterator();
-					UUID lookAhead;
-					{
-						lookAhead();
-					}
-
-					private void lookAhead() {
-						lookAhead = null;
-						while (lookAhead == null && idIterator.hasNext()) {
-							lookAhead = idIterator.next();
-						}
-					}
+					boolean hasNext = true;
 
 					@Override
 					public boolean hasNext() {
-						return lookAhead != null;
+						return hasNext;
 					}
 
 					public HeapObject next() {
-						HeapObject result = heap.get(lookAhead);
-						lookAhead();
-						return result;
+						if (hasNext) {
+							hasNext = false;
+							return ExternalObject.this;
+						}
+						throw new NoSuchElementException();
 					}
 
 					@Override
@@ -80,10 +68,7 @@ public final class ExternalObject extends HeapObject {
 
 	@Override
 	public int hashCode() {
-		final int prime = 31;
-		int result = super.hashCode();
-		result = prime * result + ((refers == null) ? 0 : refers.hashCode());
-		return result;
+		return super.hashCode();
 	}
 
 	@Override
@@ -92,10 +77,7 @@ public final class ExternalObject extends HeapObject {
 			return true;
 		if (!super.equals(obj))
 			return false;
-		if (!(obj instanceof ExternalObject))
-			return false;
-		ExternalObject other = (ExternalObject) obj;
-		return refers.equals(other.refers);
+		return (obj instanceof ExternalObject);
 	}
 
 }

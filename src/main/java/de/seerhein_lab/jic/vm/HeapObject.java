@@ -72,8 +72,7 @@ public abstract class HeapObject {
 		referredBy.remove(obj.id);
 	}
 
-	public abstract void replaceAllOccurrencesOfReferredObject(HeapObject oldObject,
-			HeapObject newObject);
+	public abstract void replaceAllOccurrencesOfReferredObjectByExternal(HeapObject oldObject);
 
 	public abstract Iterable<HeapObject> getReferredObjects();
 
@@ -137,20 +136,16 @@ public abstract class HeapObject {
 		return isTransitivelyReachable(sink, Direction.FORTH);
 	}
 
-	private final Set<HeapObject> getClosure(Direction direction) {
+	private final Set<HeapObject> getReferredClosure() {
 		Set<HeapObject> closure = new HashSet<HeapObject>();
 		Queue<HeapObject> queue = new ArrayDeque<HeapObject>();
 
-		for (HeapObject next : (direction == Direction.FORTH) ? getReferredObjects()
-				: getReferringObjects()) {
-			queue.add(next);
-		}
+		queue.add(this);
 
 		while (!queue.isEmpty()) {
 			HeapObject obj = queue.poll();
 
-			for (HeapObject next : (direction == Direction.FORTH) ? obj.getReferredObjects() : obj
-					.getReferringObjects()) {
+			for (HeapObject next : obj.getReferredObjects()) {
 
 				if (!queue.contains(next) && !closure.contains(next))
 					queue.add(next);
@@ -158,14 +153,6 @@ public abstract class HeapObject {
 			closure.add(obj);
 		}
 		return closure;
-	}
-
-	public final Set<HeapObject> getReferringClosure() {
-		return getClosure(Direction.BACK);
-	}
-
-	public final Set<HeapObject> getReferredClosure() {
-		return getClosure(Direction.FORTH);
 	}
 
 	public boolean refersObjectThatIsReferredBy(HeapObject source) {
