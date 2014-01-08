@@ -314,9 +314,6 @@ public abstract class BaseVisitor extends SimpleVisitor {
 
 	private AnalysisResult analyzeMethod(QualifiedMethod targetMethod, MethodGen targetMethodGen,
 			Set<QualifiedMethod> alreadyVisitedMethods, Slot firstParam) {
-		if (targetMethod.toString().equals(
-				"org.apache.tomcat.util.bcel.classfile.AnnotationElementValue.<init>"))
-			System.out.println("sdsd");
 
 		Set<QualifiedMethod> nowVisitedMethods = new HashSet<QualifiedMethod>();
 		nowVisitedMethods.addAll(alreadyVisitedMethods);
