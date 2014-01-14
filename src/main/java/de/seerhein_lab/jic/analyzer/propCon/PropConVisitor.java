@@ -2,6 +2,7 @@ package de.seerhein_lab.jic.analyzer.propCon;
 
 import java.util.Set;
 
+import org.apache.bcel.generic.AnnotationEntryGen;
 import org.apache.bcel.generic.CodeExceptionGen;
 import org.apache.bcel.generic.ConstantPoolGen;
 import org.apache.bcel.generic.InstructionHandle;
@@ -24,6 +25,8 @@ import edu.umd.cs.findbugs.ba.ClassContext;
 
 public class PropConVisitor extends BaseVisitor {
 
+	private final static String IGNORE_ANNOTATION = "Lde/seerhein_lab/jic/IgnoreImmutabilityBug;";
+
 	protected PropConVisitor(ClassContext classContext, MethodGen methodGen, Frame frame,
 			Heap heap, ConstantPoolGen constantPoolGen, PC pc,
 			CodeExceptionGen[] exceptionHandlers, Set<QualifiedMethod> alreadyVisitedMethods,
@@ -38,27 +41,6 @@ public class PropConVisitor extends BaseVisitor {
 		return AnalysisCache.Check.PropCon;
 	}
 
-	// public PropConVisitor(ClassContext classContext, MethodGen methodGen,
-	// Frame frame, Heap heap, ConstantPoolGen constantPoolGen,
-	// PC pc, CodeExceptionGen[] exceptionHandlers,
-	// Set<Pair<Method, Slot[]>> alreadyVisitedMethods, int depth) {
-	// this(classContext, methodGen, frame, heap, constantPoolGen,
-	// pc, exceptionHandlers,
-	// alreadyVisitedMethods, depth, new HashSet<Pair<InstructionHandle,
-	// Boolean>>());
-	// }
-
-	// @Override
-	// protected BaseVisitor getInstructionsAnalysisVisitor(
-	// Frame frame, Heap heap,
-	// Set<Pair<InstructionHandle, Boolean>> alreadyVisitedIfBranch,
-	// InstructionHandle instructionHandle) {
-	// return new PropConVisitor(classContext, methodGen, frame,
-	// heap, constantPoolGen, instructionHandle,
-	// exceptionHandlers, alreadyVisitedMethods, depth,
-	// alreadyVisitedIfBranch);
-	// }
-
 	@Override
 	protected BaseMethodAnalyzer getMethodAnalyzer(MethodGen targetMethodGen,
 			Set<QualifiedMethod> alreadyVisitedMethods, int methodInvocationDepth) {
@@ -72,6 +54,10 @@ public class PropConVisitor extends BaseVisitor {
 
 	@Override
 	protected void detectVirtualMethodBug(ReferenceSlot argument) {
+		for (AnnotationEntryGen annotationEntryGen : methodGen.getAnnotationEntries())
+			if (annotationEntryGen.getAnnotation().getAnnotationType().equals(IGNORE_ANNOTATION))
+				return;
+
 		if (argument.isNullReference())
 			return;
 
@@ -89,6 +75,10 @@ public class PropConVisitor extends BaseVisitor {
 
 	@Override
 	protected void detectXAStoreBug(ReferenceSlot arrayReference, Slot valueToStore) {
+		for (AnnotationEntryGen annotationEntryGen : methodGen.getAnnotationEntries())
+			if (annotationEntryGen.getAnnotation().getAnnotationType().equals(IGNORE_ANNOTATION))
+				return;
+
 		if (!(valueToStore instanceof ReferenceSlot)) {
 			// if the value is not a reference we do not analyze
 			return;
@@ -114,6 +104,10 @@ public class PropConVisitor extends BaseVisitor {
 
 	@Override
 	protected void detectPutFieldBug(ReferenceSlot targetReference, Slot valueToPut) {
+		for (AnnotationEntryGen annotationEntryGen : methodGen.getAnnotationEntries())
+			if (annotationEntryGen.getAnnotation().getAnnotationType().equals(IGNORE_ANNOTATION))
+				return;
+
 		if (!(valueToPut instanceof ReferenceSlot)) {
 			// if the value is not a reference we do not analyze
 			return;
@@ -139,6 +133,10 @@ public class PropConVisitor extends BaseVisitor {
 
 	@Override
 	protected void detectPutStaticBug(ReferenceSlot referenceToPut) {
+		for (AnnotationEntryGen annotationEntryGen : methodGen.getAnnotationEntries())
+			if (annotationEntryGen.getAnnotation().getAnnotationType().equals(IGNORE_ANNOTATION))
+				return;
+
 		if (referenceToPut.isNullReference())
 			return;
 
