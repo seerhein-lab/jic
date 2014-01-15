@@ -66,7 +66,6 @@ import de.seerhein_lab.jic.vm.ExternalObject;
 import de.seerhein_lab.jic.vm.Frame;
 import de.seerhein_lab.jic.vm.Heap;
 import de.seerhein_lab.jic.vm.HeapObject;
-import de.seerhein_lab.jic.vm.OpStack;
 import de.seerhein_lab.jic.vm.PC;
 import edu.umd.cs.findbugs.BugCollection;
 import edu.umd.cs.findbugs.BugInstance;
@@ -349,7 +348,7 @@ public abstract class BaseVisitor extends SimpleVisitor {
 		BaseMethodAnalyzer recursionAnalyzer = new RecursionAnalyzer(classContext, targetMethodGen,
 				alreadyVisitedMethods, depth, cache, methodInvocationDepth + 1);
 
-		AnalysisResult result = recursionAnalyzer.analyze(new OpStack(frame.getStack()), heap);
+		AnalysisResult result = recursionAnalyzer.analyze(frame.getStack(), heap);
 		logger.fine(indentation + "Recursion results: " + result.getResults());
 		return result;
 	}

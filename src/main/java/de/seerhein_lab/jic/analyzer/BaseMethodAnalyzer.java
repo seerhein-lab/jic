@@ -2,7 +2,6 @@ package de.seerhein_lab.jic.analyzer;
 
 import java.util.HashSet;
 import java.util.Set;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import net.jcip.annotations.ThreadSafe;
