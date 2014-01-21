@@ -54,9 +54,8 @@ public class PropConVisitor extends BaseVisitor {
 
 	@Override
 	protected void detectVirtualMethodBug(ReferenceSlot argument) {
-		for (AnnotationEntryGen annotationEntryGen : methodGen.getAnnotationEntries())
-			if (annotationEntryGen.getAnnotation().getAnnotationType().equals(IGNORE_ANNOTATION))
-				return;
+		if (hasIgnoreAnnotation())
+			return;
 
 		if (argument.isNullReference())
 			return;
@@ -75,9 +74,8 @@ public class PropConVisitor extends BaseVisitor {
 
 	@Override
 	protected void detectXAStoreBug(ReferenceSlot arrayReference, Slot valueToStore) {
-		for (AnnotationEntryGen annotationEntryGen : methodGen.getAnnotationEntries())
-			if (annotationEntryGen.getAnnotation().getAnnotationType().equals(IGNORE_ANNOTATION))
-				return;
+		if (hasIgnoreAnnotation())
+			return;
 
 		if (!(valueToStore instanceof ReferenceSlot)) {
 			// if the value is not a reference we do not analyze
@@ -104,9 +102,8 @@ public class PropConVisitor extends BaseVisitor {
 
 	@Override
 	protected void detectPutFieldBug(ReferenceSlot targetReference, Slot valueToPut) {
-		for (AnnotationEntryGen annotationEntryGen : methodGen.getAnnotationEntries())
-			if (annotationEntryGen.getAnnotation().getAnnotationType().equals(IGNORE_ANNOTATION))
-				return;
+		if (hasIgnoreAnnotation())
+			return;
 
 		if (!(valueToPut instanceof ReferenceSlot)) {
 			// if the value is not a reference we do not analyze
@@ -133,9 +130,8 @@ public class PropConVisitor extends BaseVisitor {
 
 	@Override
 	protected void detectPutStaticBug(ReferenceSlot referenceToPut) {
-		for (AnnotationEntryGen annotationEntryGen : methodGen.getAnnotationEntries())
-			if (annotationEntryGen.getAnnotation().getAnnotationType().equals(IGNORE_ANNOTATION))
-				return;
+		if (hasIgnoreAnnotation())
+			return;
 
 		if (referenceToPut.isNullReference())
 			return;
@@ -149,5 +145,18 @@ public class PropConVisitor extends BaseVisitor {
 					"a reference containing 'this' is assigned to a static field and 'this' escapes",
 					pc.getCurrentInstruction());
 		}
+	}
+
+	private boolean hasIgnoreAnnotation() {
+		try {
+			for (AnnotationEntryGen annotationEntryGen : methodGen.getAnnotationEntries())
+				if (annotationEntryGen.getAnnotation().getAnnotationType()
+						.equals(IGNORE_ANNOTATION))
+					return true;
+		} catch (NullPointerException e) {
+			logger.warning(indentation + "NullPointerException in handling Annotations: "
+					+ "Assume no Annotations");
+		}
+		return false;
 	}
 }
