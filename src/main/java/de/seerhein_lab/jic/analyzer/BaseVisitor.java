@@ -157,7 +157,7 @@ public abstract class BaseVisitor extends SimpleVisitor {
 
 	// handle section
 
-	protected void handleException(ReferenceSlot exception) {
+	protected void handleException(ReferenceSlot exception, Heap heap) {
 		frame.getStack().clear();
 		frame.getStack().push(exception);
 
@@ -261,7 +261,7 @@ public abstract class BaseVisitor extends SimpleVisitor {
 			} else {
 				Frame savedFrame = new Frame(frame);
 				InstructionHandle currentInstruction = pc.getCurrentInstruction();
-				handleException((ReferenceSlot) calleeResult.getSlot());
+				handleException((ReferenceSlot) calleeResult.getSlot(), calleeResult.getHeap());
 				pc.setInstruction(currentInstruction);
 				frame = savedFrame;
 			}
@@ -695,7 +695,7 @@ public abstract class BaseVisitor extends SimpleVisitor {
 			exception = ReferenceSlot.createNewInstance(heap.newClassInstance());
 		}
 
-		handleException(exception);
+		handleException(exception, heap);
 	}
 
 	/**
@@ -899,7 +899,7 @@ public abstract class BaseVisitor extends SimpleVisitor {
 
 		logger.finest(indentation + "\t" + objRef + " ?= " + obj.getLoadClassType(constantPoolGen));
 
-		handleException(ReferenceSlot.createNewInstance(heap.newClassInstance()));
+		handleException(ReferenceSlot.createNewInstance(heap.newClassInstance()), heap);
 	}
 
 	/**
