@@ -14,6 +14,7 @@ import de.seerhein_lab.jic.analyzer.ClassAnalyzer;
 import de.seerhein_lab.jic.cache.AnalysisCache;
 import de.seerhein_lab.jic.vm.Frame;
 import de.seerhein_lab.jic.vm.Heap;
+import de.seerhein_lab.jic.vm.HeapObject;
 import edu.umd.cs.findbugs.BugInstance;
 import edu.umd.cs.findbugs.BugReporter;
 import edu.umd.cs.findbugs.Detector;
@@ -63,6 +64,7 @@ public final class JicDetector implements Detector {
 
 	@Override
 	public void visitClassContext(ClassContext classContext) {
+		HeapObject.objects = 0;
 		JavaClass clazz = classContext.getJavaClass();
 		boolean supposedlyImmutable = supposedlyImmutable(clazz);
 

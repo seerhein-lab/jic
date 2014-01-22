@@ -14,6 +14,9 @@ import java.util.UUID;
  * heap where its stored and a set of referring objects.
  */
 public abstract class HeapObject {
+	// private final static long HEAP_EMERCENCY_BREAK = 3000000L;
+	private final static long HEAP_EMERCENCY_BREAK = 500000L;
+	public static long objects = 0;
 	private final UUID id;
 	protected final Set<UUID> referredBy = new HashSet<UUID>();
 	protected final Heap heap;
@@ -27,6 +30,11 @@ public abstract class HeapObject {
 	protected HeapObject(Heap heap) {
 		if (heap == null)
 			throw new NullPointerException("heap must not be null");
+
+		objects++;
+		if (objects > HEAP_EMERCENCY_BREAK)
+			throw new OutOfMemoryError(
+					"emergency brake to avoid out of memory error (heap exceeded)");
 
 		id = UUID.randomUUID();
 		this.heap = heap;
@@ -43,6 +51,11 @@ public abstract class HeapObject {
 	protected HeapObject(HeapObject original, Heap heap) {
 		if (original == null || heap == null)
 			throw new NullPointerException("arguments must not be null");
+
+		objects++;
+		if (objects > HEAP_EMERCENCY_BREAK)
+			throw new OutOfMemoryError(
+					"emergency brake to avoid out of memory error (heap exceeded)");
 
 		id = original.id;
 		referredBy.addAll(original.referredBy);
