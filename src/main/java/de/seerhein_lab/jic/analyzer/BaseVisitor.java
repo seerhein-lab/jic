@@ -202,8 +202,7 @@ public abstract class BaseVisitor extends SimpleVisitor {
 
 			if (resultValue.getKind().equals(EvaluationResult.Kind.EXCEPTION)) {
 				targetResults.add(new EvaluationResult(resultValue.getKind(), ReferenceSlot
-						.createNewInstance((ClassInstance) resultObject.deepCopy(resultHeap)),
-						resultHeap));
+						.createNewInstance(resultHeap.newClassInstance()), resultHeap));
 			} else {
 				((ClassInstance) resultHeap.getObject((ReferenceSlot) topOfStack))
 						.copyReferredObjectsTo(resultObject, resultHeap);
@@ -219,7 +218,8 @@ public abstract class BaseVisitor extends SimpleVisitor {
 		logger.fine(indentation + "Put " + targetMethodGen.getClassName()
 				+ targetMethodGen.getMethod().getName() + " in the Cache");
 
-		AnalysisResults result = new AnalysisResults(methodResult.getResults(), objectUnderConstruction);
+		AnalysisResults result = new AnalysisResults(methodResult.getResults(),
+				objectUnderConstruction);
 		result.setBugs(getCheck(), methodResult.getBugs());
 
 		cache.add(method, result, getCheck());
@@ -302,7 +302,8 @@ public abstract class BaseVisitor extends SimpleVisitor {
 				for (Type argument : targetMethod.getMethod().getArgumentTypes())
 					stackOffset += argument.getSize();
 
-				Slot objectUnderConstruction = frame.getStack().get(frame.getStack().size() - 1 - stackOffset);
+				Slot objectUnderConstruction = frame.getStack().get(
+						frame.getStack().size() - 1 - stackOffset);
 				methodResult = analyzeMethod(targetMethod, targetMethodGen, alreadyVisitedMethods,
 						objectUnderConstruction);
 
