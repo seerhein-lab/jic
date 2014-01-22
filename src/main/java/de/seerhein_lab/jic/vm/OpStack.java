@@ -31,6 +31,10 @@ public final class OpStack {
 		return stack.peek();
 	}
 
+	public Slot get(int index) {
+		return stack.get(index);
+	}
+
 	public void clear() {
 		stack.clear();
 	}

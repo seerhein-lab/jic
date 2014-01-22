@@ -5,6 +5,9 @@ import static org.apache.bcel.Constants.CONSTRUCTOR_NAME;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
+import org.apache.bcel.generic.BasicType;
+import org.apache.bcel.generic.Type;
+
 import de.seerhein_lab.jic.analyzer.QualifiedMethod;
 
 public final class AnalysisCache {
@@ -37,7 +40,14 @@ public final class AnalysisCache {
 	}
 
 	public boolean isCacheable(QualifiedMethod targetMethod) {
-		return targetMethod.getMethod().getName().equals(CONSTRUCTOR_NAME)
-				&& targetMethod.getMethod().getArgumentTypes().length == 0;
+		if (!targetMethod.getMethod().getName().equals(CONSTRUCTOR_NAME))
+			return false;
+
+		for (Type typ : targetMethod.getMethod().getArgumentTypes()) {
+			if (!(typ instanceof BasicType)) {
+				return false;
+			}
+		}
+		return true;
 	}
 }

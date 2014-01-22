@@ -44,6 +44,7 @@ import org.apache.bcel.generic.ReturnInstruction;
 import org.apache.bcel.generic.Select;
 import org.apache.bcel.generic.StackInstruction;
 import org.apache.bcel.generic.StoreInstruction;
+import org.apache.bcel.generic.Type;
 
 import de.seerhein_lab.jic.AnalysisResult;
 import de.seerhein_lab.jic.EvaluationResult;
@@ -187,6 +188,11 @@ public abstract class BaseVisitor extends SimpleVisitor {
 		Set<EvaluationResult> targetResults;
 		targetResults = new HashSet<EvaluationResult>();
 
+		for (Type argument : method.getMethod().getArgumentTypes()) {
+			for (int i = 0; i < argument.getSize(); i++)
+				frame.getStack().pop();
+		}
+
 		ReferenceSlot topOfStack = (ReferenceSlot) frame.getStack().pop();
 
 		for (EvaluationResult resultValue : cache.get(method).getResults()) {
@@ -209,11 +215,11 @@ public abstract class BaseVisitor extends SimpleVisitor {
 	}
 
 	private void cacheResults(MethodGen targetMethodGen, QualifiedMethod method,
-			AnalysisResult methodResult, Slot firstParam) {
+			AnalysisResult methodResult, Slot objectUnderConstruction) {
 		logger.fine(indentation + "Put " + targetMethodGen.getClassName()
 				+ targetMethodGen.getMethod().getName() + " in the Cache");
 
-		AnalysisResults result = new AnalysisResults(methodResult.getResults(), firstParam);
+		AnalysisResults result = new AnalysisResults(methodResult.getResults(), objectUnderConstruction);
 		result.setBugs(getCheck(), methodResult.getBugs());
 
 		cache.add(method, result, getCheck());
@@ -292,11 +298,15 @@ public abstract class BaseVisitor extends SimpleVisitor {
 			} else {
 				cacheMisses++;
 
-				Slot firstParam = frame.getStack().size() == 0 ? null : frame.getStack().peek();
-				methodResult = analyzeMethod(targetMethod, targetMethodGen, alreadyVisitedMethods,
-						firstParam);
+				int stackOffset = 0;
+				for (Type argument : targetMethod.getMethod().getArgumentTypes())
+					stackOffset += argument.getSize();
 
-				cacheResults(targetMethodGen, targetMethod, methodResult, firstParam);
+				Slot objectUnderConstruction = frame.getStack().get(frame.getStack().size() - 1 - stackOffset);
+				methodResult = analyzeMethod(targetMethod, targetMethodGen, alreadyVisitedMethods,
+						objectUnderConstruction);
+
+				cacheResults(targetMethodGen, targetMethod, methodResult, objectUnderConstruction);
 			}
 		} else {
 			cacheMisses++;
