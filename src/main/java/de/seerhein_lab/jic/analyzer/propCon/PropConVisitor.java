@@ -60,7 +60,7 @@ public class PropConVisitor extends BaseVisitor {
 		if (argument.isNullReference())
 			return;
 
-		if (argument.getID().equals(heap.getThisInstance().getId())) {
+		if (heap.getObject(argument).equals(heap.getThisInstance())) {
 			// 'this' is passed into a virtual method
 			addBug(Confidence.HIGH, "'this' is passed into a virtual method and escapes",
 					pc.getCurrentInstruction());
@@ -85,8 +85,7 @@ public class PropConVisitor extends BaseVisitor {
 		ReferenceSlot referenceToStore = (ReferenceSlot) valueToStore;
 		if (heap.getObject(arrayReference) instanceof ExternalObject) {
 			// the array is externally known
-			if (referenceToStore.getID() != null
-					&& referenceToStore.getID().equals(heap.getThisInstance().getId())) {
+			if (referenceToStore.getID() != null && heap.getObject(referenceToStore).equals(heap.getThisInstance())) {
 				// this is assigned to the array
 				addBug(Confidence.HIGH, "'this' is assigned to an external array and escapes",
 						pc.getCurrentInstruction());
@@ -112,8 +111,7 @@ public class PropConVisitor extends BaseVisitor {
 		ReferenceSlot referenceToPut = (ReferenceSlot) valueToPut;
 		if (heap.getObject(targetReference) instanceof ExternalObject) {
 			// the left side of the assignment is externally known
-			if (referenceToPut.getID() != null
-					&& referenceToPut.getID().equals(heap.getThisInstance().getId())) {
+			if (referenceToPut.getID() != null && heap.getObject(referenceToPut).equals(heap.getThisInstance())) {
 				// this is on the right side
 				addBug(Confidence.HIGH, "'this' is assigned to an external field and escapes",
 						pc.getCurrentInstruction());
@@ -136,7 +134,7 @@ public class PropConVisitor extends BaseVisitor {
 		if (referenceToPut.isNullReference())
 			return;
 
-		if (referenceToPut.getID().equals(heap.getThisInstance().getId())) {
+		if (heap.getObject(referenceToPut).equals(heap.getThisInstance())) {
 			addBug(Confidence.HIGH, "'this' is assigned to a static field and escapes",
 					pc.getCurrentInstruction());
 		} else if (heap.get(referenceToPut.getID()).transitivelyRefers(heap.getThisInstance())) {

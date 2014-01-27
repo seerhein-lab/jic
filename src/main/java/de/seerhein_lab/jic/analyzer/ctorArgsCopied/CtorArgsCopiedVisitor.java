@@ -121,7 +121,7 @@ public class CtorArgsCopiedVisitor extends BaseVisitor {
 		if (referenceToPut.isNullReference())
 			return;
 
-		if (targetReference.getID().equals(heap.getThisInstance().getId())) {
+		if (heap.getObject(targetReference).equals(heap.getThisInstance())) {
 			// left side is this
 			if (heap.getObject(referenceToPut) instanceof ExternalObject) {
 				// right is external
@@ -156,7 +156,7 @@ public class CtorArgsCopiedVisitor extends BaseVisitor {
 			return;
 
 		// XXX this assigned to a static field?? Only starting class?!?
-		if (referenceToPut.getID().equals(heap.getThisInstance().getId())) {
+		if (heap.getObject(referenceToPut).equals(heap.getThisInstance())) {
 			// this is published
 			addBug(Confidence.HIGH, "'this' is published by assignment to a static field",
 					pc.getCurrentInstruction());
