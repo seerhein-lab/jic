@@ -6,6 +6,7 @@ import static org.junit.Assert.assertNotNull;
 import org.junit.Before;
 import org.junit.Test;
 
+import de.seerhein_lab.jic.slot.ReferenceSlot;
 import de.seerhein_lab.jic.vm.Array;
 import de.seerhein_lab.jic.vm.ClassInstance;
 import de.seerhein_lab.jic.vm.Heap;
@@ -19,6 +20,13 @@ public class HeapTest {
 	private ClassInstance e;
 	private Array f;
 
+	private ReferenceSlot aRef;
+	private ReferenceSlot bRef;
+	private ReferenceSlot cRef;
+	private ReferenceSlot dRef;
+	private ReferenceSlot eRef;
+	private ReferenceSlot fRef;
+
 	public void setUpHeap() {
 		heap = new Heap();
 
@@ -28,6 +36,13 @@ public class HeapTest {
 		d = heap.newClassInstance();
 		e = heap.newClassInstance();
 		f = heap.newArray();
+
+		aRef = ReferenceSlot.createNewInstance(a);
+		bRef = ReferenceSlot.createNewInstance(b);
+		cRef = ReferenceSlot.createNewInstance(c);
+		dRef = ReferenceSlot.createNewInstance(d);
+		eRef = ReferenceSlot.createNewInstance(e);
+		fRef = ReferenceSlot.createNewInstance(f);
 	}
 
 	@Before
@@ -56,36 +71,37 @@ public class HeapTest {
 
 	@Test
 	public void testPublish() {
-		assertEquals(a, heap.get(a.getId()));
-		assertEquals(b, heap.get(b.getId()));
-		assertEquals(c, heap.get(c.getId()));
-		assertEquals(d, heap.get(d.getId()));
-		assertEquals(e, heap.get(e.getId()));
-		assertEquals(f, heap.get(f.getId()));
+		assertEquals(a, heap.getObject(aRef));
+		assertEquals(b, heap.getObject(bRef));
+		assertEquals(c, heap.getObject(cRef));
+		assertEquals(d, heap.getObject(dRef));
+		assertEquals(e, heap.getObject(eRef));
+		assertEquals(f, heap.getObject(fRef));
 
 		heap.publish(b);
 
-		assertEquals(a, heap.get(a.getId()));
-		assertEquals(heap.getExternalObject(), heap.get(b.getId()));
-		assertEquals(heap.getExternalObject(), heap.get(c.getId()));
-		assertEquals(heap.getExternalObject(), heap.get(d.getId()));
-		assertEquals(heap.getExternalObject(), heap.get(e.getId()));
-		assertEquals(heap.getExternalObject(), heap.get(f.getId()));
+		assertEquals(a, heap.getObject(aRef));
+		assertEquals(heap.getExternalObject(), heap.getObject(bRef));
+		assertEquals(heap.getExternalObject(), heap.getObject(cRef));
+		assertEquals(heap.getExternalObject(), heap.getObject(dRef));
+		assertEquals(heap.getExternalObject(), heap.getObject(eRef));
+		assertEquals(heap.getExternalObject(), heap.getObject(fRef));
 	}
 
 	@Test
 	public void testNotPublishThis() {
 		ClassInstance thisInstance = heap.getThisInstance();
 		heap.publish(thisInstance);
-		assertEquals(thisInstance, heap.get(thisInstance.getId()));
+		// assertEquals(thisInstance, heap.get(thisInstance.getId()));
+		assertEquals(thisInstance, heap.getThisInstance());
 	}
 
 	@Test
 	public void testRepublish() {
-		assertEquals(f, heap.get(f.getId()));
-		heap.publish(heap.get(f.getId()));
-		assertEquals(heap.getExternalObject(), heap.get(f.getId()));
-		heap.publish(heap.get(f.getId()));
-		assertEquals(heap.getExternalObject(), heap.get(f.getId()));
+		assertEquals(f, heap.getObject(fRef));
+		heap.publish(f);
+		assertEquals(heap.getExternalObject(), heap.getObject(fRef));
+		heap.publish(f);
+		assertEquals(heap.getExternalObject(), heap.getObject(fRef));
 	}
 }
