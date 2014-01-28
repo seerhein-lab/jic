@@ -197,14 +197,14 @@ public abstract class BaseVisitor extends SimpleVisitor {
 
 		for (EvaluationResult resultValue : cache.get(method).getResults()) {
 			Heap resultHeap = new Heap(heap);
-			HeapObject resultObject = resultValue.getHeap().getObject(
-					(ReferenceSlot) resultValue.getSlot());
+			HeapObject resultObject = ((ReferenceSlot) resultValue.getSlot()).getObject(resultValue
+					.getHeap());
 
 			if (resultValue.getKind().equals(EvaluationResult.Kind.EXCEPTION)) {
 				targetResults.add(new EvaluationResult(resultValue.getKind(), ReferenceSlot
 						.createNewInstance(resultHeap.newClassInstance()), resultHeap));
 			} else {
-				((ClassInstance) resultHeap.getObject((ReferenceSlot) topOfStack))
+				((ClassInstance) ((ReferenceSlot) topOfStack).getObject(resultHeap))
 						.copyReferredObjectsTo(resultObject, resultHeap);
 				targetResults.add(new EvaluationResult(EvaluationResult.Kind.REGULAR, VoidSlot
 						.getInstance(), resultHeap));
@@ -339,7 +339,7 @@ public abstract class BaseVisitor extends SimpleVisitor {
 		if (targetMethod.getMethod().getName().equals(CONSTRUCTOR_NAME)
 				&& targetMethod.getMethod().getArgumentTypes().length == 0
 				// && firstParam instanceof ReferenceSlot
-				&& !heap.getObject(((ReferenceSlot) firstParam)).equals(heap.getThisInstance())) {
+				&& !((ReferenceSlot) firstParam).getObject(heap).equals(heap.getThisInstance())) {
 
 			targetMethodAnalyzer = new EvaluationOnlyAnalyzer(classContext, targetMethodGen,
 					nowVisitedMethods, depth, cache, methodInvocationDepth + 1);
@@ -375,7 +375,7 @@ public abstract class BaseVisitor extends SimpleVisitor {
 				ReferenceSlot reference = (ReferenceSlot) argument;
 				// check for bugs
 				detectVirtualMethodBug(reference);
-				heap.publish(heap.getObject(reference));
+				heap.publish(reference.getObject(heap));
 			}
 		}
 
@@ -620,13 +620,13 @@ public abstract class BaseVisitor extends SimpleVisitor {
 			return;
 		}
 
-		if (heap.getObject(arrayReference) instanceof ExternalObject) {
+		if (arrayReference.getObject(heap) instanceof ExternalObject) {
 			frame.getStack().push(ReferenceSlot.createNewInstance(heap.getExternalObject()));
 			pc.advance();
 			return;
 		}
 
-		Array array = (Array) heap.getObject(arrayReference);
+		Array array = (Array) arrayReference.getObject(heap);
 
 		for (HeapObject referredObject : array.getReferredObjects()) {
 
@@ -680,12 +680,12 @@ public abstract class BaseVisitor extends SimpleVisitor {
 		detectXAStoreBug(arrayReference, valueRef);
 
 		if (!valueRef.isNullReference()) {
-			HeapObject array = heap.getObject(arrayReference);
+			HeapObject array = arrayReference.getObject(heap);
 
 			if (array instanceof ExternalObject)
-				heap.publish(heap.getObject(valueRef));
+				heap.publish(valueRef.getObject(heap));
 			else
-				((Array) array).addComponent(heap.getObject(valueRef));
+				((Array) array).addComponent(valueRef.getObject(heap));
 		}
 
 		pc.advance();
@@ -938,12 +938,12 @@ public abstract class BaseVisitor extends SimpleVisitor {
 
 		Slot f = Slot.getDefaultSlotInstance(obj.getType(constantPoolGen));
 		if (f instanceof ReferenceSlot) {
-			if (heap.getObject(o) instanceof ExternalObject) {
+			if (o.getObject(heap) instanceof ExternalObject) {
 				// if left side is external return external
 				f = ReferenceSlot.createNewInstance(heap.getExternalObject());
 			} else {
 				// get the HeapObject linked to the desired field
-				HeapObject referredByF = ((ClassInstance) heap.getObject(o)).getField(obj
+				HeapObject referredByF = ((ClassInstance) o.getObject(heap)).getField(obj
 						.getFieldName(constantPoolGen));
 				if (referredByF == null) {
 					f = ReferenceSlot.getNullReference();
@@ -954,7 +954,7 @@ public abstract class BaseVisitor extends SimpleVisitor {
 		}
 		frame.pushStackByRequiredSlots(f);
 
-		logger.finest(indentation + "\t" + heap.getObject(o) + "."
+		logger.finest(indentation + "\t" + o.getObject(heap) + "."
 				+ obj.getFieldName(constantPoolGen));
 
 		pc.advance();
@@ -1020,10 +1020,10 @@ public abstract class BaseVisitor extends SimpleVisitor {
 		}
 
 		detectPutFieldBug(oRef, vRef);
-		HeapObject o = heap.getObject(oRef);
+		HeapObject o = oRef.getObject(heap);
 		HeapObject v = null;
 		if (vRef instanceof ReferenceSlot) {
-			v = heap.getObject((ReferenceSlot) vRef);
+			v = ((ReferenceSlot) vRef).getObject(heap);
 
 			if (o instanceof ExternalObject)
 				heap.publish(v);
@@ -1056,7 +1056,7 @@ public abstract class BaseVisitor extends SimpleVisitor {
 		if (v instanceof ReferenceSlot) {
 			detectPutStaticBug((ReferenceSlot) v);
 			// make it external
-			heap.publish(heap.getObject((ReferenceSlot) v));
+			heap.publish(((ReferenceSlot) v).getObject(heap));
 		}
 
 		// write log
@@ -1252,7 +1252,7 @@ public abstract class BaseVisitor extends SimpleVisitor {
 		ClassInstance instance = heap.newClassInstance();
 		ReferenceSlot slot = ReferenceSlot.createNewInstance(instance);
 
-		logger.fine(indentation + obj.toString(false) + " (" + heap.getObject(slot) + ")");
+		logger.fine(indentation + obj.toString(false) + " (" + slot.getObject(heap) + ")");
 
 		frame.getStack().push(slot);
 

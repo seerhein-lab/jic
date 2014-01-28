@@ -20,6 +20,10 @@ public class ReferenceSlot extends Slot {
 		this.objectID = object.getId();
 	}
 
+	public HeapObject getObject(Heap heap) {
+		return heap.get(objectID);
+	}
+
 	public static ReferenceSlot createNewInstance(HeapObject object) {
 		if (object == null)
 			return getNullReference();
@@ -82,4 +86,5 @@ public class ReferenceSlot extends Slot {
 			return false;
 		return true;
 	}
+
 }

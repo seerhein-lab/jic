@@ -97,10 +97,6 @@ public class Heap {
 		return object;
 	}
 
-	public HeapObject getObject(ReferenceSlot reference) {
-		return get(reference.getID());
-	}
-
 	/**
 	 * Publishes an Object. The published Object becomes the "external" Object,
 	 * the references of all referring Objects are updated and all referred

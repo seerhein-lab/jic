@@ -71,21 +71,21 @@ public class HeapTest {
 
 	@Test
 	public void testPublish() {
-		assertEquals(a, heap.getObject(aRef));
-		assertEquals(b, heap.getObject(bRef));
-		assertEquals(c, heap.getObject(cRef));
-		assertEquals(d, heap.getObject(dRef));
-		assertEquals(e, heap.getObject(eRef));
-		assertEquals(f, heap.getObject(fRef));
+		assertEquals(a, aRef.getObject(heap));
+		assertEquals(b, bRef.getObject(heap));
+		assertEquals(c, cRef.getObject(heap));
+		assertEquals(d, dRef.getObject(heap));
+		assertEquals(e, eRef.getObject(heap));
+		assertEquals(f, fRef.getObject(heap));
 
 		heap.publish(b);
 
-		assertEquals(a, heap.getObject(aRef));
-		assertEquals(heap.getExternalObject(), heap.getObject(bRef));
-		assertEquals(heap.getExternalObject(), heap.getObject(cRef));
-		assertEquals(heap.getExternalObject(), heap.getObject(dRef));
-		assertEquals(heap.getExternalObject(), heap.getObject(eRef));
-		assertEquals(heap.getExternalObject(), heap.getObject(fRef));
+		assertEquals(a, aRef.getObject(heap));
+		assertEquals(heap.getExternalObject(), bRef.getObject(heap));
+		assertEquals(heap.getExternalObject(), cRef.getObject(heap));
+		assertEquals(heap.getExternalObject(), dRef.getObject(heap));
+		assertEquals(heap.getExternalObject(), eRef.getObject(heap));
+		assertEquals(heap.getExternalObject(), fRef.getObject(heap));
 	}
 
 	@Test
@@ -98,10 +98,10 @@ public class HeapTest {
 
 	@Test
 	public void testRepublish() {
-		assertEquals(f, heap.getObject(fRef));
+		assertEquals(f, fRef.getObject(heap));
 		heap.publish(f);
-		assertEquals(heap.getExternalObject(), heap.getObject(fRef));
+		assertEquals(heap.getExternalObject(), fRef.getObject(heap));
 		heap.publish(f);
-		assertEquals(heap.getExternalObject(), heap.getObject(fRef));
+		assertEquals(heap.getExternalObject(), fRef.getObject(heap));
 	}
 }

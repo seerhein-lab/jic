@@ -134,7 +134,7 @@ public class FieldsNotPublishedVisitor extends BaseVisitor {
 
 		HeapObject objectToStore = heap.get(referenceToStore.getID());
 		// array is the "external"
-		if (heap.getObject(arrayReference) instanceof ExternalObject) {
+		if (arrayReference.getObject(heap) instanceof ExternalObject) {
 			if (objectToStore.isTransitivelyReferredBy(heap.getThisInstance())) {
 				// a field of this is assigned to an external object
 				addBug(Confidence.HIGH,
@@ -161,7 +161,7 @@ public class FieldsNotPublishedVisitor extends BaseVisitor {
 
 		HeapObject objectToPut = heap.get(referenceToPut.getID());
 		// target is the "external"
-		if (heap.getObject(targetReference) instanceof ExternalObject) {
+		if (targetReference.getObject(heap) instanceof ExternalObject) {
 			if (objectToPut.isTransitivelyReferredBy(heap.getThisInstance())) {
 				// a field of this is assigned to an external object
 				addBug(Confidence.HIGH,

@@ -94,12 +94,12 @@ public class CtorArgsCopiedVisitor extends BaseVisitor {
 
 		if (heap.get(arrayReference.getID()).isTransitivelyReferredBy(heap.getThisInstance())) {
 			// array is referred by this
-			if (heap.getObject(referenceToStore) instanceof ExternalObject) {
+			if (referenceToStore.getObject(heap) instanceof ExternalObject) {
 				// external reference is assigned to an array referred by this
 				addBug(Confidence.HIGH,
 						"an external reference is assigned to an array referred by 'this'",
 						pc.getCurrentInstruction());
-			} else if (heap.getObject(referenceToStore)
+			} else if (referenceToStore.getObject(heap)
 					.transitivelyRefers(heap.getExternalObject())) {
 				// a reference containing an external reference is assigned to
 				// an array referred by this
@@ -121,13 +121,13 @@ public class CtorArgsCopiedVisitor extends BaseVisitor {
 		if (referenceToPut.isNullReference())
 			return;
 
-		if (heap.getObject(targetReference).equals(heap.getThisInstance())) {
+		if (targetReference.getObject(heap).equals(heap.getThisInstance())) {
 			// left side is this
-			if (heap.getObject(referenceToPut) instanceof ExternalObject) {
+			if (referenceToPut.getObject(heap) instanceof ExternalObject) {
 				// right is external
 				addBug(Confidence.HIGH, "an external object is assigned to 'this'",
 						pc.getCurrentInstruction());
-			} else if (heap.getObject(referenceToPut).transitivelyRefers(heap.getExternalObject())) {
+			} else if (referenceToPut.getObject(heap).transitivelyRefers(heap.getExternalObject())) {
 				// right refers external
 				addBug(Confidence.HIGH,
 						"an object containing an external reference is assigned to 'this'",
@@ -136,12 +136,12 @@ public class CtorArgsCopiedVisitor extends BaseVisitor {
 		}
 		if (heap.get(targetReference.getID()).isTransitivelyReferredBy(heap.getThisInstance())) {
 			// left is referred by this
-			if (heap.getObject(referenceToPut) instanceof ExternalObject) {
+			if (referenceToPut.getObject(heap) instanceof ExternalObject) {
 				// right is external
 				addBug(Confidence.HIGH,
 						"an external reference is assigned to an object referred by 'this'",
 						pc.getCurrentInstruction());
-			} else if (heap.getObject(referenceToPut).transitivelyRefers(heap.getExternalObject())) {
+			} else if (referenceToPut.getObject(heap).transitivelyRefers(heap.getExternalObject())) {
 				// right refers external
 				addBug(Confidence.HIGH,
 						"a reference containing an external reference is assigned to an object referred by 'this'",
@@ -156,7 +156,7 @@ public class CtorArgsCopiedVisitor extends BaseVisitor {
 			return;
 
 		// XXX this assigned to a static field?? Only starting class?!?
-		if (heap.getObject(referenceToPut).equals(heap.getThisInstance())) {
+		if (referenceToPut.getObject(heap).equals(heap.getThisInstance())) {
 			// this is published
 			addBug(Confidence.HIGH, "'this' is published by assignment to a static field",
 					pc.getCurrentInstruction());
