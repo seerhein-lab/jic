@@ -5,6 +5,8 @@ import static org.junit.Assert.assertTrue;
 import org.apache.bcel.generic.Type;
 import org.junit.Test;
 
+import de.seerhein_lab.jic.vm.ReferenceSlot;
+
 public class SlotTest {
 
 	@Test

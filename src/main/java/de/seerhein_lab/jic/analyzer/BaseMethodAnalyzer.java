@@ -16,12 +16,12 @@ import de.seerhein_lab.jic.AnalysisResult;
 import de.seerhein_lab.jic.Pair;
 import de.seerhein_lab.jic.Utils;
 import de.seerhein_lab.jic.cache.AnalysisCache;
-import de.seerhein_lab.jic.slot.ReferenceSlot;
 import de.seerhein_lab.jic.slot.Slot;
 import de.seerhein_lab.jic.vm.Frame;
 import de.seerhein_lab.jic.vm.Heap;
 import de.seerhein_lab.jic.vm.OpStack;
 import de.seerhein_lab.jic.vm.PC;
+import de.seerhein_lab.jic.vm.ReferenceSlot;
 import edu.umd.cs.findbugs.ba.ClassContext;
 
 @ThreadSafe

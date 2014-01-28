@@ -5,6 +5,8 @@ import java.util.Map;
 
 import org.apache.bcel.generic.Type;
 
+import de.seerhein_lab.jic.vm.ReferenceSlot;
+
 public abstract class Slot {
 	private final static Map<Type, Slot> map = new HashMap<Type, Slot>();
 	static {

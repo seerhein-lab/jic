@@ -15,13 +15,13 @@ import de.seerhein_lab.jic.slot.DoubleSlot;
 import de.seerhein_lab.jic.slot.FloatSlot;
 import de.seerhein_lab.jic.slot.IntSlot;
 import de.seerhein_lab.jic.slot.LongSlot;
-import de.seerhein_lab.jic.slot.ReferenceSlot;
 import de.seerhein_lab.jic.slot.ShortSlot;
 import de.seerhein_lab.jic.slot.Slot;
 import de.seerhein_lab.jic.slot.VoidSlot;
 import de.seerhein_lab.jic.vm.Frame;
 import de.seerhein_lab.jic.vm.Heap;
 import de.seerhein_lab.jic.vm.OpStack;
+import de.seerhein_lab.jic.vm.ReferenceSlot;
 
 /**
  * JUnit test for Frame class. Does not test simple getters and setters.

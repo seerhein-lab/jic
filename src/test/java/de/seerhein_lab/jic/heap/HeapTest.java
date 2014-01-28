@@ -6,10 +6,10 @@ import static org.junit.Assert.assertNotNull;
 import org.junit.Before;
 import org.junit.Test;
 
-import de.seerhein_lab.jic.slot.ReferenceSlot;
 import de.seerhein_lab.jic.vm.Array;
 import de.seerhein_lab.jic.vm.ClassInstance;
 import de.seerhein_lab.jic.vm.Heap;
+import de.seerhein_lab.jic.vm.ReferenceSlot;
 
 public class HeapTest {
 	private Heap heap;

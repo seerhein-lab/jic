@@ -8,7 +8,6 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicLong;
 
-import de.seerhein_lab.jic.slot.ReferenceSlot;
 
 /**
  * Class representing a heap. Contains HeapObjects and has special HeapObjects

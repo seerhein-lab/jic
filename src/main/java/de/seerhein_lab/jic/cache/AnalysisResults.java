@@ -6,10 +6,10 @@ import java.util.Set;
 
 import de.seerhein_lab.jic.EvaluationResult;
 import de.seerhein_lab.jic.cache.AnalysisCache.Check;
-import de.seerhein_lab.jic.slot.ReferenceSlot;
 import de.seerhein_lab.jic.slot.Slot;
 import de.seerhein_lab.jic.vm.Heap;
 import de.seerhein_lab.jic.vm.HeapObject;
+import de.seerhein_lab.jic.vm.ReferenceSlot;
 import edu.umd.cs.findbugs.BugInstance;
 import edu.umd.cs.findbugs.SortedBugCollection;
 

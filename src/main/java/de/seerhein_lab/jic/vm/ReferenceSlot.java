@@ -1,8 +1,8 @@
-package de.seerhein_lab.jic.slot;
+package de.seerhein_lab.jic.vm;
 
 import java.util.UUID;
 
-import de.seerhein_lab.jic.vm.HeapObject;
+import de.seerhein_lab.jic.slot.Slot;
 
 public class ReferenceSlot extends Slot {
 	private final static ReferenceSlot nullReference = new ReferenceSlot();
