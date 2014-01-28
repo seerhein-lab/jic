@@ -10,12 +10,14 @@ import java.util.Set;
 import java.util.UUID;
 
 /**
- * Class representing a heapObject. A HeapObject has an Id, a reference to the
- * heap where its stored and a set of referring objects.
+ * Abstract class representing the common part of objects on the heap
+ * (consistent with the JVM spec, an object can be a class instance or an
+ * array). This common part comprises a unique ID, a reference to the object's
+ * heap, and the set of other objects that refer this object (a set of reverse
+ * links).
  */
 public abstract class HeapObject {
-	// private final static long HEAP_EMERCENCY_BREAK = 3000000L;
-	private final static long HEAP_EMERCENCY_BREAK = 500000L;
+	private final static long HEAP_EMERCENCY_BREAK = 10000L;
 	public static long objects = 0;
 	private final UUID id;
 	protected final Set<UUID> referredBy = new HashSet<UUID>();
@@ -25,7 +27,7 @@ public abstract class HeapObject {
 	 * Constructor.
 	 * 
 	 * @param heap
-	 *            The heap where the object is stored.
+	 *            Heap this objects resides on. Must not be null.
 	 */
 	protected HeapObject(Heap heap) {
 		if (heap == null)
@@ -41,12 +43,12 @@ public abstract class HeapObject {
 	}
 
 	/**
-	 * Copy-Constructor.
+	 * Copy constructor.
 	 * 
 	 * @param original
-	 *            The HeapObject to copy from.
+	 *            Heap object to copy from. Must not be null.
 	 * @param heap
-	 *            The heap where the object is stored.
+	 *            Heap this object resides on. Must not be null.
 	 */
 	protected HeapObject(HeapObject original, Heap heap) {
 		if (original == null || heap == null)
@@ -63,33 +65,70 @@ public abstract class HeapObject {
 	}
 
 	/**
-	 * @return the id
+	 * Gets this object's ID.
+	 * 
+	 * @return this object's ID
 	 */
-	public final UUID getId() {
+	protected final UUID getId() {
 		return id;
 	}
 
-	abstract HeapObject copy(Heap heap);
+	/**
+	 * Overriding method implementations are expected to copy an instance of the
+	 * respective subclass of HeapObject onto the given heap.
+	 * 
+	 * @param heap
+	 *            the heap that the new object belongs to; must not be null.
+	 * @return newly copied object
+	 */
+	protected abstract HeapObject copy(Heap heap);
 
 	/**
-	 * Adds "obj" as a referring Object.
+	 * Adds the object <code>obj</code> to the set of objects that refer this
+	 * object. If <code>obj</code> is already contained in the set, the method
+	 * has no effect.
 	 * 
 	 * @param obj
-	 *            Obj which refers this.
+	 *            object to be added as referring object; must not be null.
 	 */
-	final void addReferringObject(HeapObject obj) {
+	final protected void addReferringObject(HeapObject obj) {
+		if (obj == null)
+			throw new NullPointerException("argument must not be null");
+
 		referredBy.add(obj.id);
 	}
 
-	final void removeReferringObj(HeapObject obj) {
+	/**
+	 * Removes the object <code>obj</code> from the set of objects that refer
+	 * this object. If the set does not contain the object <code>obj</code>, the
+	 * method has no effect.
+	 * 
+	 * @param obj
+	 *            object to be removed from set of referring objects; must not
+	 *            be null.
+	 */
+	final protected void removeReferringObj(HeapObject obj) {
+		if (obj == null)
+			throw new NullPointerException("argument must not be null");
+
 		referredBy.remove(obj.id);
 	}
 
-	public abstract void replaceAllOccurrencesOfReferredObjectByExternal(HeapObject oldObject);
+	/**
+	 * Overriding method implementations are expected to replace all occurrences
+	 * of the referred object <code>referredObject</code> by the external
+	 * object. The method has no effect if <code>referredObject</code> is not
+	 * referred by this object.
+	 * 
+	 * @param referredObject
+	 *            referred object that is to be replaced; must not be null.
+	 */
+	protected abstract void replaceAllOccurrencesOfReferredObjectByExternal(
+			HeapObject referredObject);
 
 	public abstract Iterable<HeapObject> getReferredObjects();
 
-	public final Iterable<HeapObject> getReferringObjects() {
+	protected final Iterable<HeapObject> getReferringObjects() {
 		return new Iterable<HeapObject>() {
 			@Override
 			public Iterator<HeapObject> iterator() {

@@ -31,7 +31,7 @@ public final class Array extends HeapObject {
 	}
 
 	@Override
-	Array copy(Heap heap) {
+	protected Array copy(Heap heap) {
 		return new Array(this, heap);
 	}
 

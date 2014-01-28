@@ -46,7 +46,7 @@ public final class ClassInstance extends HeapObject {
 	}
 
 	@Override
-	HeapObject copy(Heap heap) {
+	protected HeapObject copy(Heap heap) {
 		return new ClassInstance(this, heap);
 	}
 

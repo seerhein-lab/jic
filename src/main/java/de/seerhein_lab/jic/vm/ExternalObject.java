@@ -21,7 +21,7 @@ public final class ExternalObject extends HeapObject {
 	}
 
 	@Override
-	ExternalObject copy(Heap heap) {
+	protected ExternalObject copy(Heap heap) {
 		return new ExternalObject(this, heap);
 	}
 
