@@ -9,6 +9,8 @@ import java.util.Queue;
 import java.util.Set;
 import java.util.UUID;
 
+import de.seerhein_lab.jic.EmercencyBrakeException;
+
 /**
  * Abstract class representing the common part of objects on the heap
  * (consistent with the JVM spec, an object can be a class instance or an
@@ -17,7 +19,7 @@ import java.util.UUID;
  * links).
  */
 public abstract class HeapObject {
-	private final static long HEAP_EMERCENCY_BREAK = 10000L;
+	private final static int HEAP_EMERCENCY_BREAK = 200000;
 	public static long objects = 0;
 	private final UUID id;
 	protected final Set<UUID> referredBy = new HashSet<UUID>();
@@ -35,7 +37,7 @@ public abstract class HeapObject {
 
 		objects++;
 		if (objects > HEAP_EMERCENCY_BREAK)
-			throw new OutOfMemoryError(
+			throw new EmercencyBrakeException(
 					"emergency brake to avoid out of memory error (heap exceeded)");
 
 		id = UUID.randomUUID();
@@ -56,7 +58,7 @@ public abstract class HeapObject {
 
 		objects++;
 		if (objects > HEAP_EMERCENCY_BREAK)
-			throw new OutOfMemoryError(
+			throw new EmercencyBrakeException(
 					"emergency brake to avoid out of memory error (heap exceeded)");
 
 		id = original.id;
@@ -126,8 +128,21 @@ public abstract class HeapObject {
 	protected abstract void replaceAllOccurrencesOfReferredObjectByExternal(
 			HeapObject referredObject);
 
+	/**
+	 * Overriding method implementations are expected to returns an iterable of
+	 * the heap objects that this object refers. The iterable can be used in
+	 * foreach loops.
+	 * 
+	 * @return iterable of the heap objects that this object refers.
+	 */
 	public abstract Iterable<HeapObject> getReferredObjects();
 
+	/**
+	 * Returns an iterable of the heap objects that refer this object. The
+	 * iterable can be used in foreach loops.
+	 * 
+	 * @return iterable of the heap objects that refer this object
+	 */
 	protected final Iterable<HeapObject> getReferringObjects() {
 		return new Iterable<HeapObject>() {
 			@Override
@@ -158,7 +173,15 @@ public abstract class HeapObject {
 		BACK, FORTH
 	};
 
-	private final boolean isTransitivelyReachable(HeapObject target, Direction direction) {
+	/**
+	 * Checks if the object <code>target</code> is reachable from this object in
+	 * the indicated direction.
+	 * 
+	 * @param target
+	 * @param direction
+	 * @return
+	 */
+	private final boolean isReachable(HeapObject target) {
 		Set<HeapObject> visited = new HashSet<HeapObject>();
 
 		Queue<HeapObject> queue = new ArrayDeque<HeapObject>();
@@ -167,8 +190,7 @@ public abstract class HeapObject {
 		while (!queue.isEmpty()) {
 			HeapObject obj = queue.poll();
 
-			for (HeapObject next : (direction == Direction.FORTH) ? obj.getReferredObjects() : obj
-					.getReferringObjects()) {
+			for (HeapObject next : obj.getReferredObjects()) {
 
 				if (next.equals(target))
 					return true;
@@ -181,11 +203,11 @@ public abstract class HeapObject {
 	}
 
 	public final boolean isTransitivelyReferredBy(HeapObject source) {
-		return isTransitivelyReachable(source, Direction.BACK);
+		return source.isReachable(this);
 	}
 
 	public final boolean transitivelyRefers(HeapObject sink) {
-		return isTransitivelyReachable(sink, Direction.FORTH);
+		return isReachable(sink);
 	}
 
 	private final Set<HeapObject> getReferredClosure() {
@@ -209,7 +231,7 @@ public abstract class HeapObject {
 
 	public boolean refersObjectThatIsReferredBy(HeapObject source) {
 		for (HeapObject referedObject : this.getReferredClosure()) {
-			if (referedObject.isTransitivelyReferredBy(source)) {
+			if (source.transitivelyRefers(referedObject)) {
 				return true;
 			}
 		}

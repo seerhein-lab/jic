@@ -90,6 +90,9 @@ public final class JicDetector implements Detector {
 				reporter.reportBug(bug);
 			}
 
+		} catch (EmercencyBrakeException e) {
+			reporter.reportBug(Utils.createBug(Confidence.HIGH,
+					"class is to complex for immutability analysis", classContext.getJavaClass()));
 		} catch (Throwable e) {
 			reporter.reportBug(Utils.createBug(Confidence.HIGH,
 					"Class cannot be analyzed owing to internal problem (" + e + ")",
