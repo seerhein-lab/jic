@@ -110,7 +110,7 @@ public class FieldsNotPublishedVisitor extends BaseVisitor {
 			// XXX problem or not?? Inheritance?!?
 			addBug(Confidence.HIGH, "'this' is passed to a virtual method and published",
 					pc.getCurrentInstruction());
-		} else if (argumentObject.isTransitivelyReferredBy(heap.getThisInstance())) {
+		} else if (heap.getThisInstance().transitivelyRefers(argumentObject)) {
 			addBug(Confidence.HIGH,
 					"a field of 'this' is passed to a virtual mehtod and published",
 					pc.getCurrentInstruction());
@@ -135,7 +135,7 @@ public class FieldsNotPublishedVisitor extends BaseVisitor {
 		HeapObject objectToStore = heap.get(referenceToStore.getID());
 		// array is the "external"
 		if (arrayReference.getObject(heap) instanceof ExternalObject) {
-			if (objectToStore.isTransitivelyReferredBy(heap.getThisInstance())) {
+			if (heap.getThisInstance().transitivelyRefers(objectToStore)) {
 				// a field of this is assigned to an external object
 				addBug(Confidence.HIGH,
 						"field of 'this' is published by assignment to an external array",
@@ -162,7 +162,7 @@ public class FieldsNotPublishedVisitor extends BaseVisitor {
 		HeapObject objectToPut = heap.get(referenceToPut.getID());
 		// target is the "external"
 		if (targetReference.getObject(heap) instanceof ExternalObject) {
-			if (objectToPut.isTransitivelyReferredBy(heap.getThisInstance())) {
+			if (heap.getThisInstance().transitivelyRefers(objectToPut)) {
 				// a field of this is assigned to an external object
 				addBug(Confidence.HIGH,
 						"a field of 'this' is published by assignment to an external object",
@@ -186,7 +186,7 @@ public class FieldsNotPublishedVisitor extends BaseVisitor {
 		if (objectToPut.equals(heap.getThisInstance())) {
 			addBug(Confidence.HIGH, "'this' is published by assignment to a static field",
 					pc.getCurrentInstruction());
-		} else if (objectToPut.isTransitivelyReferredBy(heap.getThisInstance())) {
+		} else if (heap.getThisInstance().transitivelyRefers(objectToPut)) {
 			// publish Object referedBy 'this'
 			addBug(Confidence.HIGH,
 					"a field of 'this' is published by assignment to a static field",
@@ -203,7 +203,7 @@ public class FieldsNotPublishedVisitor extends BaseVisitor {
 		if (returnObject == null)
 			return;
 
-		if (returnObject.isTransitivelyReferredBy(heap.getThisInstance())) {
+		if (heap.getThisInstance().transitivelyRefers(returnObject)) {
 			// publish Object referedBy 'this'
 			addBug(Confidence.HIGH, "a field of 'this' is published by return",
 					pc.getCurrentInstruction());

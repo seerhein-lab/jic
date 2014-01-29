@@ -23,7 +23,7 @@ public abstract class HeapObject {
 	public static long objects = 0;
 	private final UUID id;
 	protected final Set<UUID> referredBy = new HashSet<UUID>();
-	protected final Heap heap;
+	public final Heap heap;
 
 	/**
 	 * Constructor.
@@ -169,10 +169,6 @@ public abstract class HeapObject {
 		};
 	}
 
-	private enum Direction {
-		BACK, FORTH
-	};
-
 	/**
 	 * Checks if the object <code>target</code> is reachable from this object in
 	 * the indicated direction.
@@ -181,7 +177,7 @@ public abstract class HeapObject {
 	 * @param direction
 	 * @return
 	 */
-	private final boolean isReachable(HeapObject target) {
+	final boolean isReachable(HeapObject target) {
 		Set<HeapObject> visited = new HashSet<HeapObject>();
 
 		Queue<HeapObject> queue = new ArrayDeque<HeapObject>();
@@ -200,10 +196,6 @@ public abstract class HeapObject {
 			visited.add(obj);
 		}
 		return false;
-	}
-
-	public final boolean isTransitivelyReferredBy(HeapObject source) {
-		return source.isReachable(this);
 	}
 
 	public final boolean transitivelyRefers(HeapObject sink) {
@@ -245,24 +237,39 @@ public abstract class HeapObject {
 
 	protected abstract HeapObject deepCopy(Heap heap, Map<HeapObject, HeapObject> visited);
 
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see java.lang.Object#toString()
+	 */
 	@Override
 	public String toString() {
 		if (this.equals(heap.getThisInstance()))
 			return "This";
 		if (this.equals(heap.getExternalObject()))
 			return "External";
-		return getClass().getSimpleName() + "@" + Integer.toHexString(hashCode());
+		return "Internal (" + id + ")";
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see java.lang.Object#hashCode()
+	 */
 	@Override
 	public int hashCode() {
 		final int prime = 31;
 		int result = 1;
-		result = prime * result + ((id == null) ? 0 : id.hashCode());
-		result = prime * result + ((referredBy == null) ? 0 : referredBy.hashCode());
+		result = prime * result + id.hashCode();
+		result = prime * result + referredBy.hashCode();
 		return result;
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see java.lang.Object#equals(java.lang.Object)
+	 */
 	@Override
 	public boolean equals(Object obj) {
 		if (this == obj)
@@ -273,10 +280,7 @@ public abstract class HeapObject {
 
 		HeapObject other = (HeapObject) obj;
 
-		if (id == null) {
-			if (other.id != null)
-				return false;
-		} else if (!id.equals(other.id))
+		if (!id.equals(other.id))
 			return false;
 
 		return referredBy.equals(other.referredBy);

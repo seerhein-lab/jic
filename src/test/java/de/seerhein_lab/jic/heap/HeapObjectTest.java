@@ -100,13 +100,13 @@ public class HeapObjectTest {
 		assertTrue(e.transitivelyRefers(f));
 		assertTrue(f.transitivelyRefers(d));
 
-		assertTrue(b.isTransitivelyReferredBy(a));
-		assertTrue(c.isTransitivelyReferredBy(b));
-		assertTrue(d.isTransitivelyReferredBy(b));
-		assertTrue(e.isTransitivelyReferredBy(c));
-		assertTrue(e.isTransitivelyReferredBy(d));
-		assertTrue(f.isTransitivelyReferredBy(e));
-		assertTrue(d.isTransitivelyReferredBy(f));
+		assertTrue(a.transitivelyRefers(b));
+		assertTrue(b.transitivelyRefers(c));
+		assertTrue(b.transitivelyRefers(d));
+		assertTrue(c.transitivelyRefers(e));
+		assertTrue(d.transitivelyRefers(e));
+		assertTrue(e.transitivelyRefers(f));
+		assertTrue(f.transitivelyRefers(d));
 	}
 
 	@Test

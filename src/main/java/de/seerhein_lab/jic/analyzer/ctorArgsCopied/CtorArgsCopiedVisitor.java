@@ -75,7 +75,7 @@ public class CtorArgsCopiedVisitor extends BaseVisitor {
 		if (argument.isNullReference())
 			return;
 
-		if (heap.get(argument.getID()).isTransitivelyReferredBy(heap.getThisInstance())) {
+		if (heap.getThisInstance().transitivelyRefers(heap.get(argument.getID()))) {
 			addBug(Confidence.HIGH, "a field of 'this' is passed to a virtual method and escapes",
 					pc.getCurrentInstruction());
 		}
@@ -92,7 +92,7 @@ public class CtorArgsCopiedVisitor extends BaseVisitor {
 		if (referenceToStore.isNullReference())
 			return;
 
-		if (heap.get(arrayReference.getID()).isTransitivelyReferredBy(heap.getThisInstance())) {
+		if (heap.getThisInstance().transitivelyRefers(heap.get(arrayReference.getID()))) {
 			// array is referred by this
 			if (referenceToStore.getObject(heap) instanceof ExternalObject) {
 				// external reference is assigned to an array referred by this
@@ -134,7 +134,7 @@ public class CtorArgsCopiedVisitor extends BaseVisitor {
 						pc.getCurrentInstruction());
 			}
 		}
-		if (heap.get(targetReference.getID()).isTransitivelyReferredBy(heap.getThisInstance())) {
+		if (heap.getThisInstance().transitivelyRefers(heap.get(targetReference.getID()))) {
 			// left is referred by this
 			if (referenceToPut.getObject(heap) instanceof ExternalObject) {
 				// right is external
@@ -162,7 +162,7 @@ public class CtorArgsCopiedVisitor extends BaseVisitor {
 					pc.getCurrentInstruction());
 		}
 
-		if (heap.get(referenceToPut.getID()).isTransitivelyReferredBy(heap.getThisInstance())) {
+		if (heap.getThisInstance().transitivelyRefers(heap.get(referenceToPut.getID()))) {
 			// a field referred by this is published
 			addBug(Confidence.HIGH,
 					"an object referred by 'this' is published by assignment to a static field",
