@@ -108,16 +108,16 @@ public class FieldsNotPublishedVisitor extends BaseVisitor {
 		HeapObject argumentObject = heap.get(argument.getID());
 		if (argumentObject.equals(heap.getThisInstance())) {
 			// XXX problem or not?? Inheritance?!?
-			addBug(Confidence.HIGH, "'this' is passed to a virtual method and published",
-					pc.getCurrentInstruction());
+			addBug("IMMUTABILITY_BUG", Confidence.HIGH,
+					"'this' is passed to a virtual method and published", pc.getCurrentInstruction());
 		} else if (heap.getThisInstance().transitivelyRefers(argumentObject)) {
-			addBug(Confidence.HIGH,
-					"a field of 'this' is passed to a virtual mehtod and published",
-					pc.getCurrentInstruction());
+			addBug("IMMUTABILITY_BUG",
+					Confidence.HIGH,
+					"a field of 'this' is passed to a virtual mehtod and published", pc.getCurrentInstruction());
 		} else if (argumentObject.refersObjectThatIsReferredBy(heap.getThisInstance())) {
 			// publish Object that refers Object referedBy 'this'
-			addBug(Confidence.HIGH, "an Object that refers an Object refered by 'this' is passed"
-					+ " to a virtual mehtod and published", pc.getCurrentInstruction());
+			addBug("IMMUTABILITY_BUG", Confidence.HIGH, "an Object that refers an Object refered by 'this' is passed"
+							+ " to a virtual mehtod and published", pc.getCurrentInstruction());
 		}
 	}
 
@@ -137,14 +137,14 @@ public class FieldsNotPublishedVisitor extends BaseVisitor {
 		if (arrayReference.getObject(heap) instanceof ExternalObject) {
 			if (heap.getThisInstance().transitivelyRefers(objectToStore)) {
 				// a field of this is assigned to an external object
-				addBug(Confidence.HIGH,
-						"field of 'this' is published by assignment to an external array",
-						pc.getCurrentInstruction());
+				addBug("IMMUTABILITY_BUG",
+						Confidence.HIGH,
+						"field of 'this' is published by assignment to an external array", pc.getCurrentInstruction());
 			} else if (objectToStore.refersObjectThatIsReferredBy(heap.getThisInstance()))
 				// publish Object that refers Object referedBy 'this'
-				addBug(Confidence.HIGH,
-						"an Object that refers an Object refered by 'this' is published"
-								+ " by assignment to an external array", pc.getCurrentInstruction());
+				addBug("IMMUTABILITY_BUG",
+						Confidence.HIGH, "an Object that refers an Object refered by 'this' is published"
+										+ " by assignment to an external array", pc.getCurrentInstruction());
 		}
 	}
 
@@ -164,15 +164,15 @@ public class FieldsNotPublishedVisitor extends BaseVisitor {
 		if (targetReference.getObject(heap) instanceof ExternalObject) {
 			if (heap.getThisInstance().transitivelyRefers(objectToPut)) {
 				// a field of this is assigned to an external object
-				addBug(Confidence.HIGH,
-						"a field of 'this' is published by assignment to an external object",
-						pc.getCurrentInstruction());
+				addBug("IMMUTABILITY_BUG",
+						Confidence.HIGH,
+						"a field of 'this' is published by assignment to an external object", pc.getCurrentInstruction());
 			} else if (objectToPut.refersObjectThatIsReferredBy(heap.getThisInstance()))
 				// publish Object that refers Object referedBy 'this'
-				addBug(Confidence.HIGH,
+				addBug("IMMUTABILITY_BUG",
+						Confidence.HIGH,
 						"an Object that refers an Object refered by 'this' is published"
-								+ " by assignment to an external object",
-						pc.getCurrentInstruction());
+								+ " by assignment to an external object", pc.getCurrentInstruction());
 		}
 	}
 
@@ -184,18 +184,18 @@ public class FieldsNotPublishedVisitor extends BaseVisitor {
 		HeapObject objectToPut = heap.get(referenceToPut.getID());
 		// XXX only a problem if it is a static field of the class we analyze
 		if (objectToPut.equals(heap.getThisInstance())) {
-			addBug(Confidence.HIGH, "'this' is published by assignment to a static field",
-					pc.getCurrentInstruction());
+			addBug("IMMUTABILITY_BUG", Confidence.HIGH,
+					"'this' is published by assignment to a static field", pc.getCurrentInstruction());
 		} else if (heap.getThisInstance().transitivelyRefers(objectToPut)) {
 			// publish Object referedBy 'this'
-			addBug(Confidence.HIGH,
-					"a field of 'this' is published by assignment to a static field",
-					pc.getCurrentInstruction());
+			addBug("IMMUTABILITY_BUG",
+					Confidence.HIGH,
+					"a field of 'this' is published by assignment to a static field", pc.getCurrentInstruction());
 		} else if (objectToPut.refersObjectThatIsReferredBy(heap.getThisInstance()))
 			// publish Object that refers Object referedBy 'this'
-			addBug(Confidence.HIGH,
-					"an Object that refers an Object refered by 'this' is published"
-							+ " by assignment to a static field", pc.getCurrentInstruction());
+			addBug("IMMUTABILITY_BUG",
+					Confidence.HIGH, "an Object that refers an Object refered by 'this' is published"
+									+ " by assignment to a static field", pc.getCurrentInstruction());
 	}
 
 	protected void detectAReturnBug(ReferenceSlot returnValue) {
@@ -205,13 +205,13 @@ public class FieldsNotPublishedVisitor extends BaseVisitor {
 
 		if (heap.getThisInstance().transitivelyRefers(returnObject)) {
 			// publish Object referedBy 'this'
-			addBug(Confidence.HIGH, "a field of 'this' is published by return",
-					pc.getCurrentInstruction());
+			addBug("IMMUTABILITY_BUG", Confidence.HIGH,
+					"a field of 'this' is published by return", pc.getCurrentInstruction());
 		} else if (returnObject.refersObjectThatIsReferredBy(heap.getThisInstance()))
 			// publish Object that refers Object referedBy 'this'
-			addBug(Confidence.HIGH,
-					"an Object that refers an Object refered by 'this' is published by return",
-					pc.getCurrentInstruction());
+			addBug("IMMUTABILITY_BUG",
+					Confidence.HIGH,
+					"an Object that refers an Object refered by 'this' is published by return", pc.getCurrentInstruction());
 
 	}
 }

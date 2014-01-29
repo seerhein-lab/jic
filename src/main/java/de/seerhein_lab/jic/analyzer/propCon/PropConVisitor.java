@@ -62,11 +62,13 @@ public class PropConVisitor extends BaseVisitor {
 
 		if (argument.getObject(heap).equals(heap.getThisInstance())) {
 			// 'this' is passed into a virtual method
-			addBug(Confidence.HIGH, "'this' is passed into a virtual method and escapes",
+			addBug("PROPER_CONSTRUCTION_BUG", Confidence.HIGH,
+					"'this' is passed into a virtual method and escapes",
 					pc.getCurrentInstruction());
 		} else if (heap.get(argument.getID()).transitivelyRefers(heap.getThisInstance())) {
 			// argument that refers to 'this' is passed into a virtual method
-			addBug(Confidence.HIGH,
+			addBug("PROPER_CONSTRUCTION_BUG",
+					Confidence.HIGH,
 					"a reference that refers to 'this' is passed into a virtual method letting 'this' escape",
 					pc.getCurrentInstruction());
 		}
@@ -85,14 +87,17 @@ public class PropConVisitor extends BaseVisitor {
 		ReferenceSlot referenceToStore = (ReferenceSlot) valueToStore;
 		if (arrayReference.getObject(heap) instanceof ExternalObject) {
 			// the array is externally known
-			if (referenceToStore.getID() != null && referenceToStore.getObject(heap).equals(heap.getThisInstance())) {
+			if (referenceToStore.getID() != null
+					&& referenceToStore.getObject(heap).equals(heap.getThisInstance())) {
 				// this is assigned to the array
-				addBug(Confidence.HIGH, "'this' is assigned to an external array and escapes",
+				addBug("PROPER_CONSTRUCTION_BUG", Confidence.HIGH,
+						"'this' is assigned to an external array and escapes",
 						pc.getCurrentInstruction());
 			} else if (arrayReference.getID() != null
 					&& heap.get(arrayReference.getID()).transitivelyRefers(heap.getThisInstance())) {
 				// a reference containing this is assigned to the array
-				addBug(Confidence.HIGH,
+				addBug("PROPER_CONSTRUCTION_BUG",
+						Confidence.HIGH,
 						"a reference containing 'this' is assigned to an external array and 'this' escapes",
 						pc.getCurrentInstruction());
 			}
@@ -111,14 +116,17 @@ public class PropConVisitor extends BaseVisitor {
 		ReferenceSlot referenceToPut = (ReferenceSlot) valueToPut;
 		if (targetReference.getObject(heap) instanceof ExternalObject) {
 			// the left side of the assignment is externally known
-			if (referenceToPut.getID() != null && referenceToPut.getObject(heap).equals(heap.getThisInstance())) {
+			if (referenceToPut.getID() != null
+					&& referenceToPut.getObject(heap).equals(heap.getThisInstance())) {
 				// this is on the right side
-				addBug(Confidence.HIGH, "'this' is assigned to an external field and escapes",
+				addBug("PROPER_CONSTRUCTION_BUG", Confidence.HIGH,
+						"'this' is assigned to an external field and escapes",
 						pc.getCurrentInstruction());
 			} else if (referenceToPut.getID() != null
 					&& heap.get(referenceToPut.getID()).transitivelyRefers(heap.getThisInstance())) {
 				// this is contained in the right side
-				addBug(Confidence.HIGH,
+				addBug("PROPER_CONSTRUCTION_BUG",
+						Confidence.HIGH,
 						"a reference containing 'this' is assigned to an external field and 'this' escapes",
 						pc.getCurrentInstruction());
 			}
@@ -135,11 +143,12 @@ public class PropConVisitor extends BaseVisitor {
 			return;
 
 		if (referenceToPut.getObject(heap).equals(heap.getThisInstance())) {
-			addBug(Confidence.HIGH, "'this' is assigned to a static field and escapes",
-					pc.getCurrentInstruction());
+			addBug("PROPER_CONSTRUCTION_BUG", Confidence.HIGH,
+					"'this' is assigned to a static field and escapes", pc.getCurrentInstruction());
 		} else if (heap.get(referenceToPut.getID()).transitivelyRefers(heap.getThisInstance())) {
 			// the reference contains this
-			addBug(Confidence.HIGH,
+			addBug("PROPER_CONSTRUCTION_BUG",
+					Confidence.HIGH,
 					"a reference containing 'this' is assigned to a static field and 'this' escapes",
 					pc.getCurrentInstruction());
 		}

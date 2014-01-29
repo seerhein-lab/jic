@@ -20,9 +20,10 @@ public final class Utils {
 		new AssertionError("must not be called.");
 	}
 
-	public static BugInstance createBug(Confidence confidence, String message, JavaClass clazz) {
-		return new BugInstance("IMMUTABILITY_BUG", confidence.getConfidenceValue()).addString(
-				message).addClass(clazz);
+	public static BugInstance createBug(String pattern, Confidence confidence, String message,
+			JavaClass clazz) {
+		return new BugInstance(pattern, confidence.getConfidenceValue()).addString(message)
+				.addClass(clazz);
 	}
 
 	public static String formatLoggingOutput(int depth) {

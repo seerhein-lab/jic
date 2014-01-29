@@ -147,9 +147,11 @@ public abstract class BaseVisitor extends SimpleVisitor {
 		return result;
 	}
 
-	protected void addBug(Confidence confidence, String message, InstructionHandle instructionHandle) {
+	protected void addBug(String pattern, Confidence confidence, String message,
+			InstructionHandle instructionHandle) {
 		logger.fine(indentation + "\t" + message + " (" + instructionHandle.getInstruction() + ")");
-		BugInstance bugInstance = Utils.createBug(confidence, message, classContext.getJavaClass());
+		BugInstance bugInstance = Utils.createBug(pattern, confidence, message,
+				classContext.getJavaClass());
 
 		bugInstance.addSourceLine(classContext, methodGen.getMethod(), instructionHandle);
 		bugs.add(bugInstance);
@@ -233,10 +235,12 @@ public abstract class BaseVisitor extends SimpleVisitor {
 				bugs.add(bug);
 			}
 
-			addBug(Confidence.HIGH, "subsequent bug caused by [" + bug.getMessage() + " in "
-					+ targetMethod.getJavaClass().getClassName() + "."
-					+ targetMethod.getMethod().getName() + targetMethod.getMethod().getSignature()
-					+ ":" + bug.getPrimarySourceLineAnnotation().getStartLine() + "]",
+			addBug("IMMUTABILITY_BUG", Confidence.HIGH,
+					"subsequent bug caused by [" + bug.getMessage() + " in "
+							+ targetMethod.getJavaClass().getClassName() + "."
+							+ targetMethod.getMethod().getName()
+							+ targetMethod.getMethod().getSignature() + ":"
+							+ bug.getPrimarySourceLineAnnotation().getStartLine() + "]",
 					pc.getCurrentInstruction());
 		}
 	}

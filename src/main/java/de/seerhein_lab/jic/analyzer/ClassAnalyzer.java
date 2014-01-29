@@ -51,7 +51,7 @@ public final class ClassAnalyzer {
 		Field[] fields = clazz.getFields();
 		for (Field field : fields)
 			if (!field.isStatic() && !field.isFinal())
-				bugs.add(Utils.createBug(Confidence.HIGH, "All fields must be final.", clazz)
+				bugs.add(Utils.createBug("IMMUTABILITY_BUG", Confidence.HIGH, "All fields must be final.", clazz)
 						.addField(clazz.getClassName(), field.getName(), field.getSignature(),
 								false));
 		return bugs.getCollection();
@@ -62,8 +62,8 @@ public final class ClassAnalyzer {
 		Field[] fields = clazz.getFields();
 		for (Field field : fields)
 			if (!field.isStatic() && !(field.getType() instanceof BasicType) && !field.isPrivate())
-				bugs.add(Utils.createBug(Confidence.HIGH, "Reference fields must be private.",
-						clazz).addField(clazz.getClassName(), field.getName(),
+				bugs.add(Utils.createBug("IMMUTABILITY_BUG", Confidence.HIGH,
+						"Reference fields must be private.", clazz).addField(clazz.getClassName(), field.getName(),
 						field.getSignature(), false));
 		return bugs.getCollection();
 	}
@@ -115,9 +115,9 @@ public final class ClassAnalyzer {
 
 		for (Method method : classHelper.getNonPrivateNonStaticMethods()) {
 			if (method.isNative()) {
-				bugs.add(Utils.createBug(Confidence.MEDIUM,
-						"Native method might publish reference fields of 'this' object",
-						classContext.getJavaClass()));
+				bugs.add(Utils.createBug("IMMUTABILITY_BUG",
+						Confidence.MEDIUM,
+						"Native method might publish reference fields of 'this' object", classContext.getJavaClass()));
 				continue;
 			}
 
@@ -139,8 +139,8 @@ public final class ClassAnalyzer {
 
 		for (Method method : classHelper.getNonPrivateNonStaticMethods()) {
 			if (method.isNative()) {
-				bugs.add(Utils.createBug(Confidence.MEDIUM,
-						"Native method might modify 'this' object", classContext.getJavaClass()));
+				bugs.add(Utils.createBug("IMMUTABILITY_BUG",
+						Confidence.MEDIUM, "Native method might modify 'this' object", classContext.getJavaClass()));
 				continue;
 			}
 

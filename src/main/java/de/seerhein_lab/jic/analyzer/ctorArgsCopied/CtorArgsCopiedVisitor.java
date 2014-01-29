@@ -76,8 +76,8 @@ public class CtorArgsCopiedVisitor extends BaseVisitor {
 			return;
 
 		if (heap.getThisInstance().transitivelyRefers(heap.get(argument.getID()))) {
-			addBug(Confidence.HIGH, "a field of 'this' is passed to a virtual method and escapes",
-					pc.getCurrentInstruction());
+			addBug("IMMUTABILITY_BUG", Confidence.HIGH,
+					"a field of 'this' is passed to a virtual method and escapes", pc.getCurrentInstruction());
 		}
 	}
 
@@ -96,16 +96,16 @@ public class CtorArgsCopiedVisitor extends BaseVisitor {
 			// array is referred by this
 			if (referenceToStore.getObject(heap) instanceof ExternalObject) {
 				// external reference is assigned to an array referred by this
-				addBug(Confidence.HIGH,
-						"an external reference is assigned to an array referred by 'this'",
-						pc.getCurrentInstruction());
+				addBug("IMMUTABILITY_BUG",
+						Confidence.HIGH,
+						"an external reference is assigned to an array referred by 'this'", pc.getCurrentInstruction());
 			} else if (referenceToStore.getObject(heap)
 					.transitivelyRefers(heap.getExternalObject())) {
 				// a reference containing an external reference is assigned to
 				// an array referred by this
-				addBug(Confidence.HIGH,
-						"a reference containing an external reference is assigned to an array referred by 'this'",
-						pc.getCurrentInstruction());
+				addBug("IMMUTABILITY_BUG",
+						Confidence.HIGH,
+						"a reference containing an external reference is assigned to an array referred by 'this'", pc.getCurrentInstruction());
 			}
 		}
 	}
@@ -125,27 +125,27 @@ public class CtorArgsCopiedVisitor extends BaseVisitor {
 			// left side is this
 			if (referenceToPut.getObject(heap) instanceof ExternalObject) {
 				// right is external
-				addBug(Confidence.HIGH, "an external object is assigned to 'this'",
-						pc.getCurrentInstruction());
+				addBug("IMMUTABILITY_BUG", Confidence.HIGH,
+						"an external object is assigned to 'this'", pc.getCurrentInstruction());
 			} else if (referenceToPut.getObject(heap).transitivelyRefers(heap.getExternalObject())) {
 				// right refers external
-				addBug(Confidence.HIGH,
-						"an object containing an external reference is assigned to 'this'",
-						pc.getCurrentInstruction());
+				addBug("IMMUTABILITY_BUG",
+						Confidence.HIGH,
+						"an object containing an external reference is assigned to 'this'", pc.getCurrentInstruction());
 			}
 		}
 		if (heap.getThisInstance().transitivelyRefers(heap.get(targetReference.getID()))) {
 			// left is referred by this
 			if (referenceToPut.getObject(heap) instanceof ExternalObject) {
 				// right is external
-				addBug(Confidence.HIGH,
-						"an external reference is assigned to an object referred by 'this'",
-						pc.getCurrentInstruction());
+				addBug("IMMUTABILITY_BUG",
+						Confidence.HIGH,
+						"an external reference is assigned to an object referred by 'this'", pc.getCurrentInstruction());
 			} else if (referenceToPut.getObject(heap).transitivelyRefers(heap.getExternalObject())) {
 				// right refers external
-				addBug(Confidence.HIGH,
-						"a reference containing an external reference is assigned to an object referred by 'this'",
-						pc.getCurrentInstruction());
+				addBug("IMMUTABILITY_BUG",
+						Confidence.HIGH,
+						"a reference containing an external reference is assigned to an object referred by 'this'", pc.getCurrentInstruction());
 			}
 		}
 	}
@@ -158,15 +158,15 @@ public class CtorArgsCopiedVisitor extends BaseVisitor {
 		// XXX this assigned to a static field?? Only starting class?!?
 		if (referenceToPut.getObject(heap).equals(heap.getThisInstance())) {
 			// this is published
-			addBug(Confidence.HIGH, "'this' is published by assignment to a static field",
-					pc.getCurrentInstruction());
+			addBug("IMMUTABILITY_BUG", Confidence.HIGH,
+					"'this' is published by assignment to a static field", pc.getCurrentInstruction());
 		}
 
 		if (heap.getThisInstance().transitivelyRefers(heap.get(referenceToPut.getID()))) {
 			// a field referred by this is published
-			addBug(Confidence.HIGH,
-					"an object referred by 'this' is published by assignment to a static field",
-					pc.getCurrentInstruction());
+			addBug("IMMUTABILITY_BUG",
+					Confidence.HIGH,
+					"an object referred by 'this' is published by assignment to a static field", pc.getCurrentInstruction());
 		}
 	}
 

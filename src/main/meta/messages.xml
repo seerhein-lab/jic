@@ -19,12 +19,26 @@
                 <LongDescription>Immutability bug: {0}</LongDescription>
                 <Details>
 <![CDATA[
-<p>The class is annoted with @Immutable but is mutable, or its instances are not properly constructed
-	(also applies to intentionally mutable classes).
+<p>The class is annoted with @Immutable but is mutable.
 </p>
 ]]>
                 </Details>
         </BugPattern>
 
         <BugCode abbrev="IM">Immutability</BugCode>
+        
+          <BugPattern type="PROPER_CONSTRUCTION_BUG">
+                <ShortDescription>Proper construction bug [v2.1]</ShortDescription>
+                <LongDescription>Proper construction bug: {0}</LongDescription>
+                <Details>
+<![CDATA[
+<p>The class instances are not properly constructed.
+</p>
+]]>
+                </Details>
+        </BugPattern>
+
+        <BugCode abbrev="PC">Proper construction</BugCode>
+        
+        
 </MessageCollection>
