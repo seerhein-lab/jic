@@ -175,7 +175,7 @@ public abstract class HeapObject {
 	 * @param direction
 	 * @return
 	 */
-	final boolean isReachable(HeapObject target) {
+	final public boolean isReachable(HeapObject target) {
 		Set<HeapObject> visited = new HashSet<HeapObject>();
 
 		Queue<HeapObject> queue = new ArrayDeque<HeapObject>();
@@ -194,10 +194,6 @@ public abstract class HeapObject {
 			visited.add(obj);
 		}
 		return false;
-	}
-
-	public final boolean transitivelyRefers(HeapObject sink) {
-		return isReachable(sink);
 	}
 
 	private final Set<HeapObject> getReferredClosure() {
@@ -221,7 +217,7 @@ public abstract class HeapObject {
 
 	public boolean refersObjectThatIsReferredBy(HeapObject source) {
 		for (HeapObject referedObject : this.getReferredClosure()) {
-			if (source.transitivelyRefers(referedObject)) {
+			if (source.isReachable(referedObject)) {
 				return true;
 			}
 		}

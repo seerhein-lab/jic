@@ -92,37 +92,37 @@ public class HeapObjectTest {
 
 	@Test
 	public void testLinkObjects() {
-		assertTrue(a.transitivelyRefers(b));
-		assertTrue(b.transitivelyRefers(c));
-		assertTrue(b.transitivelyRefers(d));
-		assertTrue(c.transitivelyRefers(e));
-		assertTrue(d.transitivelyRefers(e));
-		assertTrue(e.transitivelyRefers(f));
-		assertTrue(f.transitivelyRefers(d));
+		assertTrue(a.isReachable(b));
+		assertTrue(b.isReachable(c));
+		assertTrue(b.isReachable(d));
+		assertTrue(c.isReachable(e));
+		assertTrue(d.isReachable(e));
+		assertTrue(e.isReachable(f));
+		assertTrue(f.isReachable(d));
 
-		assertTrue(a.transitivelyRefers(b));
-		assertTrue(b.transitivelyRefers(c));
-		assertTrue(b.transitivelyRefers(d));
-		assertTrue(c.transitivelyRefers(e));
-		assertTrue(d.transitivelyRefers(e));
-		assertTrue(e.transitivelyRefers(f));
-		assertTrue(f.transitivelyRefers(d));
+		assertTrue(a.isReachable(b));
+		assertTrue(b.isReachable(c));
+		assertTrue(b.isReachable(d));
+		assertTrue(c.isReachable(e));
+		assertTrue(d.isReachable(e));
+		assertTrue(e.isReachable(f));
+		assertTrue(f.isReachable(d));
 	}
 
 	@Test
 	public void testLinkObjectsReplaceField() {
-		assertTrue(a.transitivelyRefers(b));
+		assertTrue(a.isReachable(b));
 		a.setField("f", e);
-		assertTrue(a.transitivelyRefers(e));
-		assertFalse(a.transitivelyRefers(b));
+		assertTrue(a.isReachable(e));
+		assertFalse(a.isReachable(b));
 	}
 
 	@Test
 	public void testLinkObjectsAddReferingField() {
-		assertTrue(a.transitivelyRefers(b));
+		assertTrue(a.isReachable(b));
 		a.setField("f2", e);
-		assertTrue(a.transitivelyRefers(e));
-		assertTrue(a.transitivelyRefers(b));
+		assertTrue(a.isReachable(e));
+		assertTrue(a.isReachable(b));
 	}
 
 	@Test

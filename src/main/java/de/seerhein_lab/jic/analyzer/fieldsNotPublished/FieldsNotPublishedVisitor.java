@@ -110,7 +110,7 @@ public class FieldsNotPublishedVisitor extends BaseVisitor {
 			// XXX problem or not?? Inheritance?!?
 			addBug("IMMUTABILITY_BUG", Confidence.HIGH,
 					"'this' is passed to a virtual method and published", pc.getCurrentInstruction());
-		} else if (heap.getThisInstance().transitivelyRefers(argumentObject)) {
+		} else if (heap.getThisInstance().isReachable(argumentObject)) {
 			addBug("IMMUTABILITY_BUG",
 					Confidence.HIGH,
 					"a field of 'this' is passed to a virtual mehtod and published", pc.getCurrentInstruction());
@@ -135,7 +135,7 @@ public class FieldsNotPublishedVisitor extends BaseVisitor {
 		HeapObject objectToStore = heap.get(referenceToStore.getID());
 		// array is the "external"
 		if (arrayReference.getObject(heap) instanceof ExternalObject) {
-			if (heap.getThisInstance().transitivelyRefers(objectToStore)) {
+			if (heap.getThisInstance().isReachable(objectToStore)) {
 				// a field of this is assigned to an external object
 				addBug("IMMUTABILITY_BUG",
 						Confidence.HIGH,
@@ -162,7 +162,7 @@ public class FieldsNotPublishedVisitor extends BaseVisitor {
 		HeapObject objectToPut = heap.get(referenceToPut.getID());
 		// target is the "external"
 		if (targetReference.getObject(heap) instanceof ExternalObject) {
-			if (heap.getThisInstance().transitivelyRefers(objectToPut)) {
+			if (heap.getThisInstance().isReachable(objectToPut)) {
 				// a field of this is assigned to an external object
 				addBug("IMMUTABILITY_BUG",
 						Confidence.HIGH,
@@ -186,7 +186,7 @@ public class FieldsNotPublishedVisitor extends BaseVisitor {
 		if (objectToPut.equals(heap.getThisInstance())) {
 			addBug("IMMUTABILITY_BUG", Confidence.HIGH,
 					"'this' is published by assignment to a static field", pc.getCurrentInstruction());
-		} else if (heap.getThisInstance().transitivelyRefers(objectToPut)) {
+		} else if (heap.getThisInstance().isReachable(objectToPut)) {
 			// publish Object referedBy 'this'
 			addBug("IMMUTABILITY_BUG",
 					Confidence.HIGH,
@@ -203,7 +203,7 @@ public class FieldsNotPublishedVisitor extends BaseVisitor {
 		if (returnObject == null)
 			return;
 
-		if (heap.getThisInstance().transitivelyRefers(returnObject)) {
+		if (heap.getThisInstance().isReachable(returnObject)) {
 			// publish Object referedBy 'this'
 			addBug("IMMUTABILITY_BUG", Confidence.HIGH,
 					"a field of 'this' is published by return", pc.getCurrentInstruction());

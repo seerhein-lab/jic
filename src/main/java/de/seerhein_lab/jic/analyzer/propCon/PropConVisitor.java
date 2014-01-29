@@ -65,7 +65,7 @@ public class PropConVisitor extends BaseVisitor {
 			addBug("PROPER_CONSTRUCTION_BUG", Confidence.HIGH,
 					"'this' is passed into a virtual method and escapes",
 					pc.getCurrentInstruction());
-		} else if (heap.get(argument.getID()).transitivelyRefers(heap.getThisInstance())) {
+		} else if (heap.get(argument.getID()).isReachable(heap.getThisInstance())) {
 			// argument that refers to 'this' is passed into a virtual method
 			addBug("PROPER_CONSTRUCTION_BUG",
 					Confidence.HIGH,
@@ -94,7 +94,7 @@ public class PropConVisitor extends BaseVisitor {
 						"'this' is assigned to an external array and escapes",
 						pc.getCurrentInstruction());
 			} else if (arrayReference.getID() != null
-					&& heap.get(arrayReference.getID()).transitivelyRefers(heap.getThisInstance())) {
+					&& heap.get(arrayReference.getID()).isReachable(heap.getThisInstance())) {
 				// a reference containing this is assigned to the array
 				addBug("PROPER_CONSTRUCTION_BUG",
 						Confidence.HIGH,
@@ -123,7 +123,7 @@ public class PropConVisitor extends BaseVisitor {
 						"'this' is assigned to an external field and escapes",
 						pc.getCurrentInstruction());
 			} else if (referenceToPut.getID() != null
-					&& heap.get(referenceToPut.getID()).transitivelyRefers(heap.getThisInstance())) {
+					&& heap.get(referenceToPut.getID()).isReachable(heap.getThisInstance())) {
 				// this is contained in the right side
 				addBug("PROPER_CONSTRUCTION_BUG",
 						Confidence.HIGH,
@@ -145,7 +145,7 @@ public class PropConVisitor extends BaseVisitor {
 		if (referenceToPut.getObject(heap).equals(heap.getThisInstance())) {
 			addBug("PROPER_CONSTRUCTION_BUG", Confidence.HIGH,
 					"'this' is assigned to a static field and escapes", pc.getCurrentInstruction());
-		} else if (heap.get(referenceToPut.getID()).transitivelyRefers(heap.getThisInstance())) {
+		} else if (heap.get(referenceToPut.getID()).isReachable(heap.getThisInstance())) {
 			// the reference contains this
 			addBug("PROPER_CONSTRUCTION_BUG",
 					Confidence.HIGH,

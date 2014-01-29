@@ -78,7 +78,7 @@ public class NoMutatorsVisitor extends BaseVisitor {
 	@Override
 	protected void detectXAStoreBug(ReferenceSlot arrayReference, Slot valueToStore) {
 		// array is referred by 'this'
-		if (heap.getThisInstance().transitivelyRefers(heap.get(arrayReference.getID()))) {
+		if (heap.getThisInstance().isReachable(heap.get(arrayReference.getID()))) {
 			addBug("IMMUTABILITY_BUG",
 					Confidence.HIGH,
 					"the value of an array referred by a field of 'this' is modified", pc.getCurrentInstruction());
@@ -88,7 +88,7 @@ public class NoMutatorsVisitor extends BaseVisitor {
 	@Override
 	protected void detectPutFieldBug(ReferenceSlot targetReference, Slot valueToPut) {
 		// left side is referred by a field of this
-		if (heap.getThisInstance().transitivelyRefers(heap.get(targetReference.getID()))) {
+		if (heap.getThisInstance().isReachable(heap.get(targetReference.getID()))) {
 			addBug("IMMUTABILITY_BUG",
 					Confidence.HIGH,
 					"the value of an object referred by a field of 'this' is modified", pc.getCurrentInstruction());
