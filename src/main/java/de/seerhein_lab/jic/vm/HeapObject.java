@@ -37,8 +37,7 @@ public abstract class HeapObject {
 
 		objects++;
 		if (objects > HEAP_EMERCENCY_BREAK)
-			throw new EmercencyBrakeException(
-					"emergency brake to avoid out of memory error (heap exceeded)");
+			throw new EmercencyBrakeException();
 
 		id = UUID.randomUUID();
 		this.heap = heap;
@@ -58,8 +57,7 @@ public abstract class HeapObject {
 
 		objects++;
 		if (objects > HEAP_EMERCENCY_BREAK)
-			throw new EmercencyBrakeException(
-					"emergency brake to avoid out of memory error (heap exceeded)");
+			throw new EmercencyBrakeException();
 
 		id = original.id;
 		referredBy.addAll(original.referredBy);
