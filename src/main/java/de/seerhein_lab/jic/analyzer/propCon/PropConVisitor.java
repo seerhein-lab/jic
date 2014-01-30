@@ -65,11 +65,11 @@ public class PropConVisitor extends BaseVisitor {
 			addBug("PROPER_CONSTRUCTION_BUG", Confidence.HIGH,
 					"'this' is passed into a virtual method and escapes",
 					pc.getCurrentInstruction());
-		} else if (heap.get(argument.getID()).isReachable(heap.getThisInstance())) {
+		} else if (argument.getObject(heap).isReachable(heap.getThisInstance())) {
 			// argument that refers to 'this' is passed into a virtual method
 			addBug("PROPER_CONSTRUCTION_BUG",
 					Confidence.HIGH,
-					"a reference that refers to 'this' is passed into a virtual method letting 'this' escape",
+					"an object containing 'this' is passed into a virtual method letting 'this' escape",
 					pc.getCurrentInstruction());
 		}
 	}
@@ -94,11 +94,10 @@ public class PropConVisitor extends BaseVisitor {
 						"'this' is assigned to an external array and escapes",
 						pc.getCurrentInstruction());
 			} else if (arrayReference.getID() != null
-					&& heap.get(arrayReference.getID()).isReachable(heap.getThisInstance())) {
-				// a reference containing this is assigned to the array
+					&& arrayReference.getObject(heap).isReachable(heap.getThisInstance())) {
 				addBug("PROPER_CONSTRUCTION_BUG",
 						Confidence.HIGH,
-						"a reference containing 'this' is assigned to an external array and 'this' escapes",
+						"an object containing 'this' is assigned to an external array letting 'this' escape",
 						pc.getCurrentInstruction());
 			}
 		}
@@ -118,16 +117,14 @@ public class PropConVisitor extends BaseVisitor {
 			// the left side of the assignment is externally known
 			if (referenceToPut.getID() != null
 					&& referenceToPut.getObject(heap).equals(heap.getThisInstance())) {
-				// this is on the right side
 				addBug("PROPER_CONSTRUCTION_BUG", Confidence.HIGH,
-						"'this' is assigned to an external field and escapes",
+						"'this' is assigned to an external object and escapes",
 						pc.getCurrentInstruction());
 			} else if (referenceToPut.getID() != null
-					&& heap.get(referenceToPut.getID()).isReachable(heap.getThisInstance())) {
-				// this is contained in the right side
+					&& referenceToPut.getObject(heap).isReachable(heap.getThisInstance())) {
 				addBug("PROPER_CONSTRUCTION_BUG",
 						Confidence.HIGH,
-						"a reference containing 'this' is assigned to an external field and 'this' escapes",
+						"an object containing 'this' is assigned to an external object letting 'this' escape",
 						pc.getCurrentInstruction());
 			}
 
@@ -145,11 +142,10 @@ public class PropConVisitor extends BaseVisitor {
 		if (referenceToPut.getObject(heap).equals(heap.getThisInstance())) {
 			addBug("PROPER_CONSTRUCTION_BUG", Confidence.HIGH,
 					"'this' is assigned to a static field and escapes", pc.getCurrentInstruction());
-		} else if (heap.get(referenceToPut.getID()).isReachable(heap.getThisInstance())) {
-			// the reference contains this
+		} else if (referenceToPut.getObject(heap).isReachable(heap.getThisInstance())) {
 			addBug("PROPER_CONSTRUCTION_BUG",
 					Confidence.HIGH,
-					"a reference containing 'this' is assigned to a static field and 'this' escapes",
+					"an object containing 'this' is assigned to a static field letting 'this' escape",
 					pc.getCurrentInstruction());
 		}
 	}
