@@ -235,10 +235,19 @@ public abstract class BaseVisitor extends SimpleVisitor {
 				bugs.add(bug);
 			}
 
-			addBug("IMMUTABILITY_BUG", Confidence.HIGH,
-					"subsequent bug caused by [" + bug.getMessage() + " in "
-							+ targetMethod.getJavaClass().getClassName() + "."
-							+ targetMethod.getMethod().getName()
+			// addBug(bug.getBugPattern().getType(), Confidence.HIGH,
+			// "subsequent bug caused by ["
+			// + bug.getMessage() + " in " +
+			// targetMethod.getJavaClass().getClassName() + "."
+			// + targetMethod.getMethod().getName() +
+			// targetMethod.getMethod().getSignature()
+			// + ":" + bug.getPrimarySourceLineAnnotation().getStartLine() +
+			// "]",
+			// pc.getCurrentInstruction());
+
+			addBug(bug.getBugPattern().getType(), Confidence.HIGH,
+					"subsequent bug caused by bug in " + targetMethod.getJavaClass().getClassName()
+							+ "." + targetMethod.getMethod().getName()
 							+ targetMethod.getMethod().getSignature() + ":"
 							+ bug.getPrimarySourceLineAnnotation().getStartLine() + "]",
 					pc.getCurrentInstruction());
