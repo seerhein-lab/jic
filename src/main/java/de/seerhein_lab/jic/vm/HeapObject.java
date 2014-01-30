@@ -215,7 +215,7 @@ public abstract class HeapObject {
 	 *            object from where this complex object is to be reachable
 	 * @return true if complex object is reachable, false otherwise
 	 */
-	public boolean complexObjectIsReachableBy(HeapObject source) {
+	public final boolean complexObjectIsReachableBy(HeapObject source) {
 		for (HeapObject referredObject : this.getClosure()) {
 			if (source.isReachable(referredObject)) {
 				return true;
@@ -224,11 +224,31 @@ public abstract class HeapObject {
 		return false;
 	}
 
-	public HeapObject deepCopy(Heap heap) {
+	/**
+	 * Template method to copy the complex object starting at this object onto
+	 * the heap <code>heap</code>. This method uses the primitive operation
+	 * <code>deepCopy(Heap, Map<HeapObject, HeapObject>)</code>. The parts of
+	 * the new complex objects will not have the same IDs as the parts of this
+	 * complex object.
+	 * 
+	 * @param heap
+	 *            the heap to copy the complex object onto
+	 * @return newly copied complex object
+	 */
+	public final HeapObject deepCopy(Heap heap) {
 		Map<HeapObject, HeapObject> visited = new HashMap<HeapObject, HeapObject>();
 		return deepCopy(heap, visited);
 	}
 
+	/**
+	 * Primitive operation for the template method <code>deepCopy(Heap)</code>.
+	 * 
+	 * @param heap
+	 *            the heap to copy the complex object onto
+	 * @param visited
+	 *            set of mappings of already deeply copied parts.
+	 * @return newly copied complex object
+	 */
 	protected abstract HeapObject deepCopy(Heap heap, Map<HeapObject, HeapObject> visited);
 
 	/*
