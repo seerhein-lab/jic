@@ -114,7 +114,7 @@ public class FieldsNotPublishedVisitor extends BaseVisitor {
 			addBug("IMMUTABILITY_BUG",
 					Confidence.HIGH,
 					"a field of 'this' is passed to a virtual mehtod and published", pc.getCurrentInstruction());
-		} else if (argumentObject.refersObjectThatIsReferredBy(heap.getThisInstance())) {
+		} else if (argumentObject.complexObjectIsReachableBy(heap.getThisInstance())) {
 			// publish Object that refers Object referedBy 'this'
 			addBug("IMMUTABILITY_BUG", Confidence.HIGH, "an Object that refers an Object refered by 'this' is passed"
 							+ " to a virtual mehtod and published", pc.getCurrentInstruction());
@@ -140,7 +140,7 @@ public class FieldsNotPublishedVisitor extends BaseVisitor {
 				addBug("IMMUTABILITY_BUG",
 						Confidence.HIGH,
 						"field of 'this' is published by assignment to an external array", pc.getCurrentInstruction());
-			} else if (objectToStore.refersObjectThatIsReferredBy(heap.getThisInstance()))
+			} else if (objectToStore.complexObjectIsReachableBy(heap.getThisInstance()))
 				// publish Object that refers Object referedBy 'this'
 				addBug("IMMUTABILITY_BUG",
 						Confidence.HIGH, "an Object that refers an Object refered by 'this' is published"
@@ -167,7 +167,7 @@ public class FieldsNotPublishedVisitor extends BaseVisitor {
 				addBug("IMMUTABILITY_BUG",
 						Confidence.HIGH,
 						"a field of 'this' is published by assignment to an external object", pc.getCurrentInstruction());
-			} else if (objectToPut.refersObjectThatIsReferredBy(heap.getThisInstance()))
+			} else if (objectToPut.complexObjectIsReachableBy(heap.getThisInstance()))
 				// publish Object that refers Object referedBy 'this'
 				addBug("IMMUTABILITY_BUG",
 						Confidence.HIGH,
@@ -191,7 +191,7 @@ public class FieldsNotPublishedVisitor extends BaseVisitor {
 			addBug("IMMUTABILITY_BUG",
 					Confidence.HIGH,
 					"a field of 'this' is published by assignment to a static field", pc.getCurrentInstruction());
-		} else if (objectToPut.refersObjectThatIsReferredBy(heap.getThisInstance()))
+		} else if (objectToPut.complexObjectIsReachableBy(heap.getThisInstance()))
 			// publish Object that refers Object referedBy 'this'
 			addBug("IMMUTABILITY_BUG",
 					Confidence.HIGH, "an Object that refers an Object refered by 'this' is published"
@@ -207,7 +207,7 @@ public class FieldsNotPublishedVisitor extends BaseVisitor {
 			// publish Object referedBy 'this'
 			addBug("IMMUTABILITY_BUG", Confidence.HIGH,
 					"a field of 'this' is published by return", pc.getCurrentInstruction());
-		} else if (returnObject.refersObjectThatIsReferredBy(heap.getThisInstance()))
+		} else if (returnObject.complexObjectIsReachableBy(heap.getThisInstance()))
 			// publish Object that refers Object referedBy 'this'
 			addBug("IMMUTABILITY_BUG",
 					Confidence.HIGH,

@@ -168,35 +168,13 @@ public abstract class HeapObject {
 	}
 
 	/**
-	 * Checks if the object <code>target</code> is reachable from this object in
-	 * the indicated direction.
+	 * Returns the set of all objects that belong to the complex object starting
+	 * with this object, .i.e. all objects that are directly or indirectly
+	 * referred by this object, as well as this object itself.
 	 * 
-	 * @param target
-	 * @param direction
-	 * @return
+	 * @return set of all objects belonging to this complex object.
 	 */
-	final public boolean isReachable(HeapObject target) {
-		Set<HeapObject> visited = new HashSet<HeapObject>();
-
-		Queue<HeapObject> queue = new ArrayDeque<HeapObject>();
-		queue.add(this);
-
-		while (!queue.isEmpty()) {
-			HeapObject obj = queue.poll();
-
-			for (HeapObject next : obj.getReferredObjects()) {
-
-				if (next.equals(target))
-					return true;
-				if (!visited.contains(next) && !queue.contains(next))
-					queue.add(next);
-			}
-			visited.add(obj);
-		}
-		return false;
-	}
-
-	private final Set<HeapObject> getReferredClosure() {
+	private final Set<HeapObject> getClosure() {
 		Set<HeapObject> closure = new HashSet<HeapObject>();
 		Queue<HeapObject> queue = new ArrayDeque<HeapObject>();
 
@@ -215,9 +193,31 @@ public abstract class HeapObject {
 		return closure;
 	}
 
-	public boolean refersObjectThatIsReferredBy(HeapObject source) {
-		for (HeapObject referedObject : this.getReferredClosure()) {
-			if (source.isReachable(referedObject)) {
+	/**
+	 * Checks if the object <code>target</code> is reachable from this object
+	 * via a path of references; the path must have at least length 1, i.e. for
+	 * this object as the target the check returns true only if this object has
+	 * a reference to itself.
+	 * 
+	 * @param target
+	 * @return true if <code>target</code> is reachable from this object, false
+	 *         otherwise
+	 */
+	public final boolean isReachable(HeapObject target) {
+		return (!this.equals(target)) && getClosure().contains(target);
+	}
+
+	/**
+	 * Checks if a part of the complex object starting at this object is
+	 * reachable by the object <code>source</code>.
+	 * 
+	 * @param source
+	 *            object from where this complex object is to be reachable
+	 * @return true if complex object is reachable, false otherwise
+	 */
+	public boolean complexObjectIsReachableBy(HeapObject source) {
+		for (HeapObject referredObject : this.getClosure()) {
+			if (source.isReachable(referredObject)) {
 				return true;
 			}
 		}
