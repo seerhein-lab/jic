@@ -7,32 +7,61 @@ import java.util.Set;
 import java.util.UUID;
 
 /**
- * Class representing an Array. An Array has an Id, a reference to the heap
- * where its stored and a set of referring + referred objects.
+ * Class whose instances represent arrays. Beside the components defined in the
+ * superclass <code>HeapObject</code>, an array has a set of referred objects.
  */
 public final class Array extends HeapObject {
 	private Set<UUID> refers = new HashSet<UUID>();
 
+	/**
+	 * Constructor.
+	 * 
+	 * @param heap
+	 *            Heap this array resides on. Must not be null.
+	 */
 	public Array(Heap heap) {
 		super(heap);
 	}
 
 	/**
-	 * Copy-Constructor.
+	 * Copy constructor.
 	 * 
 	 * @param original
-	 *            The Array to copy from.
+	 *            Array to copy from. Must not be null.
 	 * @param heap
-	 *            The heap where the object is stored.
+	 *            Heap this array resides on. Must not be null.
 	 */
 	public Array(Array original, Heap heap) {
 		super(original, heap);
 		refers.addAll(original.refers);
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see de.seerhein_lab.jic.vm.HeapObject#copy(de.seerhein_lab.jic.vm.Heap)
+	 */
 	@Override
 	protected Array copy(Heap heap) {
 		return new Array(this, heap);
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see de.seerhein_lab.jic.vm.HeapObject#
+	 * replaceAllOccurrencesOfReferredObjectByExternal
+	 * (de.seerhein_lab.jic.vm.HeapObject)
+	 */
+	@Override
+	public void replaceAllOccurrencesOfReferredObjectByExternal(HeapObject oldObject) {
+		if (refers.remove(oldObject.getId()))
+			refers.add(heap.getExternalObject().getId());
+	}
+
+	public void addComponent(HeapObject obj) {
+		if (obj != null && refers.add(obj.getId()))
+			obj.addReferringObject(this);
 	}
 
 	@Override
@@ -73,20 +102,6 @@ public final class Array extends HeapObject {
 			}
 
 		};
-	}
-
-	/**
-	 * Replace the oldObject by the newObject.
-	 */
-	@Override
-	public void replaceAllOccurrencesOfReferredObjectByExternal(HeapObject oldObject) {
-		if (refers.remove(oldObject.getId()))
-			refers.add(heap.getExternalObject().getId());
-	}
-
-	public void addComponent(HeapObject obj) {
-		if (obj != null && refers.add(obj.getId()))
-			obj.addReferringObject(this);
 	}
 
 	@Override
