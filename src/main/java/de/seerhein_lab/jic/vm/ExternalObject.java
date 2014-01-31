@@ -25,10 +25,10 @@ public final class ExternalObject extends HeapObject {
 		return new ExternalObject(this, heap);
 	}
 
-	@Override
-	public HeapObject deepCopy(Heap heap) {
-		return heap.getExternalObject();
-	}
+	// @Override
+	// public HeapObject deepCopy(Heap heap) {
+	// return heap.getExternalObject();
+	// }
 
 	@Override
 	protected HeapObject deepCopy(Heap heap, Map<HeapObject, HeapObject> visited) {
