@@ -70,14 +70,14 @@ public final class JicDetector implements Detector {
 
 		if (clazz.isAnnotation() || clazz.isInterface()) {
 			if (supposedlyImmutable)
-				reporter.reportBug(Utils.createBug("IMMUTABILITY_BUG",
-						Confidence.HIGH, "Type cannot be annotated as immutable", clazz));
+				reporter.reportBug(Utils.createBug("IMMUTABILITY_BUG", Confidence.HIGH,
+						"Type cannot be annotated as immutable", clazz));
 			return;
 		}
 
 		if (clazz.isAbstract() && supposedlyImmutable) {
-			reporter.reportBug(Utils.createBug("IMMUTABILITY_BUG",
-					Confidence.HIGH, "Type cannot be annotated as immutable", clazz));
+			reporter.reportBug(Utils.createBug("IMMUTABILITY_BUG", Confidence.HIGH,
+					"Type cannot be annotated as immutable", clazz));
 			supposedlyImmutable = false;
 		}
 
@@ -91,12 +91,12 @@ public final class JicDetector implements Detector {
 			}
 
 		} catch (EmercencyBrakeException e) {
-			reporter.reportBug(Utils.createBug("IMMUTABILITY_BUG",
-					Confidence.HIGH, "class is to complex for immutability analysis", classContext.getJavaClass()));
+			reporter.reportBug(Utils.createBug("IMMUTABILITY_BUG", Confidence.HIGH,
+					"class is too complex for immutability analysis", classContext.getJavaClass()));
 		} catch (Throwable e) {
-			reporter.reportBug(Utils.createBug("IMMUTABILITY_BUG",
-					Confidence.HIGH,
-					"Class cannot be analyzed owing to internal problem (" + e + ")", classContext.getJavaClass()));
+			reporter.reportBug(Utils.createBug("IMMUTABILITY_BUG", Confidence.HIGH,
+					"Class cannot be analyzed owing to internal problem (" + e + ")",
+					classContext.getJavaClass()));
 		}
 
 	}
