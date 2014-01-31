@@ -657,10 +657,10 @@ public abstract class BaseVisitor extends SimpleVisitor {
 		}
 
 		// final option: component is null
+		frame.getStack().push(ReferenceSlot.getNullReference());
 
 		BaseMethodAnalyzer analyzer = getMethodAnalyzer(methodGen, alreadyVisitedMethods,
 				methodInvocationDepth);
-		frame.getStack().push(ReferenceSlot.getNullReference());
 		AnalysisResult analysisResult = analyzer.analyze(pc.getCurrentInstruction().getNext(),
 				frame, heap, alreadyVisitedIfBranch);
 
