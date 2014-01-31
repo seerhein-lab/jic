@@ -65,13 +65,16 @@ public class PropConVisitor extends BaseVisitor {
 			addBug("PROPER_CONSTRUCTION_BUG", Confidence.HIGH,
 					"'this' is passed into a virtual method and escapes",
 					pc.getCurrentInstruction());
-		} else if (argument.getObject(heap).isReachable(heap.getThisInstance())) {
+			return;
+		}
+		if (argument.getObject(heap).isReachable(heap.getThisInstance())) {
 			// argument that refers to 'this' is passed into a virtual method
 			addBug("PROPER_CONSTRUCTION_BUG",
 					Confidence.HIGH,
 					"an object containing 'this' is passed into a virtual method letting 'this' escape",
 					pc.getCurrentInstruction());
 		}
+
 	}
 
 	@Override
