@@ -28,7 +28,7 @@ public class FieldsNotPublishedAcceptanceTest {
 		return analyzer.fieldsAreNotPublished();
 	}
 
-	@BugsExpected
+	@NoBugsExpected
 	public static class DetectVirtualMethodBug_This {
 		public void publish() {
 			p.publish(this);

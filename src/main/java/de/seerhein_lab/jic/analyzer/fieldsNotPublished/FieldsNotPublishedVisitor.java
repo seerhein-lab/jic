@@ -1,7 +1,6 @@
 package de.seerhein_lab.jic.analyzer.fieldsNotPublished;
 
 import java.util.Set;
-import java.util.logging.Level;
 
 import org.apache.bcel.generic.CodeExceptionGen;
 import org.apache.bcel.generic.ConstantPoolGen;
@@ -9,9 +8,9 @@ import org.apache.bcel.generic.InstructionHandle;
 import org.apache.bcel.generic.MethodGen;
 import org.apache.bcel.generic.ReturnInstruction;
 
-import de.seerhein_lab.jic.Pair;
 import de.seerhein_lab.jic.EvaluationResult;
 import de.seerhein_lab.jic.EvaluationResult.Kind;
+import de.seerhein_lab.jic.Pair;
 import de.seerhein_lab.jic.analyzer.BaseMethodAnalyzer;
 import de.seerhein_lab.jic.analyzer.BaseVisitor;
 import de.seerhein_lab.jic.analyzer.QualifiedMethod;
@@ -44,27 +43,6 @@ public class FieldsNotPublishedVisitor extends BaseVisitor {
 		return null;
 	}
 
-	// public FieldsNotPublishedVisitor(ClassContext classContext,
-	// MethodGen methodGen, Frame frame, Heap heap, ConstantPoolGen
-	// constantPoolGen,
-	// PC pc, CodeExceptionGen[] exceptionHandlers,
-	// Set<Pair<Method, Slot[]>> alreadyVisitedMethods, int depth) {
-	// this(classContext, methodGen, frame, heap, constantPoolGen, pc,
-	// exceptionHandlers, alreadyVisitedMethods, depth, new
-	// HashSet<Pair<InstructionHandle, Boolean>>());
-	// }
-
-	// @Override
-	// protected BaseVisitor getInstructionsAnalysisVisitor(
-	// Frame frame, Heap heap,
-	// Set<Pair<InstructionHandle, Boolean>> alreadyVisitedIfBranch,
-	// InstructionHandle instructionHandle) {
-	// return new FieldsNotPublishedVisitor(classContext, methodGen,
-	// frame, heap, constantPoolGen, instructionHandle,
-	// exceptionHandlers, alreadyVisitedMethods, depth,
-	// alreadyVisitedIfBranch);
-	// }
-
 	@Override
 	protected BaseMethodAnalyzer getMethodAnalyzer(MethodGen targetMethodGen,
 			Set<QualifiedMethod> alreadyVisitedMethods, int methodInvocationDepth) {
@@ -83,7 +61,7 @@ public class FieldsNotPublishedVisitor extends BaseVisitor {
 
 		logger.fine(indentation + obj.toString(false));
 		Slot returnType = Slot.getDefaultSlotInstance(obj.getType(constantPoolGen));
-		logger.finest( indentation + "\t" + returnType);
+		logger.finest(indentation + "\t" + returnType);
 
 		if (returnType instanceof VoidSlot)
 			result.add(new EvaluationResult(Kind.REGULAR, returnType, heap));
@@ -106,18 +84,21 @@ public class FieldsNotPublishedVisitor extends BaseVisitor {
 			return;
 
 		HeapObject argumentObject = heap.get(argument.getID());
-		if (argumentObject.equals(heap.getThisInstance())) {
-			// XXX problem or not?? Inheritance?!?
+		// if (argumentObject.equals(heap.getThisInstance())) {
+		// // XXX problem or not?? Inheritance?!?
+		// addBug("IMMUTABILITY_BUG", Confidence.HIGH,
+		// "'this' is passed to a virtual method and published",
+		// pc.getCurrentInstruction());
+		// } else
+		if (heap.getThisInstance().isReachable(argumentObject)) {
 			addBug("IMMUTABILITY_BUG", Confidence.HIGH,
-					"'this' is passed to a virtual method and published", pc.getCurrentInstruction());
-		} else if (heap.getThisInstance().isReachable(argumentObject)) {
-			addBug("IMMUTABILITY_BUG",
-					Confidence.HIGH,
-					"a field of 'this' is passed to a virtual mehtod and published", pc.getCurrentInstruction());
+					"a field of 'this' is passed to a virtual method and published",
+					pc.getCurrentInstruction());
 		} else if (argumentObject.complexObjectIsReachableBy(heap.getThisInstance())) {
 			// publish Object that refers Object referedBy 'this'
-			addBug("IMMUTABILITY_BUG", Confidence.HIGH, "an Object that refers an Object refered by 'this' is passed"
-							+ " to a virtual mehtod and published", pc.getCurrentInstruction());
+			addBug("IMMUTABILITY_BUG", Confidence.HIGH,
+					"an Object that refers an Object refered by 'this' is passed"
+							+ " to a virtual method and published", pc.getCurrentInstruction());
 		}
 	}
 
@@ -137,14 +118,14 @@ public class FieldsNotPublishedVisitor extends BaseVisitor {
 		if (arrayReference.getObject(heap) instanceof ExternalObject) {
 			if (heap.getThisInstance().isReachable(objectToStore)) {
 				// a field of this is assigned to an external object
-				addBug("IMMUTABILITY_BUG",
-						Confidence.HIGH,
-						"field of 'this' is published by assignment to an external array", pc.getCurrentInstruction());
+				addBug("IMMUTABILITY_BUG", Confidence.HIGH,
+						"field of 'this' is published by assignment to an external array",
+						pc.getCurrentInstruction());
 			} else if (objectToStore.complexObjectIsReachableBy(heap.getThisInstance()))
 				// publish Object that refers Object referedBy 'this'
-				addBug("IMMUTABILITY_BUG",
-						Confidence.HIGH, "an Object that refers an Object refered by 'this' is published"
-										+ " by assignment to an external array", pc.getCurrentInstruction());
+				addBug("IMMUTABILITY_BUG", Confidence.HIGH,
+						"an Object that refers an Object refered by 'this' is published"
+								+ " by assignment to an external array", pc.getCurrentInstruction());
 		}
 	}
 
@@ -164,15 +145,15 @@ public class FieldsNotPublishedVisitor extends BaseVisitor {
 		if (targetReference.getObject(heap) instanceof ExternalObject) {
 			if (heap.getThisInstance().isReachable(objectToPut)) {
 				// a field of this is assigned to an external object
-				addBug("IMMUTABILITY_BUG",
-						Confidence.HIGH,
-						"a field of 'this' is published by assignment to an external object", pc.getCurrentInstruction());
+				addBug("IMMUTABILITY_BUG", Confidence.HIGH,
+						"a field of 'this' is published by assignment to an external object",
+						pc.getCurrentInstruction());
 			} else if (objectToPut.complexObjectIsReachableBy(heap.getThisInstance()))
 				// publish Object that refers Object referedBy 'this'
-				addBug("IMMUTABILITY_BUG",
-						Confidence.HIGH,
+				addBug("IMMUTABILITY_BUG", Confidence.HIGH,
 						"an Object that refers an Object refered by 'this' is published"
-								+ " by assignment to an external object", pc.getCurrentInstruction());
+								+ " by assignment to an external object",
+						pc.getCurrentInstruction());
 		}
 	}
 
@@ -185,17 +166,18 @@ public class FieldsNotPublishedVisitor extends BaseVisitor {
 		// XXX only a problem if it is a static field of the class we analyze
 		if (objectToPut.equals(heap.getThisInstance())) {
 			addBug("IMMUTABILITY_BUG", Confidence.HIGH,
-					"'this' is published by assignment to a static field", pc.getCurrentInstruction());
+					"'this' is published by assignment to a static field",
+					pc.getCurrentInstruction());
 		} else if (heap.getThisInstance().isReachable(objectToPut)) {
 			// publish Object referedBy 'this'
-			addBug("IMMUTABILITY_BUG",
-					Confidence.HIGH,
-					"a field of 'this' is published by assignment to a static field", pc.getCurrentInstruction());
+			addBug("IMMUTABILITY_BUG", Confidence.HIGH,
+					"a field of 'this' is published by assignment to a static field",
+					pc.getCurrentInstruction());
 		} else if (objectToPut.complexObjectIsReachableBy(heap.getThisInstance()))
 			// publish Object that refers Object referedBy 'this'
-			addBug("IMMUTABILITY_BUG",
-					Confidence.HIGH, "an Object that refers an Object refered by 'this' is published"
-									+ " by assignment to a static field", pc.getCurrentInstruction());
+			addBug("IMMUTABILITY_BUG", Confidence.HIGH,
+					"an Object that refers an Object refered by 'this' is published"
+							+ " by assignment to a static field", pc.getCurrentInstruction());
 	}
 
 	protected void detectAReturnBug(ReferenceSlot returnValue) {
@@ -205,13 +187,13 @@ public class FieldsNotPublishedVisitor extends BaseVisitor {
 
 		if (heap.getThisInstance().isReachable(returnObject)) {
 			// publish Object referedBy 'this'
-			addBug("IMMUTABILITY_BUG", Confidence.HIGH,
-					"a field of 'this' is published by return", pc.getCurrentInstruction());
+			addBug("IMMUTABILITY_BUG", Confidence.HIGH, "a field of 'this' is published by return",
+					pc.getCurrentInstruction());
 		} else if (returnObject.complexObjectIsReachableBy(heap.getThisInstance()))
 			// publish Object that refers Object referedBy 'this'
-			addBug("IMMUTABILITY_BUG",
-					Confidence.HIGH,
-					"an Object that refers an Object refered by 'this' is published by return", pc.getCurrentInstruction());
+			addBug("IMMUTABILITY_BUG", Confidence.HIGH,
+					"an Object that refers an Object refered by 'this' is published by return",
+					pc.getCurrentInstruction());
 
 	}
 }
