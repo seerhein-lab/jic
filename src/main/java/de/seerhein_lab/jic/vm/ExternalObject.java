@@ -4,6 +4,14 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.NoSuchElementException;
 
+/**
+ * Class whose instances represent the external object that doubles as both an
+ * external class instance and an external array. An external object only has
+ * referring objects as defined in the superclass <code>HeapObject</code>, but
+ * no referred objects, because an object that is referred by the external
+ * object is itself external.
+ * 
+ */
 public final class ExternalObject extends HeapObject {
 
 	public ExternalObject(Heap heap) {
@@ -24,11 +32,6 @@ public final class ExternalObject extends HeapObject {
 	protected ExternalObject copy(Heap heap) {
 		return new ExternalObject(this, heap);
 	}
-
-	// @Override
-	// public HeapObject deepCopy(Heap heap) {
-	// return heap.getExternalObject();
-	// }
 
 	@Override
 	protected HeapObject deepCopy(Heap heap, Map<HeapObject, HeapObject> visited) {
