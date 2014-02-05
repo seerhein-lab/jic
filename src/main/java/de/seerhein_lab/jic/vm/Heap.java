@@ -8,7 +8,6 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicLong;
 
-
 /**
  * Class representing a heap. Contains HeapObjects and has special HeapObjects
  * for "this" and the "external".
@@ -62,9 +61,16 @@ public class Heap {
 	 * @return The HeapObject for the id.
 	 */
 	public HeapObject get(UUID id) {
-		if (id != null && !objects.containsKey(id))
-			throw new NoSuchElementException("HeapObject not found in this Heap");
-		return publishedObjects.contains(id) ? objects.get(externalID) : objects.get(id);
+		if (id == null)
+			return null;
+
+		if (publishedObjects.contains(id))
+			return objects.get(externalID);
+
+		if (objects.containsKey(id))
+			return objects.get(id);
+
+		throw new NoSuchElementException("HeapObject not found in this Heap");
 	}
 
 	public ClassInstance getThisInstance() {
@@ -106,6 +112,7 @@ public class Heap {
 	 *            The object to be published
 	 */
 	public void publish(HeapObject obj) {
+
 		if (obj == null || obj.getId().equals(thisID) || obj.getId().equals(externalID)) {
 			// do not publish 'this' in order not to cover further bugs
 			// do not publish 'external', is already published
@@ -113,6 +120,7 @@ public class Heap {
 		}
 
 		publishedObjects.add(obj.getId());
+		objects.remove(obj.getId());
 
 		HeapObject external = objects.get(externalID);
 
