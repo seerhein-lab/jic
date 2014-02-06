@@ -174,7 +174,7 @@ public abstract class HeapObject {
 	 * 
 	 * @return set of all objects belonging to this complex object.
 	 */
-	private final Set<HeapObject> getClosure() {
+	protected final Set<HeapObject> getClosure() {
 		Set<HeapObject> closure = new HashSet<HeapObject>();
 		Queue<HeapObject> queue = new ArrayDeque<HeapObject>();
 
