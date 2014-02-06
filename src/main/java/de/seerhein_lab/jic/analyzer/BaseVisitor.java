@@ -698,7 +698,7 @@ public abstract class BaseVisitor extends SimpleVisitor {
 			if (array instanceof ExternalObject)
 				heap.publish(valueRef.getObject(heap));
 			else
-				((Array) array).addComponent(valueRef.getObject(heap));
+				((Array) array).addReferredObject(valueRef.getObject(heap));
 		}
 
 		pc.advance();
@@ -1242,7 +1242,7 @@ public abstract class BaseVisitor extends SimpleVisitor {
 			if (i == 0) {
 				slot = ReferenceSlot.createNewInstance(newArray);
 			} else {
-				array.addComponent(newArray);
+				array.addReferredObject(newArray);
 			}
 			array = newArray;
 		}

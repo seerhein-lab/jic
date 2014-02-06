@@ -23,8 +23,14 @@ public final class ExternalObject extends HeapObject {
 		super(external, heap);
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see de.seerhein_lab.jic.vm.HeapObject# replaceReferredObject
+	 * (de.seerhein_lab.jic.vm.HeapObject, de.seerhein_lab.jic.vm.HeapObject)
+	 */
 	@Override
-	public void replaceAllOccurrencesOfReferredObjectByExternal(HeapObject oldObject) {
+	protected void replaceReferredObject(HeapObject oldObject, HeapObject newObject) {
 		throw new AssertionError("must not be called.");
 	}
 

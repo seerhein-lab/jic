@@ -39,27 +39,24 @@ public final class ClassInstance extends HeapObject {
 		refers.putAll(original.refers);
 	}
 
-	/**
-	 * Replace all occurrences of oldObject by newObject.
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see de.seerhein_lab.jic.vm.HeapObject# replaceReferredObject
+	 * (de.seerhein_lab.jic.vm.HeapObject, de.seerhein_lab.jic.vm.HeapObject)
 	 */
 	@Override
-	public void replaceAllOccurrencesOfReferredObjectByExternal(HeapObject oldObject) {
-		for (String field : refers.keySet()) {
-			if (refers.get(field) != null && refers.get(field).equals(oldObject.getId()))
-				refers.put(field, heap.getExternalObject().getId());
-		}
-	}
+	protected void replaceReferredObject(HeapObject oldObj, HeapObject newObj) {
+		if (oldObj == null)
+			return;
 
-	// protected void replaceAllOccurrencesOfReferredObject(HeapObject oldObj,
-	// HeapObject newObj) {
-	// if (oldObj == null)
-	// return;
-	//
-	// for (String field : refers.keySet()) {
-	// if (refers.get(field).equals(oldObject.getId()))
-	// refers.put(field, heap.getExternalObject().getId());
-	// }
-	// }
+		for (String field : refers.keySet()) {
+			if (refers.get(field).equals(oldObj.getId()))
+				refers.put(field, newObj.getId());
+		}
+		oldObj.removeReferringObj(this);
+		newObj.addReferringObject(this);
+	}
 
 	/*
 	 * (non-Javadoc)

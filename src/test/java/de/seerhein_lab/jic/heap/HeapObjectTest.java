@@ -44,7 +44,7 @@ public class HeapObjectTest {
 		c.setField("f", e);
 		d.setField("f", e);
 		e.setField("f", f);
-		f.addComponent(d);
+		f.addReferredObject(d);
 	}
 
 	@Test

@@ -116,15 +116,16 @@ public abstract class HeapObject {
 
 	/**
 	 * Overriding method implementations are expected to replace all occurrences
-	 * of the referred object <code>referredObject</code> by the external
-	 * object. The method has no effect if <code>referredObject</code> is not
-	 * referred by this object.
+	 * of the referred object <code>oldObj</code> by <code>newObj</code>. The
+	 * method has no effect if <code>oldObject</code> is not referred by this
+	 * object.
 	 * 
-	 * @param referredObject
+	 * @param oldObject
 	 *            referred object that is to be replaced; must not be null.
+	 * @param newObject
+	 *            newly referred object; must not be null.
 	 */
-	protected abstract void replaceAllOccurrencesOfReferredObjectByExternal(
-			HeapObject referredObject);
+	protected abstract void replaceReferredObject(HeapObject oldObj, HeapObject newObj);
 
 	/**
 	 * Overriding method implementations are expected to returns an iterable of

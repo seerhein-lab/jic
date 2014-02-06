@@ -2,10 +2,12 @@ package de.seerhein_lab.jic.vm;
 
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Set;
 import java.util.UUID;
+import java.util.Vector;
 import java.util.concurrent.atomic.AtomicLong;
 
 /**
@@ -104,36 +106,37 @@ public class Heap {
 	}
 
 	/**
-	 * Publishes an Object. The published Object becomes the "external" Object,
-	 * the references of all referring Objects are updated and all referred
-	 * Objects are published recursively.
+	 * Publishes all objects that belong to this complex object. The published
+	 * objects are replaced by the external object in all referred links,
+	 * removed from this heap's set of regular objects, and added to the list of
+	 * this heap's published objects.
 	 * 
 	 * @param obj
-	 *            The object to be published
+	 *            The entry to this complex object to be published
 	 */
 	public void publish(HeapObject obj) {
-
-		if (obj == null || obj.getId().equals(thisID) || obj.getId().equals(externalID)) {
-			// do not publish 'this' in order not to cover further bugs
-			// do not publish 'external', is already published
+		if (obj == null)
 			return;
-		}
 
-		publishedObjects.add(obj.getId());
-		objects.remove(obj.getId());
+		for (HeapObject o : obj.getClosure()) {
+			if (!o.equals(getThisInstance()) && !o.equals(getExternalObject())) {
+				// don't publish this in order not to cover further bugs
+				// don't publish the external object
 
-		HeapObject external = objects.get(externalID);
+				List<HeapObject> referring = new Vector<HeapObject>();
 
-		for (HeapObject referringObject : obj.getReferringObjects()) {
-			if (!referringObject.equals(external)) {
-				referringObject.replaceAllOccurrencesOfReferredObjectByExternal(obj);
-				external.addReferringObject(referringObject);
+				for (HeapObject referringObj : o.getReferringObjects()) {
+					if (!referringObj.equals(getExternalObject()))
+						referring.add(referringObj);
+				}
+
+				for (int i = 0; i < referring.size(); i++) {
+					referring.get(i).replaceReferredObject(o, getExternalObject());
+				}
+
+				publishedObjects.add(o.getId());
+				objects.remove(o.getId());
 			}
-		}
-
-		for (HeapObject referred : obj.getReferredObjects()) {
-			if (!referred.equals(external))
-				publish(referred);
 		}
 	}
 

@@ -48,19 +48,6 @@ public final class Array extends HeapObject {
 		return new Array(this, heap);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see de.seerhein_lab.jic.vm.HeapObject#
-	 * replaceAllOccurrencesOfReferredObjectByExternal
-	 * (de.seerhein_lab.jic.vm.HeapObject)
-	 */
-	@Override
-	protected void replaceAllOccurrencesOfReferredObjectByExternal(HeapObject oldObject) {
-		if (refers.remove(oldObject.getId()))
-			refers.add(heap.getExternalObject().getId());
-	}
-
 	/**
 	 * Adds the object <code>obj</code> to this object's set of referred
 	 * objects. If <code>obj</code> is null, the set remains unchanged;
@@ -72,7 +59,7 @@ public final class Array extends HeapObject {
 	 * @param obj
 	 *            the object to be added as a referred object.
 	 */
-	public void addComponent(HeapObject obj) {
+	public void addReferredObject(HeapObject obj) {
 		if (obj != null && refers.add(obj.getId()))
 			obj.addReferringObject(this);
 	}
@@ -82,7 +69,14 @@ public final class Array extends HeapObject {
 	// obj.removeReferringObj(this);
 	// }
 
-	public void replaceComponent(HeapObject oldObj, HeapObject newObj) {
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see de.seerhein_lab.jic.vm.HeapObject# replaceReferredObject
+	 * (de.seerhein_lab.jic.vm.HeapObject, de.seerhein_lab.jic.vm.HeapObject)
+	 */
+	@Override
+	protected void replaceReferredObject(HeapObject oldObj, HeapObject newObj) {
 		if (oldObj != null && refers.remove(oldObj.getId())) {
 			oldObj.removeReferringObj(this);
 			if (newObj != null && refers.add(newObj.getId()))
@@ -136,7 +130,7 @@ public final class Array extends HeapObject {
 		for (UUID id : this.refers) {
 			HeapObject referred = this.heap.get(id);
 			visited.put(this, copiedArray);
-			copiedArray.addComponent(visited.containsKey(referred) ? visited.get(referred)
+			copiedArray.addReferredObject(visited.containsKey(referred) ? visited.get(referred)
 					: referred.deepCopy(heap, visited));
 		}
 		return copiedArray;
