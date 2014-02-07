@@ -14,11 +14,24 @@ import java.util.NoSuchElementException;
  */
 public final class ExternalObject extends HeapObject {
 
+	/**
+	 * Constructor.
+	 * 
+	 * @param heap
+	 *            Heap this external object resides on. Must not be null.
+	 */
 	public ExternalObject(Heap heap) {
 		super(heap);
-		referredBy.add(getId());
 	}
 
+	/**
+	 * Copy constructor.
+	 * 
+	 * @param original
+	 *            external object to copy from. Must not be null.
+	 * @param heap
+	 *            Heap this external object resides on. Must not be null.
+	 */
 	public ExternalObject(ExternalObject external, Heap heap) {
 		super(external, heap);
 	}
@@ -34,34 +47,45 @@ public final class ExternalObject extends HeapObject {
 		throw new AssertionError("must not be called.");
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see de.seerhein_lab.jic.vm.HeapObject#copy(de.seerhein_lab.jic.vm.Heap)
+	 */
 	@Override
 	protected ExternalObject copy(Heap heap) {
 		return new ExternalObject(this, heap);
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * de.seerhein_lab.jic.vm.HeapObject#deepCopy(de.seerhein_lab.jic.vm.Heap,
+	 * java.util.Map)
+	 */
 	@Override
 	protected HeapObject deepCopy(Heap heap, Map<HeapObject, HeapObject> visited) {
 		return heap.getExternalObject();
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see de.seerhein_lab.jic.vm.HeapObject#getReferredObjects()
+	 */
 	@Override
 	public Iterable<HeapObject> getReferredObjects() {
 		return new Iterable<HeapObject>() {
 			@Override
 			public Iterator<HeapObject> iterator() {
 				return new Iterator<HeapObject>() {
-					boolean hasNext = true;
-
 					@Override
 					public boolean hasNext() {
-						return hasNext;
+						return false;
 					}
 
 					public HeapObject next() {
-						if (hasNext) {
-							hasNext = false;
-							return ExternalObject.this;
-						}
 						throw new NoSuchElementException();
 					}
 
@@ -75,11 +99,21 @@ public final class ExternalObject extends HeapObject {
 		};
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see de.seerhein_lab.jic.vm.HeapObject#hashCode()
+	 */
 	@Override
 	public int hashCode() {
 		return super.hashCode();
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see de.seerhein_lab.jic.vm.HeapObject#equals(java.lang.Object)
+	 */
 	@Override
 	public boolean equals(Object obj) {
 		if (this == obj)
