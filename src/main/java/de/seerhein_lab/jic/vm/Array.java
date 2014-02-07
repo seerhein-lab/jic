@@ -126,10 +126,10 @@ public final class Array extends HeapObject {
 	@Override
 	public HeapObject deepCopy(Heap heap, Map<HeapObject, HeapObject> visited) {
 		Array copiedArray = heap.newArray();
+		visited.put(this, copiedArray);
 
 		for (UUID id : this.refers) {
 			HeapObject referred = this.heap.get(id);
-			visited.put(this, copiedArray);
 			copiedArray.addReferredObject(visited.containsKey(referred) ? visited.get(referred)
 					: referred.deepCopy(heap, visited));
 		}

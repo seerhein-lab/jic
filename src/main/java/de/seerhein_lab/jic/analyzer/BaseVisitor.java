@@ -207,7 +207,7 @@ public abstract class BaseVisitor extends SimpleVisitor {
 						.createNewInstance(resultHeap.newClassInstance()), resultHeap));
 			} else {
 				((ClassInstance) ((ReferenceSlot) topOfStack).getObject(resultHeap))
-						.copyReferredObjectsTo(resultObject, resultHeap);
+						.copyReferredObjectsTo(resultObject);
 				targetResults.add(new EvaluationResult(EvaluationResult.Kind.REGULAR, VoidSlot
 						.getInstance(), resultHeap));
 			}

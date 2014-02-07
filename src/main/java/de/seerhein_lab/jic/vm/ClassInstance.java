@@ -68,31 +68,41 @@ public final class ClassInstance extends HeapObject {
 		return new ClassInstance(this, heap);
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * de.seerhein_lab.jic.vm.HeapObject#deepCopy(de.seerhein_lab.jic.vm.Heap,
+	 * java.util.Map)
+	 */
 	@Override
 	protected HeapObject deepCopy(Heap heap, Map<HeapObject, HeapObject> visited) {
 		ClassInstance copiedObject = heap.newClassInstance();
+		visited.put(this, copiedObject);
 
 		for (Entry<String, UUID> entry : this.refers.entrySet()) {
 			HeapObject referred = this.heap.get(entry.getValue());
-			if (referred == null) {
-				copiedObject.setField(entry.getKey(), null);
-				continue;
-			}
-			if (visited.containsKey(referred)) {
-				visited.put(this, copiedObject);
-				copiedObject.setField(entry.getKey(), visited.get(referred));
-			} else {
-				visited.put(this, copiedObject);
-				copiedObject.setField(entry.getKey(), referred.deepCopy(heap, visited));
-			}
+			copiedObject.setField(
+					entry.getKey(),
+					visited.containsKey(referred) ? visited.get(referred) : referred.deepCopy(heap,
+							visited));
 		}
-
 		return copiedObject;
 	}
 
-	public void copyReferredObjectsTo(HeapObject origin, Heap heap) {
+	/**
+	 * Deeply copies the subobjects of the complex object <code>origin</code>
+	 * onto this object, such that this object gets the same complex object
+	 * structure as <code>origin</code>. If <code>origin</code> is the external
+	 * object, then this object gets published.
+	 * 
+	 * @param origin
+	 *            original complex object whose structure is to be copied onto
+	 *            this object.
+	 */
+	public void copyReferredObjectsTo(HeapObject origin) {
 		if (origin instanceof ExternalObject) {
-			heap.publish(this);
+			this.heap.publish(this);
 			return;
 		}
 
@@ -107,7 +117,7 @@ public final class ClassInstance extends HeapObject {
 				this.setField(entry.getKey(), null);
 				continue;
 			}
-			this.setField(entry.getKey(), referred.deepCopy(heap, visited));
+			this.setField(entry.getKey(), referred.deepCopy(this.heap, visited));
 		}
 	}
 
