@@ -83,7 +83,7 @@ public class FieldsNotPublishedVisitor extends BaseVisitor {
 		if (argument.isNullReference())
 			return;
 
-		HeapObject argumentObject = heap.get(argument.getID());
+		HeapObject argumentObject = argument.getObject(heap);
 		// if (argumentObject.equals(heap.getThisInstance())) {
 		// // XXX problem or not?? Inheritance?!?
 		// addBug("IMMUTABILITY_BUG", Confidence.HIGH,
@@ -115,7 +115,7 @@ public class FieldsNotPublishedVisitor extends BaseVisitor {
 		if (referenceToStore.isNullReference())
 			return;
 
-		HeapObject objectToStore = heap.get(referenceToStore.getID());
+		HeapObject objectToStore = referenceToStore.getObject(heap);
 		// array is the "external"
 		if (arrayReference.getObject(heap) instanceof ExternalObject) {
 			if (heap.getThisInstance().isReachable(objectToStore)) {
@@ -142,7 +142,7 @@ public class FieldsNotPublishedVisitor extends BaseVisitor {
 		if (referenceToPut.isNullReference())
 			return;
 
-		HeapObject objectToPut = heap.get(referenceToPut.getID());
+		HeapObject objectToPut = referenceToPut.getObject(heap);
 		// target is the "external"
 		if (targetReference.getObject(heap) instanceof ExternalObject) {
 			if (heap.getThisInstance().isReachable(objectToPut)) {
@@ -164,7 +164,7 @@ public class FieldsNotPublishedVisitor extends BaseVisitor {
 		if (referenceToPut.isNullReference())
 			return;
 
-		HeapObject objectToPut = heap.get(referenceToPut.getID());
+		HeapObject objectToPut = referenceToPut.getObject(heap);
 		// XXX only a problem if it is a static field of the class we analyze
 		if (objectToPut.equals(heap.getThisInstance())) {
 			addBug("IMMUTABILITY_BUG", Confidence.HIGH,
@@ -183,7 +183,7 @@ public class FieldsNotPublishedVisitor extends BaseVisitor {
 	}
 
 	protected void detectAReturnBug(ReferenceSlot returnValue) {
-		HeapObject returnObject = heap.get(returnValue.getID());
+		HeapObject returnObject = returnValue.getObject(heap);
 		if (returnObject == null)
 			return;
 
