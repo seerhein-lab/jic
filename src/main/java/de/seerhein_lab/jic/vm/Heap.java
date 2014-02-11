@@ -11,8 +11,10 @@ import java.util.Vector;
 import java.util.concurrent.atomic.AtomicLong;
 
 /**
- * Class representing a heap. Contains HeapObjects and has special HeapObjects
- * for "this" and the "external".
+ * Class whose instances represent heaps. A heap contains objects, some of which
+ * have been published, as well as two special objects, i.e. the 'this' instance
+ * and the external object. The higher layers can create objects only through a
+ * heap.
  */
 public class Heap {
 	public static AtomicLong count = new AtomicLong();
@@ -23,7 +25,7 @@ public class Heap {
 	private final UUID externalID;
 
 	/**
-	 * Constructor. Initializes the "this" and the "external" HeapObject.
+	 * Constructor. Creates the 'this' instance and the external object.
 	 */
 	public Heap() {
 		HeapObject thisObject = new ClassInstance(this);
@@ -55,14 +57,15 @@ public class Heap {
 	}
 
 	/**
-	 * Get the HeapObject for the specified UUID. Checks if the id was published
-	 * in this heap, then returns the "external".
+	 * Returns the object with the given ID <code>id</code>. If <code>id</code>
+	 * is null, the null is returned; if the object has been published, the
+	 * external object is returned.
 	 * 
 	 * @param id
-	 *            The heap to copy from.
-	 * @return The HeapObject for the id.
+	 *            the ID of the object to be returned
+	 * @return the object with the given ID,
 	 */
-	public HeapObject get(UUID id) {
+	protected HeapObject get(UUID id) {
 		if (id == null)
 			return null;
 
@@ -75,18 +78,28 @@ public class Heap {
 		throw new NoSuchElementException("HeapObject not found in this Heap");
 	}
 
+	/**
+	 * Gets this heap's 'this' instance
+	 * 
+	 * @return this heap's 'this' instance
+	 */
 	public ClassInstance getThisInstance() {
 		return (ClassInstance) get(thisID);
 	}
 
+	/**
+	 * Gets this heap's external object
+	 * 
+	 * @return this heap's external object
+	 */
 	public HeapObject getExternalObject() {
 		return get(externalID);
 	}
 
 	/**
-	 * Creates a new ClassInstance and registers it in the heap.
+	 * Creates a new class instance and registers it in the heap.
 	 * 
-	 * @return The created ClassInstance.
+	 * @return The newly created class instance.
 	 */
 	public ClassInstance newClassInstance() {
 		ClassInstance object = new ClassInstance(this);
@@ -95,9 +108,9 @@ public class Heap {
 	}
 
 	/**
-	 * Creates a new Array and registers it in the heap.
+	 * Creates a new array and registers it in the heap.
 	 * 
-	 * @return The created Array.
+	 * @return The newly created array.
 	 */
 	public Array newArray() {
 		Array object = new Array(this);
@@ -140,6 +153,11 @@ public class Heap {
 		}
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see de.seerhein_lab.jic.vm.HeapObject#hashCode()
+	 */
 	@Override
 	public int hashCode() {
 		final int prime = 31;
@@ -151,6 +169,11 @@ public class Heap {
 		return result;
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see de.seerhein_lab.jic.vm.HeapObject#hashCode()
+	 */
 	@Override
 	public boolean equals(Object obj) {
 		if (this == obj)
