@@ -5,7 +5,8 @@ import java.util.concurrent.atomic.AtomicLong;
 import de.seerhein_lab.jic.slot.Slot;
 
 /**
- * Class representing a method frame. Contains LocalVars and a method stack.
+ * Class representing a method frame. Contains the local vars and the operand
+ * stack.
  */
 public class Frame {
 	public static AtomicLong count = new AtomicLong();
@@ -13,15 +14,14 @@ public class Frame {
 	private final OpStack opStack;
 
 	/**
-	 * Constructor that copies numSlots entries from the callerStack into the
-	 * newly created localVars of size maxLocals. Note that the copied entries
-	 * are consumed from the callerStack. The new frame uses the same heap as
-	 * the callerFrame.
+	 * Constructor that copies <code>numSlots</code> entries from the caller
+	 * stack into the local vars (of size <code>maxLocals</code>) of this frame.
+	 * Note that the copied entries are consumed from the caller stack.
 	 * 
 	 * @param maxLocals
 	 *            The size of the localVars array.
-	 * @param callerFrame
-	 *            The caller's frame.
+	 * @param callerOpStack
+	 *            The caller operand stack.
 	 * @param numSlots
 	 *            Number of values to be copied from the callerStack into the
 	 *            localVars array.
@@ -36,45 +36,29 @@ public class Frame {
 		count.incrementAndGet();
 	}
 
-	public Frame(Frame frame) {
-		this.localVars = new Slot[frame.getLocalVars().length];
-		for (int i = 0; i < frame.getLocalVars().length; i++) {
-			this.localVars[i] = (frame.getLocalVars()[i] == null) ? null : frame.getLocalVars()[i]
-					.copy();
+	/**
+	 * Copy constructor
+	 * 
+	 * @param original
+	 *            original frame to copy from
+	 */
+	public Frame(Frame original) {
+		this.localVars = new Slot[original.getLocalVars().length];
+		for (int i = 0; i < original.getLocalVars().length; i++) {
+			this.localVars[i] = (original.getLocalVars()[i] == null) ? null : original
+					.getLocalVars()[i].copy();
 		}
-		opStack = new OpStack(frame.getStack());
+		opStack = new OpStack(original.getStack());
 		count.incrementAndGet();
 	}
 
+	/**
+	 * Gets this frame's operand stack
+	 * 
+	 * @return this frame's operand stack
+	 */
 	public OpStack getStack() {
 		return opStack;
-	}
-
-	/**
-	 * Pushes the slot n times onto the stack, where n is 0 for VoidSlot, 2 for
-	 * DoubleSlot and LongSlot and 1 in all other cases.
-	 * 
-	 * @param slot
-	 *            The Slot to push.
-	 */
-	public void pushStackByRequiredSlots(Slot slot) {
-		for (int i = 0; i < slot.getNumSlots(); i++) {
-			opStack.push(slot);
-		}
-	}
-
-	/**
-	 * Pops up to 2 Slots from the stack and returns the first value popped. If
-	 * the first value is DoubleSlot or LongSlot an additional pop is executed.
-	 * 
-	 * @return The top stack value.
-	 */
-	public Slot popStackByRequiredSlots() {
-		Slot poppedValue = opStack.pop();
-		if (poppedValue.getNumSlots() == 2) {
-			opStack.pop();
-		}
-		return poppedValue;
 	}
 
 	/**

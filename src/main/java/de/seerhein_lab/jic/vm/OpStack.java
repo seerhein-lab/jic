@@ -42,4 +42,31 @@ public final class OpStack {
 	public int size() {
 		return stack.size();
 	}
+
+	/**
+	 * Pushes the slot n times onto the stack, where n is 0 for VoidSlot, 2 for
+	 * DoubleSlot and LongSlot and 1 in all other cases.
+	 * 
+	 * @param slot
+	 *            The Slot to push.
+	 */
+	public void pushByRequiredSize(Slot slot) {
+		for (int i = 0; i < slot.getNumSlots(); i++) {
+			push(slot);
+		}
+	}
+
+	/**
+	 * Pops up to 2 Slots from the stack and returns the first value popped. If
+	 * the first value is DoubleSlot or LongSlot an additional pop is executed.
+	 * 
+	 * @return The top stack value.
+	 */
+	public Slot popByRequiredSize() {
+		Slot poppedValue = pop();
+		if (poppedValue.getNumSlots() == 2) {
+			pop();
+		}
+		return poppedValue;
+	}
 }

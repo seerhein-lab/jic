@@ -259,7 +259,7 @@ public abstract class BaseVisitor extends SimpleVisitor {
 			if (calleeResult.getKind().equals(Kind.REGULAR)) {
 
 				if (targetResults.size() == 1) {
-					frame.pushStackByRequiredSlots(calleeResult.getSlot());
+					frame.getStack().pushByRequiredSize(calleeResult.getSlot());
 					heap = calleeResult.getHeap();
 					pc.advance();
 					return;
@@ -269,7 +269,7 @@ public abstract class BaseVisitor extends SimpleVisitor {
 						methodInvocationDepth);
 
 				Frame newFrame = new Frame(frame);
-				newFrame.pushStackByRequiredSlots(calleeResult.getSlot());
+				newFrame.getStack().pushByRequiredSize(calleeResult.getSlot());
 
 				AnalysisResult analysisResult = analyzer.analyze(pc.getCurrentInstruction()
 						.getNext(), newFrame, calleeResult.getHeap(), alreadyVisitedIfBranch);
@@ -399,7 +399,7 @@ public abstract class BaseVisitor extends SimpleVisitor {
 			returnValue = ReferenceSlot.createNewInstance(heap.getExternalObject());
 
 		// works also for void results, because number of required slots = 0
-		frame.pushStackByRequiredSlots(returnValue);
+		frame.getStack().pushByRequiredSize(returnValue);
 
 		pc.advance();
 	}
@@ -424,7 +424,7 @@ public abstract class BaseVisitor extends SimpleVisitor {
 		// + ")" : ""));
 		if (frame.getLocalVars()[obj.getIndex()] == null)
 			throw new AssertionError("wrong index for local vars");
-		frame.pushStackByRequiredSlots(frame.getLocalVars()[obj.getIndex()]);
+		frame.getStack().pushByRequiredSize(frame.getLocalVars()[obj.getIndex()]);
 		pc.advance();
 	}
 
@@ -464,7 +464,8 @@ public abstract class BaseVisitor extends SimpleVisitor {
 		if (returnType instanceof VoidSlot)
 			result.add(new EvaluationResult(Kind.REGULAR, returnType, heap));
 		else
-			result.add(new EvaluationResult(Kind.REGULAR, frame.popStackByRequiredSlots(), heap));
+			result.add(new EvaluationResult(Kind.REGULAR, frame.getStack().popByRequiredSize(),
+					heap));
 		pc.invalidate();
 	}
 
@@ -604,7 +605,7 @@ public abstract class BaseVisitor extends SimpleVisitor {
 		case 0x55: // castore
 		case 0x56: // sastore
 			// pop value
-			Slot value = frame.popStackByRequiredSlots();
+			Slot value = frame.getStack().popByRequiredSize();
 			// pop array index
 			frame.getStack().pop();
 			// pop array reference
@@ -675,7 +676,7 @@ public abstract class BaseVisitor extends SimpleVisitor {
 		logger.fine(indentation + obj.toString(false));
 
 		// pop value
-		ReferenceSlot valueRef = (ReferenceSlot) frame.popStackByRequiredSlots();
+		ReferenceSlot valueRef = (ReferenceSlot) frame.getStack().popByRequiredSize();
 
 		// pop array index
 		frame.getStack().pop();
@@ -967,7 +968,7 @@ public abstract class BaseVisitor extends SimpleVisitor {
 				}
 			}
 		}
-		frame.pushStackByRequiredSlots(f);
+		frame.getStack().pushByRequiredSize(f);
 
 		logger.finest(indentation + "\t" + o.getObject(heap) + "."
 				+ obj.getFieldName(constantPoolGen));
@@ -1000,7 +1001,7 @@ public abstract class BaseVisitor extends SimpleVisitor {
 		}
 
 		log.append((f instanceof DoubleSlot || f instanceof LongSlot) ? f + ", " + f : f);
-		frame.pushStackByRequiredSlots(f);
+		frame.getStack().pushByRequiredSize(f);
 		log.append(")");
 		logger.finest(indentation + log);
 
@@ -1021,7 +1022,7 @@ public abstract class BaseVisitor extends SimpleVisitor {
 		// Notation: puts o.f = v
 
 		// right side of assignment
-		Slot vRef = frame.popStackByRequiredSlots();
+		Slot vRef = frame.getStack().popByRequiredSize();
 
 		// pop left side of assignment off the stack, too
 		ReferenceSlot oRef = (ReferenceSlot) frame.getStack().pop();
@@ -1065,7 +1066,7 @@ public abstract class BaseVisitor extends SimpleVisitor {
 		// Notation: f = v
 
 		// popping value from stack
-		Slot v = frame.popStackByRequiredSlots();
+		Slot v = frame.getStack().popByRequiredSize();
 
 		// a reference is assigned to a static field
 		if (v instanceof ReferenceSlot) {
@@ -1187,7 +1188,7 @@ public abstract class BaseVisitor extends SimpleVisitor {
 			// it is a String
 			value = ReferenceSlot.createNewInstance(heap.newClassInstance());
 		}
-		frame.pushStackByRequiredSlots(value);
+		frame.getStack().pushByRequiredSize(value);
 
 		logger.finest(indentation + "\t" + value);
 
@@ -1208,7 +1209,7 @@ public abstract class BaseVisitor extends SimpleVisitor {
 			// it is a String
 			value = ReferenceSlot.createNewInstance(heap.newClassInstance());
 		}
-		frame.pushStackByRequiredSlots(value);
+		frame.getStack().pushByRequiredSize(value);
 
 		logger.finest(indentation + "\t" + value);
 

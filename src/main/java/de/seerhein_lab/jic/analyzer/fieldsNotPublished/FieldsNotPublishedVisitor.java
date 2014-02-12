@@ -66,7 +66,7 @@ public class FieldsNotPublishedVisitor extends BaseVisitor {
 		if (returnType instanceof VoidSlot)
 			result.add(new EvaluationResult(Kind.REGULAR, returnType, heap));
 		else {
-			Slot returnSlot = frame.popStackByRequiredSlots();
+			Slot returnSlot = frame.getStack().popByRequiredSize();
 			if (returnType instanceof ReferenceSlot)
 				detectAReturnBug((ReferenceSlot) returnSlot);
 			result.add(new EvaluationResult(Kind.REGULAR, returnSlot, heap));

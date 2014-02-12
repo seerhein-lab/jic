@@ -277,52 +277,52 @@ public class FrameTest {
 	public void testPushStackByRequiredSlots() {
 		Frame frame = new Frame(0, new OpStack(), 0);
 
-		frame.pushStackByRequiredSlots(someOtherRef);
+		frame.getStack().pushByRequiredSize(someOtherRef);
 		assertEquals(1, frame.getStack().size());
 		assertEquals(someOtherRef, frame.getStack().pop());
 
-		frame.pushStackByRequiredSlots(voiD);
+		frame.getStack().pushByRequiredSize(voiD);
 		assertEquals(0, frame.getStack().size());
 
-		frame.pushStackByRequiredSlots(someRef);
+		frame.getStack().pushByRequiredSize(someRef);
 		assertEquals(1, frame.getStack().size());
 		assertEquals(someRef, frame.getStack().pop());
 
-		frame.pushStackByRequiredSlots(bool);
+		frame.getStack().pushByRequiredSize(bool);
 		assertEquals(1, frame.getStack().size());
 		assertEquals(bool, frame.getStack().pop());
 
-		frame.pushStackByRequiredSlots(bytE);
+		frame.getStack().pushByRequiredSize(bytE);
 		assertEquals(1, frame.getStack().size());
 		assertEquals(bytE, frame.getStack().pop());
 
-		frame.pushStackByRequiredSlots(chaR);
+		frame.getStack().pushByRequiredSize(chaR);
 		assertEquals(1, frame.getStack().size());
 		assertEquals(chaR, frame.getStack().pop());
 
-		frame.pushStackByRequiredSlots(floaT);
+		frame.getStack().pushByRequiredSize(floaT);
 		assertEquals(1, frame.getStack().size());
 		assertEquals(floaT, frame.getStack().pop());
 
-		frame.pushStackByRequiredSlots(doublE);
+		frame.getStack().pushByRequiredSize(doublE);
 		assertEquals(2, frame.getStack().size());
 		assertEquals(doublE, frame.getStack().pop());
 		assertEquals(doublE, frame.getStack().pop());
 
-		frame.pushStackByRequiredSlots(lonG);
+		frame.getStack().pushByRequiredSize(lonG);
 		assertEquals(2, frame.getStack().size());
 		assertEquals(lonG, frame.getStack().pop());
 		assertEquals(lonG, frame.getStack().pop());
 
-		frame.pushStackByRequiredSlots(inT);
+		frame.getStack().pushByRequiredSize(inT);
 		assertEquals(1, frame.getStack().size());
 		assertEquals(inT, frame.getStack().pop());
 
-		frame.pushStackByRequiredSlots(shorT);
+		frame.getStack().pushByRequiredSize(shorT);
 		assertEquals(1, frame.getStack().size());
 		assertEquals(shorT, frame.getStack().pop());
 
-		frame.pushStackByRequiredSlots(thiS);
+		frame.getStack().pushByRequiredSize(thiS);
 		assertEquals(1, frame.getStack().size());
 		assertEquals(thiS, frame.getStack().pop());
 	}
@@ -336,7 +336,7 @@ public class FrameTest {
 		frame.getStack().push(bool);
 		frame.getStack().push(floaT);
 
-		assertEquals(floaT, frame.popStackByRequiredSlots());
+		assertEquals(floaT, frame.getStack().popByRequiredSize());
 		assertEquals(1, frame.getStack().size());
 		assertEquals(bool, frame.getStack().pop());
 	}
@@ -350,7 +350,7 @@ public class FrameTest {
 		frame.getStack().push(bool);
 		frame.getStack().push(doublE);
 
-		assertEquals(doublE, frame.popStackByRequiredSlots());
+		assertEquals(doublE, frame.getStack().popByRequiredSize());
 		assertEquals(0, frame.getStack().size());
 	}
 
@@ -363,6 +363,6 @@ public class FrameTest {
 		Frame frame = new Frame(0, new OpStack(), 0);
 		frame.getStack().push(doublE);
 
-		frame.popStackByRequiredSlots();
+		frame.getStack().popByRequiredSize();
 	}
 }
