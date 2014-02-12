@@ -62,9 +62,9 @@ public class Frame {
 	}
 
 	/**
-	 * Simple getter for LocalVars.
+	 * Gets this frame's local vars array
 	 * 
-	 * @return The LocalVars as an array of type Slot
+	 * @return this frame's local vars array
 	 */
 	public Slot[] getLocalVars() {
 		return localVars;
