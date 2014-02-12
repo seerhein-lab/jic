@@ -71,7 +71,6 @@ public class FrameTest {
 		callerStack.push(inT);
 		callerStack.push(shorT);
 		callerStack.push(someOtherRef);
-		callerStack.push(voiD);
 
 		@SuppressWarnings("unused")
 		Frame frame = new Frame(-1, callerStack, 12);
@@ -112,11 +111,10 @@ public class FrameTest {
 		callerStack.push(inT);
 		callerStack.push(shorT);
 		callerStack.push(someOtherRef);
-		callerStack.push(voiD);
 
-		Frame frame = new Frame(12, callerStack, 12);
+		Frame frame = new Frame(11, callerStack, 11);
 
-		assertEquals(12, frame.getLocalVars().length);
+		assertEquals(11, frame.getLocalVars().length);
 
 		assertEquals(0, callerStack.size());
 
@@ -131,7 +129,6 @@ public class FrameTest {
 		assertEquals(inT, frame.getLocalVars()[8]);
 		assertEquals(shorT, frame.getLocalVars()[9]);
 		assertEquals(someOtherRef, frame.getLocalVars()[10]);
-		assertEquals(voiD, frame.getLocalVars()[11]);
 	}
 
 	/**
@@ -151,26 +148,24 @@ public class FrameTest {
 		callerStack.push(inT);
 		callerStack.push(shorT);
 		callerStack.push(someOtherRef);
-		callerStack.push(voiD);
 
-		Frame frame = new Frame(12, callerStack, 6);
+		Frame frame = new Frame(11, callerStack, 6);
 
-		assertEquals(12, frame.getLocalVars().length);
+		assertEquals(11, frame.getLocalVars().length);
 
-		assertEquals(6, callerStack.size());
+		assertEquals(5, callerStack.size());
 
-		assertEquals(doublE, frame.getLocalVars()[0]);
-		assertEquals(lonG, frame.getLocalVars()[1]);
-		assertEquals(inT, frame.getLocalVars()[2]);
-		assertEquals(shorT, frame.getLocalVars()[3]);
-		assertEquals(someOtherRef, frame.getLocalVars()[4]);
-		assertEquals(voiD, frame.getLocalVars()[5]);
+		assertEquals(floaT, frame.getLocalVars()[0]);
+		assertEquals(doublE, frame.getLocalVars()[1]);
+		assertEquals(lonG, frame.getLocalVars()[2]);
+		assertEquals(inT, frame.getLocalVars()[3]);
+		assertEquals(shorT, frame.getLocalVars()[4]);
+		assertEquals(someOtherRef, frame.getLocalVars()[5]);
 		assertEquals(null, frame.getLocalVars()[6]);
 		assertEquals(null, frame.getLocalVars()[7]);
 		assertEquals(null, frame.getLocalVars()[8]);
 		assertEquals(null, frame.getLocalVars()[9]);
 		assertEquals(null, frame.getLocalVars()[10]);
-		assertEquals(null, frame.getLocalVars()[11]);
 	}
 
 	/**
@@ -190,13 +185,12 @@ public class FrameTest {
 		callerStack.push(inT);
 		callerStack.push(shorT);
 		callerStack.push(someOtherRef);
-		callerStack.push(voiD);
 
-		Frame frame = new Frame(12, callerStack, 0);
+		Frame frame = new Frame(11, callerStack, 0);
 
-		assertEquals(12, frame.getLocalVars().length);
+		assertEquals(11, frame.getLocalVars().length);
 
-		assertEquals(12, callerStack.size());
+		assertEquals(11, callerStack.size());
 
 		assertEquals(null, frame.getLocalVars()[0]);
 		assertEquals(null, frame.getLocalVars()[1]);
@@ -209,7 +203,6 @@ public class FrameTest {
 		assertEquals(null, frame.getLocalVars()[8]);
 		assertEquals(null, frame.getLocalVars()[9]);
 		assertEquals(null, frame.getLocalVars()[10]);
-		assertEquals(null, frame.getLocalVars()[11]);
 	}
 
 	/**
@@ -230,10 +223,9 @@ public class FrameTest {
 		callerStack.push(inT);
 		callerStack.push(shorT);
 		callerStack.push(someOtherRef);
-		callerStack.push(voiD);
 
 		@SuppressWarnings("unused")
-		Frame frame = new Frame(5, callerStack, 12);
+		Frame frame = new Frame(5, callerStack, 11);
 	}
 
 	/**
