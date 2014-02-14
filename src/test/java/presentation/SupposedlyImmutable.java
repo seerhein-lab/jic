@@ -4,23 +4,24 @@ import net.jcip.annotations.Immutable;
 
 @Immutable
 public class SupposedlyImmutable {
-	public int state;
-	public final Blackboard board;
+	public int intState;
+	public final SomeState someState;
 
-	public SupposedlyImmutable(Blackboard board) {
-		board.notice = this;
-		state = 42;
-		// this.board = board;
-		this.board = new Blackboard(board);
-		// this.board = new Blackboard();
+	public SupposedlyImmutable(Registrar registrar, SomeState someState, int intState) {
+		this.someState = someState;
+		this.intState = intState;
+		registrar.register(this);
 	}
 
-	public Blackboard getBoard() {
-		// return this.board;
-		return new Blackboard(this.board);
+	public SomeState getSomeState() {
+		return someState;
 	}
 
-	public void setNotice(Object notice) {
-		this.board.notice = notice;
+	public int getIntState() {
+		return intState;
+	}
+
+	public void setSomeStateMessage(String message) {
+		someState.setMessage(message);
 	}
 }

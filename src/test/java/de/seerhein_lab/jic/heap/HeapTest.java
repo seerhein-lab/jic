@@ -37,12 +37,12 @@ public class HeapTest {
 		e = heap.newClassInstance();
 		f = heap.newArray();
 
-		aRef = ReferenceSlot.createNewInstance(a);
-		bRef = ReferenceSlot.createNewInstance(b);
-		cRef = ReferenceSlot.createNewInstance(c);
-		dRef = ReferenceSlot.createNewInstance(d);
-		eRef = ReferenceSlot.createNewInstance(e);
-		fRef = ReferenceSlot.createNewInstance(f);
+		aRef = new ReferenceSlot(a);
+		bRef = new ReferenceSlot(b);
+		cRef = new ReferenceSlot(c);
+		dRef = new ReferenceSlot(d);
+		eRef = new ReferenceSlot(e);
+		fRef = new ReferenceSlot(f);
 	}
 
 	@Before

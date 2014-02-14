@@ -79,14 +79,14 @@ public abstract class BaseMethodAnalyzer {
 
 		// push this onto the stack, if not static
 		// if (!method.isStatic()) {
-		callerStack.push(ReferenceSlot.createNewInstance(callerHeap.getThisInstance()));
+		callerStack.push(ReferenceSlot.getThisReference(callerHeap));
 		// }
 
 		// push args onto the stack
 		for (Type argType : methodGen.getArgumentTypes()) {
 			Slot argument = Slot.getDefaultSlotInstance(argType);
 			if (argument instanceof ReferenceSlot) {
-				argument = ReferenceSlot.createNewInstance(callerHeap.getExternalObject());
+				argument = ReferenceSlot.getExternalReference(callerHeap);
 			}
 			for (int i = 0; i < argument.getNumSlots(); i++) {
 				callerStack.push(argument);

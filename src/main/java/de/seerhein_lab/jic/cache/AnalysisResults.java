@@ -25,10 +25,10 @@ public class AnalysisResults {
 		for (EvaluationResult result : results) {
 			Heap cacheHeap = new Heap(); // TODO reuse ?
 
-			HeapObject deepCopy = ((ReferenceSlot) target).getObject(result.getHeap())
-					.deepCopy(cacheHeap);
-			this.results.add(new EvaluationResult(result.getKind(), ReferenceSlot
-					.createNewInstance(deepCopy), cacheHeap));
+			HeapObject deepCopy = ((ReferenceSlot) target).getObject(result.getHeap()).deepCopy(
+					cacheHeap);
+			this.results.add(new EvaluationResult(result.getKind(), new ReferenceSlot(deepCopy),
+					cacheHeap));
 		}
 	}
 

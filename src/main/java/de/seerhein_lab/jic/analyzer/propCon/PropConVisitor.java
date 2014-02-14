@@ -90,13 +90,13 @@ public class PropConVisitor extends BaseVisitor {
 		ReferenceSlot referenceToStore = (ReferenceSlot) valueToStore;
 		if (arrayReference.getObject(heap) instanceof ExternalObject) {
 			// the array is externally known
-			if (referenceToStore.getID() != null
+			if (referenceToStore.getObject(heap) != null
 					&& referenceToStore.getObject(heap).equals(heap.getThisInstance())) {
 				// this is assigned to the array
 				addBug("PROPER_CONSTRUCTION_BUG", Confidence.HIGH,
 						"'this' is assigned to an external array and escapes",
 						pc.getCurrentInstruction());
-			} else if (arrayReference.getID() != null
+			} else if (arrayReference.getObject(heap) != null
 					&& arrayReference.getObject(heap).isReachable(heap.getThisInstance())) {
 				addBug("PROPER_CONSTRUCTION_BUG",
 						Confidence.HIGH,
@@ -118,12 +118,14 @@ public class PropConVisitor extends BaseVisitor {
 		ReferenceSlot referenceToPut = (ReferenceSlot) valueToPut;
 		if (targetReference.getObject(heap) instanceof ExternalObject) {
 			// the left side of the assignment is externally known
-			if (referenceToPut.getID() != null
-					&& referenceToPut.getObject(heap).equals(heap.getThisInstance())) {
+			// if (referenceToPut.getID() != null
+			// && referenceToPut.getObject(heap).equals(heap.getThisInstance()))
+			// {
+			if (referenceToPut.equals(ReferenceSlot.getThisReference(heap))) {
 				addBug("PROPER_CONSTRUCTION_BUG", Confidence.HIGH,
 						"'this' is assigned to an external object and escapes",
 						pc.getCurrentInstruction());
-			} else if (referenceToPut.getID() != null
+			} else if (referenceToPut.getObject(heap) != null
 					&& referenceToPut.getObject(heap).isReachable(heap.getThisInstance())) {
 				addBug("PROPER_CONSTRUCTION_BUG",
 						Confidence.HIGH,
