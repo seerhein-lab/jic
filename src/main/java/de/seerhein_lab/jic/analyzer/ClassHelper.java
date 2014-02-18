@@ -5,11 +5,16 @@ import static org.apache.bcel.Constants.CONSTRUCTOR_NAME;
 import java.util.List;
 import java.util.Vector;
 
+import net.jcip.annotations.Immutable;
+
+import org.apache.bcel.Repository;
+import org.apache.bcel.classfile.AnnotationEntry;
 import org.apache.bcel.classfile.JavaClass;
 import org.apache.bcel.classfile.Method;
 import org.apache.bcel.generic.Type;
 
 public final class ClassHelper {
+	private final static String IMMUTABLE_ANNOTATION = "Lnet/jcip/annotations/Immutable;";
 	private final Method[] methods;
 
 	public ClassHelper(JavaClass clazz) {
@@ -52,6 +57,29 @@ public final class ClassHelper {
 			}
 		}
 		return null;
+	}
+
+	private static String[] immutableClasses = { "java.lang.String", "java.lang.Byte",
+			"java.lang.Short", "java.lang.Integer", "java.lang.Long", "java.lang.Double",
+			"java.lang.Float", "java.lang.Boolean", "java.lang.Character", "byte", "short", "int",
+			"long", "float", "boolean", "char" };
+
+	public static boolean isImmutable(String className) {
+		className = className.replace("[]", "");
+		for (String immutableClass : immutableClasses) {
+			if (className.equals(immutableClass))
+				return true;
+		}
+		try {
+			JavaClass clazz = Repository.lookupClass(className);
+			for (AnnotationEntry entry : clazz.getAnnotationEntries()) {
+				if (entry.getAnnotationType().equals(IMMUTABLE_ANNOTATION))
+					return true;
+			}
+		} catch (ClassNotFoundException e) {
+			e.printStackTrace();
+		}
+		return false;
 	}
 
 }
