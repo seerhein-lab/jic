@@ -48,19 +48,19 @@ public class EvaluationOnlyVisitor extends BaseVisitor {
 	// ******************************************************************//
 
 	@Override
-	protected void detectVirtualMethodBug(ReferenceSlot argument) {
+	protected void detectVirtualMethodBug(ReferenceSlot argument, String argumentClass) {
 	}
 
 	@Override
-	protected void detectXAStoreBug(ReferenceSlot arrayReference, Slot valueToStore) {
+	protected void detectXAStoreBug(ReferenceSlot arrayReference, Slot valueToStore, String valueToStoreClass) {
 	}
 
 	@Override
-	protected void detectPutFieldBug(ReferenceSlot targetReference, Slot valueToPut) {
+	protected void detectPutFieldBug(ReferenceSlot targetReference, Slot valueToPut, String valueToPutClass) {
 	}
 
 	@Override
-	protected void detectPutStaticBug(ReferenceSlot referenceToPut) {
+	protected void detectPutStaticBug(ReferenceSlot referenceToPut, String referenceToPutClass) {
 	}
 
 }

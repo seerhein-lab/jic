@@ -53,7 +53,7 @@ public class PropConVisitor extends BaseVisitor {
 	// ******************************************************************//
 
 	@Override
-	protected void detectVirtualMethodBug(ReferenceSlot argument) {
+	protected void detectVirtualMethodBug(ReferenceSlot argument, String argumentClass) {
 		if (hasIgnoreAnnotation())
 			return;
 
@@ -78,7 +78,7 @@ public class PropConVisitor extends BaseVisitor {
 	}
 
 	@Override
-	protected void detectXAStoreBug(ReferenceSlot arrayReference, Slot valueToStore) {
+	protected void detectXAStoreBug(ReferenceSlot arrayReference, Slot valueToStore, String valueToStoreClass) {
 		if (hasIgnoreAnnotation())
 			return;
 
@@ -107,7 +107,7 @@ public class PropConVisitor extends BaseVisitor {
 	}
 
 	@Override
-	protected void detectPutFieldBug(ReferenceSlot targetReference, Slot valueToPut) {
+	protected void detectPutFieldBug(ReferenceSlot targetReference, Slot valueToPut, String valueToPutClass) {
 		if (hasIgnoreAnnotation())
 			return;
 
@@ -137,7 +137,7 @@ public class PropConVisitor extends BaseVisitor {
 	}
 
 	@Override
-	protected void detectPutStaticBug(ReferenceSlot referenceToPut) {
+	protected void detectPutStaticBug(ReferenceSlot referenceToPut, String referenceToPutClass) {
 		if (hasIgnoreAnnotation())
 			return;
 

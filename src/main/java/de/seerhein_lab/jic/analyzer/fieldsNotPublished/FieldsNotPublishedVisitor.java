@@ -13,6 +13,7 @@ import de.seerhein_lab.jic.EvaluationResult.Kind;
 import de.seerhein_lab.jic.Pair;
 import de.seerhein_lab.jic.analyzer.BaseMethodAnalyzer;
 import de.seerhein_lab.jic.analyzer.BaseVisitor;
+import de.seerhein_lab.jic.analyzer.ClassHelper;
 import de.seerhein_lab.jic.analyzer.QualifiedMethod;
 import de.seerhein_lab.jic.cache.AnalysisCache;
 import de.seerhein_lab.jic.cache.AnalysisCache.Check;
@@ -68,7 +69,7 @@ public class FieldsNotPublishedVisitor extends BaseVisitor {
 		else {
 			Slot returnSlot = frame.getStack().popByRequiredSize();
 			if (returnType instanceof ReferenceSlot)
-				detectAReturnBug((ReferenceSlot) returnSlot);
+				detectAReturnBug((ReferenceSlot) returnSlot, obj.getType().toString());
 			result.add(new EvaluationResult(Kind.REGULAR, returnSlot, heap));
 		}
 		pc.invalidate();
@@ -79,8 +80,8 @@ public class FieldsNotPublishedVisitor extends BaseVisitor {
 	// ******************************************************************//
 
 	@Override
-	protected void detectVirtualMethodBug(ReferenceSlot argument) {
-		if (argument.isNullReference())
+	protected void detectVirtualMethodBug(ReferenceSlot argument, String argumentClass) {
+		if (argument.isNullReference() || ClassHelper.isImmutable(argumentClass))
 			return;
 
 		HeapObject argumentObject = argument.getObject(heap);
@@ -105,11 +106,10 @@ public class FieldsNotPublishedVisitor extends BaseVisitor {
 	}
 
 	@Override
-	protected void detectXAStoreBug(ReferenceSlot arrayReference, Slot valueToStore) {
-		if (!(valueToStore instanceof ReferenceSlot)) {
-			// if the value is not a reference we do not analyze
+	protected void detectXAStoreBug(ReferenceSlot arrayReference, Slot valueToStore,
+			String valueToStoreClass) {
+		if (!(valueToStore instanceof ReferenceSlot) || ClassHelper.isImmutable(valueToStoreClass))
 			return;
-		}
 
 		ReferenceSlot referenceToStore = (ReferenceSlot) valueToStore;
 		if (referenceToStore.isNullReference())
@@ -132,11 +132,10 @@ public class FieldsNotPublishedVisitor extends BaseVisitor {
 	}
 
 	@Override
-	protected void detectPutFieldBug(ReferenceSlot targetReference, Slot valueToPut) {
-		if (!(valueToPut instanceof ReferenceSlot)) {
-			// if the value is not a reference we do not analyze
+	protected void detectPutFieldBug(ReferenceSlot targetReference, Slot valueToPut,
+			String valueToPutClass) {
+		if (!(valueToPut instanceof ReferenceSlot) || ClassHelper.isImmutable(valueToPutClass))
 			return;
-		}
 
 		ReferenceSlot referenceToPut = (ReferenceSlot) valueToPut;
 		if (referenceToPut.isNullReference())
@@ -160,8 +159,8 @@ public class FieldsNotPublishedVisitor extends BaseVisitor {
 	}
 
 	@Override
-	protected void detectPutStaticBug(ReferenceSlot referenceToPut) {
-		if (referenceToPut.isNullReference())
+	protected void detectPutStaticBug(ReferenceSlot referenceToPut, String referenceToPutClass) {
+		if (referenceToPut.isNullReference() || ClassHelper.isImmutable(referenceToPutClass))
 			return;
 
 		HeapObject objectToPut = referenceToPut.getObject(heap);
@@ -182,9 +181,9 @@ public class FieldsNotPublishedVisitor extends BaseVisitor {
 							+ " by assignment to a static field", pc.getCurrentInstruction());
 	}
 
-	protected void detectAReturnBug(ReferenceSlot returnValue) {
+	protected void detectAReturnBug(ReferenceSlot returnValue, String returnValueClass) {
 		HeapObject returnObject = returnValue.getObject(heap);
-		if (returnObject == null)
+		if (returnObject == null || ClassHelper.isImmutable(returnValueClass))
 			return;
 
 		if (heap.getThisInstance().isReachable(returnObject)) {

@@ -71,12 +71,12 @@ public class NoMutatorsVisitor extends BaseVisitor {
 	// ******************************************************************//
 
 	@Override
-	protected void detectVirtualMethodBug(ReferenceSlot argument) {
+	protected void detectVirtualMethodBug(ReferenceSlot argument, String argumentClass) {
 		// nothing of interest can happen
 	}
 
 	@Override
-	protected void detectXAStoreBug(ReferenceSlot arrayReference, Slot valueToStore) {
+	protected void detectXAStoreBug(ReferenceSlot arrayReference, Slot valueToStore, String valueToStoreClass) {
 		// array is referred by 'this'
 		if (heap.getThisInstance().isReachable(arrayReference.getObject(heap))) {
 			addBug("IMMUTABILITY_BUG", Confidence.HIGH,
@@ -86,7 +86,7 @@ public class NoMutatorsVisitor extends BaseVisitor {
 	}
 
 	@Override
-	protected void detectPutFieldBug(ReferenceSlot targetReference, Slot valueToPut) {
+	protected void detectPutFieldBug(ReferenceSlot targetReference, Slot valueToPut, String valueToPutClass) {
 		// left side is referred by a field of this
 		if (heap.getThisInstance().isReachable(targetReference.getObject(heap))) {
 			addBug("IMMUTABILITY_BUG", Confidence.HIGH,
@@ -96,7 +96,7 @@ public class NoMutatorsVisitor extends BaseVisitor {
 	}
 
 	@Override
-	protected void detectPutStaticBug(ReferenceSlot referenceToPut) {
+	protected void detectPutStaticBug(ReferenceSlot referenceToPut, String referenceToPutClass) {
 		// nothing of interest can happen
 	}
 }

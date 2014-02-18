@@ -10,6 +10,7 @@ import org.apache.bcel.generic.MethodGen;
 import de.seerhein_lab.jic.Pair;
 import de.seerhein_lab.jic.analyzer.BaseMethodAnalyzer;
 import de.seerhein_lab.jic.analyzer.BaseVisitor;
+import de.seerhein_lab.jic.analyzer.ClassHelper;
 import de.seerhein_lab.jic.analyzer.QualifiedMethod;
 import de.seerhein_lab.jic.cache.AnalysisCache;
 import de.seerhein_lab.jic.cache.AnalysisCache.Check;
@@ -71,8 +72,8 @@ public class CtorArgsCopiedVisitor extends BaseVisitor {
 	// ******************************************************************//
 
 	@Override
-	protected void detectVirtualMethodBug(ReferenceSlot argument) {
-		if (argument.isNullReference())
+	protected void detectVirtualMethodBug(ReferenceSlot argument, String argumentClass) {
+		if (argument.isNullReference() || ClassHelper.isImmutable(argumentClass))
 			return;
 
 		if (heap.getThisInstance().isReachable(argument.getObject(heap))) {
@@ -83,13 +84,12 @@ public class CtorArgsCopiedVisitor extends BaseVisitor {
 	}
 
 	@Override
-	protected void detectXAStoreBug(ReferenceSlot arrayReference, Slot valueToStore) {
-		if (!(valueToStore instanceof ReferenceSlot)) {
-			// if the value is not a reference we do not analyze
+	protected void detectXAStoreBug(ReferenceSlot arrayReference, Slot valueToStore,
+			String valueToStoreClass) {
+		if (!(valueToStore instanceof ReferenceSlot) || ClassHelper.isImmutable(valueToStoreClass))
 			return;
-		}
-		ReferenceSlot referenceToStore = (ReferenceSlot) valueToStore;
 
+		ReferenceSlot referenceToStore = (ReferenceSlot) valueToStore;
 		if (referenceToStore.isNullReference())
 			return;
 
@@ -112,13 +112,12 @@ public class CtorArgsCopiedVisitor extends BaseVisitor {
 	}
 
 	@Override
-	protected void detectPutFieldBug(ReferenceSlot targetReference, Slot valueToPut) {
-		if (!(valueToPut instanceof ReferenceSlot)) {
-			// if the value is not a reference we do not analyze
+	protected void detectPutFieldBug(ReferenceSlot targetReference, Slot valueToPut,
+			String valueToPutClass) {
+		if (!(valueToPut instanceof ReferenceSlot) || ClassHelper.isImmutable(valueToPutClass))
 			return;
-		}
-		ReferenceSlot referenceToPut = (ReferenceSlot) valueToPut;
 
+		ReferenceSlot referenceToPut = (ReferenceSlot) valueToPut;
 		if (referenceToPut.isNullReference())
 			return;
 
@@ -153,8 +152,8 @@ public class CtorArgsCopiedVisitor extends BaseVisitor {
 	}
 
 	@Override
-	protected void detectPutStaticBug(ReferenceSlot referenceToPut) {
-		if (referenceToPut.isNullReference())
+	protected void detectPutStaticBug(ReferenceSlot referenceToPut, String referenceToPutClass) {
+		if (referenceToPut.isNullReference() || ClassHelper.isImmutable(referenceToPutClass))
 			return;
 
 		// XXX this assigned to a static field?? Only starting class?!?

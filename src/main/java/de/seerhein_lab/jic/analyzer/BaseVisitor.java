@@ -116,13 +116,16 @@ public abstract class BaseVisitor extends SimpleVisitor {
 			Set<QualifiedMethod> alreadyVisitedMethods, int methodInvocationDepth);
 
 	// methods for bug detection
-	protected abstract void detectVirtualMethodBug(ReferenceSlot argument);
+	protected abstract void detectVirtualMethodBug(ReferenceSlot argument, String argumentClass);
 
-	protected abstract void detectXAStoreBug(ReferenceSlot arrayReference, Slot valueToStore);
+	protected abstract void detectXAStoreBug(ReferenceSlot arrayReference, Slot valueToStore,
+			String valueToStoreClass);
 
-	protected abstract void detectPutFieldBug(ReferenceSlot targetReference, Slot valueToPut);
+	protected abstract void detectPutFieldBug(ReferenceSlot targetReference, Slot valueToPut,
+			String valueToPutClass);
 
-	protected abstract void detectPutStaticBug(ReferenceSlot referenceToPut);
+	protected abstract void detectPutStaticBug(ReferenceSlot referenceToPut,
+			String referenceToPutClass);
 
 	protected BaseVisitor(ClassContext classContext, MethodGen methodGen, Frame frame, Heap heap,
 			ConstantPoolGen constantPoolGen, Set<Pair<InstructionHandle, Boolean>> alreadyVisited,
@@ -388,7 +391,7 @@ public abstract class BaseVisitor extends SimpleVisitor {
 			if (argument instanceof ReferenceSlot) {
 				ReferenceSlot reference = (ReferenceSlot) argument;
 				// check for bugs
-				detectVirtualMethodBug(reference);
+				detectVirtualMethodBug(reference, obj.getType(constantPoolGen).toString());
 				heap.publish(reference.getObject(heap));
 			}
 		}
@@ -612,7 +615,7 @@ public abstract class BaseVisitor extends SimpleVisitor {
 			// pop array reference
 			ReferenceSlot arrayReference = (ReferenceSlot) frame.getStack().pop();
 
-			detectXAStoreBug(arrayReference, value);
+			detectXAStoreBug(arrayReference, value, obj.getType(constantPoolGen).toString());
 
 			pc.advance();
 		}
@@ -692,7 +695,7 @@ public abstract class BaseVisitor extends SimpleVisitor {
 			return;
 		}
 
-		detectXAStoreBug(arrayReference, valueRef);
+		detectXAStoreBug(arrayReference, valueRef, obj.getType(constantPoolGen).toString());
 
 		if (!valueRef.isNullReference()) {
 			HeapObject array = arrayReference.getObject(heap);
@@ -1036,7 +1039,7 @@ public abstract class BaseVisitor extends SimpleVisitor {
 			return;
 		}
 
-		detectPutFieldBug(oRef, vRef);
+		detectPutFieldBug(oRef, vRef, obj.getType(constantPoolGen).toString());
 		HeapObject o = oRef.getObject(heap);
 		HeapObject v = null;
 		if (vRef instanceof ReferenceSlot) {
@@ -1071,7 +1074,7 @@ public abstract class BaseVisitor extends SimpleVisitor {
 
 		// a reference is assigned to a static field
 		if (v instanceof ReferenceSlot) {
-			detectPutStaticBug((ReferenceSlot) v);
+			detectPutStaticBug((ReferenceSlot) v, obj.getType(constantPoolGen).toString());
 			// make it external
 			heap.publish(((ReferenceSlot) v).getObject(heap));
 		}
