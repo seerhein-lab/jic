@@ -28,14 +28,14 @@ public class HeapTest {
 	private ReferenceSlot fRef;
 
 	public void setUpHeap() {
-		heap = new Heap();
+		heap = new Heap("");
 
-		a = heap.newClassInstance();
-		b = heap.newClassInstance();
-		c = heap.newClassInstance();
-		d = heap.newClassInstance();
-		e = heap.newClassInstance();
-		f = heap.newArray();
+		a = heap.newClassInstance("");
+		b = heap.newClassInstance("");
+		c = heap.newClassInstance("");
+		d = heap.newClassInstance("");
+		e = heap.newClassInstance("");
+		f = heap.newArray("");
 
 		aRef = new ReferenceSlot(a);
 		bRef = new ReferenceSlot(b);

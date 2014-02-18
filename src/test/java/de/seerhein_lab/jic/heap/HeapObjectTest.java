@@ -24,14 +24,14 @@ public class HeapObjectTest {
 	private Array f;
 
 	public void setUpHeap() {
-		heap = new Heap();
+		heap = new Heap("");
 
-		a = heap.newClassInstance();
-		b = heap.newClassInstance();
-		c = heap.newClassInstance();
-		d = heap.newClassInstance();
-		e = heap.newClassInstance();
-		f = heap.newArray();
+		a = heap.newClassInstance("");
+		b = heap.newClassInstance("");
+		c = heap.newClassInstance("");
+		d = heap.newClassInstance("");
+		e = heap.newClassInstance("");
+		f = heap.newArray("");
 	}
 
 	@Before
@@ -49,7 +49,7 @@ public class HeapObjectTest {
 
 	@Test
 	public void testDeepCopy() {
-		HeapObject copyA = a.deepCopy(new Heap());
+		HeapObject copyA = a.deepCopy(new Heap(""));
 
 		Iterator<HeapObject> referredIterator;
 		referredIterator = copyA.getReferredObjects().iterator();
