@@ -27,8 +27,8 @@ public class Heap {
 	/**
 	 * Constructor. Creates the 'this' instance and the external object.
 	 */
-	public Heap() {
-		HeapObject thisObject = new ClassInstance(this);
+	public Heap(String className) {
+		HeapObject thisObject = new ClassInstance(this, className);
 		thisID = thisObject.getId();
 		objects.put(thisID, thisObject);
 
@@ -101,8 +101,8 @@ public class Heap {
 	 * 
 	 * @return The newly created class instance.
 	 */
-	public ClassInstance newClassInstance() {
-		ClassInstance object = new ClassInstance(this);
+	public ClassInstance newClassInstance(String className) {
+		ClassInstance object = new ClassInstance(this, className);
 		objects.put(object.getId(), object);
 		return object;
 	}
@@ -112,8 +112,8 @@ public class Heap {
 	 * 
 	 * @return The newly created array.
 	 */
-	public Array newArray() {
-		Array object = new Array(this);
+	public Array newArray(String className) {
+		Array object = new Array(this, className);
 		objects.put(object.getId(), object);
 		return object;
 	}

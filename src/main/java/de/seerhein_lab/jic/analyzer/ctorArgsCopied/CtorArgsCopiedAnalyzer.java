@@ -45,7 +45,7 @@ public final class CtorArgsCopiedAnalyzer extends BaseMethodAnalyzer {
 
 	@Override
 	protected Heap getHeap() {
-		return new Heap();
+		return new Heap(this.classContext.getJavaClass().getClassName());
 	}
 
 }

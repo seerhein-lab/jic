@@ -21,7 +21,7 @@ public final class ExternalObject extends HeapObject {
 	 *            Heap this external object resides on. Must not be null.
 	 */
 	public ExternalObject(Heap heap) {
-		super(heap);
+		super(heap, null); // TODO
 	}
 
 	/**

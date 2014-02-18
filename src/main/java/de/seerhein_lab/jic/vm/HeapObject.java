@@ -25,6 +25,7 @@ public abstract class HeapObject {
 	private final UUID id;
 	protected final Set<UUID> referredBy = new HashSet<UUID>();
 	public final Heap heap;
+	private final String className;
 
 	/**
 	 * Constructor.
@@ -32,7 +33,7 @@ public abstract class HeapObject {
 	 * @param heap
 	 *            Heap this objects resides on. Must not be null.
 	 */
-	protected HeapObject(Heap heap) {
+	protected HeapObject(Heap heap, String className) {
 		if (heap == null)
 			throw new NullPointerException("heap must not be null");
 
@@ -44,6 +45,7 @@ public abstract class HeapObject {
 		// throw new EmercencyBrakeException();
 
 		id = UUID.randomUUID();
+		this.className = className;
 		this.heap = heap;
 	}
 
@@ -68,7 +70,12 @@ public abstract class HeapObject {
 
 		id = original.id;
 		referredBy.addAll(original.referredBy);
+		this.className = original.className;
 		this.heap = heap;
+	}
+
+	public String getClassName() {
+		return className;
 	}
 
 	/**

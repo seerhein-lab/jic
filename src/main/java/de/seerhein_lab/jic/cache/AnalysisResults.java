@@ -23,7 +23,7 @@ public class AnalysisResults {
 		this.results = new HashSet<EvaluationResult>();
 
 		for (EvaluationResult result : results) {
-			Heap cacheHeap = new Heap(); // TODO reuse ?
+			Heap cacheHeap = new Heap(""); // TODO reuse ?
 
 			HeapObject deepCopy = ((ReferenceSlot) target).getObject(result.getHeap()).deepCopy(
 					cacheHeap);

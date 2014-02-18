@@ -21,8 +21,8 @@ public final class Array extends HeapObject {
 	 * @param heap
 	 *            Heap this array resides on. Must not be null.
 	 */
-	public Array(Heap heap) {
-		super(heap);
+	public Array(Heap heap, String className) {
+		super(heap, className);
 	}
 
 	/**
@@ -125,7 +125,7 @@ public final class Array extends HeapObject {
 	 */
 	@Override
 	public HeapObject deepCopy(Heap heap, Map<HeapObject, HeapObject> visited) {
-		Array copiedArray = heap.newArray();
+		Array copiedArray = heap.newArray(this.getClassName());
 		visited.put(this, copiedArray);
 
 		for (UUID id : this.refers) {
