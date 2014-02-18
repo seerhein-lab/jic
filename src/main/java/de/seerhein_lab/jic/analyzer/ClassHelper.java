@@ -64,7 +64,7 @@ public final class ClassHelper {
 			"java.lang.Float", "java.lang.Boolean", "java.lang.Character", "byte", "short", "int",
 			"long", "float", "boolean", "char" };
 
-	public static boolean isImmutable(String className) {
+	public static boolean isAnnotedAsImmutable(String className) {
 		className = className.replace("[]", "");
 		for (String immutableClass : immutableClasses) {
 			if (className.equals(immutableClass))

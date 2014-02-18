@@ -81,7 +81,7 @@ public class FieldsNotPublishedVisitor extends BaseVisitor {
 
 	@Override
 	protected void detectVirtualMethodBug(ReferenceSlot argument, String argumentClass) {
-		if (argument.isNullReference() || ClassHelper.isImmutable(argumentClass))
+		if (argument.isNullReference() || argument.getObject(heap).isAnnotatedAsImmutable())
 			return;
 
 		HeapObject argumentObject = argument.getObject(heap);
@@ -108,11 +108,12 @@ public class FieldsNotPublishedVisitor extends BaseVisitor {
 	@Override
 	protected void detectXAStoreBug(ReferenceSlot arrayReference, Slot valueToStore,
 			String valueToStoreClass) {
-		if (!(valueToStore instanceof ReferenceSlot) || ClassHelper.isImmutable(valueToStoreClass))
+		if (!(valueToStore instanceof ReferenceSlot))
 			return;
 
 		ReferenceSlot referenceToStore = (ReferenceSlot) valueToStore;
-		if (referenceToStore.isNullReference())
+		if (referenceToStore.isNullReference()
+				|| referenceToStore.getObject(heap).isAnnotatedAsImmutable())
 			return;
 
 		HeapObject objectToStore = referenceToStore.getObject(heap);
@@ -134,11 +135,12 @@ public class FieldsNotPublishedVisitor extends BaseVisitor {
 	@Override
 	protected void detectPutFieldBug(ReferenceSlot targetReference, Slot valueToPut,
 			String valueToPutClass) {
-		if (!(valueToPut instanceof ReferenceSlot) || ClassHelper.isImmutable(valueToPutClass))
+		if (!(valueToPut instanceof ReferenceSlot))
 			return;
 
 		ReferenceSlot referenceToPut = (ReferenceSlot) valueToPut;
-		if (referenceToPut.isNullReference())
+		if (referenceToPut.isNullReference()
+				|| referenceToPut.getObject(heap).isAnnotatedAsImmutable())
 			return;
 
 		HeapObject objectToPut = referenceToPut.getObject(heap);
@@ -160,7 +162,8 @@ public class FieldsNotPublishedVisitor extends BaseVisitor {
 
 	@Override
 	protected void detectPutStaticBug(ReferenceSlot referenceToPut, String referenceToPutClass) {
-		if (referenceToPut.isNullReference() || ClassHelper.isImmutable(referenceToPutClass))
+		if (referenceToPut.isNullReference()
+				|| referenceToPut.getObject(heap).isAnnotatedAsImmutable())
 			return;
 
 		HeapObject objectToPut = referenceToPut.getObject(heap);
@@ -183,7 +186,7 @@ public class FieldsNotPublishedVisitor extends BaseVisitor {
 
 	protected void detectAReturnBug(ReferenceSlot returnValue, String returnValueClass) {
 		HeapObject returnObject = returnValue.getObject(heap);
-		if (returnObject == null || ClassHelper.isImmutable(returnValueClass))
+		if (returnValue.isNullReference() || returnValue.getObject(heap).isAnnotatedAsImmutable())
 			return;
 
 		if (heap.getThisInstance().isReachable(returnObject)) {

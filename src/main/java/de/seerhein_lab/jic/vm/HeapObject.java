@@ -10,6 +10,7 @@ import java.util.Set;
 import java.util.UUID;
 
 import de.seerhein_lab.jic.EmercencyBrakeException;
+import de.seerhein_lab.jic.analyzer.ClassHelper;
 
 /**
  * Abstract class representing the common part of objects on the heap
@@ -265,6 +266,10 @@ public abstract class HeapObject {
 	 * @return newly copied complex object
 	 */
 	protected abstract HeapObject deepCopy(Heap heap, Map<HeapObject, HeapObject> visited);
+
+	public boolean isAnnotatedAsImmutable() {
+		return ClassHelper.isAnnotedAsImmutable(getClassName());
+	}
 
 	/*
 	 * (non-Javadoc)
