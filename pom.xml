@@ -6,20 +6,17 @@
 	<version>2.1</version>
 	<name>jic</name>
 	<dependencies>
-		<!-- <dependency> -->
-		<!-- <groupId>org.apache.bcel</groupId> -->
-		<!-- <artifactId>bcel</artifactId> -->
-		<!-- <version>5.2</version> -->
-		<!-- </dependency> -->
 		<dependency>
 			<groupId>com.google.code.findbugs</groupId>
 			<artifactId>findbugs</artifactId>
 			<version>2.0.1</version>
+			<scope>provided</scope>
 		</dependency>
 		<dependency>
 			<groupId>net.jcip</groupId>
 			<artifactId>jcip-annotations</artifactId>
 			<version>1.0</version>
+			<scope>provided</scope>
 		</dependency>
 		<dependency>
 			<groupId>junit</groupId>
@@ -35,6 +32,25 @@
 	</dependencies>
 	<build>
 		<plugins>
+			<plugin>
+				<artifactId>maven-assembly-plugin</artifactId>
+				<configuration>
+					<descriptorRefs>
+						<descriptorRef>jar-with-dependencies</descriptorRef>
+					</descriptorRefs>
+<!-- 					<finalName>test</finalName> -->
+			        <appendAssemblyId>false</appendAssemblyId>
+				</configuration>
+				<executions>
+					<execution>
+						<id>make-assembly</id> <!-- this is used for inheritance merges -->
+						<phase>package</phase> <!-- bind to the packaging phase -->
+						<goals>
+							<goal>single</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
 			<plugin>
 				<artifactId>maven-compiler-plugin</artifactId>
 				<version>3.0</version>
