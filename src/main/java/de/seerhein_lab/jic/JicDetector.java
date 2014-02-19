@@ -40,7 +40,7 @@ public final class JicDetector implements Detector {
 					LOGPATH
 							+ "log-"
 							+ DateFormatUtils.format(System.currentTimeMillis(),
-									"dd-MM-yyyy_HH-mm-ss") + ".txt", Level.INFO);
+									"dd-MM-yyyy_HH-mm-ss") + ".txt", Level.OFF);
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
