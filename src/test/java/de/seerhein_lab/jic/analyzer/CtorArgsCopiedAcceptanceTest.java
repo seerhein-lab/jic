@@ -2,6 +2,8 @@ package de.seerhein_lab.jic.analyzer;
 
 import java.util.Collection;
 
+import net.jcip.annotations.Immutable;
+
 import org.junit.runner.RunWith;
 
 import de.seerhein_lab.jic.testutils.BugsExpected;
@@ -58,6 +60,24 @@ public class CtorArgsCopiedAcceptanceTest {
 		}
 	}
 
+	@NoBugsExpected
+	public static class DetectVirtualMethodBug_ImmutableClassString {
+		private final String s = new String();
+
+		public DetectVirtualMethodBug_ImmutableClassString() {
+			equals(s);
+		}
+	}
+
+	@NoBugsExpected
+	public static class DetectVirtualMethodBug_ImmutableTestClass {
+		private final ImmutableTestClass i = new ImmutableTestClass();
+
+		public DetectVirtualMethodBug_ImmutableTestClass() {
+			equals(i);
+		}
+	}
+
 	@BugsExpected
 	public static class DetectVirtualMethodBug_ReferredByThis {
 		private final Object o = new Object();
@@ -94,6 +114,15 @@ public class CtorArgsCopiedAcceptanceTest {
 
 		public DetectXAStoreBug_Null() {
 			f[0] = null;
+		}
+	}
+
+	@NoBugsExpected
+	public static class DetectXAStoreBug_ImmutableTestClass {
+		private final Object[] f = new Object[10];
+
+		public DetectXAStoreBug_ImmutableTestClass(ImmutableTestClass c) {
+			f[0] = c;
 		}
 	}
 
@@ -160,6 +189,15 @@ public class CtorArgsCopiedAcceptanceTest {
 
 		public DetectPutFieldBug_Null() {
 			f = null;
+		}
+	}
+
+	@NoBugsExpected
+	public static class DetectPutFieldBug_ImmutableTestClass {
+		private final Object f;
+
+		public DetectPutFieldBug_ImmutableTestClass(ImmutableTestClass c) {
+			f = c;
 		}
 	}
 
@@ -253,6 +291,13 @@ public class CtorArgsCopiedAcceptanceTest {
 			this.o.tc = testClass;
 			TestClassStatic.tc = testClass;
 		}
+	}
+
+	@Immutable
+	private static class ImmutableTestClass {
+		public Object[] array;
+		public Object klass;
+		public TestClass tc;
 	}
 
 	private static class TestClass {
