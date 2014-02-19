@@ -67,7 +67,8 @@ public final class ClassAnalyzer {
 		Field[] fields = clazz.getFields();
 		for (Field field : fields)
 			if (!field.isStatic() && !(field.getType() instanceof BasicType)
-					&& !ClassHelper.isAnnotedAsImmutable(field.getType().toString()) && !field.isPrivate())
+					&& !ClassHelper.isFinalAndAnnotedAsImmutable(field.getType().toString())
+					&& !field.isPrivate())
 				bugs.add(Utils.createBug("IMMUTABILITY_BUG", Confidence.HIGH,
 						"Reference fields must be private.", clazz).addField(clazz.getClassName(),
 						field.getName(), field.getSignature(), false));
