@@ -245,7 +245,8 @@ public abstract class BaseVisitor extends SimpleVisitor {
 			// "]",
 			// pc.getCurrentInstruction());
 
-			addBug(bug.getBugPattern().getType(), Confidence.HIGH,
+			addBug(bug.getBugPattern().getType().startsWith("SUBSEQUENT_") ? bug.getBugPattern()
+					.getType() : "SUBSEQUENT_" + bug.getBugPattern().getType(), Confidence.HIGH,
 					"subsequent bug caused by bug in " + targetMethod.getJavaClass().getClassName()
 							+ "." + targetMethod.getMethod().getName()
 							+ targetMethod.getMethod().getSignature() + ":"

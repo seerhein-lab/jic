@@ -1,44 +1,73 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <MessageCollection xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-        xsi:noNamespaceSchemaLocation="messagecollection.xsd">
+	xsi:noNamespaceSchemaLocation="messagecollection.xsd">
 
-        <Plugin>
-                <ShortDescription>JIC Plugin</ShortDescription>
-                <Details>Java Immutability Checker Plugin</Details>
-        </Plugin>
+	<Plugin>
+		<ShortDescription>JIC Plugin</ShortDescription>
+		<Details>Java Immutability Checker Plugin</Details>
+	</Plugin>
 
-        <Detector class="de.seerhein_lab.jic.JicDetector">
-                <Details>
-                        Starts proper construction check for class under inspection.
-                </Details>
+	<Detector class="de.seerhein_lab.jic.JicDetector">
+		<Details>
+			Starts proper construction check for class under inspection.
+		</Details>
 
-        </Detector>
+	</Detector>
 
-        <BugPattern type="IMMUTABILITY_BUG">
-                <ShortDescription>Immutability bug [v2.1]</ShortDescription>
-                <LongDescription>Immutability bug: {0}</LongDescription>
-                <Details>
+	<BugPattern type="IMMUTABILITY_BUG">
+		<ShortDescription>Immutability bug</ShortDescription>
+		<LongDescription>Immutability bug: {0}</LongDescription>
+		<Details>
 <![CDATA[
 <p>The class is annoted with @Immutable but is mutable.
 </p>
 ]]>
-                </Details>
-        </BugPattern>
+		</Details>
+	</BugPattern>
 
-        <BugCode abbrev="IM">Immutability</BugCode>
-        
-          <BugPattern type="PROPER_CONSTRUCTION_BUG">
-                <ShortDescription>Proper construction bug [v2.1]</ShortDescription>
-                <LongDescription>Proper construction bug: {0}</LongDescription>
-                <Details>
+	<BugCode abbrev="IM">Immutability</BugCode>
+
+	<BugPattern type="PROPER_CONSTRUCTION_BUG">
+		<ShortDescription>Proper construction bug</ShortDescription>
+		<LongDescription>Proper construction bug: {0}</LongDescription>
+		<Details>
 <![CDATA[
 <p>The class instances are not properly constructed.
 </p>
 ]]>
-                </Details>
-        </BugPattern>
+		</Details>
+	</BugPattern>
 
-        <BugCode abbrev="PC">Proper construction</BugCode>
-        
-        
+	<BugCode abbrev="PC">Proper construction</BugCode>
+
+
+	<BugPattern type="SUBSEQUENT_IMMUTABILITY_BUG">
+		<ShortDescription>Subsequent immutability bug</ShortDescription>
+		<LongDescription>Subsequent immutability bug: {0}</LongDescription>
+		<Details>
+<![CDATA[
+<p>The class is annoted with @Immutable but is mutable as a result of the dependency on another mutable class.
+</p>
+]]>
+		</Details>
+	</BugPattern>
+
+	<BugCode abbrev="SIM">Immutability</BugCode>
+
+	<BugPattern type="SUBSEQUENT_PROPER_CONSTRUCTION_BUG">
+		<ShortDescription>Subsequent proper construction bug</ShortDescription>
+		<LongDescription>Subsequent proper construction bug: {0}</LongDescription>
+		<Details>
+<![CDATA[
+<p>The class instances are not properly constructed as a result of the dependency on 
+another improperly constructed  class.
+</p>
+]]>
+		</Details>
+	</BugPattern>
+
+	<BugCode abbrev="SPC">Proper construction</BugCode>
+
+
+
 </MessageCollection>

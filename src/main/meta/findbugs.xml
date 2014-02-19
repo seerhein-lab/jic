@@ -7,4 +7,6 @@
         <Detector class="de.seerhein_lab.jic.JicDetector" reports="IMMUTABILITY_BUG" />
         <BugPattern type="IMMUTABILITY_BUG" abbrev="IM" category="MT_CORRECTNESS"/>
         <BugPattern type="PROPER_CONSTRUCTION_BUG" abbrev="PC" category="CORRECTNESS"/>
+        <BugPattern type="SUBSEQUENT_IMMUTABILITY_BUG" abbrev="SIM" category="MT_CORRECTNESS"/>
+        <BugPattern type="SUBSEQUENT_PROPER_CONSTRUCTION_BUG" abbrev="SPC" category="CORRECTNESS"/>
 </FindbugsPlugin>
