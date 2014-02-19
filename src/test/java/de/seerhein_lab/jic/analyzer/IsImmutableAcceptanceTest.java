@@ -2,6 +2,8 @@ package de.seerhein_lab.jic.analyzer;
 
 import java.util.Collection;
 
+import net.jcip.annotations.Immutable;
+
 import org.junit.runner.RunWith;
 
 import de.seerhein_lab.jic.testutils.BugsExpected;
@@ -137,6 +139,17 @@ public class IsImmutableAcceptanceTest {
 		public StringHolder getValue() {
 			return value;
 		}
+
+	}
+
+	/**
+	 * Not Immutable class because the reference to the mutable state could be
+	 * access.
+	 */
+	@Immutable
+	@BugsExpected
+	public static class Story10_SupposedlyImmutableClassWithMutableSuperClass extends
+			Story09_ClassWithAccessByGetterToMutableState {
 
 	}
 

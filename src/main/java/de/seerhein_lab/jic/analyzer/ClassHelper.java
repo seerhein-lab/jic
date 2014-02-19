@@ -27,11 +27,11 @@ public final class ClassHelper {
 		return ctors;
 	}
 
-	List<Method> getNonPrivateNonStaticMethods() {
+	List<Method> getConcreteNonPrivateNonStaticMethods() {
 		List<Method> methodsButCtors = new Vector<Method>();
 		for (Method method : methods)
 			if (!method.getName().equals(CONSTRUCTOR_NAME) && !method.isPrivate()
-					&& !method.isStatic())
+					&& !method.isStatic() & !method.isAbstract())
 				methodsButCtors.add(method);
 		return methodsButCtors;
 	}

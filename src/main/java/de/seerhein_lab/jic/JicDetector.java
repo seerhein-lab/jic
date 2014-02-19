@@ -75,12 +75,6 @@ public final class JicDetector implements Detector {
 			return;
 		}
 
-		if (clazz.isAbstract() && supposedlyImmutable) {
-			reporter.reportBug(Utils.createBug("IMMUTABILITY_BUG", Confidence.HIGH,
-					"Type cannot be annotated as immutable", clazz));
-			supposedlyImmutable = false;
-		}
-
 		try {
 			Collection<BugInstance> bugs = supposedlyImmutable ? new ClassAnalyzer(classContext,
 					cache).isImmutable() : new ClassAnalyzer(classContext, cache)

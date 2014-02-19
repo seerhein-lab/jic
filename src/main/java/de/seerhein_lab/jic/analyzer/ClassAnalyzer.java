@@ -1,7 +1,11 @@
 package de.seerhein_lab.jic.analyzer;
 
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.logging.Logger;
 
 import net.jcip.annotations.ThreadSafe;
 
@@ -35,6 +39,7 @@ public final class ClassAnalyzer {
 	private final HashSet<Heap> heaps = new HashSet<Heap>();
 	private final ClassHelper classHelper;
 	private final AnalysisCache cache;
+	protected static final Logger logger = Logger.getLogger("ClassAnalyzer");
 
 	public ClassAnalyzer(ClassContext classContext, AnalysisCache cache) {
 		if (classContext == null)
@@ -51,9 +56,9 @@ public final class ClassAnalyzer {
 		Field[] fields = clazz.getFields();
 		for (Field field : fields)
 			if (!field.isStatic() && !field.isFinal())
-				bugs.add(Utils.createBug("IMMUTABILITY_BUG", Confidence.HIGH, "All fields must be final.", clazz)
-						.addField(clazz.getClassName(), field.getName(), field.getSignature(),
-								false));
+				bugs.add(Utils.createBug("IMMUTABILITY_BUG", Confidence.HIGH,
+						"All fields must be final.", clazz).addField(clazz.getClassName(),
+						field.getName(), field.getSignature(), false));
 		return bugs.getCollection();
 	}
 
@@ -63,8 +68,8 @@ public final class ClassAnalyzer {
 		for (Field field : fields)
 			if (!field.isStatic() && !(field.getType() instanceof BasicType) && !field.isPrivate())
 				bugs.add(Utils.createBug("IMMUTABILITY_BUG", Confidence.HIGH,
-						"Reference fields must be private.", clazz).addField(clazz.getClassName(), field.getName(),
-						field.getSignature(), false));
+						"Reference fields must be private.", clazz).addField(clazz.getClassName(),
+						field.getName(), field.getSignature(), false));
 		return bugs.getCollection();
 	}
 
@@ -113,11 +118,11 @@ public final class ClassAnalyzer {
 	Collection<BugInstance> fieldsAreNotPublished() {
 		SortedBugCollection bugs = new SortedBugCollection();
 
-		for (Method method : classHelper.getNonPrivateNonStaticMethods()) {
+		for (Method method : classHelper.getConcreteNonPrivateNonStaticMethods()) {
 			if (method.isNative()) {
-				bugs.add(Utils.createBug("IMMUTABILITY_BUG",
-						Confidence.MEDIUM,
-						"Native method might publish reference fields of 'this' object", classContext.getJavaClass()));
+				bugs.add(Utils.createBug("IMMUTABILITY_BUG", Confidence.MEDIUM,
+						"Native method might publish reference fields of 'this' object",
+						classContext.getJavaClass()));
 				continue;
 			}
 
@@ -137,10 +142,10 @@ public final class ClassAnalyzer {
 	Collection<BugInstance> noMutators() {
 		SortedBugCollection bugs = new SortedBugCollection();
 
-		for (Method method : classHelper.getNonPrivateNonStaticMethods()) {
+		for (Method method : classHelper.getConcreteNonPrivateNonStaticMethods()) {
 			if (method.isNative()) {
-				bugs.add(Utils.createBug("IMMUTABILITY_BUG",
-						Confidence.MEDIUM, "Native method might modify 'this' object", classContext.getJavaClass()));
+				bugs.add(Utils.createBug("IMMUTABILITY_BUG", Confidence.MEDIUM,
+						"Native method might modify 'this' object", classContext.getJavaClass()));
 				continue;
 			}
 
@@ -167,10 +172,34 @@ public final class ClassAnalyzer {
 
 	public synchronized Collection<BugInstance> isImmutable() {
 		SortedBugCollection bugs = new SortedBugCollection();
+
+		if (clazz.getClassName().equals("java.lang.Object"))
+			return bugs.getCollection();
+
+		ClassContext superContext;
+		try {
+			final JavaClass superClass = clazz.getSuperClass();
+			logger.info("class: " + clazz.getClassName() + ", super class: "
+					+ superClass.getClassName());
+
+			superContext = mock(ClassContext.class);
+			when(superContext.getJavaClass()).thenReturn(superClass);
+
+		} catch (ClassNotFoundException e) {
+			throw new RuntimeException(e);
+		}
+
+		ClassAnalyzer superAnalyzer = new ClassAnalyzer(superContext, new AnalysisCache());
+
+		Collection<BugInstance> superBugs = superAnalyzer.isImmutable();
+		if (!superBugs.isEmpty())
+			bugs.add(Utils.createBug("IMMUTABILITY_BUG", Confidence.HIGH,
+					"mutable superclass renders this class mutable, too.",
+					classContext.getJavaClass()));
+
 		bugs.addAll(allFieldsFinal());
 		bugs.addAll(properlyConstructed());
 		bugs.addAll(stateUnmodifiable());
 		return bugs.getCollection();
 	}
-
 }
