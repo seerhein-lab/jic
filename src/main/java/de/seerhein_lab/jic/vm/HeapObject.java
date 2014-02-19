@@ -20,6 +20,7 @@ import de.seerhein_lab.jic.EmercencyBrakeException;
  */
 public abstract class HeapObject {
 	private final static int HEAP_EMERCENCY_BREAK = 200000;
+	private final static int MEMORY_THRESHOLD = 30000000;
 	public static long objects = 0;
 	private final UUID id;
 	protected final Set<UUID> referredBy = new HashSet<UUID>();
@@ -38,6 +39,9 @@ public abstract class HeapObject {
 		objects++;
 		if (objects > HEAP_EMERCENCY_BREAK)
 			throw new EmercencyBrakeException();
+
+		// if (Runtime.getRuntime().freeMemory() < MEMORY_THRESHOLD)
+		// throw new EmercencyBrakeException();
 
 		id = UUID.randomUUID();
 		this.heap = heap;
@@ -58,6 +62,9 @@ public abstract class HeapObject {
 		objects++;
 		if (objects > HEAP_EMERCENCY_BREAK)
 			throw new EmercencyBrakeException();
+
+		// if (Runtime.getRuntime().freeMemory() < MEMORY_THRESHOLD)
+		// throw new EmercencyBrakeException();
 
 		id = original.id;
 		referredBy.addAll(original.referredBy);
