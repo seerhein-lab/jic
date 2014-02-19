@@ -5,13 +5,10 @@ import static org.apache.bcel.Constants.CONSTRUCTOR_NAME;
 import java.util.List;
 import java.util.Vector;
 
-import net.jcip.annotations.Immutable;
-
 import org.apache.bcel.classfile.JavaClass;
 import org.apache.bcel.classfile.Method;
 import org.apache.bcel.generic.Type;
 
-@Immutable
 public final class ClassHelper {
 	private final Method[] methods;
 
