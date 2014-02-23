@@ -10,7 +10,6 @@ import java.util.Set;
 import java.util.UUID;
 
 import de.seerhein_lab.jic.EmercencyBrakeException;
-import de.seerhein_lab.jic.analyzer.ClassHelper;
 
 /**
  * Abstract class representing the common part of objects on the heap
@@ -26,7 +25,7 @@ public abstract class HeapObject {
 	private final UUID id;
 	protected final Set<UUID> referredBy = new HashSet<UUID>();
 	public final Heap heap;
-	private final String className;
+	private final boolean immutable;
 
 	/**
 	 * Constructor.
@@ -34,7 +33,7 @@ public abstract class HeapObject {
 	 * @param heap
 	 *            Heap this objects resides on. Must not be null.
 	 */
-	protected HeapObject(Heap heap, String className) {
+	protected HeapObject(Heap heap, boolean immutable) {
 		if (heap == null)
 			throw new NullPointerException("heap must not be null");
 
@@ -46,7 +45,7 @@ public abstract class HeapObject {
 		// throw new EmercencyBrakeException();
 
 		id = UUID.randomUUID();
-		this.className = className;
+		this.immutable = immutable;
 		this.heap = heap;
 	}
 
@@ -71,12 +70,12 @@ public abstract class HeapObject {
 
 		id = original.id;
 		referredBy.addAll(original.referredBy);
-		this.className = original.className;
+		this.immutable = original.immutable;
 		this.heap = heap;
 	}
 
-	public String getClassName() {
-		return className;
+	public boolean isImmutable() {
+		return immutable;
 	}
 
 	/**
@@ -266,10 +265,6 @@ public abstract class HeapObject {
 	 * @return newly copied complex object
 	 */
 	protected abstract HeapObject deepCopy(Heap heap, Map<HeapObject, HeapObject> visited);
-
-	public boolean isAnnotatedAsImmutable() {
-		return ClassHelper.isAnnotedAsImmutable(getClassName());
-	}
 
 	/*
 	 * (non-Javadoc)

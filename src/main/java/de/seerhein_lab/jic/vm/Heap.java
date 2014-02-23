@@ -10,6 +10,8 @@ import java.util.UUID;
 import java.util.Vector;
 import java.util.concurrent.atomic.AtomicLong;
 
+import de.seerhein_lab.jic.analyzer.ClassHelper;
+
 /**
  * Class whose instances represent heaps. A heap contains objects, some of which
  * have been published, as well as two special objects, i.e. the 'this' instance
@@ -28,7 +30,7 @@ public class Heap {
 	 * Constructor. Creates the 'this' instance and the external object.
 	 */
 	public Heap(String className) {
-		HeapObject thisObject = new ClassInstance(this, className);
+		HeapObject thisObject = new ClassInstance(this, ClassHelper.isAnnotedAsImmutable(className));
 		thisID = thisObject.getId();
 		objects.put(thisID, thisObject);
 
@@ -101,10 +103,14 @@ public class Heap {
 	 * 
 	 * @return The newly created class instance.
 	 */
-	public ClassInstance newClassInstance(String className) {
-		ClassInstance object = new ClassInstance(this, className);
+	public ClassInstance newClassInstance(boolean immutable) {
+		ClassInstance object = new ClassInstance(this, immutable);
 		objects.put(object.getId(), object);
 		return object;
+	}
+
+	public ClassInstance newClassInstance(String className) {
+		return newClassInstance(ClassHelper.isAnnotedAsImmutable(className));
 	}
 
 	/**
@@ -112,10 +118,14 @@ public class Heap {
 	 * 
 	 * @return The newly created array.
 	 */
-	public Array newArray(String className) {
-		Array object = new Array(this, className);
+	public Array newArray(boolean immutable) {
+		Array object = new Array(this, immutable);
 		objects.put(object.getId(), object);
 		return object;
+	}
+
+	public Array newArray(String className) {
+		return newArray(ClassHelper.isAnnotedAsImmutable(className));
 	}
 
 	/**

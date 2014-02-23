@@ -77,9 +77,19 @@ public final class ClassHelper {
 					return true;
 			}
 		} catch (ClassNotFoundException e) {
-			e.printStackTrace();
+		} catch (IllegalArgumentException e) {
 		}
 		return false;
+	}
+
+	public static boolean isFinalAndAnnotedAsImmutable(String className) {
+		JavaClass clazz = null;
+		try {
+			clazz = Repository.lookupClass(className);
+		} catch (ClassNotFoundException e) {
+			e.printStackTrace();
+		}
+		return clazz.isFinal() && isAnnotedAsImmutable(className);
 	}
 
 }

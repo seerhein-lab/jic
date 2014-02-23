@@ -28,7 +28,7 @@ public class HeapTest {
 	private ReferenceSlot fRef;
 
 	public void setUpHeap() {
-		heap = new Heap("");
+		heap = new Heap(this.getClass().getCanonicalName());
 
 		a = heap.newClassInstance("");
 		b = heap.newClassInstance("");

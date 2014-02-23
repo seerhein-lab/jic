@@ -22,8 +22,8 @@ public final class ClassInstance extends HeapObject {
 	 * @param heap
 	 *            Heap this class instance resides on. Must not be null.
 	 */
-	public ClassInstance(Heap heap, String className) {
-		super(heap, className);
+	public ClassInstance(Heap heap, boolean immutable) {
+		super(heap, immutable);
 	}
 
 	/**
@@ -77,7 +77,7 @@ public final class ClassInstance extends HeapObject {
 	 */
 	@Override
 	protected HeapObject deepCopy(Heap heap, Map<HeapObject, HeapObject> visited) {
-		ClassInstance copiedObject = heap.newClassInstance(this.getClassName());
+		ClassInstance copiedObject = heap.newClassInstance(this.isImmutable());
 		visited.put(this, copiedObject);
 
 		for (Entry<String, UUID> entry : this.refers.entrySet()) {
