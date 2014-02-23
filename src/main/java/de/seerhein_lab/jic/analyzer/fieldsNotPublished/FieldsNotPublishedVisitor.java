@@ -94,14 +94,12 @@ public class FieldsNotPublishedVisitor extends BaseVisitor {
 			addBug("IMMUTABILITY_BUG", Confidence.HIGH,
 					"a field of 'this' is passed to a virtual method and published",
 					pc.getCurrentInstruction());
+		} else if (argumentObject.complexObjectIsReachableBy(heap.getThisInstance())) {
+			// publish Object that refers Object referedBy 'this'
+			addBug("IMMUTABILITY_BUG", Confidence.HIGH,
+					"an Object that refers an Object refered by 'this' is passed"
+							+ " to a virtual method and published", pc.getCurrentInstruction());
 		}
-		// else if
-		// (argumentObject.complexObjectIsReachableBy(heap.getThisInstance())) {
-		// // publish Object that refers Object referedBy 'this'
-		// addBug("IMMUTABILITY_BUG", Confidence.HIGH,
-		// "an Object that refers an Object refered by 'this' is passed"
-		// + " to a virtual method and published", pc.getCurrentInstruction());
-		// }
 	}
 
 	@Override
