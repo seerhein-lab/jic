@@ -143,6 +143,15 @@ public class FieldsNotPublishedAcceptanceTest {
 		}
 	}
 
+	@NoBugsExpected
+	public static class DetectXAStoreBug_ImmutableReferenceReferredByThis {
+		private final Object f = new ImmutableTestClass();
+
+		public void publish(Object[] array) {
+			array[0] = f;
+		}
+	}
+
 	@BugsExpected
 	public static class DetectXAStoreBug_ReferenceTransitivelyReferredByThis {
 		private final TestClass f = new TestClass();
@@ -202,6 +211,15 @@ public class FieldsNotPublishedAcceptanceTest {
 	@BugsExpected
 	public static class DetectPutFieldBug_ReferenceReferredByThis {
 		private final Object f = new Object();
+
+		public void publish(TestClass tc) {
+			tc.klass = f;
+		}
+	}
+
+	@NoBugsExpected
+	public static class DetectPutFieldBug_ImmutableReferenceReferredByThis {
+		private final Object f = new String();
 
 		public void publish(TestClass tc) {
 			tc.klass = f;
@@ -273,6 +291,15 @@ public class FieldsNotPublishedAcceptanceTest {
 		}
 	}
 
+	@NoBugsExpected
+	public static class DetectPutStaticBug_ImmutableReferenceReferredByThis {
+		private final Object f = new String();
+
+		public void publish() {
+			TestClassStatic.klass = f;
+		}
+	}
+
 	@BugsExpected
 	public static class DetectPutStaticBug_This {
 		public void publish() {
@@ -333,6 +360,15 @@ public class FieldsNotPublishedAcceptanceTest {
 	@BugsExpected
 	public static class DetectAReturnBug_ReferenceReferredByThis {
 		private final Object f = new Object();
+
+		public Object publish(TestClass tc) {
+			return f;
+		}
+	}
+
+	@NoBugsExpected
+	public static class DetectAReturnBug_ImmutableReferenceReferredByThis {
+		private final Object f = new ImmutableTestClass();
 
 		public Object publish(TestClass tc) {
 			return f;
