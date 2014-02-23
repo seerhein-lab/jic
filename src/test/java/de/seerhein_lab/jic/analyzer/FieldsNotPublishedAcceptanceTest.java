@@ -2,6 +2,8 @@ package de.seerhein_lab.jic.analyzer;
 
 import java.util.Collection;
 
+import net.jcip.annotations.Immutable;
+
 import org.junit.runner.RunWith;
 
 import de.seerhein_lab.jic.testutils.BugsExpected;
@@ -19,7 +21,6 @@ import edu.umd.cs.findbugs.BugInstance;
 @RunWith(ClassAnalyzerRunner.class)
 @SuppressWarnings("unused")
 public class FieldsNotPublishedAcceptanceTest {
-	private static PublishMetohd p = new PublishMetohd();
 
 	@BindAnalyzerMethod
 	public static Collection<BugInstance> bindClassAnalyzerToProperlyConstructed(
@@ -31,21 +32,21 @@ public class FieldsNotPublishedAcceptanceTest {
 	@NoBugsExpected
 	public static class DetectVirtualMethodBug_This {
 		public void publish() {
-			p.publish(this);
+			new PublishMetohd().publish(this);
 		}
 	}
 
 	@NoBugsExpected
 	public static class DetectVirtualMethodBug_Null {
 		public void publish() {
-			p.publish(null);
+			new PublishMetohd().publish(null);
 		}
 	}
 
 	@NoBugsExpected
 	public static class DetectVirtualMethodBug_Reference {
 		public void publish() {
-			p.publish(new Object());
+			new PublishMetohd().publish(new Object());
 		}
 	}
 
@@ -54,7 +55,16 @@ public class FieldsNotPublishedAcceptanceTest {
 		private final Object o = new Object();
 
 		public void publish() {
-			p.publish(this.o);
+			new PublishMetohd().publish(this.o);
+		}
+	}
+
+	@NoBugsExpected
+	public static class DetectVirtualMethodBug_ImmutableReferenceReferredByThis {
+		private final Object o = new ImmutableTestClass();
+
+		public void publish() {
+			new PublishMetohd().publish(this.o);
 		}
 	}
 
@@ -63,7 +73,7 @@ public class FieldsNotPublishedAcceptanceTest {
 		private final int i = 5;
 
 		public void publish() {
-			p.publish(i);
+			new PublishMetohd().publish(i);
 		}
 	}
 
@@ -75,7 +85,7 @@ public class FieldsNotPublishedAcceptanceTest {
 			Object object = new Object();
 			this.o.tc = new TestClass();
 			this.o.tc.klass = object;
-			p.publish(object);
+			new PublishMetohd().publish(object);
 		}
 	}
 
@@ -89,7 +99,7 @@ public class FieldsNotPublishedAcceptanceTest {
 			this.o.tc.klass = object;
 			TestClass testClass = new TestClass();
 			testClass.klass = object;
-			p.publish(testClass);
+			new PublishMetohd().publish(testClass);
 		}
 	}
 
@@ -352,6 +362,10 @@ public class FieldsNotPublishedAcceptanceTest {
 			testClass.klass = object;
 			return testClass;
 		}
+	}
+
+	@Immutable
+	private static class ImmutableTestClass {
 	}
 
 	private static class TestClass {

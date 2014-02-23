@@ -100,6 +100,18 @@ public class CtorArgsCopiedAcceptanceTest {
 	}
 
 	@NoBugsExpected
+	public static class DetectVirtualMethodBug_ImmutableTransitivelyReferredByThis {
+		private final TestClass o = new TestClass();
+
+		public DetectVirtualMethodBug_ImmutableTransitivelyReferredByThis() {
+			ImmutableTestClass object = new ImmutableTestClass();
+			this.o.tc = new TestClass();
+			this.o.tc.klass = object;
+			equals(object);
+		}
+	}
+
+	@NoBugsExpected
 	public static class DetectXAStoreBug_Int {
 		private final int[] f = new int[10];
 
@@ -295,8 +307,6 @@ public class CtorArgsCopiedAcceptanceTest {
 
 	@Immutable
 	private static class ImmutableTestClass {
-		public Object[] array;
-		public Object klass;
 		public TestClass tc;
 	}
 
