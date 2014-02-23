@@ -10,7 +10,6 @@ import org.apache.bcel.generic.MethodGen;
 import de.seerhein_lab.jic.Pair;
 import de.seerhein_lab.jic.analyzer.BaseMethodAnalyzer;
 import de.seerhein_lab.jic.analyzer.BaseVisitor;
-import de.seerhein_lab.jic.analyzer.ClassHelper;
 import de.seerhein_lab.jic.analyzer.QualifiedMethod;
 import de.seerhein_lab.jic.cache.AnalysisCache;
 import de.seerhein_lab.jic.cache.AnalysisCache.Check;
@@ -72,8 +71,8 @@ public class CtorArgsCopiedVisitor extends BaseVisitor {
 	// ******************************************************************//
 
 	@Override
-	protected void detectVirtualMethodBug(ReferenceSlot argument, String argumentClass) {
-		if (argument.isNullReference() || argument.getObject(heap).isAnnotatedAsImmutable())
+	protected void detectVirtualMethodBug(ReferenceSlot argument) {
+		if (argument.isNullReference() || argument.getObject(heap).isImmutable())
 			return;
 
 		if (heap.getThisInstance().isReachable(argument.getObject(heap))) {
@@ -84,14 +83,12 @@ public class CtorArgsCopiedVisitor extends BaseVisitor {
 	}
 
 	@Override
-	protected void detectXAStoreBug(ReferenceSlot arrayReference, Slot valueToStore,
-			String valueToStoreClass) {
+	protected void detectXAStoreBug(ReferenceSlot arrayReference, Slot valueToStore) {
 		if (!(valueToStore instanceof ReferenceSlot))
 			return;
 
 		ReferenceSlot referenceToStore = (ReferenceSlot) valueToStore;
-		if (referenceToStore.isNullReference()
-				|| referenceToStore.getObject(heap).isAnnotatedAsImmutable())
+		if (referenceToStore.isNullReference() || referenceToStore.getObject(heap).isImmutable())
 			return;
 
 		if (heap.getThisInstance().isReachable(arrayReference.getObject(heap))) {
@@ -113,14 +110,12 @@ public class CtorArgsCopiedVisitor extends BaseVisitor {
 	}
 
 	@Override
-	protected void detectPutFieldBug(ReferenceSlot targetReference, Slot valueToPut,
-			String valueToPutClass) {
+	protected void detectPutFieldBug(ReferenceSlot targetReference, Slot valueToPut) {
 		if (!(valueToPut instanceof ReferenceSlot))
 			return;
 
 		ReferenceSlot referenceToPut = (ReferenceSlot) valueToPut;
-		if (referenceToPut.isNullReference()
-				|| referenceToPut.getObject(heap).isAnnotatedAsImmutable())
+		if (referenceToPut.isNullReference() || referenceToPut.getObject(heap).isImmutable())
 			return;
 
 		if (targetReference.getObject(heap).equals(heap.getThisInstance())) {
@@ -154,9 +149,8 @@ public class CtorArgsCopiedVisitor extends BaseVisitor {
 	}
 
 	@Override
-	protected void detectPutStaticBug(ReferenceSlot referenceToPut, String referenceToPutClass) {
-		if (referenceToPut.isNullReference()
-				|| referenceToPut.getObject(heap).isAnnotatedAsImmutable())
+	protected void detectPutStaticBug(ReferenceSlot referenceToPut) {
+		if (referenceToPut.isNullReference() || referenceToPut.getObject(heap).isImmutable())
 			return;
 
 		// XXX this assigned to a static field?? Only starting class?!?

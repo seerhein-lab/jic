@@ -52,19 +52,19 @@ public class RecursionVisitor extends BaseVisitor {
 	}
 
 	@Override
-	protected void detectVirtualMethodBug(ReferenceSlot argument, String argumentClass) {
+	protected void detectVirtualMethodBug(ReferenceSlot argument ) {
 	}
 
 	@Override
-	protected void detectXAStoreBug(ReferenceSlot arrayReference, Slot valueToStore, String valueToStoreClass) {
+	protected void detectXAStoreBug(ReferenceSlot arrayReference, Slot valueToStore ) {
 	}
 
 	@Override
-	protected void detectPutFieldBug(ReferenceSlot targetReference, Slot valueToPut, String valueToPutClass) {
+	protected void detectPutFieldBug(ReferenceSlot targetReference, Slot valueToPut ) {
 	}
 
 	@Override
-	protected void detectPutStaticBug(ReferenceSlot referenceToPut, String referenceToPutClass) {
+	protected void detectPutStaticBug(ReferenceSlot referenceToPut ) {
 	}
 
 }
