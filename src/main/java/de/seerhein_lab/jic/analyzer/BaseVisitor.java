@@ -417,12 +417,11 @@ public abstract class BaseVisitor extends SimpleVisitor {
 	 */
 	@Override
 	public void visitLoadInstruction(LoadInstruction obj) {
-		logger.fine(indentation + obj.toString(false));
-		// + (frame.getLocalVars()[obj.getIndex()] instanceof ReferenceSlot ?
-		// " ("
-		// + heap.getObject((ReferenceSlot)
-		// frame.getLocalVars()[obj.getIndex()])
-		// + ")" : ""));
+		logger.fine(indentation
+				+ obj.toString(false)
+				+ (frame.getLocalVars()[obj.getIndex()] instanceof ReferenceSlot ? " ("
+						+ ((ReferenceSlot) frame.getLocalVars()[obj.getIndex()]).getObject(heap)
+						+ ")" : ""));
 		if (frame.getLocalVars()[obj.getIndex()] == null)
 			throw new AssertionError("wrong index for local vars");
 		frame.getStack().pushByRequiredSize(frame.getLocalVars()[obj.getIndex()]);
