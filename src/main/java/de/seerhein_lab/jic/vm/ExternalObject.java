@@ -19,9 +19,10 @@ public final class ExternalObject extends HeapObject {
 	 * 
 	 * @param heap
 	 *            Heap this external object resides on. Must not be null.
+	 * @param immutable
 	 */
-	public ExternalObject(Heap heap) {
-		super(heap, false); // TODO
+	public ExternalObject(Heap heap, boolean immutable) {
+		super(heap, immutable);
 	}
 
 	/**
@@ -34,6 +35,11 @@ public final class ExternalObject extends HeapObject {
 	 */
 	public ExternalObject(ExternalObject external, Heap heap) {
 		super(external, heap);
+	}
+
+	@Override
+	public boolean isExternal() {
+		return true;
 	}
 
 	/*
@@ -66,7 +72,7 @@ public final class ExternalObject extends HeapObject {
 	 */
 	@Override
 	protected HeapObject deepCopy(Heap heap, Map<HeapObject, HeapObject> visited) {
-		return heap.getExternalObject();
+		return heap.getExternalObject(this.isImmutable());
 	}
 
 	/*

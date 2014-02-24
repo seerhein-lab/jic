@@ -78,6 +78,10 @@ public abstract class HeapObject {
 		return immutable;
 	}
 
+	public boolean isExternal() {
+		return false;
+	}
+
 	/**
 	 * Gets this object's ID.
 	 * 
@@ -275,7 +279,7 @@ public abstract class HeapObject {
 	public String toString() {
 		if (this.equals(heap.getThisInstance()))
 			return "This";
-		if (this.equals(heap.getExternalObject()))
+		if (this.isExternal())
 			return (immutable ? "immutable" : "mutable") + "External";
 		return (immutable ? "immutable" : "mutable") + "Internal (" + id + ")";
 	}

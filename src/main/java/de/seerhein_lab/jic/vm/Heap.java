@@ -10,6 +10,8 @@ import java.util.UUID;
 import java.util.Vector;
 import java.util.concurrent.atomic.AtomicLong;
 
+import org.apache.bcel.generic.Type;
+
 import de.seerhein_lab.jic.analyzer.ClassHelper;
 
 /**
@@ -21,23 +23,34 @@ import de.seerhein_lab.jic.analyzer.ClassHelper;
 public class Heap {
 	public static AtomicLong count = new AtomicLong();
 	private final Map<UUID, HeapObject> objects = new HashMap<UUID, HeapObject>();
-	private final Set<UUID> publishedObjects = new HashSet<UUID>();
+	private final Set<UUID> publishedMutableObjects = new HashSet<UUID>();
+	private final Set<UUID> publishedImmutableObjects = new HashSet<UUID>();
 
 	private final UUID thisID;
-	private final UUID externalID;
+	private final UUID mutableExternalID;
+	private final UUID immutableExternalID;
 
 	/**
 	 * Constructor. Creates the 'this' instance and the external object.
 	 */
-	public Heap(String className) {
-		HeapObject thisObject = new ClassInstance(this, ClassHelper.isAnnotedAsImmutable(className));
+	public Heap(boolean immutable) {
+		HeapObject thisObject = new ClassInstance(this, immutable);
 		thisID = thisObject.getId();
 		objects.put(thisID, thisObject);
 
-		ExternalObject externalObject = new ExternalObject(this);
-		externalID = externalObject.getId();
-		objects.put(externalID, externalObject);
+		ExternalObject mutableExternalObject = new ExternalObject(this, false);
+		mutableExternalID = mutableExternalObject.getId();
+		objects.put(mutableExternalID, mutableExternalObject);
+
+		ExternalObject immutableExternalObject = new ExternalObject(this, true);
+		immutableExternalID = immutableExternalObject.getId();
+		objects.put(immutableExternalID, immutableExternalObject);
+
 		count.incrementAndGet();
+	}
+
+	public Heap() {
+		this(false);
 	}
 
 	/**
@@ -51,10 +64,12 @@ public class Heap {
 			objects.put(id, original.objects.get(id).copy(this));
 		}
 
-		publishedObjects.addAll(original.publishedObjects);
+		publishedMutableObjects.addAll(original.publishedMutableObjects);
+		publishedImmutableObjects.addAll(original.publishedImmutableObjects);
 
 		thisID = original.thisID;
-		externalID = original.externalID;
+		mutableExternalID = original.mutableExternalID;
+		immutableExternalID = original.immutableExternalID;
 		count.incrementAndGet();
 	}
 
@@ -71,8 +86,11 @@ public class Heap {
 		if (id == null)
 			return null;
 
-		if (publishedObjects.contains(id))
-			return objects.get(externalID);
+		if (publishedMutableObjects.contains(id))
+			return objects.get(mutableExternalID);
+
+		if (publishedImmutableObjects.contains(id))
+			return objects.get(immutableExternalID);
 
 		if (objects.containsKey(id))
 			return objects.get(id);
@@ -90,12 +108,25 @@ public class Heap {
 	}
 
 	/**
-	 * Gets this heap's external object
+	 * Gets this heap's mutable external object
 	 * 
-	 * @return this heap's external object
+	 * @return this heap's mutable external object
 	 */
-	public HeapObject getExternalObject() {
-		return get(externalID);
+	public HeapObject getMutableExternalObject() {
+		return get(mutableExternalID);
+	}
+
+	/**
+	 * Gets this heap's immutable external object
+	 * 
+	 * @return this heap's immutable external object
+	 */
+	public HeapObject getImmutableExternalObject() {
+		return get(immutableExternalID);
+	}
+
+	public HeapObject getExternalObject(boolean immutable) {
+		return immutable ? getImmutableExternalObject() : getMutableExternalObject();
 	}
 
 	/**
@@ -109,8 +140,16 @@ public class Heap {
 		return object;
 	}
 
-	public ClassInstance newClassInstance(String className) {
-		return newClassInstance(ClassHelper.isAnnotedAsImmutable(className));
+	public ClassInstance newClassInstanceOfDynamicType(Type type) {
+		return newClassInstance(ClassHelper.isImmutable(type));
+	}
+
+	public ClassInstance newClassInstanceOfStaticType(Type type) {
+		return newClassInstance(ClassHelper.isImmutableAndFinal(type));
+	}
+
+	public ClassInstance newClassInstanceOfDynamicType(String type) {
+		return newClassInstance(ClassHelper.isImmutable(type));
 	}
 
 	/**
@@ -118,14 +157,10 @@ public class Heap {
 	 * 
 	 * @return The newly created array.
 	 */
-	public Array newArray(boolean immutable) {
-		Array object = new Array(this, immutable);
+	public Array newArray() {
+		Array object = new Array(this);
 		objects.put(object.getId(), object);
 		return object;
-	}
-
-	public Array newArray(String className) {
-		return newArray(ClassHelper.isAnnotedAsImmutable(className));
 	}
 
 	/**
@@ -142,22 +177,26 @@ public class Heap {
 			return;
 
 		for (HeapObject o : obj.getClosure()) {
-			if (!o.equals(getThisInstance()) && !o.equals(getExternalObject())) {
+			if (!o.equals(getThisInstance()) && !o.isExternal()) {
 				// don't publish this in order not to cover further bugs
 				// don't publish the external object
 
 				List<HeapObject> referring = new Vector<HeapObject>();
 
 				for (HeapObject referringObj : o.getReferringObjects()) {
-					if (!referringObj.equals(getExternalObject()))
+					if (!referringObj.isExternal())
 						referring.add(referringObj);
 				}
 
 				for (int i = 0; i < referring.size(); i++) {
-					referring.get(i).replaceReferredObject(o, getExternalObject());
+					referring.get(i).replaceReferredObject(o, getExternalObject(o.isImmutable()));
 				}
 
-				publishedObjects.add(o.getId());
+				if (o.isImmutable())
+					publishedImmutableObjects.add(o.getId());
+				else
+					publishedMutableObjects.add(o.getId());
+
 				objects.remove(o.getId());
 			}
 		}
@@ -172,9 +211,10 @@ public class Heap {
 	public int hashCode() {
 		final int prime = 31;
 		int result = 1;
-		result = prime * result + ((externalID == null) ? 0 : externalID.hashCode());
+		result = prime * result + ((mutableExternalID == null) ? 0 : mutableExternalID.hashCode());
 		result = prime * result + ((objects == null) ? 0 : objects.hashCode());
-		result = prime * result + ((publishedObjects == null) ? 0 : publishedObjects.hashCode());
+		result = prime * result
+				+ ((publishedMutableObjects == null) ? 0 : publishedMutableObjects.hashCode());
 		result = prime * result + ((thisID == null) ? 0 : thisID.hashCode());
 		return result;
 	}
@@ -194,10 +234,10 @@ public class Heap {
 
 		Heap other = (Heap) obj;
 
-		if (externalID == null) {
-			if (other.externalID != null)
+		if (mutableExternalID == null) {
+			if (other.mutableExternalID != null)
 				return false;
-		} else if (!externalID.equals(other.externalID))
+		} else if (!mutableExternalID.equals(other.mutableExternalID))
 			return false;
 
 		if (thisID == null) {
@@ -209,7 +249,7 @@ public class Heap {
 		if (!objects.equals(other.objects))
 			return false;
 
-		return (publishedObjects.equals(other.publishedObjects));
+		return (publishedMutableObjects.equals(other.publishedMutableObjects));
 	}
 
 }

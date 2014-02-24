@@ -98,7 +98,10 @@ public class CtorArgsCopiedVisitor extends BaseVisitor {
 				addBug("IMMUTABILITY_BUG", Confidence.HIGH,
 						"an external reference is assigned to an array referred by 'this'",
 						pc.getCurrentInstruction());
-			} else if (referenceToStore.getObject(heap).isReachable(heap.getExternalObject())) {
+			} else if (referenceToStore.getObject(heap).isReachable(
+					heap.getImmutableExternalObject())
+					|| referenceToStore.getObject(heap)
+							.isReachable(heap.getMutableExternalObject())) {
 				// a reference containing an external reference is assigned to
 				// an array referred by this
 				addBug("IMMUTABILITY_BUG",
@@ -120,11 +123,11 @@ public class CtorArgsCopiedVisitor extends BaseVisitor {
 
 		if (targetReference.getObject(heap).equals(heap.getThisInstance())) {
 			// left side is this
-			if (referenceToPut.getObject(heap) instanceof ExternalObject) {
+			if (referenceToPut.getObject(heap).equals(heap.getMutableExternalObject())) {
 				// right is external
 				addBug("IMMUTABILITY_BUG", Confidence.HIGH,
 						"an external object is assigned to 'this'", pc.getCurrentInstruction());
-			} else if (referenceToPut.getObject(heap).isReachable(heap.getExternalObject())) {
+			} else if (referenceToPut.getObject(heap).isReachable(heap.getMutableExternalObject())) {
 				// right refers external
 				addBug("IMMUTABILITY_BUG", Confidence.HIGH,
 						"an object containing an external reference is assigned to 'this'",
@@ -133,12 +136,12 @@ public class CtorArgsCopiedVisitor extends BaseVisitor {
 		}
 		if (heap.getThisInstance().isReachable(targetReference.getObject(heap))) {
 			// left is referred by this
-			if (referenceToPut.getObject(heap) instanceof ExternalObject) {
+			if (referenceToPut.getObject(heap).equals(heap.getMutableExternalObject())) {
 				// right is external
 				addBug("IMMUTABILITY_BUG", Confidence.HIGH,
 						"an external reference is assigned to an object referred by 'this'",
 						pc.getCurrentInstruction());
-			} else if (referenceToPut.getObject(heap).isReachable(heap.getExternalObject())) {
+			} else if (referenceToPut.getObject(heap).isReachable(heap.getMutableExternalObject())) {
 				// right refers external
 				addBug("IMMUTABILITY_BUG",
 						Confidence.HIGH,
@@ -152,14 +155,6 @@ public class CtorArgsCopiedVisitor extends BaseVisitor {
 	protected void detectPutStaticBug(ReferenceSlot referenceToPut) {
 		if (referenceToPut.isNullReference() || referenceToPut.getObject(heap).isImmutable())
 			return;
-
-		// XXX this assigned to a static field?? Only starting class?!?
-		if (referenceToPut.getObject(heap).equals(heap.getThisInstance())) {
-			// this is published
-			addBug("IMMUTABILITY_BUG", Confidence.HIGH,
-					"'this' is published by assignment to a static field",
-					pc.getCurrentInstruction());
-		}
 
 		if (heap.getThisInstance().isReachable(referenceToPut.getObject(heap))) {
 			// a field referred by this is published
