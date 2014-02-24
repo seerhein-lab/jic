@@ -271,7 +271,7 @@ public class CtorArgsCopiedAcceptanceTest {
 		}
 	}
 
-	@BugsExpected
+	@NoBugsExpected
 	public static class DetectPutStaticBug_This {
 		public DetectPutStaticBug_This(Object o) {
 			TestClassStatic.klass = this;
@@ -285,7 +285,7 @@ public class CtorArgsCopiedAcceptanceTest {
 		}
 	}
 
-	@BugsExpected
+	@NoBugsExpected
 	public static class DetectPutStaticBug_ThisSameClass {
 		public static Object o;
 
@@ -306,7 +306,7 @@ public class CtorArgsCopiedAcceptanceTest {
 	}
 
 	@Immutable
-	private static class ImmutableTestClass {
+	private final static class ImmutableTestClass {
 		public TestClass tc;
 	}
 
