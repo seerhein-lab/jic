@@ -276,8 +276,8 @@ public abstract class HeapObject {
 		if (this.equals(heap.getThisInstance()))
 			return "This";
 		if (this.equals(heap.getExternalObject()))
-			return "External";
-		return "Internal (" + id + ")";
+			return (immutable ? "immutable" : "mutable") + "External";
+		return (immutable ? "immutable" : "mutable") + "Internal (" + id + ")";
 	}
 
 	/*
@@ -291,6 +291,7 @@ public abstract class HeapObject {
 		int result = 1;
 		result = prime * result + id.hashCode();
 		result = prime * result + referredBy.hashCode();
+		result = prime * result + (immutable ? 1 : 0);
 		return result;
 	}
 
@@ -310,6 +311,9 @@ public abstract class HeapObject {
 		HeapObject other = (HeapObject) obj;
 
 		if (!id.equals(other.id))
+			return false;
+
+		if (immutable != other.immutable)
 			return false;
 
 		return referredBy.equals(other.referredBy);
