@@ -5,8 +5,6 @@ import static org.apache.bcel.Constants.CONSTRUCTOR_NAME;
 import java.util.List;
 import java.util.Vector;
 
-import net.jcip.annotations.Immutable;
-
 import org.apache.bcel.Repository;
 import org.apache.bcel.classfile.AnnotationEntry;
 import org.apache.bcel.classfile.JavaClass;
@@ -64,8 +62,7 @@ public final class ClassHelper {
 			"java.lang.Float", "java.lang.Boolean", "java.lang.Character", "byte", "short", "int",
 			"long", "float", "boolean", "char" };
 
-	public static boolean isAnnotedAsImmutable(String className) {
-		className = className.replace("[]", "");
+	public static boolean isImmutable(String className) {
 		for (String immutableClass : immutableClasses) {
 			if (className.equals(immutableClass))
 				return true;
@@ -77,19 +74,19 @@ public final class ClassHelper {
 					return true;
 			}
 		} catch (ClassNotFoundException e) {
-		} catch (IllegalArgumentException e) {
+			throw new AssertionError(e);
 		}
 		return false;
 	}
 
-	public static boolean isFinalAndAnnotedAsImmutable(String className) {
+	public static boolean isImmutableAndFinal(String className) {
 		JavaClass clazz = null;
 		try {
 			clazz = Repository.lookupClass(className);
 		} catch (ClassNotFoundException e) {
-			e.printStackTrace();
+			throw new AssertionError(e);
 		}
-		return clazz.isFinal() && isAnnotedAsImmutable(className);
+		return clazz.isFinal() && isImmutable(className);
 	}
 
 }
