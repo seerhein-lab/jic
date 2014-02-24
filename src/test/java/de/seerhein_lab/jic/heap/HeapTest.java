@@ -28,14 +28,14 @@ public class HeapTest {
 	private ReferenceSlot fRef;
 
 	public void setUpHeap() {
-		heap = new Heap(this.getClass().getCanonicalName());
+		heap = new Heap();
 
-		a = heap.newClassInstance("");
-		b = heap.newClassInstance("");
-		c = heap.newClassInstance("");
-		d = heap.newClassInstance("");
-		e = heap.newClassInstance("");
-		f = heap.newArray("");
+		a = heap.newClassInstance(false);
+		b = heap.newClassInstance(false);
+		c = heap.newClassInstance(false);
+		d = heap.newClassInstance(false);
+		e = heap.newClassInstance(false);
+		f = heap.newArray();
 
 		aRef = new ReferenceSlot(a);
 		bRef = new ReferenceSlot(b);
@@ -60,7 +60,7 @@ public class HeapTest {
 
 	@Test
 	public void testInitalization() {
-		assertNotNull(heap.getExternalObject());
+		assertNotNull(heap.getMutableExternalObject());
 		assertNotNull(heap.getThisInstance());
 	}
 
@@ -81,11 +81,11 @@ public class HeapTest {
 		heap.publish(b);
 
 		assertEquals(a, aRef.getObject(heap));
-		assertEquals(heap.getExternalObject(), bRef.getObject(heap));
-		assertEquals(heap.getExternalObject(), cRef.getObject(heap));
-		assertEquals(heap.getExternalObject(), dRef.getObject(heap));
-		assertEquals(heap.getExternalObject(), eRef.getObject(heap));
-		assertEquals(heap.getExternalObject(), fRef.getObject(heap));
+		assertEquals(heap.getMutableExternalObject(), bRef.getObject(heap));
+		assertEquals(heap.getMutableExternalObject(), cRef.getObject(heap));
+		assertEquals(heap.getMutableExternalObject(), dRef.getObject(heap));
+		assertEquals(heap.getMutableExternalObject(), eRef.getObject(heap));
+		assertEquals(heap.getMutableExternalObject(), fRef.getObject(heap));
 	}
 
 	@Test
@@ -100,8 +100,8 @@ public class HeapTest {
 	public void testRepublish() {
 		assertEquals(f, fRef.getObject(heap));
 		heap.publish(f);
-		assertEquals(heap.getExternalObject(), fRef.getObject(heap));
+		assertEquals(heap.getMutableExternalObject(), fRef.getObject(heap));
 		heap.publish(f);
-		assertEquals(heap.getExternalObject(), fRef.getObject(heap));
+		assertEquals(heap.getMutableExternalObject(), fRef.getObject(heap));
 	}
 }
