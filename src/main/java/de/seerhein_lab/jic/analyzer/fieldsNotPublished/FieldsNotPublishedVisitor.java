@@ -68,7 +68,7 @@ public class FieldsNotPublishedVisitor extends BaseVisitor {
 		else {
 			Slot returnSlot = frame.getStack().popByRequiredSize();
 			if (returnType instanceof ReferenceSlot)
-				detectAReturnBug((ReferenceSlot) returnSlot, obj.getType().toString());
+				detectAReturnBug((ReferenceSlot) returnSlot);
 			result.add(new EvaluationResult(Kind.REGULAR, returnSlot, heap));
 		}
 		pc.invalidate();
@@ -176,7 +176,7 @@ public class FieldsNotPublishedVisitor extends BaseVisitor {
 							+ " by assignment to a static field", pc.getCurrentInstruction());
 	}
 
-	protected void detectAReturnBug(ReferenceSlot returnValue, String returnValueClass) {
+	protected void detectAReturnBug(ReferenceSlot returnValue) {
 		HeapObject returnObject = returnValue.getObject(heap);
 		if (returnValue.isNullReference() || returnValue.getObject(heap).isImmutable())
 			return;
