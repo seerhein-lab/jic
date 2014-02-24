@@ -4,11 +4,13 @@ import static org.apache.bcel.Constants.CONSTRUCTOR_NAME;
 
 import java.util.List;
 import java.util.Vector;
+import java.util.logging.Logger;
 
 import org.apache.bcel.Repository;
 import org.apache.bcel.classfile.AnnotationEntry;
 import org.apache.bcel.classfile.JavaClass;
 import org.apache.bcel.classfile.Method;
+import org.apache.bcel.generic.ArrayType;
 import org.apache.bcel.generic.Type;
 
 public final class ClassHelper {
@@ -62,13 +64,19 @@ public final class ClassHelper {
 			"java.lang.Float", "java.lang.Boolean", "java.lang.Character", "byte", "short", "int",
 			"long", "float", "boolean", "char" };
 
-	public static boolean isImmutable(String className) {
+	public static boolean isImmutable(Type type) {
+		if (type instanceof ArrayType)
+			return false;
+		return isImmutable(type.toString());
+	}
+
+	public static boolean isImmutable(String type) {
 		for (String immutableClass : immutableClasses) {
-			if (className.equals(immutableClass))
+			if (type.toString().equals(immutableClass))
 				return true;
 		}
 		try {
-			JavaClass clazz = Repository.lookupClass(className);
+			JavaClass clazz = Repository.lookupClass(type);
 			for (AnnotationEntry entry : clazz.getAnnotationEntries()) {
 				if (entry.getAnnotationType().equals(IMMUTABLE_ANNOTATION))
 					return true;
@@ -79,14 +87,17 @@ public final class ClassHelper {
 		return false;
 	}
 
-	public static boolean isImmutableAndFinal(String className) {
+	public static boolean isImmutableAndFinal(Type type) {
+		if (type instanceof ArrayType)
+			return false;
 		JavaClass clazz = null;
 		try {
-			clazz = Repository.lookupClass(className);
+			clazz = Repository.lookupClass(type.toString());
 		} catch (ClassNotFoundException e) {
+			Logger.getLogger("").info(e.getStackTrace().toString());
 			throw new AssertionError(e);
 		}
-		return clazz.isFinal() && isImmutable(className);
+		return clazz.isFinal() && isImmutable(type);
 	}
 
 }

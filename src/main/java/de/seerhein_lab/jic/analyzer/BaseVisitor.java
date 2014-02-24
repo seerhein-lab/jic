@@ -397,7 +397,8 @@ public abstract class BaseVisitor extends SimpleVisitor {
 
 		// return external reference if returnType reference is expected
 		if (returnValue instanceof ReferenceSlot)
-			returnValue = ReferenceSlot.getExternalReference(heap);
+			returnValue = ReferenceSlot.getExternalReference(heap,
+					ClassHelper.isImmutableAndFinal(obj.getReturnType(constantPoolGen)));
 
 		// works also for void results, because number of required slots = 0
 		frame.getStack().pushByRequiredSize(returnValue);
@@ -635,7 +636,7 @@ public abstract class BaseVisitor extends SimpleVisitor {
 		}
 
 		if (arrayReference.getObject(heap) instanceof ExternalObject) {
-			frame.getStack().push(ReferenceSlot.getExternalReference(heap));
+			frame.getStack().push(ReferenceSlot.getExternalReference(heap, false));
 			pc.advance();
 			return;
 		}
@@ -717,8 +718,8 @@ public abstract class BaseVisitor extends SimpleVisitor {
 		ReferenceSlot exception = (ReferenceSlot) frame.getStack().pop();
 
 		if (exception.isNullReference()) {
-			exception = new ReferenceSlot(heap.newClassInstance("java.lang.NullPointerException"));
-			// TODO siehe JVM
+			exception = new ReferenceSlot(
+					heap.newClassInstanceOfDynamicType("java.lang.NullPointerException"));
 		}
 
 		handleException(exception, heap);
@@ -894,8 +895,7 @@ public abstract class BaseVisitor extends SimpleVisitor {
 		frame.getStack().pop();
 
 		// pushes new array reference
-		frame.getStack().push(
-				new ReferenceSlot(heap.newArray(obj.getLoadClassType(constantPoolGen).toString())));
+		frame.getStack().push(new ReferenceSlot(heap.newArray()));
 
 		pc.advance();
 	}
@@ -928,8 +928,9 @@ public abstract class BaseVisitor extends SimpleVisitor {
 
 		logger.finest(indentation + "\t" + objRef + " ?= " + obj.getLoadClassType(constantPoolGen));
 
-		handleException(new ReferenceSlot(heap.newClassInstance("java.lang.ClassCastException")),
-				heap); // TODO siehe JVM
+		handleException(
+				new ReferenceSlot(
+						heap.newClassInstanceOfDynamicType("java.lang.ClassCastException")), heap);
 
 	}
 
@@ -960,7 +961,8 @@ public abstract class BaseVisitor extends SimpleVisitor {
 		if (f instanceof ReferenceSlot) {
 			if (o.getObject(heap) instanceof ExternalObject) {
 				// if left side is external return external
-				f = ReferenceSlot.getExternalReference(heap);
+				f = ReferenceSlot.getExternalReference(heap,
+						ClassHelper.isImmutableAndFinal(obj.getFieldType(constantPoolGen)));
 			} else {
 				// get the HeapObject linked to the desired field
 				HeapObject referredByF = ((ClassInstance) o.getObject(heap)).getField(obj
@@ -1001,7 +1003,8 @@ public abstract class BaseVisitor extends SimpleVisitor {
 
 		if (f instanceof ReferenceSlot) {
 			// static values are always external
-			f = ReferenceSlot.getExternalReference(heap);
+			f = ReferenceSlot.getExternalReference(heap,
+					ClassHelper.isImmutableAndFinal(obj.getFieldType(constantPoolGen)));
 		}
 
 		log.append((f instanceof DoubleSlot || f instanceof LongSlot) ? f + ", " + f : f);
@@ -1190,8 +1193,8 @@ public abstract class BaseVisitor extends SimpleVisitor {
 		// (notThis) onto the stack
 		if (value instanceof ReferenceSlot) {
 			// it is a String
-			value = new ReferenceSlot(
-					heap.newClassInstance(obj.getType(constantPoolGen).toString()));
+			value = new ReferenceSlot(heap.newClassInstanceOfStaticType(obj
+					.getType(constantPoolGen)));
 		}
 		frame.getStack().pushByRequiredSize(value);
 
@@ -1212,8 +1215,8 @@ public abstract class BaseVisitor extends SimpleVisitor {
 		// (notThis) onto the stack
 		if (value instanceof ReferenceSlot) {
 			// it is a String
-			value = new ReferenceSlot(
-					heap.newClassInstance(obj.getType(constantPoolGen).toString()));
+			value = new ReferenceSlot(heap.newClassInstanceOfStaticType(obj
+					.getType(constantPoolGen)));
 		}
 		frame.getStack().pushByRequiredSize(value);
 
@@ -1246,7 +1249,7 @@ public abstract class BaseVisitor extends SimpleVisitor {
 			// pop count values for each dimension
 			frame.getStack().pop();
 
-			Array newArray = heap.newArray(obj.getLoadClassType(constantPoolGen).toString());
+			Array newArray = heap.newArray();
 
 			if (i == 0) {
 				slot = new ReferenceSlot(newArray);
@@ -1271,8 +1274,8 @@ public abstract class BaseVisitor extends SimpleVisitor {
 	 */
 	@Override
 	public void visitNEW(NEW obj) {
-		ClassInstance instance = heap.newClassInstance(obj.getLoadClassType(constantPoolGen)
-				.toString());
+		ClassInstance instance = heap.newClassInstanceOfDynamicType(obj
+				.getLoadClassType(constantPoolGen));
 		ReferenceSlot slot = new ReferenceSlot(instance);
 
 		logger.fine(indentation + obj.toString(false) + " (" + slot.getObject(heap) + ")");
@@ -1297,7 +1300,7 @@ public abstract class BaseVisitor extends SimpleVisitor {
 		frame.getStack().pop();
 
 		// push reference to new array onto the stack
-		ReferenceSlot slot = new ReferenceSlot(heap.newArray(obj.getType().toString())); // TODO
+		ReferenceSlot slot = new ReferenceSlot(heap.newArray());
 
 		frame.getStack().push(slot);
 

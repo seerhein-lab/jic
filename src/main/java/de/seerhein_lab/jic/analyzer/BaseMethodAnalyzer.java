@@ -86,7 +86,8 @@ public abstract class BaseMethodAnalyzer {
 		for (Type argType : methodGen.getArgumentTypes()) {
 			Slot argument = Slot.getDefaultSlotInstance(argType);
 			if (argument instanceof ReferenceSlot) {
-				argument = ReferenceSlot.getExternalReference(callerHeap);
+				argument = ReferenceSlot.getExternalReference(callerHeap,
+						ClassHelper.isImmutableAndFinal(argType));
 			}
 			for (int i = 0; i < argument.getNumSlots(); i++) {
 				callerStack.push(argument);

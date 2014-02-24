@@ -11,6 +11,7 @@ import org.apache.bcel.generic.MethodGen;
 import de.seerhein_lab.jic.Pair;
 import de.seerhein_lab.jic.analyzer.BaseMethodAnalyzer;
 import de.seerhein_lab.jic.analyzer.BaseVisitor;
+import de.seerhein_lab.jic.analyzer.ClassHelper;
 import de.seerhein_lab.jic.analyzer.QualifiedMethod;
 import de.seerhein_lab.jic.cache.AnalysisCache;
 import de.seerhein_lab.jic.vm.Frame;
@@ -45,7 +46,7 @@ public final class RecursionAnalyzer extends BaseMethodAnalyzer {
 
 	@Override
 	protected Heap getHeap() {
-		return new Heap(this.classContext.getJavaClass().getClassName());
+		return new Heap(ClassHelper.isImmutable(this.classContext.getJavaClass().getClassName()));
 	}
 
 }
