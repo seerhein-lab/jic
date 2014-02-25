@@ -3,6 +3,7 @@
 .classpath
 .project
 .settings
+doc
 
 # Mac
 .DS_Store
