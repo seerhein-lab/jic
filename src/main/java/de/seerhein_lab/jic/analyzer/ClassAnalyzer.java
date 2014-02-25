@@ -62,15 +62,15 @@ public final class ClassAnalyzer {
 		return bugs.getCollection();
 	}
 
-	private Collection<BugInstance> allReferenceFieldsPrivate() {
+	private Collection<BugInstance> referencesToMutableDataPrivate() {
 		BugCollection bugs = new SortedBugCollection();
 		Field[] fields = clazz.getFields();
 		for (Field field : fields)
 			if (!field.isStatic() && !(field.getType() instanceof BasicType)
 					&& !ClassHelper.isImmutableAndFinal(field.getType()) && !field.isPrivate())
 				bugs.add(Utils.createBug("IMMUTABILITY_BUG", Confidence.HIGH,
-						"Reference fields must be private.", clazz).addField(clazz.getClassName(),
-						field.getName(), field.getSignature(), false));
+						"Reference to mutable data must be private.", clazz).addField(
+						clazz.getClassName(), field.getName(), field.getSignature(), false));
 		return bugs.getCollection();
 	}
 
@@ -165,7 +165,7 @@ public final class ClassAnalyzer {
 	private Collection<BugInstance> stateUnmodifiable() {
 		SortedBugCollection bugs = new SortedBugCollection();
 		bugs.addAll(ctorArgsAreCopied());
-		bugs.addAll(allReferenceFieldsPrivate());
+		bugs.addAll(referencesToMutableDataPrivate());
 		bugs.addAll(noMutators());
 		bugs.addAll(fieldsAreNotPublished());
 		return bugs.getCollection();
