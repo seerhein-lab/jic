@@ -177,19 +177,38 @@ public class FieldsNotPublishedVisitor extends BaseVisitor {
 	}
 
 	protected void detectAReturnBug(ReferenceSlot returnValue) {
-		HeapObject returnObject = returnValue.getObject(heap);
-		if (returnValue.isNullReference() || returnValue.getObject(heap).isImmutable())
+		if (returnValue.isNullReference())
 			return;
 
-		if (heap.getThisInstance().isReachable(returnObject)) {
-			// publish Object referedBy 'this'
-			addBug("IMMUTABILITY_BUG", Confidence.HIGH, "a field of 'this' is published by return",
-					pc.getCurrentInstruction());
-		} else if (returnObject.complexObjectIsReachableBy(heap.getThisInstance()))
-			// publish Object that refers Object referedBy 'this'
-			addBug("IMMUTABILITY_BUG", Confidence.HIGH,
-					"an Object that refers an Object refered by 'this' is published by return",
-					pc.getCurrentInstruction());
+		HeapObject returnObject = returnValue.getObject(heap);
 
+		if (heap.getThisInstance().isReachable(returnObject)) {
+			if (!returnObject.isImmutable()) {
+				addBug("IMMUTABILITY_BUG", Confidence.HIGH,
+						"a mutable field of 'this' is returned and published",
+						pc.getCurrentInstruction());
+			}
+		} else {
+			Set<HeapObject> thisClosure = heap.getThisInstance().getClosure();
+			thisClosure.remove(heap.getThisInstance());
+			Set<HeapObject> retClosure = returnObject.getClosure();
+			boolean published = false;
+
+			for (HeapObject obj : thisClosure) {
+				if (retClosure.contains(obj)) {
+					if (!obj.isImmutable()) {
+						published = true;
+						break;
+					}
+				}
+			}
+
+			if (published) {
+				addBug("IMMUTABILITY_BUG",
+						Confidence.HIGH,
+						"an object that refers a mutable field of 'this' is returned and published",
+						pc.getCurrentInstruction());
+			}
+		}
 	}
 }
