@@ -6,10 +6,7 @@ import org.apache.bcel.generic.CodeExceptionGen;
 import org.apache.bcel.generic.ConstantPoolGen;
 import org.apache.bcel.generic.InstructionHandle;
 import org.apache.bcel.generic.MethodGen;
-import org.apache.bcel.generic.ReturnInstruction;
 
-import de.seerhein_lab.jic.EvaluationResult;
-import de.seerhein_lab.jic.EvaluationResult.Kind;
 import de.seerhein_lab.jic.Pair;
 import de.seerhein_lab.jic.analyzer.BaseMethodAnalyzer;
 import de.seerhein_lab.jic.analyzer.BaseVisitor;
@@ -17,7 +14,6 @@ import de.seerhein_lab.jic.analyzer.QualifiedMethod;
 import de.seerhein_lab.jic.cache.AnalysisCache;
 import de.seerhein_lab.jic.cache.AnalysisCache.Check;
 import de.seerhein_lab.jic.slot.Slot;
-import de.seerhein_lab.jic.slot.VoidSlot;
 import de.seerhein_lab.jic.vm.ExternalObject;
 import de.seerhein_lab.jic.vm.Frame;
 import de.seerhein_lab.jic.vm.Heap;
@@ -48,30 +44,6 @@ public class FieldsNotPublishedVisitor extends BaseVisitor {
 			Set<QualifiedMethod> alreadyVisitedMethods, int methodInvocationDepth) {
 		return new FieldsNotPublishedAnalyzer(classContext, targetMethodGen, alreadyVisitedMethods,
 				depth, cache, methodInvocationDepth);
-	}
-
-	@Override
-	public void visitReturnInstruction(ReturnInstruction obj) {
-		// return 0xb1 (void)
-		// areturn 0xb0
-		// dreturn 0xaf
-		// freturn 0xae
-		// ireturn 0xac
-		// lreturn 0xad
-
-		logger.fine(indentation + obj.toString(false));
-		Slot returnType = Slot.getDefaultSlotInstance(obj.getType(constantPoolGen));
-		logger.finest(indentation + "\t" + returnType);
-
-		if (returnType instanceof VoidSlot)
-			result.add(new EvaluationResult(Kind.REGULAR, returnType, heap));
-		else {
-			Slot returnSlot = frame.getStack().popByRequiredSize();
-			if (returnType instanceof ReferenceSlot)
-				detectAReturnBug((ReferenceSlot) returnSlot);
-			result.add(new EvaluationResult(Kind.REGULAR, returnSlot, heap));
-		}
-		pc.invalidate();
 	}
 
 	// ******************************************************************//

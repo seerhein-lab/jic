@@ -124,6 +124,8 @@ public abstract class BaseVisitor extends SimpleVisitor {
 
 	protected abstract void detectPutStaticBug(ReferenceSlot referenceToPut);
 
+	protected abstract void detectAReturnBug(ReferenceSlot returnSlot);
+
 	protected BaseVisitor(ClassContext classContext, MethodGen methodGen, Frame frame, Heap heap,
 			ConstantPoolGen constantPoolGen, Set<Pair<InstructionHandle, Boolean>> alreadyVisited,
 			Set<QualifiedMethod> alreadyVisitedMethods, PC pc,
@@ -458,15 +460,19 @@ public abstract class BaseVisitor extends SimpleVisitor {
 	 */
 	@Override
 	public void visitReturnInstruction(ReturnInstruction obj) {
+
 		logger.fine(indentation + obj.toString(false));
 		Slot returnType = Slot.getDefaultSlotInstance(obj.getType(constantPoolGen));
 		logger.finest(indentation + "\t" + returnType);
 
 		if (returnType instanceof VoidSlot)
 			result.add(new EvaluationResult(Kind.REGULAR, returnType, heap));
-		else
-			result.add(new EvaluationResult(Kind.REGULAR, frame.getStack().popByRequiredSize(),
-					heap));
+		else {
+			Slot returnSlot = frame.getStack().popByRequiredSize();
+			if (returnType instanceof ReferenceSlot)
+				detectAReturnBug((ReferenceSlot) returnSlot);
+			result.add(new EvaluationResult(Kind.REGULAR, returnSlot, heap));
+		}
 		pc.invalidate();
 	}
 

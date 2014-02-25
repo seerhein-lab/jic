@@ -164,4 +164,8 @@ public class CtorArgsCopiedVisitor extends BaseVisitor {
 		}
 	}
 
+	@Override
+	protected void detectAReturnBug(ReferenceSlot returnSlot) {
+	}
+
 }

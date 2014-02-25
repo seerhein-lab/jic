@@ -1,7 +1,6 @@
 package de.seerhein_lab.jic.analyzer.recursion;
 
 import java.util.Set;
-import java.util.logging.Level;
 
 import org.apache.bcel.generic.CodeExceptionGen;
 import org.apache.bcel.generic.ConstantPoolGen;
@@ -52,19 +51,23 @@ public class RecursionVisitor extends BaseVisitor {
 	}
 
 	@Override
-	protected void detectVirtualMethodBug(ReferenceSlot argument ) {
+	protected void detectVirtualMethodBug(ReferenceSlot argument) {
 	}
 
 	@Override
-	protected void detectXAStoreBug(ReferenceSlot arrayReference, Slot valueToStore ) {
+	protected void detectXAStoreBug(ReferenceSlot arrayReference, Slot valueToStore) {
 	}
 
 	@Override
-	protected void detectPutFieldBug(ReferenceSlot targetReference, Slot valueToPut ) {
+	protected void detectPutFieldBug(ReferenceSlot targetReference, Slot valueToPut) {
 	}
 
 	@Override
-	protected void detectPutStaticBug(ReferenceSlot referenceToPut ) {
+	protected void detectPutStaticBug(ReferenceSlot referenceToPut) {
+	}
+
+	@Override
+	protected void detectAReturnBug(ReferenceSlot returnSlot) {
 	}
 
 }

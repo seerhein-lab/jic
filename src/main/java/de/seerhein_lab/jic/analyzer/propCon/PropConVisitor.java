@@ -53,7 +53,7 @@ public class PropConVisitor extends BaseVisitor {
 	// ******************************************************************//
 
 	@Override
-	protected void detectVirtualMethodBug(ReferenceSlot argument ) {
+	protected void detectVirtualMethodBug(ReferenceSlot argument) {
 		if (hasIgnoreAnnotation())
 			return;
 
@@ -78,7 +78,7 @@ public class PropConVisitor extends BaseVisitor {
 	}
 
 	@Override
-	protected void detectXAStoreBug(ReferenceSlot arrayReference, Slot valueToStore ) {
+	protected void detectXAStoreBug(ReferenceSlot arrayReference, Slot valueToStore) {
 		if (hasIgnoreAnnotation())
 			return;
 
@@ -107,7 +107,7 @@ public class PropConVisitor extends BaseVisitor {
 	}
 
 	@Override
-	protected void detectPutFieldBug(ReferenceSlot targetReference, Slot valueToPut ) {
+	protected void detectPutFieldBug(ReferenceSlot targetReference, Slot valueToPut) {
 		if (hasIgnoreAnnotation())
 			return;
 
@@ -137,7 +137,7 @@ public class PropConVisitor extends BaseVisitor {
 	}
 
 	@Override
-	protected void detectPutStaticBug(ReferenceSlot referenceToPut ) {
+	protected void detectPutStaticBug(ReferenceSlot referenceToPut) {
 		if (hasIgnoreAnnotation())
 			return;
 
@@ -166,5 +166,9 @@ public class PropConVisitor extends BaseVisitor {
 					+ "Assume no Annotations");
 		}
 		return false;
+	}
+
+	@Override
+	protected void detectAReturnBug(ReferenceSlot returnSlot) {
 	}
 }
