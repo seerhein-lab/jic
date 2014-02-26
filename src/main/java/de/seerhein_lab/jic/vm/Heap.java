@@ -176,6 +176,11 @@ public class Heap {
 		if (obj == null)
 			return;
 
+		if (obj.equals(getThisInstance()) || obj.isExternal())
+			// don't publish this in order not to cover further bugs
+			// don't publish the external object
+			return;
+
 		for (HeapObject o : obj.getClosure()) {
 			if (!o.equals(getThisInstance()) && !o.isExternal()) {
 				// don't publish this in order not to cover further bugs
