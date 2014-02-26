@@ -2,7 +2,6 @@ package de.seerhein_lab.jic.analyzer.propCon;
 
 import java.util.Set;
 
-import org.apache.bcel.generic.AnnotationEntryGen;
 import org.apache.bcel.generic.CodeExceptionGen;
 import org.apache.bcel.generic.ConstantPoolGen;
 import org.apache.bcel.generic.InstructionHandle;
@@ -18,14 +17,13 @@ import de.seerhein_lab.jic.slot.Slot;
 import de.seerhein_lab.jic.vm.ExternalObject;
 import de.seerhein_lab.jic.vm.Frame;
 import de.seerhein_lab.jic.vm.Heap;
+import de.seerhein_lab.jic.vm.HeapObject;
 import de.seerhein_lab.jic.vm.PC;
 import de.seerhein_lab.jic.vm.ReferenceSlot;
 import edu.umd.cs.findbugs.annotations.Confidence;
 import edu.umd.cs.findbugs.ba.ClassContext;
 
 public class PropConVisitor extends BaseVisitor {
-
-	private final static String IGNORE_ANNOTATION = "Lde/seerhein_lab/jic/IgnoreImmutabilityBug;";
 
 	protected PropConVisitor(ClassContext classContext, MethodGen methodGen, Frame frame,
 			Heap heap, ConstantPoolGen constantPoolGen, PC pc,
@@ -52,120 +50,72 @@ public class PropConVisitor extends BaseVisitor {
 	// Bug detection section //
 	// ******************************************************************//
 
+	private String containsThis(HeapObject object) {
+		if (object.equals(heap.getThisInstance()))
+			return "'this'";
+		if (object.isReachable(heap.getThisInstance()))
+			return "an object containing 'this'";
+		return null;
+	}
+
 	@Override
 	protected void detectVirtualMethodBug(ReferenceSlot argument) {
-		if (hasIgnoreAnnotation())
-			return;
-
 		if (argument.isNullReference())
 			return;
 
-		if (argument.getObject(heap).equals(heap.getThisInstance())) {
-			// 'this' is passed into a virtual method
-			addBug("PROPER_CONSTRUCTION_BUG", Confidence.HIGH,
-					"'this' is passed into a virtual method and escapes",
+		String contains = containsThis(argument.getObject(heap));
+		if (contains != null)
+			addBug("PROPER_CONSTRUCTION_BUG", Confidence.HIGH, contains
+					+ " is passed into a virtual method letting 'this' escape",
 					pc.getCurrentInstruction());
-			return;
-		}
-		if (argument.getObject(heap).isReachable(heap.getThisInstance())) {
-			// argument that refers to 'this' is passed into a virtual method
-			addBug("PROPER_CONSTRUCTION_BUG",
-					Confidence.HIGH,
-					"an object containing 'this' is passed into a virtual method letting 'this' escape",
-					pc.getCurrentInstruction());
-		}
-
 	}
 
 	@Override
 	protected void detectXAStoreBug(ReferenceSlot arrayReference, Slot valueToStore) {
-		if (hasIgnoreAnnotation())
+		if (!(valueToStore instanceof ReferenceSlot))
 			return;
-
-		if (!(valueToStore instanceof ReferenceSlot)) {
-			// if the value is not a reference we do not analyze
-			return;
-		}
-
 		ReferenceSlot referenceToStore = (ReferenceSlot) valueToStore;
-		if (arrayReference.getObject(heap) instanceof ExternalObject) {
-			// the array is externally known
-			if (referenceToStore.getObject(heap) != null
-					&& referenceToStore.getObject(heap).equals(heap.getThisInstance())) {
-				// this is assigned to the array
-				addBug("PROPER_CONSTRUCTION_BUG", Confidence.HIGH,
-						"'this' is assigned to an external array and escapes",
-						pc.getCurrentInstruction());
-			} else if (arrayReference.getObject(heap) != null
-					&& arrayReference.getObject(heap).isReachable(heap.getThisInstance())) {
-				addBug("PROPER_CONSTRUCTION_BUG",
-						Confidence.HIGH,
-						"an object containing 'this' is assigned to an external array letting 'this' escape",
-						pc.getCurrentInstruction());
-			}
-		}
+		if (referenceToStore.isNullReference())
+			return;
+		if (arrayReference.isNullReference()
+				|| !(arrayReference.getObject(heap) instanceof ExternalObject))
+			return;
+
+		String contains = containsThis(referenceToStore.getObject(heap));
+		if (contains != null)
+			addBug("PROPER_CONSTRUCTION_BUG", Confidence.HIGH, contains
+					+ " is assigned to an external array letting 'this' escape",
+					pc.getCurrentInstruction());
 	}
 
 	@Override
 	protected void detectPutFieldBug(ReferenceSlot targetReference, Slot valueToPut) {
-		if (hasIgnoreAnnotation())
+		if (!(valueToPut instanceof ReferenceSlot))
 			return;
-
-		if (!(valueToPut instanceof ReferenceSlot)) {
-			// if the value is not a reference we do not analyze
-			return;
-		}
 		ReferenceSlot referenceToPut = (ReferenceSlot) valueToPut;
-		if (targetReference.getObject(heap) instanceof ExternalObject) {
-			// the left side of the assignment is externally known
-			// if (referenceToPut.getID() != null
-			// && referenceToPut.getObject(heap).equals(heap.getThisInstance()))
-			// {
-			if (referenceToPut.equals(ReferenceSlot.getThisReference(heap))) {
-				addBug("PROPER_CONSTRUCTION_BUG", Confidence.HIGH,
-						"'this' is assigned to an external object and escapes",
-						pc.getCurrentInstruction());
-			} else if (referenceToPut.getObject(heap) != null
-					&& referenceToPut.getObject(heap).isReachable(heap.getThisInstance())) {
-				addBug("PROPER_CONSTRUCTION_BUG",
-						Confidence.HIGH,
-						"an object containing 'this' is assigned to an external object letting 'this' escape",
-						pc.getCurrentInstruction());
-			}
+		if (referenceToPut.isNullReference())
+			return;
+		if (targetReference.isNullReference()
+				|| !(targetReference.getObject(heap) instanceof ExternalObject))
+			return;
 
-		}
+		String contains = containsThis(referenceToPut.getObject(heap));
+		if (contains != null)
+			addBug("PROPER_CONSTRUCTION_BUG", Confidence.HIGH, contains
+					+ " is assigned to an external object letting 'this' escape",
+					pc.getCurrentInstruction());
 	}
 
 	@Override
 	protected void detectPutStaticBug(ReferenceSlot referenceToPut) {
-		if (hasIgnoreAnnotation())
-			return;
-
 		if (referenceToPut.isNullReference())
 			return;
 
-		if (referenceToPut.getObject(heap).equals(heap.getThisInstance())) {
-			addBug("PROPER_CONSTRUCTION_BUG", Confidence.HIGH,
-					"'this' is assigned to a static field and escapes", pc.getCurrentInstruction());
-		} else if (referenceToPut.getObject(heap).isReachable(heap.getThisInstance())) {
-			addBug("PROPER_CONSTRUCTION_BUG",
-					Confidence.HIGH,
-					"an object containing 'this' is assigned to a static field letting 'this' escape",
+		String contains = containsThis(referenceToPut.getObject(heap));
+		if (contains != null)
+			addBug("PROPER_CONSTRUCTION_BUG", Confidence.HIGH, contains
+					+ " is assigned to a static field letting 'this' escape",
 					pc.getCurrentInstruction());
-		}
-	}
-
-	private boolean hasIgnoreAnnotation() {
-		try {
-			for (AnnotationEntryGen annotationEntryGen : methodGen.getAnnotationEntries())
-				if (annotationEntryGen.getAnnotation().getAnnotationType()
-						.equals(IGNORE_ANNOTATION))
-					return true;
-		} catch (NullPointerException e) {
-			logger.warning(indentation + "NullPointerException in handling Annotations: "
-					+ "Assume no Annotations");
-		}
-		return false;
 	}
 
 	@Override
