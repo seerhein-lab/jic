@@ -77,7 +77,7 @@ public class CtorArgsCopiedVisitor extends BaseVisitor {
 
 		if (heap.getThisInstance().isReachable(argument.getObject(heap))) {
 			addBug("IMMUTABILITY_BUG", Confidence.HIGH,
-					"a field of 'this' is passed to a virtual method and escapes",
+					"a field of 'this' is passed into a virtual method and published",
 					pc.getCurrentInstruction());
 		}
 	}
