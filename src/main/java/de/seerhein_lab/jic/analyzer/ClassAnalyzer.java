@@ -98,13 +98,8 @@ public final class ClassAnalyzer {
 			MethodGen ctorGen = new MethodGen(ctor, clazz.getClassName(), new ConstantPoolGen(
 					clazz.getConstantPool()));
 
-			BaseMethodAnalyzer ctorAnalyzer = new CtorArgsCopiedAnalyzer(classContext, ctorGen,
-					cache, 0);
-			// ctorAnalyzer.analyze();
-			// Collection<BugInstance> currentBugs = ctorAnalyzer.getBugs();
-			// bugs.addAll(ctorAnalyzer.getBugs());
-
-			AnalysisResult analysisResult = ctorAnalyzer.analyze();
+			AnalysisResult analysisResult = new CtorArgsCopiedAnalyzer(classContext, ctorGen,
+					cache, 0).analyze();
 			bugs.addAll(analysisResult.getBugs());
 
 			if (analysisResult.getBugs().isEmpty()) {
@@ -171,12 +166,7 @@ public final class ClassAnalyzer {
 		return bugs.getCollection();
 	}
 
-	public synchronized Collection<BugInstance> isImmutable() {
-		SortedBugCollection bugs = new SortedBugCollection();
-
-		if (clazz.getClassName().equals("java.lang.Object"))
-			return bugs.getCollection();
-
+	private Collection<BugInstance> superClassImmutable() {
 		ClassContext superContext;
 		try {
 			final JavaClass superClass = clazz.getSuperClass();
@@ -192,8 +182,17 @@ public final class ClassAnalyzer {
 
 		ClassAnalyzer superAnalyzer = new ClassAnalyzer(superContext, new AnalysisCache());
 
-		Collection<BugInstance> superBugs = superAnalyzer.isImmutable();
-		if (!superBugs.isEmpty())
+		return superAnalyzer.isImmutable();
+
+	}
+
+	public synchronized Collection<BugInstance> isImmutable() {
+		SortedBugCollection bugs = new SortedBugCollection();
+
+		if (clazz.getClassName().equals("java.lang.Object"))
+			return bugs.getCollection();
+
+		if (!superClassImmutable().isEmpty())
 			bugs.add(Utils.createBug("IMMUTABILITY_BUG", Confidence.HIGH,
 					"mutable superclass renders this class mutable, too.",
 					classContext.getJavaClass()));
