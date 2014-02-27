@@ -25,28 +25,28 @@ public class FieldsNotPublishedAcceptanceTest {
 	@BindAnalyzerMethod
 	public static Collection<BugInstance> bindClassAnalyzerToProperlyConstructed(
 			ClassAnalyzer analyzer) {
-		analyzer.ctorArgsAreCopied();
-		return analyzer.fieldsAreNotPublished();
+		analyzer.ctorsUnmodifiable();
+		return analyzer.methodsUnmodifiable();
 	}
 
 	@NoBugsExpected
 	public static class DetectVirtualMethodBug_This {
 		public void publish() {
-			new PublishMetohd().publish(this);
+			new PublishMethod().publish(this);
 		}
 	}
 
 	@NoBugsExpected
 	public static class DetectVirtualMethodBug_Null {
 		public void publish() {
-			new PublishMetohd().publish(null);
+			new PublishMethod().publish(null);
 		}
 	}
 
 	@NoBugsExpected
 	public static class DetectVirtualMethodBug_Reference {
 		public void publish() {
-			new PublishMetohd().publish(new Object());
+			new PublishMethod().publish(new Object());
 		}
 	}
 
@@ -55,7 +55,7 @@ public class FieldsNotPublishedAcceptanceTest {
 		private final Object o = new Object();
 
 		public void publish() {
-			new PublishMetohd().publish(this.o);
+			new PublishMethod().publish(this.o);
 		}
 	}
 
@@ -64,7 +64,7 @@ public class FieldsNotPublishedAcceptanceTest {
 		private final Object o = new ImmutableTestClass();
 
 		public void publish() {
-			new PublishMetohd().publish(this.o);
+			new PublishMethod().publish(this.o);
 		}
 	}
 
@@ -73,7 +73,7 @@ public class FieldsNotPublishedAcceptanceTest {
 		private final int i = 5;
 
 		public void publish() {
-			new PublishMetohd().publish(i);
+			new PublishMethod().publish(i);
 		}
 	}
 
@@ -85,7 +85,7 @@ public class FieldsNotPublishedAcceptanceTest {
 			Object object = new Object();
 			this.o.tc = new TestClass();
 			this.o.tc.klass = object;
-			new PublishMetohd().publish(object);
+			new PublishMethod().publish(object);
 		}
 	}
 
@@ -99,7 +99,7 @@ public class FieldsNotPublishedAcceptanceTest {
 			this.o.tc.klass = object;
 			TestClass testClass = new TestClass();
 			testClass.klass = object;
-			new PublishMetohd().publish(testClass);
+			new PublishMethod().publish(testClass);
 		}
 	}
 
@@ -418,7 +418,7 @@ public class FieldsNotPublishedAcceptanceTest {
 		public static int i;
 	}
 
-	public static class PublishMetohd {
+	public static class PublishMethod {
 		public void publish(int i) {
 		}
 

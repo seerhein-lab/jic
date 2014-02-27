@@ -1,4 +1,4 @@
-package de.seerhein_lab.jic.analyzer.ctorArgsCopied;
+package de.seerhein_lab.jic.analyzer.unmod.ctor;
 
 import java.util.Set;
 
@@ -22,9 +22,9 @@ import de.seerhein_lab.jic.vm.ReferenceSlot;
 import edu.umd.cs.findbugs.annotations.Confidence;
 import edu.umd.cs.findbugs.ba.ClassContext;
 
-public class CtorArgsCopiedVisitor extends BaseVisitor {
+public class CtorUnmodifiableVisitor extends BaseVisitor {
 
-	protected CtorArgsCopiedVisitor(ClassContext classContext, MethodGen methodGen, Frame frame,
+	protected CtorUnmodifiableVisitor(ClassContext classContext, MethodGen methodGen, Frame frame,
 			Heap heap, ConstantPoolGen constantPoolGen, PC pc,
 			CodeExceptionGen[] exceptionHandlers, Set<QualifiedMethod> alreadyVisitedMethods,
 			int depth, Set<Pair<InstructionHandle, Boolean>> alreadyVisitedIfBranch,
@@ -62,7 +62,7 @@ public class CtorArgsCopiedVisitor extends BaseVisitor {
 	@Override
 	protected BaseMethodAnalyzer getMethodAnalyzer(MethodGen targetMethodGen,
 			Set<QualifiedMethod> alreadyVisitedMethods, int methodInvocationDepth) {
-		return new CtorArgsCopiedAnalyzer(classContext, targetMethodGen, alreadyVisitedMethods,
+		return new CtorUnmodifiableAnalyzer(classContext, targetMethodGen, alreadyVisitedMethods,
 				depth, cache, methodInvocationDepth);
 	}
 

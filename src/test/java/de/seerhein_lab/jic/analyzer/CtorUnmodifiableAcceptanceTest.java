@@ -20,12 +20,12 @@ import edu.umd.cs.findbugs.BugInstance;
  */
 @RunWith(ClassAnalyzerRunner.class)
 @SuppressWarnings("unused")
-public class CtorArgsCopiedAcceptanceTest {
+public class CtorUnmodifiableAcceptanceTest {
 
 	@BindAnalyzerMethod
 	public static Collection<BugInstance> bindClassAnalyzerToProperlyConstructed(
 			ClassAnalyzer analyzer) {
-		return analyzer.ctorArgsAreCopied();
+		return analyzer.ctorsUnmodifiable();
 	}
 
 	/**

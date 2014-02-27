@@ -18,12 +18,12 @@ import edu.umd.cs.findbugs.BugInstance;
  */
 @RunWith(ClassAnalyzerRunner.class)
 @SuppressWarnings("unused")
-public class NoMutatorsAcceptanceTest {
+public class MethodUnmodifiableAcceptanceTest {
 	@BindAnalyzerMethod
 	public static Collection<BugInstance> bindClassAnalyzerToProperlyConstructed(
 			ClassAnalyzer analyzer) {
-		analyzer.ctorArgsAreCopied();
-		return analyzer.noMutators();
+		analyzer.ctorsUnmodifiable();
+		return analyzer.methodsUnmodifiable();
 	}
 
 	@BugsExpected

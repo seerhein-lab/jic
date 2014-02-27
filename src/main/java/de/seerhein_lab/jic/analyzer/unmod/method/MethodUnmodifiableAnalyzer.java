@@ -1,4 +1,4 @@
-package de.seerhein_lab.jic.analyzer.noMutators;
+package de.seerhein_lab.jic.analyzer.unmod.method;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -20,10 +20,10 @@ import edu.umd.cs.findbugs.ba.ClassContext;
 
 @ThreadSafe
 // Superclass is thread-safe, this sub-class doesn't add any public methods
-public class NoMutatorsAnalyzer extends BaseMethodAnalyzer {
+public class MethodUnmodifiableAnalyzer extends BaseMethodAnalyzer {
 	private Heap heap;
 
-	public NoMutatorsAnalyzer(ClassContext classContext, MethodGen methodGen, Heap heap,
+	public MethodUnmodifiableAnalyzer(ClassContext classContext, MethodGen methodGen, Heap heap,
 			AnalysisCache cache, int methodInvocationDepth) {
 		this(classContext, methodGen, new HashSet<QualifiedMethod>(), -1, cache,	methodInvocationDepth);
 		alreadyVisitedMethods.add(new QualifiedMethod(classContext.getJavaClass(), methodGen
@@ -31,14 +31,14 @@ public class NoMutatorsAnalyzer extends BaseMethodAnalyzer {
 		this.heap = heap;
 	}
 
-	protected NoMutatorsAnalyzer(ClassContext classContext, MethodGen methodGen,
+	protected MethodUnmodifiableAnalyzer(ClassContext classContext, MethodGen methodGen,
 			Set<QualifiedMethod> alreadyVisitedMethods, int depth, AnalysisCache cache,	int methodInvocationDepth) {
 		super(classContext, methodGen, alreadyVisitedMethods, depth, cache, methodInvocationDepth);
 	}
 
 	protected BaseVisitor getInstructionVisitor(Frame frame, Heap heap, PC pc,
 			Set<Pair<InstructionHandle, Boolean>> alreadyVisitedIfBranch) {
-		return new NoMutatorsVisitor(classContext, methodGen, frame, heap,
+		return new MethodUnmodifiableVisitor(classContext, methodGen, frame, heap,
 				methodGen.getConstantPool(), pc, exceptionHandlers, alreadyVisitedMethods, depth,
 				alreadyVisitedIfBranch, cache, methodInvocationDepth);
 	}

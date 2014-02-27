@@ -19,10 +19,9 @@ import org.apache.bcel.generic.MethodGen;
 import de.seerhein_lab.jic.AnalysisResult;
 import de.seerhein_lab.jic.EvaluationResult;
 import de.seerhein_lab.jic.Utils;
-import de.seerhein_lab.jic.analyzer.ctorArgsCopied.CtorArgsCopiedAnalyzer;
-import de.seerhein_lab.jic.analyzer.fieldsNotPublished.FieldsNotPublishedAnalyzer;
-import de.seerhein_lab.jic.analyzer.noMutators.NoMutatorsAnalyzer;
 import de.seerhein_lab.jic.analyzer.propCon.PropConAnalyzer;
+import de.seerhein_lab.jic.analyzer.unmod.ctor.CtorUnmodifiableAnalyzer;
+import de.seerhein_lab.jic.analyzer.unmod.method.MethodUnmodifiableAnalyzer;
 import de.seerhein_lab.jic.cache.AnalysisCache;
 import de.seerhein_lab.jic.vm.Heap;
 import edu.umd.cs.findbugs.BugCollection;
@@ -91,14 +90,14 @@ public final class ClassAnalyzer {
 	}
 
 	// package private for testing purposes
-	Collection<BugInstance> ctorArgsAreCopied() {
+	Collection<BugInstance> ctorsUnmodifiable() {
 		SortedBugCollection bugs = new SortedBugCollection();
 
 		for (Method ctor : classHelper.getConstructors()) {
 			MethodGen ctorGen = new MethodGen(ctor, clazz.getClassName(), new ConstantPoolGen(
 					clazz.getConstantPool()));
 
-			AnalysisResult analysisResult = new CtorArgsCopiedAnalyzer(classContext, ctorGen,
+			AnalysisResult analysisResult = new CtorUnmodifiableAnalyzer(classContext, ctorGen,
 					cache, 0).analyze();
 			bugs.addAll(analysisResult.getBugs());
 
@@ -111,14 +110,17 @@ public final class ClassAnalyzer {
 	}
 
 	// package private for testing purposes
-	Collection<BugInstance> fieldsAreNotPublished() {
+	Collection<BugInstance> methodsUnmodifiable() {
 		SortedBugCollection bugs = new SortedBugCollection();
 
 		for (Method method : classHelper.getConcreteNonPrivateNonStaticMethods()) {
 			if (method.isNative()) {
-				bugs.add(Utils.createBug("IMMUTABILITY_BUG", Confidence.MEDIUM,
-						"Native method might publish reference fields of 'this' object",
-						classContext.getJavaClass()));
+				bugs.add(Utils
+						.createBug(
+								"IMMUTABILITY_BUG",
+								Confidence.MEDIUM,
+								"Native method might modify 'this' object or publish mutable reference fields of 'this' object",
+								classContext.getJavaClass()));
 				continue;
 			}
 
@@ -126,31 +128,8 @@ public final class ClassAnalyzer {
 				MethodGen methodGen = new MethodGen(method, clazz.getClassName(),
 						new ConstantPoolGen(clazz.getConstantPool()));
 
-				BaseMethodAnalyzer methodAnalyzer = new FieldsNotPublishedAnalyzer(classContext,
+				BaseMethodAnalyzer methodAnalyzer = new MethodUnmodifiableAnalyzer(classContext,
 						methodGen, new Heap(heap), cache, 0);
-				bugs.addAll(methodAnalyzer.analyze().getBugs());
-			}
-		}
-		return bugs.getCollection();
-	}
-
-	// package private for testing purposes
-	Collection<BugInstance> noMutators() {
-		SortedBugCollection bugs = new SortedBugCollection();
-
-		for (Method method : classHelper.getConcreteNonPrivateNonStaticMethods()) {
-			if (method.isNative()) {
-				bugs.add(Utils.createBug("IMMUTABILITY_BUG", Confidence.MEDIUM,
-						"Native method might modify 'this' object", classContext.getJavaClass()));
-				continue;
-			}
-
-			for (Heap heap : heaps) {
-				MethodGen methodGen = new MethodGen(method, clazz.getClassName(),
-						new ConstantPoolGen(clazz.getConstantPool()));
-
-				BaseMethodAnalyzer methodAnalyzer = new NoMutatorsAnalyzer(classContext, methodGen,
-						new Heap(heap), cache, 0);
 				bugs.addAll(methodAnalyzer.analyze().getBugs());
 			}
 		}
@@ -159,10 +138,9 @@ public final class ClassAnalyzer {
 
 	private Collection<BugInstance> stateUnmodifiable() {
 		SortedBugCollection bugs = new SortedBugCollection();
-		bugs.addAll(ctorArgsAreCopied());
 		bugs.addAll(referencesToMutableDataPrivate());
-		bugs.addAll(noMutators());
-		bugs.addAll(fieldsAreNotPublished());
+		bugs.addAll(ctorsUnmodifiable());
+		bugs.addAll(methodsUnmodifiable());
 		return bugs.getCollection();
 	}
 
