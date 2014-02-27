@@ -20,21 +20,22 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
 
-@RunWith(Parameterized.class)
-public class JicDetectorTest {
+import de.seerhein_lab.jic.analyzer.ClassHelper;
 
-	private JicDetector jicDetector;
+@RunWith(Parameterized.class)
+public class ClassHelperTest {
+
 	private JavaClass javaClass;
-	private static final String PACKAGE = "de.seerhein_lab.jic.JicDetectorTest$";
+	private static final String PACKAGE = "de.seerhein_lab.jic.ClassHelperTest$";
 	private final static Map<String, Boolean> isSupposedlyImmutable = new HashMap<String, Boolean>();
 
-	public JicDetectorTest(Object javaClass) {
+	public ClassHelperTest(Object javaClass) {
 		this.javaClass = (JavaClass) javaClass;
 	}
 
 	@Parameters
 	public static List<Object[]> data() throws ClassNotFoundException {
-		Class<?>[] classes = de.seerhein_lab.jic.JicDetectorTest.class.getClasses();
+		Class<?>[] classes = de.seerhein_lab.jic.ClassHelperTest.class.getClasses();
 		List<Object[]> list = new ArrayList<Object[]>();
 		for (int i = 0; i < classes.length; i++) {
 			list.add(new Object[] { Repository.lookupClass(classes[i]) });
@@ -44,12 +45,11 @@ public class JicDetectorTest {
 
 	@Before
 	public void setUp() throws Exception {
-		jicDetector = new JicDetector(null);
 		isSupposedlyImmutable.put(PACKAGE + "ImmutableAnnotation", true);
 		isSupposedlyImmutable.put(PACKAGE + "immutableAndOtherAnnotations", true);
 		isSupposedlyImmutable.put(PACKAGE + "noAnnotation", false);
 		isSupposedlyImmutable.put(PACKAGE + "otherAnnotation", false);
-		isSupposedlyImmutable.put(PACKAGE + "otherImmutableAnnotation", false);
+		isSupposedlyImmutable.put(PACKAGE + "otherImmutableAnnotation", true);
 		isSupposedlyImmutable.put(PACKAGE + "otherJcipAnnotation", false);
 	}
 
@@ -57,7 +57,7 @@ public class JicDetectorTest {
 	public void testSupposedlyImmutable() throws ClassNotFoundException {
 
 		assertEquals(isSupposedlyImmutable.get(javaClass.getClassName()),
-				jicDetector.supposedlyImmutable(javaClass));
+				new ClassHelper(javaClass).supposedlyImmutable());
 	}
 
 	@Immutable

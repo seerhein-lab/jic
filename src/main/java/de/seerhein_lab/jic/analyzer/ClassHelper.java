@@ -14,13 +14,16 @@ import org.apache.bcel.generic.ArrayType;
 import org.apache.bcel.generic.Type;
 
 public final class ClassHelper {
-	private final static String IMMUTABLE_ANNOTATION = "Lnet/jcip/annotations/Immutable;";
+	private final static String IMMUTABLE_SUFFIX = "/Immutable;";
+
 	private final Method[] methods;
+	private final JavaClass clazz;
 
 	public ClassHelper(JavaClass clazz) {
 		if (clazz == null)
 			throw new NullPointerException("JavaClass must not be null.");
 
+		this.clazz = clazz;
 		this.methods = clazz.getMethods();
 	}
 
@@ -30,6 +33,13 @@ public final class ClassHelper {
 			if (method.getName().equals(CONSTRUCTOR_NAME))
 				ctors.add(method);
 		return ctors;
+	}
+
+	public boolean supposedlyImmutable() {
+		for (AnnotationEntry annotation : clazz.getAnnotationEntries())
+			if (annotation.getAnnotationType().endsWith(IMMUTABLE_SUFFIX))
+				return true;
+		return false;
 	}
 
 	List<Method> getConcreteNonPrivateNonStaticMethods() {
@@ -77,14 +87,11 @@ public final class ClassHelper {
 		}
 		try {
 			JavaClass clazz = Repository.lookupClass(type);
-			for (AnnotationEntry entry : clazz.getAnnotationEntries()) {
-				if (entry.getAnnotationType().equals(IMMUTABLE_ANNOTATION))
-					return true;
-			}
+			return new ClassHelper(clazz).supposedlyImmutable();
+
 		} catch (ClassNotFoundException e) {
 			throw new AssertionError(e);
 		}
-		return false;
 	}
 
 	public static boolean isImmutableAndFinal(Type type) {

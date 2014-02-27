@@ -5,12 +5,12 @@ import java.util.Collection;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import org.apache.bcel.classfile.AnnotationEntry;
 import org.apache.bcel.classfile.JavaClass;
 import org.apache.commons.lang.time.DateFormatUtils;
 
 import de.seerhein_lab.jic.analyzer.BaseVisitor;
 import de.seerhein_lab.jic.analyzer.ClassAnalyzer;
+import de.seerhein_lab.jic.analyzer.ClassHelper;
 import de.seerhein_lab.jic.cache.AnalysisCache;
 import de.seerhein_lab.jic.vm.Frame;
 import de.seerhein_lab.jic.vm.Heap;
@@ -54,19 +54,11 @@ public final class JicDetector implements Detector {
 		logger.info("frames: " + Frame.count.get());
 	}
 
-	// package private for testing purposes
-	boolean supposedlyImmutable(JavaClass clazz) {
-		for (AnnotationEntry annotation : clazz.getAnnotationEntries())
-			if (annotation.getAnnotationType().equals(IMMUTABLE_ANNOTATION))
-				return true;
-		return false;
-	}
-
 	@Override
 	public void visitClassContext(ClassContext classContext) {
 		HeapObject.objects = 0;
 		JavaClass clazz = classContext.getJavaClass();
-		boolean supposedlyImmutable = supposedlyImmutable(clazz);
+		boolean supposedlyImmutable = new ClassHelper(clazz).supposedlyImmutable();
 
 		if (clazz.isAnnotation() || clazz.isInterface()) {
 			if (supposedlyImmutable)
