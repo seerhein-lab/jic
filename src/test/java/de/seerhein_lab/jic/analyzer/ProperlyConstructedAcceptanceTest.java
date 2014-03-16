@@ -820,4 +820,15 @@ public class ProperlyConstructedAcceptanceTest {
 		}
 	}
 
+	@BugsExpected
+	public static class Story053_ExternalNullReference {
+		public static Story053_ExternalNullReference obj;
+
+		public Story053_ExternalNullReference(Object ex) {
+			if (ex == null) {
+				obj = this;
+			}
+		}
+	}
+
 }
