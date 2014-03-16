@@ -76,25 +76,32 @@ public abstract class BaseMethodAnalyzer {
 	public final synchronized AnalysisResult analyze() {
 		OpStack callerStack = new OpStack();
 		Heap callerHeap = getHeap();
-
-		// push this onto the stack, if not static
-		// if (!method.isStatic()) {
 		callerStack.push(ReferenceSlot.getThisReference(callerHeap));
-		// }
 
-		// push args onto the stack
-		for (Type argType : methodGen.getArgumentTypes()) {
-			Slot argument = Slot.getDefaultSlotInstance(argType);
-			if (argument instanceof ReferenceSlot) {
-				argument = ReferenceSlot.getExternalReference(callerHeap,
-						ClassHelper.isImmutableAndFinal(argType));
-			}
-			for (int i = 0; i < argument.getNumSlots(); i++) {
+		return analyze(callerStack, 0, callerHeap);
+	}
+
+	private final AnalysisResult analyze(OpStack callerStack, int index, Heap heap) {
+		Type[] arguments = methodGen.getArgumentTypes();
+
+		if (index == arguments.length)
+			return analyze(callerStack, heap);
+
+		Slot argument = Slot.getDefaultSlotInstance(arguments[index]);
+		if (!(argument instanceof ReferenceSlot)) {
+			for (int i = 0; i < argument.getNumSlots(); i++)
 				callerStack.push(argument);
-			}
+
+			return analyze(callerStack, index + 1, heap);
 		}
 
-		return analyze(callerStack, callerHeap);
+		OpStack clonedStack = new OpStack(callerStack);
+
+		return analyze(
+				callerStack.push(ReferenceSlot.getExternalReference(heap,
+						ClassHelper.isImmutableAndFinal(arguments[index]))), index + 1, heap)
+				.merge(analyze(clonedStack.push(ReferenceSlot.getNullReference()), index + 1, heap));
+
 	}
 
 	public synchronized AnalysisResult analyze(OpStack callerStack, Heap heap) {

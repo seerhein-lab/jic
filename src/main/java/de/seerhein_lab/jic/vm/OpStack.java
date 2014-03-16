@@ -46,7 +46,7 @@ public final class OpStack {
 	 * @param slot
 	 *            slot to be pushed onto this operand stack.
 	 */
-	public void push(Slot slot) {
+	public OpStack push(Slot slot) {
 		if (slot == null)
 			throw new NullPointerException("slot must not be null");
 
@@ -55,6 +55,7 @@ public final class OpStack {
 					"a VoidSlot cannot be pushed onto the operand stack.");
 
 		stack.push(slot);
+		return this;
 	}
 
 	/**
