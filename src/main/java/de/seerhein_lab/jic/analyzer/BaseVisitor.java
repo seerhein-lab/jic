@@ -50,6 +50,7 @@ import de.seerhein_lab.jic.AnalysisResult;
 import de.seerhein_lab.jic.EvaluationResult;
 import de.seerhein_lab.jic.EvaluationResult.Kind;
 import de.seerhein_lab.jic.Pair;
+import de.seerhein_lab.jic.ThreeValueBoolean;
 import de.seerhein_lab.jic.Utils;
 import de.seerhein_lab.jic.analyzer.eval.EvaluationOnlyAnalyzer;
 import de.seerhein_lab.jic.analyzer.recursion.RecursionAnalyzer;
@@ -743,6 +744,22 @@ public abstract class BaseVisitor extends SimpleVisitor {
 		pc.setInstruction(obj.getTarget());
 	}
 
+	private ThreeValueBoolean evaluateCondition(IfInstruction instruction) {
+		if (instruction.getOpcode() == 0xc6) // ifnull
+			return ThreeValueBoolean.fromBoolean(((ReferenceSlot) frame.getStack().pop())
+					.isNullReference());
+
+		if (instruction.getOpcode() == 0xc7) // ifnonnull
+			return ThreeValueBoolean.fromBoolean(!((ReferenceSlot) frame.getStack().pop())
+					.isNullReference());
+
+		// all other conditions
+		for (int i = 0; i < instruction.consumeStack(constantPoolGen); i++)
+			frame.getStack().pop();
+
+		return ThreeValueBoolean.unknown;
+	}
+
 	/**
 	 * 7. BranchInstruction<br>
 	 * 7.2. IfInstruction<br>
@@ -755,27 +772,10 @@ public abstract class BaseVisitor extends SimpleVisitor {
 	@Override
 	public void visitIfInstruction(IfInstruction obj) {
 		logger.fine(indentation + obj.toString(false));
-		boolean analyzeElseBranch = true;
-		boolean analyzeThenBranch = true;
 
-		// ifnull / ifnonnull
-		if (obj.getOpcode() == 0xc6 || obj.getOpcode() == 0xc7) {
-			ReferenceSlot refSlot = (ReferenceSlot) frame.getStack().pop();
-			if (obj.getOpcode() == 0xc6) { // ifnull
-				analyzeThenBranch = refSlot.isNullReference();
-				analyzeElseBranch = !refSlot.isNullReference();
-			}
-			if (obj.getOpcode() == 0xc7) { // ifnonnull
-				analyzeThenBranch = !refSlot.isNullReference();
-				analyzeElseBranch = refSlot.isNullReference();
-			}
-		} else {
-			for (int i = 0; i < obj.consumeStack(constantPoolGen); i++) {
-				frame.getStack().pop();
-			}
-		}
+		ThreeValueBoolean condition = evaluateCondition(obj);
 
-		if (analyzeElseBranch) {
+		if (condition.maybeFalse()) {
 			logger.finest(indentation + "------------------  " + alreadyVisitedIfBranch.size()
 					+ ".else  (condition might be inverted!) ------------------");
 			Pair<InstructionHandle, Boolean> elseBranch = new Pair<InstructionHandle, Boolean>(
@@ -785,10 +785,10 @@ public abstract class BaseVisitor extends SimpleVisitor {
 				BaseMethodAnalyzer elseAnalyzer = getMethodAnalyzer(methodGen,
 						alreadyVisitedMethods, methodInvocationDepth);
 
-				AnalysisResult analysisResult = analyzeThenBranch ? elseAnalyzer.analyze(pc
-						.getCurrentInstruction().getNext(), new Frame(frame), new Heap(heap),
-						alreadyVisitedIfBranch) : elseAnalyzer.analyze(pc.getCurrentInstruction()
-						.getNext(), frame, heap, alreadyVisitedIfBranch);
+				AnalysisResult analysisResult = !condition.maybeTrue() ? elseAnalyzer.analyze(pc
+						.getCurrentInstruction().getNext(), frame, heap, alreadyVisitedIfBranch)
+						: elseAnalyzer.analyze(pc.getCurrentInstruction().getNext(), new Frame(
+								frame), new Heap(heap), alreadyVisitedIfBranch);
 
 				bugs.addAll(analysisResult.getBugs());
 				result.addAll(analysisResult.getResults());
@@ -798,7 +798,7 @@ public abstract class BaseVisitor extends SimpleVisitor {
 			}
 		}
 
-		if (analyzeThenBranch) {
+		if (condition.maybeTrue()) {
 			logger.finest(indentation + "------------------  " + alreadyVisitedIfBranch.size()
 					+ ".then  (condition might be inverted!) ------------------");
 			Pair<InstructionHandle, Boolean> thenBranch = new Pair<InstructionHandle, Boolean>(
