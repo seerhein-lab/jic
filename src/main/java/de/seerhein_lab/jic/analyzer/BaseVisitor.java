@@ -1166,8 +1166,27 @@ public abstract class BaseVisitor extends SimpleVisitor {
 	 * 10.4.3. INVOKESTATIC <br>
 	 */
 	@Override
-	public void visitINVOKESTATIC(INVOKESTATIC obj) {
-		handleSpecialOrStaticInvocation(obj);
+	public void visitINVOKESTATIC(INVOKESTATIC instruction) {
+		JavaClass targetClass = null;
+		JavaClass[] superClassesOfThisClass;
+
+		try {
+			targetClass = Repository.lookupClass(instruction.getLoadClassType(constantPoolGen)
+					.toString());
+			superClassesOfThisClass = classContext.getJavaClass().getSuperClasses();
+
+		} catch (ClassNotFoundException e) {
+			throw new AssertionError(instruction.getLoadClassType(constantPoolGen).toString()
+					+ " cannot be loaded.");
+		}
+
+		for (JavaClass superClass : superClassesOfThisClass)
+			if (superClass.equals(targetClass)) {
+				handleSpecialOrStaticInvocation(instruction);
+				return;
+			}
+
+		handleLatelyBoundMethod(instruction);
 	}
 
 	/**
