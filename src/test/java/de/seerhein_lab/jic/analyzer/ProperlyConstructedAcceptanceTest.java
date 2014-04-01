@@ -719,7 +719,7 @@ public class ProperlyConstructedAcceptanceTest {
 		}
 	}
 
-	@NoBugsExpected
+	@BugsExpected
 	public static class Story045_RecursionDifferentClasses {
 
 		public Story045_RecursionDifferentClasses(Object x) {
