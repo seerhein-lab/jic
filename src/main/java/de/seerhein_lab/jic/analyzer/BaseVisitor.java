@@ -292,7 +292,7 @@ public abstract class BaseVisitor extends SimpleVisitor {
 		pc.invalidate();
 	}
 
-	private void handleEarlyBoundMethod(InvokeInstruction obj, QualifiedMethod targetMethod) {
+	private void handleOwnMethod(InvokeInstruction obj, QualifiedMethod targetMethod) {
 		logger.fine(indentation + obj.toString(false));
 		logger.finest(indentation + "\t" + obj.getLoadClassType(constantPoolGen) + "."
 				+ obj.getMethodName(constantPoolGen) + obj.getSignature(constantPoolGen));
@@ -381,7 +381,7 @@ public abstract class BaseVisitor extends SimpleVisitor {
 		return result;
 	}
 
-	private void handleLatelyBoundMethod(InvokeInstruction obj) {
+	private void handleAlienMethod(InvokeInstruction obj) {
 		logger.fine(indentation + obj.toString(false));
 		logger.finest(indentation + "\t" + obj.getLoadClassType(constantPoolGen) + "."
 				+ obj.getMethodName(constantPoolGen) + obj.getSignature(constantPoolGen));
@@ -1105,7 +1105,7 @@ public abstract class BaseVisitor extends SimpleVisitor {
 	 */
 	@Override
 	public void visitINVOKEINTERFACE(INVOKEINTERFACE obj) {
-		handleLatelyBoundMethod(obj);
+		handleAlienMethod(obj);
 	}
 
 	private QualifiedMethod getTargetMethod(InvokeInstruction instruction) {
@@ -1144,10 +1144,10 @@ public abstract class BaseVisitor extends SimpleVisitor {
 		if (targetMethod.getMethod().isNative()) {
 			logger.fine(indentation + "Native method must be dealt with like virtual method.");
 
-			handleLatelyBoundMethod(obj);
+			handleAlienMethod(obj);
 
 		} else
-			handleEarlyBoundMethod(obj, targetMethod);
+			handleOwnMethod(obj, targetMethod);
 	}
 
 	/**
@@ -1165,28 +1165,50 @@ public abstract class BaseVisitor extends SimpleVisitor {
 	 * 10.4. InvokeInstruction <br>
 	 * 10.4.3. INVOKESTATIC <br>
 	 */
+
 	@Override
 	public void visitINVOKESTATIC(INVOKESTATIC instruction) {
-		JavaClass targetClass = null;
-		JavaClass[] superClassesOfThisClass;
+		handleResolvableMethod(instruction, getTargetMethod(instruction));
+	}
+
+	private void handleResolvableMethod(InvokeInstruction instruction, QualifiedMethod method) {
+		if (isAlienMethod(method))
+			handleAlienMethod(instruction);
+		else
+			handleOwnMethod(instruction, method);
+	}
+
+	private boolean isAlienMethod(QualifiedMethod method) {
+		if (method.getMethod().isNative()) {
+			logger.fine(indentation + "Native method must be treated as alien method.");
+			return true;
+		}
+
+		if (method.getJavaClass().equals(classContext.getJavaClass()))
+			return false;
+
+		if (isTightlyCoupled(method.getJavaClass()))
+			return false;
+
+		return true;
+
+	}
+
+	private boolean isTightlyCoupled(JavaClass clazz) {
+		JavaClass[] superClassesOfThisClass = null;
 
 		try {
-			targetClass = Repository.lookupClass(instruction.getLoadClassType(constantPoolGen)
-					.toString());
 			superClassesOfThisClass = classContext.getJavaClass().getSuperClasses();
-
 		} catch (ClassNotFoundException e) {
-			throw new AssertionError(instruction.getLoadClassType(constantPoolGen).toString()
-					+ " cannot be loaded.");
+			throw new AssertionError("class cannot be found: " + e.getMessage());
 		}
 
 		for (JavaClass superClass : superClassesOfThisClass)
-			if (superClass.equals(targetClass)) {
-				handleSpecialOrStaticInvocation(instruction);
-				return;
-			}
+			if (superClass.equals(clazz))
+				return true;
 
-		handleLatelyBoundMethod(instruction);
+		return false;
+
 	}
 
 	/**
@@ -1201,9 +1223,9 @@ public abstract class BaseVisitor extends SimpleVisitor {
 		if ((targetMethod.getJavaClass().isFinal() || targetMethod.getMethod().isFinal())
 				&& !targetMethod.getMethod().isNative()) {
 			logger.fine(indentation + "Final virtual method can be analyzed.");
-			handleEarlyBoundMethod(obj, targetMethod);
+			handleOwnMethod(obj, targetMethod);
 		} else
-			handleLatelyBoundMethod(obj);
+			handleAlienMethod(obj);
 	}
 
 	/**
