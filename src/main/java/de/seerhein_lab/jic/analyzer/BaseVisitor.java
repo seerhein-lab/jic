@@ -1104,8 +1104,10 @@ public abstract class BaseVisitor extends SimpleVisitor {
 	 * 10.4.1. INVOKEINTERFACE <br>
 	 */
 	@Override
-	public void visitINVOKEINTERFACE(INVOKEINTERFACE obj) {
-		handleAlienMethod(obj);
+	public void visitINVOKEINTERFACE(INVOKEINTERFACE instruction) {
+		System.out
+				.println("interface load class: " + instruction.getLoadClassType(constantPoolGen));
+		handleAlienMethod(instruction);
 	}
 
 	private QualifiedMethod getTargetMethod(InvokeInstruction instruction) {
@@ -1168,10 +1170,8 @@ public abstract class BaseVisitor extends SimpleVisitor {
 
 	@Override
 	public void visitINVOKESTATIC(INVOKESTATIC instruction) {
-		handleResolvableMethod(instruction, getTargetMethod(instruction));
-	}
+		QualifiedMethod method = getTargetMethod(instruction);
 
-	private void handleResolvableMethod(InvokeInstruction instruction, QualifiedMethod method) {
 		if (isAlienMethod(method))
 			handleAlienMethod(instruction);
 		else
@@ -1191,7 +1191,6 @@ public abstract class BaseVisitor extends SimpleVisitor {
 			return false;
 
 		return true;
-
 	}
 
 	private boolean isTightlyCoupled(JavaClass clazz) {
@@ -1217,15 +1216,16 @@ public abstract class BaseVisitor extends SimpleVisitor {
 	 * 10.4.4. INVOKEVIRTUAL <br>
 	 */
 	@Override
-	public void visitINVOKEVIRTUAL(INVOKEVIRTUAL obj) {
-		QualifiedMethod targetMethod = getTargetMethod(obj);
+	public void visitINVOKEVIRTUAL(INVOKEVIRTUAL instruction) {
+		System.out.println("virtual load class: " + instruction.getLoadClassType(constantPoolGen));
+		QualifiedMethod targetMethod = getTargetMethod(instruction);
 
 		if ((targetMethod.getJavaClass().isFinal() || targetMethod.getMethod().isFinal())
 				&& !targetMethod.getMethod().isNative()) {
 			logger.fine(indentation + "Final virtual method can be analyzed.");
-			handleOwnMethod(obj, targetMethod);
+			handleOwnMethod(instruction, targetMethod);
 		} else
-			handleAlienMethod(obj);
+			handleAlienMethod(instruction);
 	}
 
 	/**
