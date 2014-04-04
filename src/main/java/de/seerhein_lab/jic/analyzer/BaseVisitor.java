@@ -1110,15 +1110,9 @@ public abstract class BaseVisitor extends SimpleVisitor {
 		handleAlienMethod(instruction);
 	}
 
-	private QualifiedMethod getTargetMethod(InvokeInstruction instruction) {
-		JavaClass targetClass = null;
-		try {
-			targetClass = Repository.lookupClass(instruction.getLoadClassType(constantPoolGen)
-					.toString());
-		} catch (ClassNotFoundException e) {
-			throw new AssertionError(instruction.getLoadClassType(constantPoolGen).toString()
-					+ " cannot be loaded.");
-		}
+	private QualifiedMethod getTargetMethod(InvokeInstruction instruction, JavaClass startClass) {
+		// JavaClass targetClass = getJavaLoadClass(instruction);
+		JavaClass targetClass = startClass;
 
 		Method targetMethod = new ClassHelper(targetClass).getMethod(
 				instruction.getMethodName(constantPoolGen),
@@ -1140,16 +1134,16 @@ public abstract class BaseVisitor extends SimpleVisitor {
 		return new QualifiedMethod(targetClass, targetMethod);
 	}
 
-	private void handleSpecialOrStaticInvocation(InvokeInstruction obj) {
-		QualifiedMethod targetMethod = getTargetMethod(obj);
+	private void handleSpecialOrStaticInvocation(InvokeInstruction instruction) {
+		QualifiedMethod targetMethod = getTargetMethod(instruction, getJavaLoadClass(instruction));
 
 		if (targetMethod.getMethod().isNative()) {
 			logger.fine(indentation + "Native method must be dealt with like virtual method.");
 
-			handleAlienMethod(obj);
+			handleAlienMethod(instruction);
 
 		} else
-			handleOwnMethod(obj, targetMethod);
+			handleOwnMethod(instruction, targetMethod);
 	}
 
 	/**
@@ -1170,7 +1164,7 @@ public abstract class BaseVisitor extends SimpleVisitor {
 
 	@Override
 	public void visitINVOKESTATIC(INVOKESTATIC instruction) {
-		QualifiedMethod method = getTargetMethod(instruction);
+		QualifiedMethod method = getTargetMethod(instruction, getJavaLoadClass(instruction));
 
 		if (isAlienMethod(method))
 			handleAlienMethod(instruction);
@@ -1184,16 +1178,13 @@ public abstract class BaseVisitor extends SimpleVisitor {
 			return true;
 		}
 
-		if (method.getJavaClass().equals(classContext.getJavaClass()))
-			return false;
-
-		if (isTightlyCoupled(method.getJavaClass()))
-			return false;
-
-		return true;
+		return !isTightlyCoupled(method.getJavaClass());
 	}
 
 	private boolean isTightlyCoupled(JavaClass clazz) {
+		if (clazz.equals(classContext.getJavaClass()))
+			return true;
+
 		JavaClass[] superClassesOfThisClass = null;
 
 		try {
@@ -1207,7 +1198,22 @@ public abstract class BaseVisitor extends SimpleVisitor {
 				return true;
 
 		return false;
+	}
 
+	private JavaClass getRuntimeType() {
+		return null;
+	}
+
+	private JavaClass getJavaLoadClass(InvokeInstruction instruction) {
+		JavaClass loadClassType = null;
+		try {
+			loadClassType = Repository.lookupClass(instruction.getLoadClassType(constantPoolGen)
+					.toString());
+		} catch (ClassNotFoundException e) {
+			throw new AssertionError(instruction.getLoadClassType(constantPoolGen).toString()
+					+ " cannot be loaded.");
+		}
+		return loadClassType;
 	}
 
 	/**
@@ -1218,7 +1224,20 @@ public abstract class BaseVisitor extends SimpleVisitor {
 	@Override
 	public void visitINVOKEVIRTUAL(INVOKEVIRTUAL instruction) {
 		System.out.println("virtual load class: " + instruction.getLoadClassType(constantPoolGen));
-		QualifiedMethod targetMethod = getTargetMethod(instruction);
+
+		if (!isTightlyCoupled(getJavaLoadClass(instruction))) {
+			handleAlienMethod(instruction);
+			return;
+		}
+
+		JavaClass runtimeType = getRuntimeType();
+
+		if (runtimeType != null && isTightlyCoupled(runtimeType)) {
+			handleOwnMethod(instruction, getTargetMethod(instruction, runtimeType));
+			return;
+		}
+
+		QualifiedMethod targetMethod = getTargetMethod(instruction, getJavaLoadClass(instruction));
 
 		if ((targetMethod.getJavaClass().isFinal() || targetMethod.getMethod().isFinal())
 				&& !targetMethod.getMethod().isNative()) {
