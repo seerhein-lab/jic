@@ -808,7 +808,7 @@ public class ProperlyConstructedAcceptanceTest {
 	}
 
 	@BugsExpected
-	public static class Story052_LeakyPublicFinalMethod {
+	public final static class Story052_LeakyPublicFinalMethod {
 		public static Story052_LeakyPublicFinalMethod staticRef;
 
 		public final void f() {
@@ -821,13 +821,47 @@ public class ProperlyConstructedAcceptanceTest {
 	}
 
 	@BugsExpected
-	public static class Story053_ExternalNullReference {
+	public final static class Story053_ExternalNullReference {
 		public static Story053_ExternalNullReference obj;
 
 		public Story053_ExternalNullReference(Object ex) {
 			if (ex == null) {
 				obj = this;
 			}
+		}
+	}
+	
+	@NoBugsExpected
+	public final static class Story054_NestedMemberClass {
+		private final Object f = new Object();
+		
+		private Story054_NestedMemberClass(){
+			new MemberClass().publish();
+		}
+		
+		public final class MemberClass{
+			public Object publish() {
+				return f;
+			}
+		}
+	}
+	
+	@NoBugsExpected
+	public final static class Story055_NestedLocalClass {
+		private Story055_NestedLocalClass(){
+			method();
+		}
+		
+		public void method(){
+			final class LocalInner{
+				Object innerMethod(){
+					return outerMethod();
+				}
+			}
+		}
+		
+		public Object outerMethod(){
+			return new Integer(0);
 		}
 	}
 

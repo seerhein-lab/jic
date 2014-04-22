@@ -9,6 +9,8 @@ import java.util.Set;
 import java.util.logging.Logger;
 
 import org.apache.bcel.Repository;
+import org.apache.bcel.classfile.Attribute;
+import org.apache.bcel.classfile.AttributeReader;
 import org.apache.bcel.classfile.JavaClass;
 import org.apache.bcel.classfile.Method;
 import org.apache.bcel.generic.AALOAD;
@@ -1185,6 +1187,12 @@ public abstract class BaseVisitor extends SimpleVisitor {
 		if (clazz.equals(classContext.getJavaClass()))
 			return true;
 
+		if(isNestedClass(classContext.getJavaClass(), clazz))
+			return true;
+		
+		if(isNestedClass(clazz, classContext.getJavaClass()))
+			return true;
+		
 		JavaClass[] superClassesOfThisClass = null;
 
 		try {
@@ -1192,12 +1200,30 @@ public abstract class BaseVisitor extends SimpleVisitor {
 		} catch (ClassNotFoundException e) {
 			throw new AssertionError("class cannot be found: " + e.getMessage());
 		}
-
+		
 		for (JavaClass superClass : superClassesOfThisClass)
 			if (superClass.equals(clazz))
 				return true;
-
+		
 		return false;
+	}
+	
+	private boolean isNestedClass(JavaClass outer, JavaClass inner){
+		return inner.isNested() && containsNested(outer) && innerNameMatchesOuterName(outer, inner);
+	}
+	
+	private boolean containsNested(JavaClass clazz){
+		for (Attribute attribute : clazz.getAttributes()){
+			if(attribute.getName().equals("InnerClasses")){
+				return true;
+			}			
+		}
+		return false;
+	}
+	
+	private boolean innerNameMatchesOuterName(JavaClass outer, JavaClass inner){
+		return inner.getClassName().indexOf('$') != -1 &&
+			 inner.getClassName().startsWith(outer.getClassName() + "$");
 	}
 
 	private JavaClass getRuntimeType() {
