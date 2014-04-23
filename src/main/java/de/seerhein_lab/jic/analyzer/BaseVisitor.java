@@ -1222,8 +1222,7 @@ public abstract class BaseVisitor extends SimpleVisitor {
 	}
 	
 	private boolean innerNameMatchesOuterName(JavaClass outer, JavaClass inner){
-		return inner.getClassName().indexOf('$') != -1 &&
-			 inner.getClassName().startsWith(outer.getClassName() + "$");
+		return inner.getClassName().startsWith(outer.getClassName() + "$");
 	}
 
 	private JavaClass getRuntimeType() {
