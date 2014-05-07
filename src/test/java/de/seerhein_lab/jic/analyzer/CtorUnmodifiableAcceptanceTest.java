@@ -78,7 +78,7 @@ public class CtorUnmodifiableAcceptanceTest {
 		}
 	}
 
-	@BugsExpected
+	@NoBugsExpected
 	public static class DetectVirtualMethodBug_ReferredByThis {
 		private final Object o = new Object();
 
@@ -87,7 +87,7 @@ public class CtorUnmodifiableAcceptanceTest {
 		}
 	}
 
-	@BugsExpected
+	@NoBugsExpected
 	public static class DetectVirtualMethodBug_TransitivelyReferredByThis {
 		private final TestClass o = new TestClass();
 

@@ -403,8 +403,8 @@ public class ProperlyConstructedAcceptanceTest {
 	 */
 	@NoBugsExpected
 	public static class Story026_ClassWithSingleArgumentTryDoubleCatchFinallyMultipleExceptions {
-		public Story026_ClassWithSingleArgumentTryDoubleCatchFinallyMultipleExceptions(int i)
-				throws Exception {
+		public Story026_ClassWithSingleArgumentTryDoubleCatchFinallyMultipleExceptions(
+				int i) throws Exception {
 			try {
 				if (i > 2)
 					throw new IOException();
@@ -431,7 +431,8 @@ public class ProperlyConstructedAcceptanceTest {
 			throw new IOException();
 		}
 
-		public Story027_ClassWithSimpleExceptionThrowingMethod(int i) throws Exception {
+		public Story027_ClassWithSimpleExceptionThrowingMethod(int i)
+				throws Exception {
 			try {
 				thrower();
 			} catch (IOException e) {
@@ -455,7 +456,8 @@ public class ProperlyConstructedAcceptanceTest {
 			}
 		}
 
-		public Story028_ClassWithNestedExceptionhandling(int i) throws Exception {
+		public Story028_ClassWithNestedExceptionhandling(int i)
+				throws Exception {
 			try {
 				thrower(i);
 			} catch (IOException e) {
@@ -487,7 +489,8 @@ public class ProperlyConstructedAcceptanceTest {
 			i /= 5;
 		}
 
-		public Story029_ClassWithMultipleTryCatchFinally(int i) throws IOException {
+		public Story029_ClassWithMultipleTryCatchFinally(int i)
+				throws IOException {
 			try {
 				thrower(i);
 			} catch (IOException e) {
@@ -593,7 +596,7 @@ public class ProperlyConstructedAcceptanceTest {
 		}
 	}
 
-	@BugsExpected
+	@NoBugsExpected
 	public static class Story037_IfNullThen {
 		private Object x;
 
@@ -606,7 +609,7 @@ public class ProperlyConstructedAcceptanceTest {
 		}
 	}
 
-	@BugsExpected
+	@NoBugsExpected
 	public static class Story038_IfNullElse {
 		private Object x;
 
@@ -634,7 +637,7 @@ public class ProperlyConstructedAcceptanceTest {
 		}
 	}
 
-	@BugsExpected
+	@NoBugsExpected
 	public static class Story040_BugBeforeRecursion {
 
 		public Story040_BugBeforeRecursion(Object x) {
@@ -650,7 +653,7 @@ public class ProperlyConstructedAcceptanceTest {
 		}
 	}
 
-	@BugsExpected
+	@NoBugsExpected
 	public static class Story041_BugAfterRecursion {
 
 		public Story041_BugAfterRecursion(Object x) {
@@ -667,7 +670,7 @@ public class ProperlyConstructedAcceptanceTest {
 		}
 	}
 
-	@BugsExpected
+	@NoBugsExpected
 	public static class Story042_BugAfterRecursion2 {
 
 		public Story042_BugAfterRecursion2(Object x) {
@@ -686,7 +689,7 @@ public class ProperlyConstructedAcceptanceTest {
 		}
 	}
 
-	@BugsExpected
+	@NoBugsExpected
 	public static class Story043_BugInBreakConditionRecursion {
 
 		public Story043_BugInBreakConditionRecursion(Object x) {
@@ -777,7 +780,7 @@ public class ProperlyConstructedAcceptanceTest {
 		}
 	}
 
-	@BugsExpected
+	@NoBugsExpected
 	public static class Story049_CorrectPublicNonFinalMethod {
 		public void f() {
 		}
@@ -830,37 +833,37 @@ public class ProperlyConstructedAcceptanceTest {
 			}
 		}
 	}
-	
+
 	@NoBugsExpected
 	public final static class Story054_NestedMemberClass {
 		private final Object f = new Object();
-		
-		private Story054_NestedMemberClass(){
+
+		private Story054_NestedMemberClass() {
 			new MemberClass().publish();
 		}
-		
-		public final class MemberClass{
+
+		public final class MemberClass {
 			public Object publish() {
 				return f;
 			}
 		}
 	}
-	
+
 	@NoBugsExpected
 	public final static class Story055_NestedLocalClass {
-		private Story055_NestedLocalClass(){
+		private Story055_NestedLocalClass() {
 			method();
 		}
-		
-		public void method(){
-			final class LocalInner{
-				Object innerMethod(){
+
+		public void method() {
+			final class LocalInner {
+				Object innerMethod() {
 					return outerMethod();
 				}
 			}
 		}
-		
-		public Object outerMethod(){
+
+		public Object outerMethod() {
 			return new Integer(0);
 		}
 	}
