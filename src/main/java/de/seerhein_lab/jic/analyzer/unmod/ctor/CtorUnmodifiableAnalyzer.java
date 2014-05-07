@@ -23,30 +23,33 @@ import edu.umd.cs.findbugs.ba.ClassContext;
 // Superclass is thread-safe, this sub-class doesn't add any public methods
 public final class CtorUnmodifiableAnalyzer extends BaseMethodAnalyzer {
 
-	public CtorUnmodifiableAnalyzer(ClassContext classContext, MethodGen methodGen,
-			AnalysisCache cache, int methodInvocationDepth) {
-		this(classContext, methodGen, new HashSet<QualifiedMethod>(), -1, cache,
-				methodInvocationDepth);
-		alreadyVisitedMethods.add(new QualifiedMethod(classContext.getJavaClass(), methodGen
-				.getMethod()));
+	public CtorUnmodifiableAnalyzer(ClassContext classContext,
+			MethodGen methodGen, AnalysisCache cache, int methodInvocationDepth) {
+		this(classContext, methodGen, new HashSet<QualifiedMethod>(), -1,
+				cache, methodInvocationDepth);
+		alreadyVisitedMethods.add(new QualifiedMethod(classContext
+				.getJavaClass(), methodGen.getMethod()));
 	}
 
-	protected CtorUnmodifiableAnalyzer(ClassContext classContext, MethodGen methodGen,
-			Set<QualifiedMethod> alreadyVisitedMethods, int depth, AnalysisCache cache,
-			int methodInvocationDepth) {
-		super(classContext, methodGen, alreadyVisitedMethods, depth, cache, methodInvocationDepth);
+	protected CtorUnmodifiableAnalyzer(ClassContext classContext,
+			MethodGen methodGen, Set<QualifiedMethod> alreadyVisitedMethods,
+			int depth, AnalysisCache cache, int methodInvocationDepth) {
+		super(classContext, methodGen, alreadyVisitedMethods, depth, cache,
+				methodInvocationDepth);
 	}
 
 	protected BaseVisitor getInstructionVisitor(Frame frame, Heap heap, PC pc,
 			Set<Pair<InstructionHandle, Boolean>> alreadyVisitedIfBranch) {
-		return new CtorUnmodifiableVisitor(classContext, methodGen, frame, heap,
-				methodGen.getConstantPool(), pc, exceptionHandlers, alreadyVisitedMethods, depth,
-				alreadyVisitedIfBranch, cache, methodInvocationDepth);
+		return new CtorUnmodifiableVisitor(classContext, methodGen, frame,
+				heap, methodGen.getConstantPool(), pc, exceptionHandlers,
+				alreadyVisitedMethods, depth, alreadyVisitedIfBranch, cache,
+				methodInvocationDepth);
 	}
 
 	@Override
 	protected Heap getHeap() {
-		return new Heap(ClassHelper.isImmutable(this.classContext.getJavaClass().getClassName()));
+		String className = this.classContext.getJavaClass().getClassName();
+		return new Heap(ClassHelper.isImmutable(className), className);
 	}
 
 }

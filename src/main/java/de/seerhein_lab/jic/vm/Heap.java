@@ -13,6 +13,7 @@ import java.util.concurrent.atomic.AtomicLong;
 import org.apache.bcel.generic.Type;
 
 import de.seerhein_lab.jic.analyzer.ClassHelper;
+import de.seerhein_lab.jic.vm.ClassInstance.ClassInstanceBuilder;
 
 /**
  * Class whose instances represent heaps. A heap contains objects, some of which
@@ -33,10 +34,10 @@ public class Heap {
 	/**
 	 * Constructor. Creates the 'this' instance and the external object.
 	 */
-	public Heap(boolean immutable) {
-		HeapObject thisObject = new ClassInstance(this, immutable);
+	public Heap(boolean immutable, String className) {
+		HeapObject thisObject = new ClassInstanceBuilder(this)
+				.immutable(immutable).runtimeType(className).buildAndRegister();
 		thisID = thisObject.getId();
-		objects.put(thisID, thisObject);
 
 		ExternalObject mutableExternalObject = new ExternalObject(this, false);
 		mutableExternalID = mutableExternalObject.getId();
@@ -50,7 +51,7 @@ public class Heap {
 	}
 
 	public Heap() {
-		this(false);
+		this(false, null);
 	}
 
 	/**
@@ -126,7 +127,8 @@ public class Heap {
 	}
 
 	public HeapObject getExternalObject(boolean immutable) {
-		return immutable ? getImmutableExternalObject() : getMutableExternalObject();
+		return immutable ? getImmutableExternalObject()
+				: getMutableExternalObject();
 	}
 
 	/**
@@ -135,21 +137,26 @@ public class Heap {
 	 * @return The newly created class instance.
 	 */
 	public ClassInstance newClassInstance(boolean immutable) {
-		ClassInstance object = new ClassInstance(this, immutable);
-		objects.put(object.getId(), object);
-		return object;
+		return new ClassInstanceBuilder(this).immutable(immutable)
+				.buildAndRegister();
 	}
 
 	public ClassInstance newClassInstanceOfDynamicType(Type type) {
-		return newClassInstance(ClassHelper.isImmutable(type));
+		return new ClassInstanceBuilder(this)
+				.immutable(ClassHelper.isImmutable(type)).runtimeType(type)
+				.buildAndRegister();
 	}
 
 	public ClassInstance newClassInstanceOfStaticType(Type type) {
-		return newClassInstance(ClassHelper.isImmutableAndFinal(type));
+		return new ClassInstanceBuilder(this)
+				.immutable(ClassHelper.isImmutableAndFinal(type))
+				.runtimeType(type).buildAndRegister();
 	}
 
 	public ClassInstance newClassInstanceOfDynamicType(String type) {
-		return newClassInstance(ClassHelper.isImmutable(type));
+		return new ClassInstanceBuilder(this)
+				.immutable(ClassHelper.isImmutable(type)).runtimeType(type)
+				.buildAndRegister();
 	}
 
 	/**
@@ -194,7 +201,8 @@ public class Heap {
 				}
 
 				for (int i = 0; i < referring.size(); i++) {
-					referring.get(i).replaceReferredObject(o, getExternalObject(o.isImmutable()));
+					referring.get(i).replaceReferredObject(o,
+							getExternalObject(o.isImmutable()));
 				}
 
 				if (o.isImmutable())
@@ -207,6 +215,16 @@ public class Heap {
 		}
 	}
 
+	/**
+	 * Helper method. Adds the HeapObject to known objects.
+	 * 
+	 * @param obj
+	 *            the heap object to add
+	 */
+	void addToObjects(HeapObject obj) {
+		objects.put(obj.getId(), obj);
+	}
+
 	/*
 	 * (non-Javadoc)
 	 * 
@@ -216,10 +234,15 @@ public class Heap {
 	public int hashCode() {
 		final int prime = 31;
 		int result = 1;
-		result = prime * result + ((mutableExternalID == null) ? 0 : mutableExternalID.hashCode());
+		result = prime
+				* result
+				+ ((mutableExternalID == null) ? 0 : mutableExternalID
+						.hashCode());
 		result = prime * result + ((objects == null) ? 0 : objects.hashCode());
-		result = prime * result
-				+ ((publishedMutableObjects == null) ? 0 : publishedMutableObjects.hashCode());
+		result = prime
+				* result
+				+ ((publishedMutableObjects == null) ? 0
+						: publishedMutableObjects.hashCode());
 		result = prime * result + ((thisID == null) ? 0 : thisID.hashCode());
 		return result;
 	}

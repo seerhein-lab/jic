@@ -10,7 +10,6 @@ import java.util.logging.Logger;
 
 import org.apache.bcel.Repository;
 import org.apache.bcel.classfile.Attribute;
-import org.apache.bcel.classfile.AttributeReader;
 import org.apache.bcel.classfile.JavaClass;
 import org.apache.bcel.classfile.Method;
 import org.apache.bcel.generic.AALOAD;
@@ -69,6 +68,7 @@ import de.seerhein_lab.jic.vm.ExternalObject;
 import de.seerhein_lab.jic.vm.Frame;
 import de.seerhein_lab.jic.vm.Heap;
 import de.seerhein_lab.jic.vm.HeapObject;
+import de.seerhein_lab.jic.vm.OpStack;
 import de.seerhein_lab.jic.vm.PC;
 import de.seerhein_lab.jic.vm.ReferenceSlot;
 import edu.umd.cs.findbugs.BugCollection;
@@ -102,7 +102,8 @@ import edu.umd.cs.findbugs.ba.ClassContext;
  * </p>
  */
 public abstract class BaseVisitor extends SimpleVisitor {
-	protected static final Logger logger = Logger.getLogger("BaseInstructionsAnalysisVisitor");
+	protected static final Logger logger = Logger
+			.getLogger("BaseInstructionsAnalysisVisitor");
 	protected final ClassContext classContext;
 	protected final MethodGen methodGen;
 
@@ -115,25 +116,30 @@ public abstract class BaseVisitor extends SimpleVisitor {
 	public static long cacheMisses = 0;
 	public static long cacheHits = 0;
 
-	protected abstract BaseMethodAnalyzer getMethodAnalyzer(MethodGen targetMethodGen,
-			Set<QualifiedMethod> alreadyVisitedMethods, int methodInvocationDepth);
+	protected abstract BaseMethodAnalyzer getMethodAnalyzer(
+			MethodGen targetMethodGen,
+			Set<QualifiedMethod> alreadyVisitedMethods,
+			int methodInvocationDepth);
 
 	// methods for bug detection
 	protected abstract void detectVirtualMethodBug(ReferenceSlot argument);
 
-	protected abstract void detectXAStoreBug(ReferenceSlot arrayReference, Slot valueToStore);
+	protected abstract void detectXAStoreBug(ReferenceSlot arrayReference,
+			Slot valueToStore);
 
-	protected abstract void detectPutFieldBug(ReferenceSlot targetReference, Slot valueToPut);
+	protected abstract void detectPutFieldBug(ReferenceSlot targetReference,
+			Slot valueToPut);
 
 	protected abstract void detectPutStaticBug(ReferenceSlot referenceToPut);
 
 	protected abstract void detectAReturnBug(ReferenceSlot returnSlot);
 
-	protected BaseVisitor(ClassContext classContext, MethodGen methodGen, Frame frame, Heap heap,
-			ConstantPoolGen constantPoolGen, Set<Pair<InstructionHandle, Boolean>> alreadyVisited,
+	protected BaseVisitor(ClassContext classContext, MethodGen methodGen,
+			Frame frame, Heap heap, ConstantPoolGen constantPoolGen,
+			Set<Pair<InstructionHandle, Boolean>> alreadyVisited,
 			Set<QualifiedMethod> alreadyVisitedMethods, PC pc,
-			CodeExceptionGen[] exceptionHandlers, int depth, AnalysisCache cache,
-			int methodInvocationDepth) {
+			CodeExceptionGen[] exceptionHandlers, int depth,
+			AnalysisCache cache, int methodInvocationDepth) {
 		super(frame, heap, constantPoolGen, pc, depth, methodInvocationDepth);
 
 		this.classContext = classContext;
@@ -152,13 +158,15 @@ public abstract class BaseVisitor extends SimpleVisitor {
 		return result;
 	}
 
-	protected void addBug(String pattern, Confidence confidence, String message,
-			InstructionHandle instructionHandle) {
-		logger.fine(indentation + "\t" + message + " (" + instructionHandle.getInstruction() + ")");
+	protected void addBug(String pattern, Confidence confidence,
+			String message, InstructionHandle instructionHandle) {
+		logger.fine(indentation + "\t" + message + " ("
+				+ instructionHandle.getInstruction() + ")");
 		BugInstance bugInstance = Utils.createBug(pattern, confidence, message,
 				classContext.getJavaClass());
 
-		bugInstance.addSourceLine(classContext, methodGen.getMethod(), instructionHandle);
+		bugInstance.addSourceLine(classContext, methodGen.getMethod(),
+				instructionHandle);
 		bugs.add(bugInstance);
 
 	}
@@ -170,18 +178,22 @@ public abstract class BaseVisitor extends SimpleVisitor {
 		frame.getStack().push(exception);
 
 		for (CodeExceptionGen exceptionHandler : exceptionHandlers) {
-			if (MethodHelper.protectsInstruction(exceptionHandler, pc.getCurrentInstruction())) {
-				logger.fine(indentation + "vvvvv " + exceptionHandler.toString() + ": start vvvvv");
+			if (MethodHelper.protectsInstruction(exceptionHandler,
+					pc.getCurrentInstruction())) {
+				logger.fine(indentation + "vvvvv "
+						+ exceptionHandler.toString() + ": start vvvvv");
 
 				// ************
-				BaseMethodAnalyzer analyzer = getMethodAnalyzer(methodGen, alreadyVisitedMethods,
-						methodInvocationDepth + 1);
-				AnalysisResult analysisResult = analyzer.analyze(exceptionHandler.getHandlerPC(),
-						new Frame(frame), new Heap(heap), alreadyVisitedIfBranch);
+				BaseMethodAnalyzer analyzer = getMethodAnalyzer(methodGen,
+						alreadyVisitedMethods, methodInvocationDepth + 1);
+				AnalysisResult analysisResult = analyzer.analyze(
+						exceptionHandler.getHandlerPC(), new Frame(frame),
+						new Heap(heap), alreadyVisitedIfBranch);
 
 				bugs.addAll(analysisResult.getBugs());
 				result.addAll(analysisResult.getResults());
-				logger.fine(indentation + "^^^^^ " + exceptionHandler.toString() + ": end ^^^^^");
+				logger.fine(indentation + "^^^^^ "
+						+ exceptionHandler.toString() + ": end ^^^^^");
 
 			}
 		}
@@ -204,24 +216,29 @@ public abstract class BaseVisitor extends SimpleVisitor {
 
 		for (EvaluationResult resultValue : cache.get(method).getResults()) {
 			Heap resultHeap = new Heap(heap);
-			HeapObject resultObject = ((ReferenceSlot) resultValue.getSlot()).getObject(resultValue
-					.getHeap());
+			HeapObject resultObject = ((ReferenceSlot) resultValue.getSlot())
+					.getObject(resultValue.getHeap());
 
 			if (resultValue.getKind().equals(EvaluationResult.Kind.EXCEPTION)) {
-				targetResults.add(new EvaluationResult(resultValue.getKind(), new ReferenceSlot(
-						resultHeap.newClassInstance(resultObject.isImmutable())), resultHeap));
+				targetResults.add(new EvaluationResult(resultValue.getKind(),
+						new ReferenceSlot(resultHeap
+								.newClassInstance(resultObject.isImmutable())),
+						resultHeap));
 			} else {
-				((ClassInstance) ((ReferenceSlot) topOfStack).getObject(resultHeap))
+				((ClassInstance) ((ReferenceSlot) topOfStack)
+						.getObject(resultHeap))
 						.copyReferredObjectsTo(resultObject);
-				targetResults.add(new EvaluationResult(EvaluationResult.Kind.REGULAR, VoidSlot
-						.getInstance(), resultHeap));
+				targetResults.add(new EvaluationResult(
+						EvaluationResult.Kind.REGULAR, VoidSlot.getInstance(),
+						resultHeap));
 			}
 		}
 		return targetResults;
 	}
 
-	private void cacheResults(MethodGen targetMethodGen, QualifiedMethod method,
-			AnalysisResult methodResult, Slot objectUnderConstruction) {
+	private void cacheResults(MethodGen targetMethodGen,
+			QualifiedMethod method, AnalysisResult methodResult,
+			Slot objectUnderConstruction) {
 		logger.fine(indentation + "Put " + targetMethodGen.getClassName()
 				+ targetMethodGen.getMethod().getName() + " in the Cache");
 
@@ -232,7 +249,8 @@ public abstract class BaseVisitor extends SimpleVisitor {
 		cache.add(method, result, getCheck());
 	}
 
-	private void wrapNestedBugs(QualifiedMethod targetMethod, Collection<BugInstance> targetBugs) {
+	private void wrapNestedBugs(QualifiedMethod targetMethod,
+			Collection<BugInstance> targetBugs) {
 		for (Iterator<BugInstance> it = targetBugs.iterator(); it.hasNext();) {
 			BugInstance bug = it.next();
 
@@ -250,12 +268,17 @@ public abstract class BaseVisitor extends SimpleVisitor {
 			// "]",
 			// pc.getCurrentInstruction());
 
-			addBug(bug.getBugPattern().getType().startsWith("SUBSEQUENT_") ? bug.getBugPattern()
-					.getType() : "SUBSEQUENT_" + bug.getBugPattern().getType(), Confidence.HIGH,
-					"subsequent bug caused by bug in " + targetMethod.getJavaClass().getClassName()
-							+ "." + targetMethod.getMethod().getName()
-							+ targetMethod.getMethod().getSignature() + ":"
-							+ bug.getPrimarySourceLineAnnotation().getStartLine() + "]",
+			addBug(bug.getBugPattern().getType().startsWith("SUBSEQUENT_") ? bug
+					.getBugPattern().getType() : "SUBSEQUENT_"
+					+ bug.getBugPattern().getType(), Confidence.HIGH,
+					"subsequent bug caused by bug in "
+							+ targetMethod.getJavaClass().getClassName()
+							+ "."
+							+ targetMethod.getMethod().getName()
+							+ targetMethod.getMethod().getSignature()
+							+ ":"
+							+ bug.getPrimarySourceLineAnnotation()
+									.getStartLine() + "]",
 					pc.getCurrentInstruction());
 		}
 	}
@@ -271,22 +294,25 @@ public abstract class BaseVisitor extends SimpleVisitor {
 					return;
 				}
 
-				BaseMethodAnalyzer analyzer = getMethodAnalyzer(methodGen, alreadyVisitedMethods,
-						methodInvocationDepth);
+				BaseMethodAnalyzer analyzer = getMethodAnalyzer(methodGen,
+						alreadyVisitedMethods, methodInvocationDepth);
 
 				Frame newFrame = new Frame(frame);
 				newFrame.getStack().pushByRequiredSize(calleeResult.getSlot());
 
-				AnalysisResult analysisResult = analyzer.analyze(pc.getCurrentInstruction()
-						.getNext(), newFrame, calleeResult.getHeap(), alreadyVisitedIfBranch);
+				AnalysisResult analysisResult = analyzer.analyze(pc
+						.getCurrentInstruction().getNext(), newFrame,
+						calleeResult.getHeap(), alreadyVisitedIfBranch);
 
 				bugs.addAll(analysisResult.getBugs());
 				result.addAll(analysisResult.getResults());
 
 			} else {
 				Frame savedFrame = new Frame(frame);
-				InstructionHandle currentInstruction = pc.getCurrentInstruction();
-				handleException((ReferenceSlot) calleeResult.getSlot(), calleeResult.getHeap());
+				InstructionHandle currentInstruction = pc
+						.getCurrentInstruction();
+				handleException((ReferenceSlot) calleeResult.getSlot(),
+						calleeResult.getHeap());
 				pc.setInstruction(currentInstruction);
 				frame = savedFrame;
 			}
@@ -294,46 +320,55 @@ public abstract class BaseVisitor extends SimpleVisitor {
 		pc.invalidate();
 	}
 
-	private void handleOwnMethod(InvokeInstruction obj, QualifiedMethod targetMethod) {
+	private void handleOwnMethod(InvokeInstruction obj,
+			QualifiedMethod targetMethod) {
 		logger.fine(indentation + obj.toString(false));
-		logger.finest(indentation + "\t" + obj.getLoadClassType(constantPoolGen) + "."
-				+ obj.getMethodName(constantPoolGen) + obj.getSignature(constantPoolGen));
+		logger.finest(indentation + "\t"
+				+ obj.getLoadClassType(constantPoolGen) + "."
+				+ obj.getMethodName(constantPoolGen)
+				+ obj.getSignature(constantPoolGen));
 
-		MethodGen targetMethodGen = new MethodGen(targetMethod.getMethod(), targetMethod
-				.getJavaClass().getClassName(), new ConstantPoolGen(targetMethod.getJavaClass()
-				.getConstantPool()));
+		MethodGen targetMethodGen = new MethodGen(targetMethod.getMethod(),
+				targetMethod.getJavaClass().getClassName(),
+				new ConstantPoolGen(targetMethod.getJavaClass()
+						.getConstantPool()));
 
 		AnalysisResult methodResult;
 
 		if (cache.isCacheable(targetMethod)) {
-			if (cache.contains(targetMethod) && cache.get(targetMethod).isCached(getCheck())) {
+			if (cache.contains(targetMethod)
+					&& cache.get(targetMethod).isCached(getCheck())) {
 				logger.fine(indentation + targetMethod
 						+ " already evaluated - taking result out of the cache");
 				cacheHits++;
 
-				methodResult = new AnalysisResult(useCachedResults(targetMethod), cache.get(
-						targetMethod).getBugs(getCheck()));
+				methodResult = new AnalysisResult(
+						useCachedResults(targetMethod), cache.get(targetMethod)
+								.getBugs(getCheck()));
 
 			} else {
 				cacheMisses++;
 
 				int stackOffset = 0;
-				for (Type argument : targetMethod.getMethod().getArgumentTypes())
+				for (Type argument : targetMethod.getMethod()
+						.getArgumentTypes())
 					stackOffset += argument.getSize();
 
 				Slot objectUnderConstruction = frame.getStack().get(
 						frame.getStack().size() - 1 - stackOffset);
-				methodResult = analyzeMethod(targetMethod, targetMethodGen, alreadyVisitedMethods,
-						objectUnderConstruction);
+				methodResult = analyzeMethod(targetMethod, targetMethodGen,
+						alreadyVisitedMethods, objectUnderConstruction);
 
-				cacheResults(targetMethodGen, targetMethod, methodResult, objectUnderConstruction);
+				cacheResults(targetMethodGen, targetMethod, methodResult,
+						objectUnderConstruction);
 			}
 		} else {
 			cacheMisses++;
 
-			Slot firstParam = frame.getStack().size() == 0 ? null : frame.getStack().peek();
-			methodResult = analyzeMethod(targetMethod, targetMethodGen, alreadyVisitedMethods,
-					firstParam);
+			Slot firstParam = frame.getStack().size() == 0 ? null : frame
+					.getStack().peek();
+			methodResult = analyzeMethod(targetMethod, targetMethodGen,
+					alreadyVisitedMethods, firstParam);
 
 		}
 
@@ -341,7 +376,8 @@ public abstract class BaseVisitor extends SimpleVisitor {
 		continueWithResults(methodResult.getResults());
 	}
 
-	private AnalysisResult analyzeMethod(QualifiedMethod targetMethod, MethodGen targetMethodGen,
+	private AnalysisResult analyzeMethod(QualifiedMethod targetMethod,
+			MethodGen targetMethodGen,
 			Set<QualifiedMethod> alreadyVisitedMethods, Slot firstParam) {
 
 		Set<QualifiedMethod> nowVisitedMethods = new HashSet<QualifiedMethod>();
@@ -358,13 +394,15 @@ public abstract class BaseVisitor extends SimpleVisitor {
 		if (targetMethod.getMethod().getName().equals(CONSTRUCTOR_NAME)
 				&& targetMethod.getMethod().getArgumentTypes().length == 0
 				// && firstParam instanceof ReferenceSlot
-				&& !((ReferenceSlot) firstParam).getObject(heap).equals(heap.getThisInstance())) {
+				&& !((ReferenceSlot) firstParam).getObject(heap).equals(
+						heap.getThisInstance())) {
 
-			targetMethodAnalyzer = new EvaluationOnlyAnalyzer(classContext, targetMethodGen,
-					nowVisitedMethods, depth, cache, methodInvocationDepth + 1);
-		} else {
-			targetMethodAnalyzer = getMethodAnalyzer(targetMethodGen, nowVisitedMethods,
+			targetMethodAnalyzer = new EvaluationOnlyAnalyzer(classContext,
+					targetMethodGen, nowVisitedMethods, depth, cache,
 					methodInvocationDepth + 1);
+		} else {
+			targetMethodAnalyzer = getMethodAnalyzer(targetMethodGen,
+					nowVisitedMethods, methodInvocationDepth + 1);
 		}
 		methodResult = targetMethodAnalyzer.analyze(frame.getStack(), heap);
 		return methodResult;
@@ -373,20 +411,25 @@ public abstract class BaseVisitor extends SimpleVisitor {
 	protected AnalysisResult handleRecursion(
 	// InvokeInstruction obj,
 			MethodGen targetMethodGen) {
-		logger.fine(indentation + "\tRecursion found: Get result of recursive call.");
+		logger.fine(indentation
+				+ "\tRecursion found: Get result of recursive call.");
 
-		BaseMethodAnalyzer recursionAnalyzer = new RecursionAnalyzer(classContext, targetMethodGen,
-				alreadyVisitedMethods, depth, cache, methodInvocationDepth + 1);
+		BaseMethodAnalyzer recursionAnalyzer = new RecursionAnalyzer(
+				classContext, targetMethodGen, alreadyVisitedMethods, depth,
+				cache, methodInvocationDepth + 1);
 
-		AnalysisResult result = recursionAnalyzer.analyze(frame.getStack(), heap);
+		AnalysisResult result = recursionAnalyzer.analyze(frame.getStack(),
+				heap);
 		logger.fine(indentation + "Recursion results: " + result.getResults());
 		return result;
 	}
 
 	private void handleAlienMethod(InvokeInstruction obj) {
 		logger.fine(indentation + obj.toString(false));
-		logger.finest(indentation + "\t" + obj.getLoadClassType(constantPoolGen) + "."
-				+ obj.getMethodName(constantPoolGen) + obj.getSignature(constantPoolGen));
+		logger.finest(indentation + "\t"
+				+ obj.getLoadClassType(constantPoolGen) + "."
+				+ obj.getMethodName(constantPoolGen)
+				+ obj.getSignature(constantPoolGen));
 
 		for (int i = 0; i < obj.consumeStack(constantPoolGen); i++) {
 			Slot argument = frame.getStack().pop();
@@ -398,12 +441,13 @@ public abstract class BaseVisitor extends SimpleVisitor {
 			}
 		}
 
-		Slot returnValue = Slot.getDefaultSlotInstance(obj.getReturnType(constantPoolGen));
+		Slot returnValue = Slot.getDefaultSlotInstance(obj
+				.getReturnType(constantPoolGen));
 
 		// return external reference if returnType reference is expected
 		if (returnValue instanceof ReferenceSlot)
-			returnValue = ReferenceSlot.getExternalReference(heap,
-					ClassHelper.isImmutableAndFinal(obj.getReturnType(constantPoolGen)));
+			returnValue = ReferenceSlot.getExternalReference(heap, ClassHelper
+					.isImmutableAndFinal(obj.getReturnType(constantPoolGen)));
 
 		// works also for void results, because number of required slots = 0
 		frame.getStack().pushByRequiredSize(returnValue);
@@ -426,11 +470,13 @@ public abstract class BaseVisitor extends SimpleVisitor {
 		logger.fine(indentation
 				+ obj.toString(false)
 				+ (frame.getLocalVars()[obj.getIndex()] instanceof ReferenceSlot ? " ("
-						+ ((ReferenceSlot) frame.getLocalVars()[obj.getIndex()]).getObject(heap)
-						+ ")" : ""));
+						+ ((ReferenceSlot) frame.getLocalVars()[obj.getIndex()])
+								.getObject(heap) + ")"
+						: ""));
 		if (frame.getLocalVars()[obj.getIndex()] == null)
 			throw new AssertionError("wrong index for local vars");
-		frame.getStack().pushByRequiredSize(frame.getLocalVars()[obj.getIndex()]);
+		frame.getStack().pushByRequiredSize(
+				frame.getLocalVars()[obj.getIndex()]);
 		pc.advance();
 	}
 
@@ -465,21 +511,22 @@ public abstract class BaseVisitor extends SimpleVisitor {
 	public void visitReturnInstruction(ReturnInstruction obj) {
 
 		logger.fine(indentation + obj.toString(false));
-		Slot returnType = Slot.getDefaultSlotInstance(obj.getType(constantPoolGen));
+		Slot returnType = Slot.getDefaultSlotInstance(obj
+				.getType(constantPoolGen));
 
 		if (returnType instanceof VoidSlot)
 			result.add(new EvaluationResult(Kind.REGULAR, returnType, heap));
 		else {
 			Slot returnSlot = frame.getStack().popByRequiredSize();
-			if (returnType instanceof ReferenceSlot){
+			if (returnType instanceof ReferenceSlot) {
 				detectAReturnBug((ReferenceSlot) returnSlot);
-				
-				// only needed for correct logging 
+
+				// only needed for correct logging
 				returnType = returnSlot;
 			}
 			result.add(new EvaluationResult(Kind.REGULAR, returnSlot, heap));
 		}
-		
+
 		logger.finest(indentation + "\t" + returnType);
 		pc.invalidate();
 	}
@@ -624,7 +671,8 @@ public abstract class BaseVisitor extends SimpleVisitor {
 			// pop array index
 			frame.getStack().pop();
 			// pop array reference
-			ReferenceSlot arrayReference = (ReferenceSlot) frame.getStack().pop();
+			ReferenceSlot arrayReference = (ReferenceSlot) frame.getStack()
+					.pop();
 
 			detectXAStoreBug(arrayReference, value);
 
@@ -643,14 +691,16 @@ public abstract class BaseVisitor extends SimpleVisitor {
 
 		if (arrayReference.isNullReference()) {
 			logger.warning("AALOAD on null in "
-					+ classContext.getFullyQualifiedMethodName(methodGen.getMethod())
+					+ classContext.getFullyQualifiedMethodName(methodGen
+							.getMethod())
 					+ " - stopping evaluation of an unreachable path");
 			pc.invalidate();
 			return;
 		}
 
 		if (arrayReference.getObject(heap) instanceof ExternalObject) {
-			frame.getStack().push(ReferenceSlot.getExternalReference(heap, false));
+			frame.getStack().push(
+					ReferenceSlot.getExternalReference(heap, false));
 			pc.advance();
 			return;
 		}
@@ -659,14 +709,15 @@ public abstract class BaseVisitor extends SimpleVisitor {
 
 		for (HeapObject referredObject : array.getReferredObjects()) {
 
-			BaseMethodAnalyzer analyzer = getMethodAnalyzer(methodGen, alreadyVisitedMethods,
-					methodInvocationDepth);
+			BaseMethodAnalyzer analyzer = getMethodAnalyzer(methodGen,
+					alreadyVisitedMethods, methodInvocationDepth);
 
 			Frame newFrame = new Frame(frame);
 			newFrame.getStack().push(new ReferenceSlot(referredObject));
 
-			AnalysisResult analysisResult = analyzer.analyze(pc.getCurrentInstruction().getNext(),
-					newFrame, new Heap(heap), alreadyVisitedIfBranch);
+			AnalysisResult analysisResult = analyzer.analyze(pc
+					.getCurrentInstruction().getNext(), newFrame,
+					new Heap(heap), alreadyVisitedIfBranch);
 
 			bugs.addAll(analysisResult.getBugs());
 			result.addAll(analysisResult.getResults());
@@ -675,10 +726,11 @@ public abstract class BaseVisitor extends SimpleVisitor {
 		// final option: component is null
 		frame.getStack().push(ReferenceSlot.getNullReference());
 
-		BaseMethodAnalyzer analyzer = getMethodAnalyzer(methodGen, alreadyVisitedMethods,
-				methodInvocationDepth);
-		AnalysisResult analysisResult = analyzer.analyze(pc.getCurrentInstruction().getNext(),
-				frame, heap, alreadyVisitedIfBranch);
+		BaseMethodAnalyzer analyzer = getMethodAnalyzer(methodGen,
+				alreadyVisitedMethods, methodInvocationDepth);
+		AnalysisResult analysisResult = analyzer.analyze(pc
+				.getCurrentInstruction().getNext(), frame, heap,
+				alreadyVisitedIfBranch);
 
 		bugs.addAll(analysisResult.getBugs());
 		result.addAll(analysisResult.getResults());
@@ -691,7 +743,8 @@ public abstract class BaseVisitor extends SimpleVisitor {
 		logger.fine(indentation + obj.toString(false));
 
 		// pop value
-		ReferenceSlot valueRef = (ReferenceSlot) frame.getStack().popByRequiredSize();
+		ReferenceSlot valueRef = (ReferenceSlot) frame.getStack()
+				.popByRequiredSize();
 
 		// pop array index
 		frame.getStack().pop();
@@ -700,7 +753,8 @@ public abstract class BaseVisitor extends SimpleVisitor {
 
 		if (arrayReference.isNullReference()) {
 			logger.warning("AASTORE on null in "
-					+ classContext.getFullyQualifiedMethodName(methodGen.getMethod())
+					+ classContext.getFullyQualifiedMethodName(methodGen
+							.getMethod())
 					+ " - stopping evaluation of an unreachable path");
 			pc.invalidate();
 			return;
@@ -753,12 +807,12 @@ public abstract class BaseVisitor extends SimpleVisitor {
 
 	private ThreeValueBoolean evaluateCondition(IfInstruction instruction) {
 		if (instruction.getOpcode() == 0xc6) // ifnull
-			return ThreeValueBoolean.fromBoolean(((ReferenceSlot) frame.getStack().pop())
-					.isNullReference());
+			return ThreeValueBoolean.fromBoolean(((ReferenceSlot) frame
+					.getStack().pop()).isNullReference());
 
 		if (instruction.getOpcode() == 0xc7) // ifnonnull
-			return ThreeValueBoolean.fromBoolean(!((ReferenceSlot) frame.getStack().pop())
-					.isNullReference());
+			return ThreeValueBoolean.fromBoolean(!((ReferenceSlot) frame
+					.getStack().pop()).isNullReference());
 
 		// all other conditions
 		for (int i = 0; i < instruction.consumeStack(constantPoolGen); i++)
@@ -783,7 +837,9 @@ public abstract class BaseVisitor extends SimpleVisitor {
 		ThreeValueBoolean condition = evaluateCondition(obj);
 
 		if (condition.maybeFalse()) {
-			logger.finest(indentation + "------------------  " + alreadyVisitedIfBranch.size()
+			logger.finest(indentation
+					+ "------------------  "
+					+ alreadyVisitedIfBranch.size()
 					+ ".else  (condition might be inverted!) ------------------");
 			Pair<InstructionHandle, Boolean> elseBranch = new Pair<InstructionHandle, Boolean>(
 					pc.getCurrentInstruction(), false);
@@ -792,10 +848,12 @@ public abstract class BaseVisitor extends SimpleVisitor {
 				BaseMethodAnalyzer elseAnalyzer = getMethodAnalyzer(methodGen,
 						alreadyVisitedMethods, methodInvocationDepth);
 
-				AnalysisResult analysisResult = !condition.maybeTrue() ? elseAnalyzer.analyze(pc
-						.getCurrentInstruction().getNext(), frame, heap, alreadyVisitedIfBranch)
-						: elseAnalyzer.analyze(pc.getCurrentInstruction().getNext(), new Frame(
-								frame), new Heap(heap), alreadyVisitedIfBranch);
+				AnalysisResult analysisResult = !condition.maybeTrue() ? elseAnalyzer
+						.analyze(pc.getCurrentInstruction().getNext(), frame,
+								heap, alreadyVisitedIfBranch) : elseAnalyzer
+						.analyze(pc.getCurrentInstruction().getNext(),
+								new Frame(frame), new Heap(heap),
+								alreadyVisitedIfBranch);
 
 				bugs.addAll(analysisResult.getBugs());
 				result.addAll(analysisResult.getResults());
@@ -806,7 +864,9 @@ public abstract class BaseVisitor extends SimpleVisitor {
 		}
 
 		if (condition.maybeTrue()) {
-			logger.finest(indentation + "------------------  " + alreadyVisitedIfBranch.size()
+			logger.finest(indentation
+					+ "------------------  "
+					+ alreadyVisitedIfBranch.size()
 					+ ".then  (condition might be inverted!) ------------------");
 			Pair<InstructionHandle, Boolean> thenBranch = new Pair<InstructionHandle, Boolean>(
 					pc.getCurrentInstruction(), true);
@@ -815,8 +875,8 @@ public abstract class BaseVisitor extends SimpleVisitor {
 				BaseMethodAnalyzer thenAnalyzer = getMethodAnalyzer(methodGen,
 						alreadyVisitedMethods, methodInvocationDepth);
 
-				AnalysisResult analysisResult = thenAnalyzer.analyze(obj.getTarget(), frame, heap,
-						alreadyVisitedIfBranch);
+				AnalysisResult analysisResult = thenAnalyzer.analyze(
+						obj.getTarget(), frame, heap, alreadyVisitedIfBranch);
 
 				bugs.addAll(analysisResult.getBugs());
 				result.addAll(analysisResult.getResults());
@@ -835,7 +895,8 @@ public abstract class BaseVisitor extends SimpleVisitor {
 	 */
 	@Override
 	public void visitJsrInstruction(JsrInstruction obj) {
-		throw new AssertionError("handling of jsr instruction is not yet implemented.");
+		throw new AssertionError(
+				"handling of jsr instruction is not yet implemented.");
 	}
 
 	/**
@@ -856,15 +917,15 @@ public abstract class BaseVisitor extends SimpleVisitor {
 		InstructionHandle[] targets = obj.getTargets();
 		// follows all targets except the default case
 		for (int i = 0; i < targets.length; i++) {
-			logger.finest(indentation + "--------------- Line " + targets[i].getPosition()
-					+ " ---------------");
+			logger.finest(indentation + "--------------- Line "
+					+ targets[i].getPosition() + " ---------------");
 
 			// ****************************
-			BaseMethodAnalyzer caseAnalyzer = getMethodAnalyzer(methodGen, alreadyVisitedMethods,
-					methodInvocationDepth);
+			BaseMethodAnalyzer caseAnalyzer = getMethodAnalyzer(methodGen,
+					alreadyVisitedMethods, methodInvocationDepth);
 
-			AnalysisResult analysisResult = caseAnalyzer.analyze(targets[i], new Frame(frame),
-					new Heap(heap), alreadyVisitedIfBranch);
+			AnalysisResult analysisResult = caseAnalyzer.analyze(targets[i],
+					new Frame(frame), new Heap(heap), alreadyVisitedIfBranch);
 
 			bugs.addAll(analysisResult.getBugs());
 			result.addAll(analysisResult.getResults());
@@ -873,17 +934,18 @@ public abstract class BaseVisitor extends SimpleVisitor {
 
 		}
 		// handles the default case and follows it
-		logger.finest(indentation + "--------------- Line " + obj.getTarget().getPosition()
+		logger.finest(indentation + "--------------- Line "
+				+ obj.getTarget().getPosition()
 				+ " (DefaultCase) ---------------");
 		// NOTE: If the keyword "Default:" is not in the switch the following
 		// target is the end of the switch without executing a case.
 
 		// ****************************
-		BaseMethodAnalyzer defaultAnalyzer = getMethodAnalyzer(methodGen, alreadyVisitedMethods,
-				methodInvocationDepth);
+		BaseMethodAnalyzer defaultAnalyzer = getMethodAnalyzer(methodGen,
+				alreadyVisitedMethods, methodInvocationDepth);
 
-		AnalysisResult analysisResult = defaultAnalyzer.analyze(obj.getTarget(), frame, heap,
-				alreadyVisitedIfBranch);
+		AnalysisResult analysisResult = defaultAnalyzer.analyze(
+				obj.getTarget(), frame, heap, alreadyVisitedIfBranch);
 
 		bugs.addAll(analysisResult.getBugs());
 		result.addAll(analysisResult.getResults());
@@ -930,20 +992,23 @@ public abstract class BaseVisitor extends SimpleVisitor {
 			return;
 		}
 
-		BaseMethodAnalyzer analyzer = getMethodAnalyzer(methodGen, alreadyVisitedMethods,
-				methodInvocationDepth + 1);
+		BaseMethodAnalyzer analyzer = getMethodAnalyzer(methodGen,
+				alreadyVisitedMethods, methodInvocationDepth + 1);
 
-		AnalysisResult analysisResult = analyzer.analyze(pc.getCurrentInstruction().getNext(),
-				new Frame(frame), new Heap(heap), alreadyVisitedIfBranch);
+		AnalysisResult analysisResult = analyzer.analyze(pc
+				.getCurrentInstruction().getNext(), new Frame(frame), new Heap(
+				heap), alreadyVisitedIfBranch);
 
 		bugs.addAll(analysisResult.getBugs());
 		result.addAll(analysisResult.getResults());
 
-		logger.finest(indentation + "\t" + objRef + " ?= " + obj.getLoadClassType(constantPoolGen));
+		logger.finest(indentation + "\t" + objRef + " ?= "
+				+ obj.getLoadClassType(constantPoolGen));
 
 		handleException(
 				new ReferenceSlot(
-						heap.newClassInstanceOfDynamicType("java.lang.ClassCastException")), heap);
+						heap.newClassInstanceOfDynamicType("java.lang.ClassCastException")),
+				heap);
 
 	}
 
@@ -964,7 +1029,8 @@ public abstract class BaseVisitor extends SimpleVisitor {
 
 		if (o.isNullReference()) {
 			logger.warning("GETFIELD on null in "
-					+ classContext.getFullyQualifiedMethodName(methodGen.getMethod())
+					+ classContext.getFullyQualifiedMethodName(methodGen
+							.getMethod())
 					+ " - stopping evaluation of an unreachable path");
 			pc.invalidate();
 			return;
@@ -974,12 +1040,14 @@ public abstract class BaseVisitor extends SimpleVisitor {
 		if (f instanceof ReferenceSlot) {
 			if (o.getObject(heap) instanceof ExternalObject) {
 				// if left side is external return external
-				f = ReferenceSlot.getExternalReference(heap,
-						ClassHelper.isImmutableAndFinal(obj.getFieldType(constantPoolGen)));
+				f = ReferenceSlot
+						.getExternalReference(heap, ClassHelper
+								.isImmutableAndFinal(obj
+										.getFieldType(constantPoolGen)));
 			} else {
 				// get the HeapObject linked to the desired field
-				HeapObject referredByF = ((ClassInstance) o.getObject(heap)).getField(obj
-						.getFieldName(constantPoolGen));
+				HeapObject referredByF = ((ClassInstance) o.getObject(heap))
+						.getField(obj.getFieldName(constantPoolGen));
 				if (referredByF == null) {
 					f = ReferenceSlot.getNullReference();
 				} else {
@@ -1009,18 +1077,19 @@ public abstract class BaseVisitor extends SimpleVisitor {
 
 		StringBuilder log = new StringBuilder();
 		log.append(indentation + "\t");
-		log.append(obj.getLoadClassType(constantPoolGen) + "." + obj.getFieldName(constantPoolGen)
-				+ " (");
+		log.append(obj.getLoadClassType(constantPoolGen) + "."
+				+ obj.getFieldName(constantPoolGen) + " (");
 
 		Slot f = Slot.getDefaultSlotInstance(obj.getFieldType(constantPoolGen));
 
 		if (f instanceof ReferenceSlot) {
 			// static values are always external
-			f = ReferenceSlot.getExternalReference(heap,
-					ClassHelper.isImmutableAndFinal(obj.getFieldType(constantPoolGen)));
+			f = ReferenceSlot.getExternalReference(heap, ClassHelper
+					.isImmutableAndFinal(obj.getFieldType(constantPoolGen)));
 		}
 
-		log.append((f instanceof DoubleSlot || f instanceof LongSlot) ? f + ", " + f : f);
+		log.append((f instanceof DoubleSlot || f instanceof LongSlot) ? f
+				+ ", " + f : f);
 		frame.getStack().pushByRequiredSize(f);
 		log.append(")");
 		logger.finest(indentation + log);
@@ -1049,7 +1118,8 @@ public abstract class BaseVisitor extends SimpleVisitor {
 
 		if (oRef.isNullReference()) {
 			logger.warning("PUTFIELD on null in "
-					+ classContext.getFullyQualifiedMethodName(methodGen.getMethod())
+					+ classContext.getFullyQualifiedMethodName(methodGen
+							.getMethod())
 					+ " - stopping evaluation of an unreachable path");
 			pc.invalidate();
 			return;
@@ -1064,10 +1134,12 @@ public abstract class BaseVisitor extends SimpleVisitor {
 			if (o instanceof ExternalObject)
 				heap.publish(v);
 			else
-				((ClassInstance) o).setField(obj.getFieldName(constantPoolGen), v);
+				((ClassInstance) o).setField(obj.getFieldName(constantPoolGen),
+						v);
 		}
 
-		logger.finest(indentation + "\t" + o + "." + obj.getFieldName(constantPoolGen) + " <--"
+		logger.finest(indentation + "\t" + o + "."
+				+ obj.getFieldName(constantPoolGen) + " <--"
 				+ ((vRef instanceof ReferenceSlot) ? v : vRef));
 
 		pc.advance();
@@ -1112,12 +1184,13 @@ public abstract class BaseVisitor extends SimpleVisitor {
 	 */
 	@Override
 	public void visitINVOKEINTERFACE(INVOKEINTERFACE instruction) {
-		System.out
-				.println("interface load class: " + instruction.getLoadClassType(constantPoolGen));
+		System.out.println("interface load class: "
+				+ instruction.getLoadClassType(constantPoolGen));
 		handleAlienMethod(instruction);
 	}
 
-	private QualifiedMethod getTargetMethod(InvokeInstruction instruction, JavaClass startClass) {
+	private QualifiedMethod getTargetMethod(InvokeInstruction instruction,
+			JavaClass startClass) {
 		// JavaClass targetClass = getJavaLoadClass(instruction);
 		JavaClass targetClass = startClass;
 
@@ -1133,8 +1206,10 @@ public abstract class BaseVisitor extends SimpleVisitor {
 						instruction.getArgumentTypes(constantPoolGen));
 			} catch (ClassNotFoundException e) {
 				throw new AssertionError("targetMethod "
-						+ instruction.getMethodName(constantPoolGen) + " not found in "
-						+ instruction.getLoadClassType(constantPoolGen) + " or its supertypes");
+						+ instruction.getMethodName(constantPoolGen)
+						+ " not found in "
+						+ instruction.getLoadClassType(constantPoolGen)
+						+ " or its supertypes");
 			}
 		}
 
@@ -1142,10 +1217,12 @@ public abstract class BaseVisitor extends SimpleVisitor {
 	}
 
 	private void handleSpecialOrStaticInvocation(InvokeInstruction instruction) {
-		QualifiedMethod targetMethod = getTargetMethod(instruction, getJavaLoadClass(instruction));
+		QualifiedMethod targetMethod = getTargetMethod(instruction,
+				getJavaLoadClass(instruction));
 
 		if (targetMethod.getMethod().isNative()) {
-			logger.fine(indentation + "Native method must be dealt with like virtual method.");
+			logger.fine(indentation
+					+ "Native method must be dealt with like virtual method.");
 
 			handleAlienMethod(instruction);
 
@@ -1171,7 +1248,8 @@ public abstract class BaseVisitor extends SimpleVisitor {
 
 	@Override
 	public void visitINVOKESTATIC(INVOKESTATIC instruction) {
-		QualifiedMethod method = getTargetMethod(instruction, getJavaLoadClass(instruction));
+		QualifiedMethod method = getTargetMethod(instruction,
+				getJavaLoadClass(instruction));
 
 		if (isAlienMethod(method))
 			handleAlienMethod(instruction);
@@ -1181,7 +1259,8 @@ public abstract class BaseVisitor extends SimpleVisitor {
 
 	private boolean isAlienMethod(QualifiedMethod method) {
 		if (method.getMethod().isNative()) {
-			logger.fine(indentation + "Native method must be treated as alien method.");
+			logger.fine(indentation
+					+ "Native method must be treated as alien method.");
 			return true;
 		}
 
@@ -1192,55 +1271,66 @@ public abstract class BaseVisitor extends SimpleVisitor {
 		if (clazz.equals(classContext.getJavaClass()))
 			return true;
 
-		if(isNestedClass(classContext.getJavaClass(), clazz))
+		if (isNestedClass(classContext.getJavaClass(), clazz))
 			return true;
-		
-		if(isNestedClass(clazz, classContext.getJavaClass()))
+
+		if (isNestedClass(clazz, classContext.getJavaClass()))
 			return true;
-		
+
 		JavaClass[] superClassesOfThisClass = null;
 
 		try {
-			superClassesOfThisClass = classContext.getJavaClass().getSuperClasses();
+			superClassesOfThisClass = classContext.getJavaClass()
+					.getSuperClasses();
 		} catch (ClassNotFoundException e) {
 			throw new AssertionError("class cannot be found: " + e.getMessage());
 		}
-		
+
 		for (JavaClass superClass : superClassesOfThisClass)
 			if (superClass.equals(clazz))
 				return true;
-		
+
 		return false;
 	}
-	
-	private boolean isNestedClass(JavaClass outer, JavaClass inner){
-		return inner.isNested() && containsNested(outer) && innerNameMatchesOuterName(outer, inner);
+
+	private boolean isNestedClass(JavaClass outer, JavaClass inner) {
+		return inner.isNested() && containsNested(outer)
+				&& innerNameMatchesOuterName(outer, inner);
 	}
-	
-	private boolean containsNested(JavaClass clazz){
-		for (Attribute attribute : clazz.getAttributes()){
-			if(attribute.getName().equals("InnerClasses")){
+
+	private boolean containsNested(JavaClass clazz) {
+		for (Attribute attribute : clazz.getAttributes()) {
+			if (attribute.getName().equals("InnerClasses")) {
 				return true;
-			}			
+			}
 		}
 		return false;
 	}
-	
-	private boolean innerNameMatchesOuterName(JavaClass outer, JavaClass inner){
+
+	private boolean innerNameMatchesOuterName(JavaClass outer, JavaClass inner) {
 		return inner.getClassName().startsWith(outer.getClassName() + "$");
 	}
 
-	private JavaClass getRuntimeType() {
-		return null;
+	private JavaClass getRuntimeType(InvokeInstruction instruction) {
+		OpStack stackClone = new OpStack(frame.getStack());
+		for (int i = 0; i < instruction.consumeStack(constantPoolGen) - 1; i++) {
+			stackClone.pop();
+		}
+		Slot targetReference = stackClone.pop();
+		if (!(targetReference instanceof ReferenceSlot))
+			throw new AssertionError("Stack is messed up!");
+		return ((ReferenceSlot) targetReference).getObject(heap)
+				.getRuntimeType();
 	}
 
 	private JavaClass getJavaLoadClass(InvokeInstruction instruction) {
 		JavaClass loadClassType = null;
 		try {
-			loadClassType = Repository.lookupClass(instruction.getLoadClassType(constantPoolGen)
-					.toString());
+			loadClassType = Repository.lookupClass(instruction
+					.getLoadClassType(constantPoolGen).toString());
 		} catch (ClassNotFoundException e) {
-			throw new AssertionError(instruction.getLoadClassType(constantPoolGen).toString()
+			throw new AssertionError(instruction.getLoadClassType(
+					constantPoolGen).toString()
 					+ " cannot be loaded.");
 		}
 		return loadClassType;
@@ -1253,24 +1343,27 @@ public abstract class BaseVisitor extends SimpleVisitor {
 	 */
 	@Override
 	public void visitINVOKEVIRTUAL(INVOKEVIRTUAL instruction) {
-		System.out.println("virtual load class: " + instruction.getLoadClassType(constantPoolGen));
+		System.out.println("virtual load class: "
+				+ instruction.getLoadClassType(constantPoolGen));
 
 		if (!isTightlyCoupled(getJavaLoadClass(instruction))) {
 			handleAlienMethod(instruction);
 			return;
 		}
 
-		JavaClass runtimeType = getRuntimeType();
+		JavaClass runtimeType = getRuntimeType(instruction);
 
 		if (runtimeType != null && isTightlyCoupled(runtimeType)) {
-			handleOwnMethod(instruction, getTargetMethod(instruction, runtimeType));
+			handleOwnMethod(instruction,
+					getTargetMethod(instruction, runtimeType));
 			return;
 		}
 
-		QualifiedMethod targetMethod = getTargetMethod(instruction, getJavaLoadClass(instruction));
+		QualifiedMethod targetMethod = getTargetMethod(instruction,
+				getJavaLoadClass(instruction));
 
-		if ((targetMethod.getJavaClass().isFinal() || targetMethod.getMethod().isFinal())
-				&& !targetMethod.getMethod().isNative()) {
+		if ((targetMethod.getJavaClass().isFinal() || targetMethod.getMethod()
+				.isFinal()) && !targetMethod.getMethod().isNative()) {
 			logger.fine(indentation + "Final virtual method can be analyzed.");
 			handleOwnMethod(instruction, targetMethod);
 		} else
@@ -1374,7 +1467,8 @@ public abstract class BaseVisitor extends SimpleVisitor {
 				.getLoadClassType(constantPoolGen));
 		ReferenceSlot slot = new ReferenceSlot(instance);
 
-		logger.fine(indentation + obj.toString(false) + " (" + slot.getObject(heap) + ")");
+		logger.fine(indentation + obj.toString(false) + " ("
+				+ slot.getObject(heap) + ")");
 
 		frame.getStack().push(slot);
 
@@ -1390,7 +1484,8 @@ public abstract class BaseVisitor extends SimpleVisitor {
 	@Override
 	public void visitNEWARRAY(NEWARRAY obj) {
 		logger.fine(indentation + obj.toString(false));
-		logger.finest(indentation + "\t" + "(" + Slot.getDefaultSlotInstance(obj.getType()) + ")");
+		logger.finest(indentation + "\t" + "("
+				+ Slot.getDefaultSlotInstance(obj.getType()) + ")");
 
 		// pop length of new array (integer)
 		frame.getStack().pop();

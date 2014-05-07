@@ -22,18 +22,19 @@ import edu.umd.cs.findbugs.ba.ClassContext;
 @ThreadSafe
 // Superclass is thread-safe, this sub-class doesn't add any public methods
 public final class PropConAnalyzer extends BaseMethodAnalyzer {
-	public PropConAnalyzer(ClassContext classContext, MethodGen methodGen, AnalysisCache cache,
-			int methodInvocationDepth) {
-		this(classContext, methodGen, new HashSet<QualifiedMethod>(), -1, cache,
-				methodInvocationDepth);
-		alreadyVisitedMethods.add(new QualifiedMethod(classContext.getJavaClass(), methodGen
-				.getMethod()));
+	public PropConAnalyzer(ClassContext classContext, MethodGen methodGen,
+			AnalysisCache cache, int methodInvocationDepth) {
+		this(classContext, methodGen, new HashSet<QualifiedMethod>(), -1,
+				cache, methodInvocationDepth);
+		alreadyVisitedMethods.add(new QualifiedMethod(classContext
+				.getJavaClass(), methodGen.getMethod()));
 	}
 
 	protected PropConAnalyzer(ClassContext classContext, MethodGen methodGen,
-			Set<QualifiedMethod> alreadyVisitedMethods, int depth, AnalysisCache cache,
-			int methodInvocationDepth) {
-		super(classContext, methodGen, alreadyVisitedMethods, depth, cache, methodInvocationDepth);
+			Set<QualifiedMethod> alreadyVisitedMethods, int depth,
+			AnalysisCache cache, int methodInvocationDepth) {
+		super(classContext, methodGen, alreadyVisitedMethods, depth, cache,
+				methodInvocationDepth);
 	}
 
 	protected BaseVisitor getInstructionVisitor(Frame frame, Heap heap, PC pc,
@@ -44,13 +45,15 @@ public final class PropConAnalyzer extends BaseMethodAnalyzer {
 
 		// JicDetector.propConCounter++;
 		return new PropConVisitor(classContext, methodGen, frame, heap,
-				methodGen.getConstantPool(), pc, exceptionHandlers, alreadyVisitedMethods, depth,
-				alreadyVisitedIfBranch, cache, methodInvocationDepth);
+				methodGen.getConstantPool(), pc, exceptionHandlers,
+				alreadyVisitedMethods, depth, alreadyVisitedIfBranch, cache,
+				methodInvocationDepth);
 	}
 
 	@Override
 	protected Heap getHeap() {
-		return new Heap(ClassHelper.isImmutable(this.classContext.getJavaClass().getClassName()));
+		String className = this.classContext.getJavaClass().getClassName();
+		return new Heap(ClassHelper.isImmutable(className), className);
 	}
 
 }

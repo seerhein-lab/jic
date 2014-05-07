@@ -9,6 +9,8 @@ import java.util.Queue;
 import java.util.Set;
 import java.util.UUID;
 
+import org.apache.bcel.classfile.JavaClass;
+
 import de.seerhein_lab.jic.EmercencyBrakeException;
 
 /**
@@ -78,6 +80,15 @@ public abstract class HeapObject {
 		return immutable;
 	}
 
+	/***
+	 * Gets the object's runtime type.
+	 * 
+	 * @return the object's runtime type or <code>null</code> if unknown
+	 */
+	public JavaClass getRuntimeType() {
+		return null;
+	}
+
 	public boolean isExternal() {
 		return false;
 	}
@@ -143,7 +154,8 @@ public abstract class HeapObject {
 	 * @param newObject
 	 *            newly referred object; must not be null.
 	 */
-	protected abstract void replaceReferredObject(HeapObject oldObj, HeapObject newObj);
+	protected abstract void replaceReferredObject(HeapObject oldObj,
+			HeapObject newObj);
 
 	/**
 	 * Overriding method implementations are expected to returns an iterable of
@@ -268,7 +280,8 @@ public abstract class HeapObject {
 	 *            set of mappings of already deeply copied parts.
 	 * @return newly copied complex object
 	 */
-	protected abstract HeapObject deepCopy(Heap heap, Map<HeapObject, HeapObject> visited);
+	protected abstract HeapObject deepCopy(Heap heap,
+			Map<HeapObject, HeapObject> visited);
 
 	/*
 	 * (non-Javadoc)
@@ -322,5 +335,4 @@ public abstract class HeapObject {
 
 		return referredBy.equals(other.referredBy);
 	}
-
 }

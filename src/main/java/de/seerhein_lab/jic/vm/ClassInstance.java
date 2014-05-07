@@ -6,6 +6,10 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.UUID;
 
+import org.apache.bcel.Repository;
+import org.apache.bcel.classfile.JavaClass;
+import org.apache.bcel.generic.Type;
+
 /**
  * Class whose instances represent class instances. Beside the components
  * defined in the superclass <code>HeapObject</code>, a class instance has a
@@ -15,6 +19,7 @@ import java.util.UUID;
  */
 public final class ClassInstance extends HeapObject {
 	private Map<String, UUID> refers = new HashMap<String, UUID>();
+	private final JavaClass runtimeType;
 
 	/**
 	 * Constructor.
@@ -22,8 +27,9 @@ public final class ClassInstance extends HeapObject {
 	 * @param heap
 	 *            Heap this class instance resides on. Must not be null.
 	 */
-	public ClassInstance(Heap heap, boolean immutable) {
+	private ClassInstance(Heap heap, boolean immutable, JavaClass runtimeType) {
 		super(heap, immutable);
+		this.runtimeType = runtimeType;
 	}
 
 	/**
@@ -37,6 +43,7 @@ public final class ClassInstance extends HeapObject {
 	ClassInstance(ClassInstance original, Heap heap) {
 		super(original, heap);
 		refers.putAll(original.refers);
+		this.runtimeType = original.runtimeType;
 	}
 
 	/*
@@ -56,6 +63,11 @@ public final class ClassInstance extends HeapObject {
 		}
 		oldObj.removeReferringObj(this);
 		newObj.addReferringObject(this);
+	}
+
+	@Override
+	public final JavaClass getRuntimeType() {
+		return runtimeType;
 	}
 
 	/*
@@ -82,10 +94,9 @@ public final class ClassInstance extends HeapObject {
 
 		for (Entry<String, UUID> entry : this.refers.entrySet()) {
 			HeapObject referred = this.heap.get(entry.getValue());
-			copiedObject.setField(
-					entry.getKey(),
-					visited.containsKey(referred) ? visited.get(referred) : referred.deepCopy(heap,
-							visited));
+			copiedObject.setField(entry.getKey(),
+					visited.containsKey(referred) ? visited.get(referred)
+							: referred.deepCopy(heap, visited));
 		}
 		return copiedObject;
 	}
@@ -111,7 +122,8 @@ public final class ClassInstance extends HeapObject {
 		Map<HeapObject, HeapObject> visited = new HashMap<HeapObject, HeapObject>();
 
 		for (Entry<String, UUID> entry : originClassInstance.refers.entrySet()) {
-			HeapObject referred = originClassInstance.heap.get(entry.getValue());
+			HeapObject referred = originClassInstance.heap
+					.get(entry.getValue());
 			visited.put(originClassInstance, this);
 			if (referred == null) {
 				this.setField(entry.getKey(), null);
@@ -168,7 +180,8 @@ public final class ClassInstance extends HeapObject {
 	 *            object to be set to
 	 */
 	public void setField(String field, HeapObject obj) {
-		HeapObject oldTarget = refers.containsKey(field) ? heap.get(refers.get(field)) : null;
+		HeapObject oldTarget = refers.containsKey(field) ? heap.get(refers
+				.get(field)) : null;
 
 		if (obj == null)
 			refers.remove(field);
@@ -223,4 +236,54 @@ public final class ClassInstance extends HeapObject {
 		return refers.equals(other.refers);
 	}
 
+	static final class ClassInstanceBuilder {
+		private Heap heap;
+		private boolean immutable = false;
+		private JavaClass runtimeType = null;
+
+		ClassInstanceBuilder(Heap heap) {
+			this.heap = heap;
+			immutable = false;
+			runtimeType = null;
+		}
+
+		ClassInstanceBuilder immutable(boolean immutable) {
+			this.immutable = immutable;
+			return this;
+		}
+
+		ClassInstanceBuilder runtimeType(String className) {
+			this.runtimeType = resolveRuntimeType(className);
+			return this;
+		}
+
+		ClassInstanceBuilder runtimeType(Type classType) {
+			this.runtimeType = resolveRuntimeType(classType.toString());
+			return this;
+		}
+
+		ClassInstance buildAndRegister() {
+			ClassInstance object = build();
+			heap.addToObjects(object);
+			return object;
+		}
+
+		ClassInstance build() {
+			ClassInstance object = new ClassInstance(heap, immutable,
+					runtimeType);
+			return object;
+		}
+
+		private static JavaClass resolveRuntimeType(String className) {
+			if (className == null || className.equals(""))
+				return null;
+			JavaClass classType = null;
+			try {
+				classType = Repository.lookupClass(className);
+			} catch (ClassNotFoundException e) {
+				throw new AssertionError(className + " cannot be loaded.");
+			}
+			return classType;
+		}
+	}
 }

@@ -130,8 +130,9 @@ public final class Array extends HeapObject {
 
 		for (UUID id : this.refers) {
 			HeapObject referred = this.heap.get(id);
-			copiedArray.addReferredObject(visited.containsKey(referred) ? visited.get(referred)
-					: referred.deepCopy(heap, visited));
+			copiedArray
+					.addReferredObject(visited.containsKey(referred) ? visited
+							.get(referred) : referred.deepCopy(heap, visited));
 		}
 		return copiedArray;
 	}
