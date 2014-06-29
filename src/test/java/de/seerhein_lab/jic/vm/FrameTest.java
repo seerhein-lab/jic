@@ -1,4 +1,4 @@
-package de.seerhein_lab.jic;
+package de.seerhein_lab.jic.vm;
 
 import static org.junit.Assert.assertEquals;
 
